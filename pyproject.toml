@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "markov-engine"
+version = "0.1.0"
+description = "A storage-agnostic knowledge engine that turns saved links into living, self-growing Chains of knowledge."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "markov-engine contributors" }]
+keywords = ["knowledge-graph", "embeddings", "clustering", "anthropic", "agents", "rag"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "anthropic",
+    "voyageai",
+    "trafilatura",
+    "yt-dlp",
+    "pymupdf",
+    "faster-whisper",
+    "soundfile",
+    "ddgs",
+    "httpx",
+    "pydantic",
+    "pydantic-settings",
+    "aiosqlite",
+]
+
+[project.urls]
+Homepage = "https://github.com/markov-engine/markov-engine"
+Source = "https://github.com/markov-engine/markov-engine"
+
+[project.scripts]
+markov = "markov_engine.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["markov_engine"]
