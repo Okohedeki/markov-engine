@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Markov — knowledge that keeps growing</title>
+<meta name="description" content="Save a link; the knowledge keeps researching itself. Markov turns saved links into living Chains that grow on their own — an open-source engine (CLI + library) powering a cloud mobile product." />
+<meta property="og:title" content="Markov — knowledge that keeps growing" />
+<meta property="og:description" content="An open-source knowledge engine that turns saved links into living Chains that grow on their own — plus the mobile product built on it." />
+<style>
+  :root{
+    --bg:#0a0c11; --panel:#11141c; --panel2:#161a24; --line:#222838;
+    --text:#e7eaf1; --muted:#97a0b5; --dim:#6b7488;
+    --a1:#8b5cff; --a2:#22d3ee; --ok:#34d399;
+    --grad:linear-gradient(135deg,#8b5cff,#22d3ee);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  code,pre{font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
+    background:rgba(10,12,17,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+  .mark{width:22px;height:22px;border-radius:6px;background:var(--grad);
+    box-shadow:0 0 22px rgba(139,92,255,.55)}
+  .navlinks{display:flex;gap:26px;align-items:center;color:var(--muted);font-size:14px}
+  .navlinks a:hover{color:var(--text)}
+  .btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:600;font-size:14px}
+  .btn-primary{background:var(--grad);color:#0a0c11}
+  .btn-ghost{border:1px solid var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:#39425c}
+
+  /* hero */
+  .hero{padding:96px 0 56px;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-200px 0 auto 0;height:520px;
+    background:radial-gradient(600px 300px at 50% 0,rgba(139,92,255,.22),transparent 70%);}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:5px 13px;margin-bottom:26px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  h1{font-size:58px;line-height:1.05;margin:0 0 18px;letter-spacing:-1.5px;font-weight:800}
+  .lead{font-size:20px;color:var(--muted);max-width:660px;margin:0 auto 32px}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .hero-note{margin-top:22px;font-size:13px;color:var(--dim)}
+
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  .h2{font-size:30px;letter-spacing:-.6px;margin:0 0 10px;font-weight:750}
+  .sub{color:var(--muted);max-width:640px;margin:0 0 38px}
+  .center{text-align:center}.center .sub{margin-left:auto;margin-right:auto}
+
+  /* two-project cards */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px}
+  .card h3{margin:0 0 4px;font-size:21px}
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+    padding:3px 9px;border-radius:6px;margin-bottom:14px}
+  .tag.open{background:rgba(52,211,153,.13);color:#6ee7b7;border:1px solid rgba(52,211,153,.3)}
+  .tag.prod{background:rgba(139,92,255,.14);color:#c4b5fd;border:1px solid rgba(139,92,255,.32)}
+  .card p{color:var(--muted);margin:0 0 16px}
+  .card ul{margin:0 0 18px;padding-left:18px;color:var(--muted)}
+  .card li{margin:6px 0}
+  pre{background:#0c0f16;border:1px solid var(--line);border-radius:12px;padding:16px;
+    overflow:auto;font-size:13px;color:#cfe3ff;margin:0 0 16px}
+  pre .c{color:var(--dim)}pre .g{color:#7ee0c0}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .step .n{font-family:monospace;color:var(--a2);font-size:13px;margin-bottom:8px}
+  .step h4{margin:0 0 6px;font-size:16px}
+  .step p{margin:0;color:var(--muted);font-size:14px}
+
+  /* diagram */
+  .diagram{background:#0c0f16;border:1px solid var(--line);border-radius:16px;padding:26px;
+    font-family:monospace;font-size:12.5px;color:#aeb9d4;overflow:auto;white-space:pre;line-height:1.5}
+  .diagram b{color:#c4b5fd}.diagram .e{color:#6ee7b7}
+
+  /* capability pills */
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .feat h4{margin:0 0 6px;font-size:16px}
+  .feat p{margin:0;color:var(--muted);font-size:14px}
+  .feat .k{font-size:12px;color:var(--a2);font-family:monospace}
+
+  /* tiers */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .tier{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .tier.pop{border-color:rgba(139,92,255,.5);box-shadow:0 0 40px rgba(139,92,255,.12)}
+  .tier h4{margin:0 0 2px;font-size:18px}
+  .tier .price{color:var(--dim);font-size:13px;margin-bottom:14px}
+  .tier ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+  .tier li{margin:7px 0}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--dim);font-size:13.5px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px}
+  footer a{color:var(--muted)}footer a:hover{color:var(--text)}
+
+  @media(max-width:780px){
+    h1{font-size:40px}.duo,.steps,.feats,.tiers{grid-template-columns:1fr}
+    .navlinks a:not(.btn){display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#top"><span class="mark"></span> Markov</a>
+  <div class="navlinks">
+    <a href="#engine">Engine</a>
+    <a href="#how">How it works</a>
+    <a href="#product">Product</a>
+    <a href="#architecture">Architecture</a>
+    <a class="btn btn-ghost" href="https://github.com/Okohedeki/markov-engine">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div class="eyebrow"><span class="dot"></span> Open-source engine · Powers a cloud product</div>
+  <h1>Save once.<br><span class="grad">Your knowledge keeps growing.</span></h1>
+  <p class="lead">Share a link and Markov turns it into a living <b>Chain</b> of knowledge —
+    extracting entities, clustering by subject, and then quietly researching that subject on
+    its own over time.</p>
+  <div class="cta">
+    <a class="btn btn-primary" href="https://github.com/Okohedeki/markov-engine">Get the engine →</a>
+    <a class="btn btn-ghost" href="#product">See the product</a>
+  </div>
+  <div class="hero-note">One project, two halves: an open MIT engine you can run yourself, and the mobile product built on it.</div>
+</div></header>
+
+<!-- TWO PROJECTS -->
+<section id="engine"><div class="wrap">
+  <h2 class="h2">Two halves of one idea</h2>
+  <p class="sub">The reusable brain is open source. The connectors, mobile app, and hosting are the product.</p>
+  <div class="duo">
+
+    <div class="card">
+      <span class="tag open">Open source · MIT</span>
+      <h3>markov-engine</h3>
+      <p>A storage-agnostic knowledge engine — a CLI and a library. Give it a URL; it extracts,
+        embeds, clusters into a Chain, grows the Chain from the web, and writes artifacts.
+        Agents can run it as a tool.</p>
+      <pre><span class="c"># save a link → it clusters into a Chain</span>
+markov ingest https://youtu.be/UF8uR6Z6KLc
+<span class="c"># grow the Chain — discover related sources</span>
+markov grow 1 --hops 2 --budget 10
+<span class="c"># synthesize an article across the Chain</span>
+markov generate 1 --type article</pre>
+      <ul>
+        <li>Pluggable <code>Store</code> — local SQLite ships by default</li>
+        <li>Extraction: articles, PDFs, YouTube/TikTok/Reddit/X, audio</li>
+        <li>Runs on Anthropic — or a local model (validated on Qwen-3B)</li>
+      </ul>
+      <a class="btn btn-ghost" href="https://github.com/Okohedeki/markov-engine">View on GitHub</a>
+    </div>
+
+    <div class="card">
+      <span class="tag prod">Product · in development</span>
+      <h3>Markov (the app)</h3>
+      <p>A mobile app built on the engine. Share any link from any app; your Chains grow on a
+        cloud backend and resurface as a feed — or, on paid tiers, as generated articles,
+        newsletters, and podcasts.</p>
+      <pre><span class="c"># the whole interaction is one gesture</span>
+Share ▸ <span class="g">Markov</span>
+   ↳ parsed, filed under its subject,
+     and tracked from then on.</pre>
+      <ul>
+        <li>OS share-sheet save — no copy-paste</li>
+        <li>Private by default; opt-in read-only share links</li>
+        <li>Tiers scale reach + output (feed → artifacts)</li>
+      </ul>
+      <a class="btn btn-ghost" href="#product">How the product works</a>
+    </div>
+
+  </div>
+</div></section>
+
+<!-- HOW IT WORKS -->
+<section id="how"><div class="wrap center">
+  <h2 class="h2">How a save becomes a living Chain</h2>
+  <p class="sub">The same four steps run whether you use the CLI, a script, or the app.</p>
+  <div class="steps">
+    <div class="step"><div class="n">01 · SOURCE</div><h4>Save</h4>
+      <p>A link is extracted to text — transcribing video/audio when needed.</p></div>
+    <div class="step"><div class="n">02 · TOPIC</div><h4>Understand</h4>
+      <p>An LLM pulls a summary, entities, and relationships; the summary is embedded.</p></div>
+    <div class="step"><div class="n">03 · CHAIN</div><h4>Cluster</h4>
+      <p>Similar Topics auto-combine into one Chain by embedding distance — or seed a new one.</p></div>
+    <div class="step"><div class="n">04 · GROW</div><h4>Research</h4>
+      <p>The Chain keeps pulling in new related sources, bounded by a relevance-decay floor.</p></div>
+  </div>
+</div></section>
+
+<!-- CAPABILITIES (validated) -->
+<section><div class="wrap center">
+  <h2 class="h2">Built to be embedded — and proven</h2>
+  <p class="sub">Validated end-to-end on a real YouTube video, including a depth-6 growth run.</p>
+  <div class="feats">
+    <div class="feat"><div class="k">hop_depth</div><h4>Tunable reach</h4>
+      <p>Growth fans out across adjacency hops; a relevance-decay floor stops Chains from ballooning.</p></div>
+    <div class="feat"><div class="k">Store</div><h4>Any backend</h4>
+      <p>One small interface. SQLite locally; Postgres + pgvector in the cloud product.</p></div>
+    <div class="feat"><div class="k">local LLM</div><h4>Your model</h4>
+      <p>Swap Anthropic for a local GGUF — real entity extraction + generation, no API keys.</p></div>
+  </div>
+</div></section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture"><div class="wrap">
+  <h2 class="h2">Architecture</h2>
+  <p class="sub">The open engine is the core; the product wraps it with connectors, multi-tenancy, and billing.</p>
+  <div class="diagram">  React Native app ──HTTPS──▶ <b>FastAPI</b> (the product's front door)
+       Share-sheet save              │  verify auth · enforce tiers
+                                      ├─▶ Supabase Postgres + <span class="e">pgvector</span>
+                                      ├─▶ Redis ─▶ background workers
+                                      │            (ingest · grow · generate)
+                                      └─▶ ┌───────────────────────────────┐
+                                          │   <b>markov-engine</b>  (open core)   │
+                                          │   extract · entities · embed  │
+                                          │   cluster · grow · generate   │
+                                          │   behind a single Store seam  │
+                                          └───────────────────────────────┘
+       LLM: Anthropic / local model      Embeddings: Voyage      Search: DuckDuckGo</div>
+</div></section>
+
+<!-- PRODUCT TIERS -->
+<section id="product"><div class="wrap center">
+  <h2 class="h2">The product, in three tiers</h2>
+  <p class="sub">Free is a smart feed of what your Chains pull in. Paid tiers reach further and synthesize.</p>
+  <div class="tiers">
+    <div class="tier"><h4>Free</h4><div class="price">the feed</div>
+      <ul><li>Save unlimited links</li><li>On-subject growth</li>
+        <li>A personalized feed across your Chains</li><li>~5 active Chains</li></ul></div>
+    <div class="tier pop"><h4>Plus</h4><div class="price">feed + artifacts</div>
+      <ul><li>Everything in Free</li><li>Multi-hop reach + bigger source budget</li>
+        <li>Generated articles & newsletters</li><li>Hourly growth · ~50 Chains</li></ul></div>
+    <div class="tier"><h4>Pro</h4><div class="price">maximum reach</div>
+      <ul><li>Everything in Plus</li><li>Deepest reach, near-real-time growth</li>
+        <li>Podcast episodes per Chain</li><li>Unlimited Chains</li></ul></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div>© 2026 Markov · Engine licensed MIT</div>
+  <div style="display:flex;gap:22px">
+    <a href="https://github.com/Okohedeki/markov-engine">Engine repo</a>
+    <a href="https://github.com/Okohedeki/markov-engine#install">Install</a>
+    <a href="https://github.com/Okohedeki/markov-engine/blob/main/LICENSE">License</a>
+  </div>
+</div></footer>
+
+</body>
+</html>
