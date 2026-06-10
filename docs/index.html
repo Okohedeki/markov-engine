@@ -116,7 +116,6 @@
     <a href="#engine">Engine</a>
     <a href="#how">How it works</a>
     <a href="#product">Product</a>
-    <a href="#architecture">Architecture</a>
     <a class="btn btn-ghost" href="https://github.com/Okohedeki/markov-engine">GitHub</a>
   </div>
 </div></nav>
@@ -209,24 +208,6 @@ Share ▸ <span class="g">Markov</span>
     <div class="feat"><div class="k">local LLM</div><h4>Your model</h4>
       <p>Swap Anthropic for a local GGUF — real entity extraction + generation, no API keys.</p></div>
   </div>
-</div></section>
-
-<!-- ARCHITECTURE -->
-<section id="architecture"><div class="wrap">
-  <h2 class="h2">Architecture</h2>
-  <p class="sub">The open engine is the core; the product wraps it with connectors, multi-tenancy, and billing.</p>
-  <div class="diagram">  React Native app ──HTTPS──▶ <b>FastAPI</b> (the product's front door)
-       Share-sheet save              │  verify auth · enforce tiers
-                                      ├─▶ Supabase Postgres + <span class="e">pgvector</span>
-                                      ├─▶ Redis ─▶ background workers
-                                      │            (ingest · grow · generate)
-                                      └─▶ ┌───────────────────────────────┐
-                                          │   <b>markov-engine</b>  (open core)   │
-                                          │   extract · entities · embed  │
-                                          │   cluster · grow · generate   │
-                                          │   behind a single Store seam  │
-                                          └───────────────────────────────┘
-       LLM: Anthropic / local model      Embeddings: Voyage      Search: DuckDuckGo</div>
 </div></section>
 
 <!-- PRODUCT TIERS -->
