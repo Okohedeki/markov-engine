@@ -3,238 +3,280 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Markov — knowledge that keeps growing</title>
-<meta name="description" content="Save a link; the knowledge keeps researching itself. Markov turns saved links into living Chains that grow on their own — an open-source engine (CLI + library) powering a cloud mobile product." />
-<meta property="og:title" content="Markov — knowledge that keeps growing" />
-<meta property="og:description" content="An open-source knowledge engine that turns saved links into living Chains that grow on their own — plus the mobile product built on it." />
+<title>Markov — save a link once, and the subject keeps researching itself</title>
+<meta name="description" content="Markov is an open-source knowledge engine. Give it a URL — an article, a PDF, a YouTube video — and it extracts the ideas, files them by subject into a living Chain, then keeps pulling in new sources on its own. CLI + library, MIT-licensed." />
+<meta property="og:title" content="Markov — your saved links keep researching themselves" />
+<meta property="og:description" content="An open-source engine that turns one saved link into a Chain of knowledge that grows on its own. Runs on Anthropic or a local model." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg:#0a0c11; --panel:#11141c; --panel2:#161a24; --line:#222838;
-    --text:#e7eaf1; --muted:#97a0b5; --dim:#6b7488;
-    --a1:#8b5cff; --a2:#22d3ee; --ok:#34d399;
-    --grad:linear-gradient(135deg,#8b5cff,#22d3ee);
+    --ink:#0c0d0a; --ink2:#13150f; --paper:#ece5d6;
+    --muted:#9d9784; --faint:#6c685c; --line:rgba(236,229,214,.13);
+    --green:#7fe3a4; --green2:#52c483; --amber:#e6b070;
+    --serif:"Newsreader",Georgia,serif;
+    --disp:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--ink);color:var(--paper);
+    font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;font-optical-sizing:auto}
+  /* paper grain */
+  body::before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .layer{position:relative;z-index:2}
   a{color:inherit;text-decoration:none}
-  code,pre{font-family:"SF Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
-  .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .mono{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--green2)}
+  .rule{height:1px;background:var(--line);border:0;margin:0}
 
-  /* nav */
-  nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
-    background:rgba(10,12,17,.72);border-bottom:1px solid var(--line)}
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
-  .mark{width:22px;height:22px;border-radius:6px;background:var(--grad);
-    box-shadow:0 0 22px rgba(139,92,255,.55)}
-  .navlinks{display:flex;gap:26px;align-items:center;color:var(--muted);font-size:14px}
-  .navlinks a:hover{color:var(--text)}
-  .btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:600;font-size:14px}
-  .btn-primary{background:var(--grad);color:#0a0c11}
-  .btn-ghost{border:1px solid var(--line);color:var(--text)}
-  .btn-ghost:hover{border-color:#39425c}
+  /* masthead */
+  header.mast{border-bottom:1px solid var(--line)}
+  .mast .wrap{display:flex;align-items:baseline;justify-content:space-between;padding-top:22px;padding-bottom:18px;flex-wrap:wrap;gap:10px}
+  .brand{font-family:var(--disp);font-weight:900;font-size:26px;letter-spacing:-.02em}
+  .brand .dot{color:var(--green)}
+  .mast nav{display:flex;gap:30px;align-items:baseline;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .mast nav a:hover{color:var(--paper)}
+  .mast nav a.gh{color:var(--green2)}
 
   /* hero */
-  .hero{padding:96px 0 56px;text-align:center;position:relative;overflow:hidden}
-  .hero::before{content:"";position:absolute;inset:-200px 0 auto 0;height:520px;
-    background:radial-gradient(600px 300px at 50% 0,rgba(139,92,255,.22),transparent 70%);}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
-    border:1px solid var(--line);border-radius:999px;padding:5px 13px;margin-bottom:26px}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
-  h1{font-size:58px;line-height:1.05;margin:0 0 18px;letter-spacing:-1.5px;font-weight:800}
-  .lead{font-size:20px;color:var(--muted);max-width:660px;margin:0 auto 32px}
-  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-  .hero-note{margin-top:22px;font-size:13px;color:var(--dim)}
+  .hero .wrap{padding:78px 28px 36px}
+  .kicker{display:flex;gap:16px;align-items:center;margin-bottom:30px;color:var(--muted)}
+  .kicker .mono{color:var(--muted)}
+  .kicker .pip{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+  h1{font-family:var(--disp);font-weight:900;font-size:clamp(44px,7.5vw,92px);line-height:.98;
+    letter-spacing:-.025em;margin:0 0 26px;max-width:14ch}
+  h1 em{font-style:italic;font-weight:400;color:var(--green)}
+  .deck{font-family:var(--serif);font-weight:300;font-size:clamp(19px,2.3vw,25px);line-height:1.5;
+    color:#d7d0c0;max-width:62ch;margin:0 0 34px}
+  .deck b{font-weight:500;color:var(--paper)}
+  .actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+    padding:13px 22px;border-radius:2px;transition:.18s}
+  .btn-go{background:var(--green);color:#08120c;font-weight:500}
+  .btn-go:hover{background:var(--green2)}
+  .btn-line{border:1px solid var(--line);color:var(--paper)}
+  .btn-line:hover{border-color:var(--green2);color:var(--green)}
 
-  section{padding:64px 0;border-top:1px solid var(--line)}
-  .h2{font-size:30px;letter-spacing:-.6px;margin:0 0 10px;font-weight:750}
-  .sub{color:var(--muted);max-width:640px;margin:0 0 38px}
-  .center{text-align:center}.center .sub{margin-left:auto;margin-right:auto}
+  /* demonstration (the CLI) */
+  .demo .wrap{padding:8px 28px 70px}
+  figure{margin:0}
+  .term{background:#080906;border:1px solid var(--line);border-radius:4px;overflow:hidden;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8)}
+  .term .bar{display:flex;align-items:center;gap:8px;padding:11px 15px;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
+  .term .bar b{width:9px;height:9px;border-radius:50%;background:#2a2a22;display:inline-block}
+  .term pre{margin:0;padding:22px 22px;font-family:var(--mono);font-size:13.5px;line-height:1.85;
+    color:#cfd8c8;overflow:auto;background:repeating-linear-gradient(transparent 0 27px,rgba(127,227,164,.02) 27px 28px)}
+  .term .p{color:var(--green)}.term .c{color:var(--faint)}.term .o{color:#bcae8a}.term .k{color:var(--paper)}
+  figcaption{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:16px;margin-top:14px;max-width:60ch}
 
-  /* two-project cards */
-  .duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:28px}
-  .card h3{margin:0 0 4px;font-size:21px}
-  .tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
-    padding:3px 9px;border-radius:6px;margin-bottom:14px}
-  .tag.open{background:rgba(52,211,153,.13);color:#6ee7b7;border:1px solid rgba(52,211,153,.3)}
-  .tag.prod{background:rgba(139,92,255,.14);color:#c4b5fd;border:1px solid rgba(139,92,255,.32)}
-  .card p{color:var(--muted);margin:0 0 16px}
-  .card ul{margin:0 0 18px;padding-left:18px;color:var(--muted)}
-  .card li{margin:6px 0}
-  pre{background:#0c0f16;border:1px solid var(--line);border-radius:12px;padding:16px;
-    overflow:auto;font-size:13px;color:#cfe3ff;margin:0 0 16px}
-  pre .c{color:var(--dim)}pre .g{color:#7ee0c0}
+  section{padding:72px 0;border-top:1px solid var(--line)}
+  .lede{font-family:var(--disp);font-weight:600;font-size:clamp(26px,3.4vw,38px);line-height:1.18;
+    letter-spacing:-.01em;max-width:20ch;margin:0}
+  .twocol{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,11fr);gap:48px;align-items:start}
+  .body p{margin:0 0 20px;color:#cfc9ba}
+  .body p:first-of-type::first-letter{font-family:var(--disp);font-weight:900;float:left;
+    font-size:74px;line-height:.78;padding:6px 12px 0 0;color:var(--green)}
+  .facts{font-family:var(--mono);font-size:12.5px;line-height:2;color:var(--muted);
+    border-top:1px solid var(--line);margin-top:8px;padding-top:18px}
+  .facts b{color:var(--green2);font-weight:500}
 
-  /* steps */
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
-  .step .n{font-family:monospace;color:var(--a2);font-size:13px;margin-bottom:8px}
-  .step h4{margin:0 0 6px;font-size:16px}
-  .step p{margin:0;color:var(--muted);font-size:14px}
+  /* how — editorial numbered ledger */
+  .ledger{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+  .li{padding:26px 28px;border-bottom:1px solid var(--line)}
+  .li:nth-child(odd){border-right:1px solid var(--line)}
+  .li .n{font-family:var(--mono);font-size:12px;color:var(--green2);letter-spacing:.1em}
+  .li h4{font-family:var(--disp);font-weight:600;font-size:24px;margin:8px 0 6px;letter-spacing:-.01em}
+  .li p{margin:0;color:var(--muted);font-size:16px;line-height:1.55}
 
-  /* diagram */
-  .diagram{background:#0c0f16;border:1px solid var(--line);border-radius:16px;padding:26px;
-    font-family:monospace;font-size:12.5px;color:#aeb9d4;overflow:auto;white-space:pre;line-height:1.5}
-  .diagram b{color:#c4b5fd}.diagram .e{color:#6ee7b7}
-
-  /* capability pills */
-  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .feat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
-  .feat h4{margin:0 0 6px;font-size:16px}
-  .feat p{margin:0;color:var(--muted);font-size:14px}
-  .feat .k{font-size:12px;color:var(--a2);font-family:monospace}
+  /* two halves */
+  .halves{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .half{border:1px solid var(--line);border-radius:4px;padding:30px;background:linear-gradient(180deg,rgba(127,227,164,.025),transparent 60%)}
+  .half .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+  .half.open .tag{color:var(--green)}.half.prod .tag{color:var(--amber)}
+  .half h3{font-family:var(--disp);font-weight:900;font-size:30px;margin:12px 0 8px;letter-spacing:-.015em}
+  .half p{color:var(--muted);font-size:16.5px;margin:0 0 18px}
+  .half ul{list-style:none;padding:0;margin:0 0 22px}
+  .half li{padding:8px 0;border-top:1px dotted var(--line);color:#cfc9ba;font-size:16px}
+  .half li::before{content:"→ ";color:var(--green2)}
 
   /* tiers */
-  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .tier{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
-  .tier.pop{border-color:rgba(139,92,255,.5);box-shadow:0 0 40px rgba(139,92,255,.12)}
-  .tier h4{margin:0 0 2px;font-size:18px}
-  .tier .price{color:var(--dim);font-size:13px;margin-bottom:14px}
-  .tier ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
-  .tier li{margin:7px 0}
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line)}
+  .t{padding:30px 26px;border-right:1px solid var(--line)}
+  .t:last-child{border-right:0}
+  .t.mid{background:rgba(127,227,164,.04)}
+  .t h4{font-family:var(--disp);font-weight:900;font-size:24px;margin:0 0 2px}
+  .t .sub{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--green2);margin-bottom:18px}
+  .t ul{list-style:none;padding:0;margin:0}
+  .t li{padding:7px 0;color:var(--muted);font-size:15.5px;border-top:1px solid var(--line)}
+  .t li:first-child{border-top:0}
 
-  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--dim);font-size:13.5px}
-  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px}
-  footer a{color:var(--muted)}footer a:hover{color:var(--text)}
+  footer{border-top:1px solid var(--line);padding:46px 0 64px;color:var(--faint)}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:18px;align-items:baseline}
+  footer .mono{color:var(--faint)}
+  footer a{color:var(--muted)}footer a:hover{color:var(--green)}
 
-  @media(max-width:780px){
-    h1{font-size:40px}.duo,.steps,.feats,.tiers{grid-template-columns:1fr}
-    .navlinks a:not(.btn){display:none}
+  .sechead{display:flex;align-items:baseline;gap:18px;margin-bottom:34px}
+  .sechead .mono{white-space:nowrap}
+
+  @media(max-width:820px){
+    .twocol,.halves,.ledger,.tiers{grid-template-columns:1fr}
+    .li:nth-child(odd){border-right:0}
+    .t{border-right:0;border-bottom:1px solid var(--line)}
+    .mast nav a:not(.gh){display:none}
+    .body p:first-of-type::first-letter{font-size:58px}
   }
 </style>
 </head>
-<body>
+<body><div class="layer">
 
-<nav><div class="wrap">
-  <a class="logo" href="#top"><span class="mark"></span> Markov</a>
-  <div class="navlinks">
-    <a href="#engine">Engine</a>
+<header class="mast"><div class="wrap">
+  <a class="brand" href="#top">Markov<span class="dot">.</span></a>
+  <nav>
+    <a href="#what">What it does</a>
     <a href="#how">How it works</a>
-    <a href="#product">Product</a>
-    <a class="btn btn-ghost" href="https://github.com/Okohedeki/markov-engine">GitHub</a>
-  </div>
-</div></nav>
-
-<header class="hero" id="top"><div class="wrap">
-  <div class="eyebrow"><span class="dot"></span> Open-source engine · Powers a cloud product</div>
-  <h1>Save once.<br><span class="grad">Your knowledge keeps growing.</span></h1>
-  <p class="lead">Share a link and Markov turns it into a living <b>Chain</b> of knowledge —
-    extracting entities, clustering by subject, and then quietly researching that subject on
-    its own over time.</p>
-  <div class="cta">
-    <a class="btn btn-primary" href="https://github.com/Okohedeki/markov-engine">Get the engine →</a>
-    <a class="btn btn-ghost" href="#product">See the product</a>
-  </div>
-  <div class="hero-note">One project, two halves: an open MIT engine you can run yourself, and the mobile product built on it.</div>
+    <a href="#product">The app</a>
+    <a class="gh" href="https://github.com/Okohedeki/markov-engine">GitHub ↗</a>
+  </nav>
 </div></header>
 
-<!-- TWO PROJECTS -->
-<section id="engine"><div class="wrap">
-  <h2 class="h2">Two halves of one idea</h2>
-  <p class="sub">The reusable brain is open source. The connectors, mobile app, and hosting are the product.</p>
-  <div class="duo">
+<!-- HERO -->
+<div class="hero" id="top"><div class="wrap">
+  <div class="kicker">
+    <span class="pip"></span>
+    <span class="mono">Open-source knowledge engine</span>
+    <span class="mono">·</span><span class="mono">MIT</span>
+    <span class="mono">·</span><span class="mono">CLI + library</span>
+  </div>
+  <h1>Save once. The subject keeps <em>researching itself.</em></h1>
+  <p class="deck">Give Markov a link — an article, a PDF, a YouTube video — and it pulls out the
+    ideas, files them under the subject they belong to, and builds a living <b>Chain</b>.
+    Then it keeps going: each Chain searches the web for new related sources on its own, and
+    writes the article when you ask.</p>
+  <div class="actions">
+    <a class="btn btn-go" href="https://github.com/Okohedeki/markov-engine">Get the engine</a>
+    <a class="btn btn-line" href="#product">See the app it powers</a>
+  </div>
+</div></div>
 
-    <div class="card">
-      <span class="tag open">Open source · MIT</span>
+<!-- DEMONSTRATION -->
+<div class="demo"><div class="wrap">
+  <figure>
+    <div class="term">
+      <div class="bar"><b></b><b></b><b></b><span>markov — zsh</span></div>
+<pre><span class="c"># 1. drop in a link — it's extracted, summarized, and clustered into a Chain</span>
+<span class="p">$</span> <span class="k">markov ingest https://youtu.be/UF8uR6Z6KLc</span>
+<span class="o">{"source_id": 1, "title": "Steve Jobs' 2005 Stanford Address",
+ "chain_id": 1, "entities": 10, "cost_usd": 0.0}</span>
+
+<span class="c"># 2. tell the Chain to grow — it finds and folds in new related sources</span>
+<span class="p">$</span> <span class="k">markov grow 1 --hops 2 --budget 10</span>
+<span class="o">{"chain_id": 1, "added": 7}</span>
+
+<span class="c"># 3. synthesize an article across everything the Chain has gathered</span>
+<span class="p">$</span> <span class="k">markov generate 1 --type article</span>
+<span class="o"># The Visionary Leadership of Steve Jobs …</span></pre>
+    </div>
+    <figcaption>Three commands. A URL goes in; entities, a clustered Chain, and a written
+      article come out — backed by a local SQLite file you own.</figcaption>
+  </figure>
+</div></div>
+
+<!-- WHAT IT DOES -->
+<section id="what"><div class="wrap twocol">
+  <p class="lede">It does the work a diligent researcher would — and then it doesn't stop.</p>
+  <div>
+    <div class="body">
+      <p>Markov reads the page — transcribing video and audio when it has to — and pulls out a
+        summary plus the people, places, and ideas inside it. It embeds that and files the
+        result under the existing subject it most resembles, or starts a new <b>Chain</b> when
+        nothing fits. One save becomes a place your knowledge accumulates instead of a bookmark
+        you forget.</p>
+      <p>Then it keeps working between your sessions. On a schedule, each Chain searches the web
+        for new related sources and folds them in — bounded by a relevance floor, so a Chain
+        deepens around its subject instead of sprawling into everything. Ask, and it writes the
+        article, newsletter, or brief, synthesized across every source the Chain has gathered.</p>
+    </div>
+    <div class="facts">
+      <div><b>Storage-agnostic.</b> One small <code>Store</code> interface — SQLite ships by default; plug in Postgres, a vector DB, anything.</div>
+      <div><b>Reads everything.</b> Articles, PDFs, YouTube · TikTok · Reddit · X, audio.</div>
+      <div><b>Runs on your model.</b> Anthropic — or a local GGUF. Proven end-to-end on a real YouTube video at growth depth 6, with a 3B model doing extraction and writing. No API keys required.</div>
+      <div><b>Built for agents.</b> A clean CLI and an async library your own code can drive.</div>
+    </div>
+  </div>
+</div></div>
+
+<!-- HOW -->
+<section id="how"><div class="wrap">
+  <div class="sechead"><span class="mono">§ The pipeline</span><hr class="rule" style="flex:1" /></div>
+  <div class="ledger">
+    <div class="li"><div class="n">01 — Source</div><h4>Save</h4>
+      <p>A link becomes clean text, transcribing media when needed.</p></div>
+    <div class="li"><div class="n">02 — Topic</div><h4>Understand</h4>
+      <p>A model extracts a summary, entities, and relationships; the summary is embedded.</p></div>
+    <div class="li"><div class="n">03 — Chain</div><h4>Cluster</h4>
+      <p>Similar subjects auto-combine into one Chain by embedding distance — or seed a new one.</p></div>
+    <div class="li"><div class="n">04 — Grow</div><h4>Research</h4>
+      <p>The Chain keeps pulling in new sources over time, deepening instead of ballooning.</p></div>
+  </div>
+</div></section>
+
+<!-- TWO HALVES -->
+<section id="product"><div class="wrap">
+  <div class="sechead"><span class="mono">§ One engine, two ways to use it</span><hr class="rule" style="flex:1" /></div>
+  <div class="halves">
+    <div class="half open">
+      <div class="tag">Open source · MIT</div>
       <h3>markov-engine</h3>
-      <p>A storage-agnostic knowledge engine — a CLI and a library. Give it a URL; it extracts,
-        embeds, clusters into a Chain, grows the Chain from the web, and writes artifacts.
-        Agents can run it as a tool.</p>
-      <pre><span class="c"># save a link → it clusters into a Chain</span>
-markov ingest https://youtu.be/UF8uR6Z6KLc
-<span class="c"># grow the Chain — discover related sources</span>
-markov grow 1 --hops 2 --budget 10
-<span class="c"># synthesize an article across the Chain</span>
-markov generate 1 --type article</pre>
+      <p>The engine itself — a CLI and an async library. Run it on your laptop, embed it in your
+        product, or hand it to an agent as a tool. The brain is open; the backend is yours.</p>
       <ul>
-        <li>Pluggable <code>Store</code> — local SQLite ships by default</li>
-        <li>Extraction: articles, PDFs, YouTube/TikTok/Reddit/X, audio</li>
-        <li>Runs on Anthropic — or a local model (validated on Qwen-3B)</li>
+        <li>Pluggable <code>Store</code>; local SQLite by default</li>
+        <li><code>ingest · grow · generate</code> from the command line</li>
+        <li>Anthropic or a local model</li>
       </ul>
-      <a class="btn btn-ghost" href="https://github.com/Okohedeki/markov-engine">View on GitHub</a>
+      <a class="btn btn-line" href="https://github.com/Okohedeki/markov-engine">Read the source ↗</a>
     </div>
-
-    <div class="card">
-      <span class="tag prod">Product · in development</span>
-      <h3>Markov (the app)</h3>
-      <p>A mobile app built on the engine. Share any link from any app; your Chains grow on a
-        cloud backend and resurface as a feed — or, on paid tiers, as generated articles,
-        newsletters, and podcasts.</p>
-      <pre><span class="c"># the whole interaction is one gesture</span>
-Share ▸ <span class="g">Markov</span>
-   ↳ parsed, filed under its subject,
-     and tracked from then on.</pre>
+    <div class="half prod">
+      <div class="tag">Product · in development</div>
+      <h3>Markov, the app</h3>
+      <p>The mobile app built on the engine. Share any link from any app; your Chains grow on a
+        hosted backend and come back as a feed — or, on paid tiers, as finished writing.</p>
       <ul>
-        <li>OS share-sheet save — no copy-paste</li>
-        <li>Private by default; opt-in read-only share links</li>
-        <li>Tiers scale reach + output (feed → artifacts)</li>
+        <li>Share-sheet save — no copy-paste</li>
+        <li>Private by default; opt-in share links</li>
+        <li>Tiers scale reach and output</li>
       </ul>
-      <a class="btn btn-ghost" href="#product">How the product works</a>
+      <a class="btn btn-line" href="#tiers">How the tiers work ↓</a>
     </div>
-
   </div>
 </div></section>
 
-<!-- HOW IT WORKS -->
-<section id="how"><div class="wrap center">
-  <h2 class="h2">How a save becomes a living Chain</h2>
-  <p class="sub">The same four steps run whether you use the CLI, a script, or the app.</p>
-  <div class="steps">
-    <div class="step"><div class="n">01 · SOURCE</div><h4>Save</h4>
-      <p>A link is extracted to text — transcribing video/audio when needed.</p></div>
-    <div class="step"><div class="n">02 · TOPIC</div><h4>Understand</h4>
-      <p>An LLM pulls a summary, entities, and relationships; the summary is embedded.</p></div>
-    <div class="step"><div class="n">03 · CHAIN</div><h4>Cluster</h4>
-      <p>Similar Topics auto-combine into one Chain by embedding distance — or seed a new one.</p></div>
-    <div class="step"><div class="n">04 · GROW</div><h4>Research</h4>
-      <p>The Chain keeps pulling in new related sources, bounded by a relevance-decay floor.</p></div>
-  </div>
-</div></section>
-
-<!-- CAPABILITIES (validated) -->
-<section><div class="wrap center">
-  <h2 class="h2">Built to be embedded — and proven</h2>
-  <p class="sub">Validated end-to-end on a real YouTube video, including a depth-6 growth run.</p>
-  <div class="feats">
-    <div class="feat"><div class="k">hop_depth</div><h4>Tunable reach</h4>
-      <p>Growth fans out across adjacency hops; a relevance-decay floor stops Chains from ballooning.</p></div>
-    <div class="feat"><div class="k">Store</div><h4>Any backend</h4>
-      <p>One small interface. SQLite locally; Postgres + pgvector in the cloud product.</p></div>
-    <div class="feat"><div class="k">local LLM</div><h4>Your model</h4>
-      <p>Swap Anthropic for a local GGUF — real entity extraction + generation, no API keys.</p></div>
-  </div>
-</div></section>
-
-<!-- PRODUCT TIERS -->
-<section id="product"><div class="wrap center">
-  <h2 class="h2">The product, in three tiers</h2>
-  <p class="sub">Free is a smart feed of what your Chains pull in. Paid tiers reach further and synthesize.</p>
+<!-- TIERS -->
+<section id="tiers"><div class="wrap">
+  <div class="sechead"><span class="mono">§ The app, in three tiers</span><hr class="rule" style="flex:1" /></div>
   <div class="tiers">
-    <div class="tier"><h4>Free</h4><div class="price">the feed</div>
-      <ul><li>Save unlimited links</li><li>On-subject growth</li>
-        <li>A personalized feed across your Chains</li><li>~5 active Chains</li></ul></div>
-    <div class="tier pop"><h4>Plus</h4><div class="price">feed + artifacts</div>
-      <ul><li>Everything in Free</li><li>Multi-hop reach + bigger source budget</li>
-        <li>Generated articles & newsletters</li><li>Hourly growth · ~50 Chains</li></ul></div>
-    <div class="tier"><h4>Pro</h4><div class="price">maximum reach</div>
-      <ul><li>Everything in Plus</li><li>Deepest reach, near-real-time growth</li>
-        <li>Podcast episodes per Chain</li><li>Unlimited Chains</li></ul></div>
+    <div class="t"><h4>Free</h4><div class="sub">The feed</div>
+      <ul><li>Save unlimited links</li><li>On-subject growth</li><li>A feed across your Chains</li><li>~5 active Chains</li></ul></div>
+    <div class="t mid"><h4>Plus</h4><div class="sub">Feed + finished writing</div>
+      <ul><li>Everything in Free</li><li>Multi-hop reach, bigger budget</li><li>Generated articles & newsletters</li><li>Hourly growth · ~50 Chains</li></ul></div>
+    <div class="t"><h4>Pro</h4><div class="sub">Maximum reach</div>
+      <ul><li>Everything in Plus</li><li>Deepest reach, near-real-time</li><li>Podcast episodes per Chain</li><li>Unlimited Chains</li></ul></div>
   </div>
 </div></section>
 
 <footer><div class="wrap">
-  <div>© 2026 Markov · Engine licensed MIT</div>
-  <div style="display:flex;gap:22px">
-    <a href="https://github.com/Okohedeki/markov-engine">Engine repo</a>
+  <span class="mono">© 2026 Markov — engine licensed MIT</span>
+  <span style="display:flex;gap:26px">
+    <a href="https://github.com/Okohedeki/markov-engine">Repository</a>
     <a href="https://github.com/Okohedeki/markov-engine#install">Install</a>
     <a href="https://github.com/Okohedeki/markov-engine/blob/main/LICENSE">License</a>
-  </div>
+  </span>
 </div></footer>
 
-</body>
+</div></body>
 </html>
