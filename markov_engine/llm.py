@@ -52,6 +52,45 @@ def _local_model() -> str:
     return _settings.llm_model or "local-model"
 
 
+# ── heuristic backend (offline, instant, no model) ───────────────
+import re as _re
+
+
+def _heuristic_json(prompt: str, schema: dict) -> dict:
+    props = (schema or {}).get("properties", {})
+    if "queries" in props:
+        m = _re.search(r"SUBJECT:\s*(.+)", prompt)
+        subj = (m.group(1).strip() if m else "topic")[:80]
+        return {"queries": [{"q": f"{subj} latest", "hop": 0},
+                            {"q": f"{subj} explained", "hop": 0},
+                            {"q": f"{subj} analysis", "hop": 1}]}
+    # entity-extraction schema (trim the prompt's trailing "Rules:" template)
+    content = prompt.split("Content:\n", 1)[-1].split("\n\nRules:")[0]
+    caps = _re.findall(r"\b([A-Z][a-zA-Z0-9]+(?:\s+[A-Z][a-zA-Z0-9]+){0,2})\b", content)
+    names, seen = [], set()
+    for c in caps:
+        k = c.lower()
+        if k not in seen and len(c) > 3:
+            seen.add(k)
+            names.append(c)
+    ents = [{"name": n, "type": "concept", "description": ""} for n in names[:8]] or \
+           [{"name": "Subject", "type": "topic", "description": ""}]
+    sentences = _re.split(r"(?<=[.!?])\s+", content.strip())
+    summary = " ".join(sentences[:3])[:400]
+    rels = [{"source": ents[0]["name"], "target": e["name"], "type": "related_to"} for e in ents[1:4]]
+    return {"summary": summary, "entities": ents, "relationships": rels}
+
+
+def _heuristic_text(prompt: str) -> str:
+    m = _re.search(r"SUBJECT:\s*(.+)", prompt)
+    subj = (m.group(1).strip() if m else "this subject")[:120]
+    titles = _re.findall(r"^###\s+(.+)$", prompt, flags=_re.MULTILINE)
+    body = "\n".join(f"- {t.strip()}" for t in titles[:8]) or "- (sources gathered for this chain)"
+    return (f"# {subj}\n\n*A synthesis across this chain's sources (offline heuristic mode).*\n\n"
+            f"This chain has gathered the following sources:\n\n{body}\n\n"
+            f"Enable a real model (LLM_BACKEND=anthropic|openai|llamacpp) for full synthesis.")
+
+
 # ── OpenAI-compatible chat ────────────────────────────────────────
 async def _openai_chat(messages: list[dict], *, max_tokens: int, json_mode: bool) -> str:
     payload = {"model": _local_model(), "messages": messages,
@@ -93,6 +132,8 @@ async def _chat(messages: list[dict], *, max_tokens: int, json_mode: bool = Fals
 # ── public API ────────────────────────────────────────────────────
 async def complete(prompt: str, *, model: str, max_tokens: int = 4096,
                    system: str | None = None) -> tuple[str, float]:
+    if _settings.llm_backend == "heuristic":
+        return _heuristic_text(prompt), 0.0
     if _settings.llm_backend == "anthropic":
         kw: dict = {"model": model, "max_tokens": max_tokens,
                     "messages": [{"role": "user", "content": prompt}]}
@@ -110,6 +151,8 @@ async def complete_json(prompt: str, *, schema: dict, model: str,
     """Structured output. Anthropic uses forced tool-use (guaranteed schema);
     local backends prompt for JSON and parse leniently. Callers still coerce
     item shapes (small models are loose)."""
+    if _settings.llm_backend == "heuristic":
+        return _heuristic_json(prompt, schema), 0.0
     if _settings.llm_backend == "anthropic":
         tool = {"name": "emit_result", "description": "Return the structured result.",
                 "input_schema": schema}
@@ -135,6 +178,8 @@ async def complete_json(prompt: str, *, schema: dict, model: str,
 
 async def stream_complete(prompt: str, *, model: str, max_tokens: int = 8192,
                           system: str | None = None) -> tuple[str, float]:
+    if _settings.llm_backend == "heuristic":
+        return _heuristic_text(prompt), 0.0
     if _settings.llm_backend == "anthropic":
         kw: dict = {"model": model, "max_tokens": max_tokens,
                     "messages": [{"role": "user", "content": prompt}]}
