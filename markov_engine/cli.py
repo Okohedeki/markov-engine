@@ -63,6 +63,36 @@ async def _cmd_grow(store: SqliteStore, args) -> int:
     return 0 if res.get("success") else 1
 
 
+async def _cmd_walk(store: SqliteStore, args) -> int:
+    """Take the walk: run several growth steps over a Chain in sequence, so it
+    keeps moving deeper into its subject. 'Knowledge that walks.'"""
+    chain = await store.get_chain(args.chain_id)
+    if not chain:
+        _print_json({"error": f"chain {args.chain_id} not found"})
+        return 1
+    settings = get_settings()
+    hop_depth = args.hops if args.hops is not None else chain.hop_depth
+    source_budget = args.budget if args.budget is not None else chain.source_budget
+    steps_out, total_added, total_cost = [], 0, 0.0
+    for step in range(1, args.steps + 1):
+        chain = await store.get_chain(args.chain_id)  # reload (centroid moved)
+        res = await grow_chain(
+            store, chain, hop_depth=hop_depth, source_budget=source_budget,
+            cycle_cost_cap=args.cost_cap, decay=settings.relevance_decay,
+            floor=settings.relevance_floor,
+        )
+        added = res.get("added", 0)
+        total_added += added
+        total_cost += res.get("cost_usd", 0.0)
+        steps_out.append({"step": step, "added": added})
+        print(f"  step {step}/{args.steps}: +{added} sources", file=sys.stderr)
+        if added == 0:
+            break  # the walk has reached the edge of what it can find this pass
+    _print_json({"chain_id": args.chain_id, "steps": steps_out,
+                 "total_added": total_added, "cost_usd": round(total_cost, 4)})
+    return 0
+
+
 async def _cmd_generate(store: SqliteStore, args) -> int:
     res = await generate_artifact(store, args.chain_id, artifact_type=args.type)
     if not res.get("success"):
@@ -147,6 +177,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Per-cycle LLM spend cap in USD (default 1.0).",
     )
     p_grow.set_defaults(func=_cmd_grow)
+
+    p_walk = sub.add_parser("walk", help="Take the walk: run several growth steps over a Chain.")
+    p_walk.add_argument("chain_id", type=int)
+    p_walk.add_argument("--steps", type=int, default=3, help="Number of growth steps (default 3).")
+    p_walk.add_argument("--hops", type=int, default=None, help="Override hop depth.")
+    p_walk.add_argument("--budget", type=int, default=None, help="Override per-step source budget.")
+    p_walk.add_argument("--cost-cap", dest="cost_cap", type=float, default=1.0,
+                        help="Per-step LLM spend cap in USD (default 1.0).")
+    p_walk.set_defaults(func=_cmd_walk)
 
     p_gen = sub.add_parser("generate", help="Generate an artifact from a Chain.")
     p_gen.add_argument("chain_id", type=int)
