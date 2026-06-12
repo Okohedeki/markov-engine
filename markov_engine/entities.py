@@ -62,6 +62,33 @@ _SCHEMA = {
     "required": ["summary", "entities", "relationships"],
 }
 
+_VALID_TYPES = {"person", "topic", "concept", "org", "place", "technology", "event"}
+
+
+def _coerce_entities(items) -> list[dict]:
+    """Small models return entities loosely (bare strings, missing types).
+    Coerce to {name, type, description}; drop blanks."""
+    out = []
+    for e in items if isinstance(items, list) else []:
+        if isinstance(e, str) and e.strip():
+            out.append({"name": e.strip(), "type": "concept", "description": ""})
+        elif isinstance(e, dict):
+            name = e.get("name") or e.get("entity") or e.get("title")
+            if name:
+                etype = str(e.get("type") or "concept").lower()
+                out.append({"name": str(name), "type": etype if etype in _VALID_TYPES else "concept",
+                            "description": str(e.get("description") or "")})
+    return out
+
+
+def _coerce_relationships(items) -> list[dict]:
+    out = []
+    for r in items if isinstance(items, list) else []:
+        if isinstance(r, dict) and r.get("source") and r.get("target"):
+            out.append({"source": str(r["source"]), "target": str(r["target"]),
+                        "type": str(r.get("type") or "related_to")})
+    return out
+
 
 async def extract_entities(
     content_text: str, title: str, source_type: str, model: str | None = None
@@ -80,25 +107,9 @@ async def extract_entities(
             max_tokens=2048,
         )
         return {
-            "summary": data.get("summary", ""),
-            "entities": [
-                {
-                    "name": e["name"],
-                    "type": e.get("type", "concept"),
-                    "description": e.get("description", ""),
-                }
-                for e in data.get("entities", [])
-                if e.get("name")
-            ],
-            "relationships": [
-                {
-                    "source": r["source"],
-                    "target": r["target"],
-                    "type": r.get("type", "related_to"),
-                }
-                for r in data.get("relationships", [])
-                if r.get("source") and r.get("target")
-            ],
+            "summary": str(data.get("summary") or ""),
+            "entities": _coerce_entities(data.get("entities") or data.get("items") or []),
+            "relationships": _coerce_relationships(data.get("relationships") or []),
             "cost_usd": cost,
             "success": True,
             "error": None,

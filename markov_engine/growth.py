@@ -81,11 +81,17 @@ async def _build_queries(
         data, _ = await complete_json(
             prompt, schema=_QUERY_SCHEMA, model=model, max_tokens=512
         )
-        queries = [
-            {"q": q["q"].strip(), "hop": max(0, min(int(q.get("hop", 0)), hop_depth))}
-            for q in data.get("queries", [])
-            if q.get("q")
-        ]
+        raw = data.get("queries") or data.get("items") or []
+        queries = []
+        for q in raw if isinstance(raw, list) else []:
+            if isinstance(q, str) and q.strip():
+                queries.append({"q": q.strip(), "hop": 0})
+            elif isinstance(q, dict) and q.get("q"):
+                try:
+                    hop = max(0, min(int(q.get("hop", 0)), hop_depth))
+                except (TypeError, ValueError):
+                    hop = 0
+                queries.append({"q": str(q["q"]).strip(), "hop": hop})
         return queries or [{"q": chain.title, "hop": 0}]
     except Exception as e:
         logger.warning("Query generation failed (%s); falling back to subject", e)

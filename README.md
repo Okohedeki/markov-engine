@@ -48,6 +48,32 @@ export ANTHROPIC_API_KEY=sk-ant-...
 export VOYAGE_API_KEY=...
 ```
 
+## Run on a local model (no API keys)
+
+The LLM and embeddings are pluggable. Point the engine at any OpenAI-compatible
+endpoint (Ollama, llama.cpp server, vLLM, LM Studio), or run a GGUF in-process.
+
+```bash
+# Option A — any OpenAI-compatible server (e.g. Ollama)
+export LLM_BACKEND=openai   EMBED_BACKEND=openai
+export OPENAI_BASE_URL=http://localhost:11434/v1
+export LLM_MODEL=qwen2.5:3b-instruct   OPENAI_EMBED_MODEL=nomic-embed-text
+
+# Option B — an in-process GGUF (no server)
+pip install 'markov-engine[local]'
+export LLM_BACKEND=llamacpp EMBED_BACKEND=llamacpp
+export LLAMACPP_MODEL=/path/to/Qwen2.5-3B-Instruct-Q4_K_M.gguf
+
+markov ingest https://www.youtube.com/watch?v=UF8uR6Z6KLc
+markov walk 1 --steps 3 --hops 2
+markov generate 1 --type article
+```
+
+Verified end-to-end on a 3B GGUF: real entity extraction, embeddings, clustering,
+the walk, and article synthesis — no cloud calls. Small models return loose JSON,
+so the engine normalizes their output to its schema. `EMBED_BACKEND=hash` runs
+clustering with zero model setup (lexical similarity only).
+
 ## CLI
 
 The CLI is backed by the local SQLite store (default `~/.markov/markov.db`,
@@ -58,8 +84,11 @@ override with `--db`).
 markov ingest https://example.com/some-article
 # -> {"source_id": 1, "title": "...", "chain_id": 1, "entities": 7, "cost_usd": 0.0123}
 
-# Grow a Chain — discover and ingest related sources
+# Grow a Chain once — discover and ingest related sources
 markov grow 1 --hops 2 --budget 10
+
+# Take the walk — several growth steps in a row (knowledge that walks)
+markov walk 1 --steps 3 --hops 2
 
 # Generate an artifact from a Chain (prints markdown)
 markov generate 1 --type article
