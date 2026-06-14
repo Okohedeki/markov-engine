@@ -67,7 +67,7 @@ def classify_url(url: str) -> str:
 
 
 async def extract_content(
-    url: str, tmp_dir: str, whisper_model: str = "base"
+    url: str, tmp_dir: str, whisper_model: str | None = "base"
 ) -> ExtractedContent:
     """Extract content from a URL. Main entry point."""
     source_type = classify_url(url)

@@ -19,6 +19,27 @@ import re
 
 logger = logging.getLogger(__name__)
 
+# Cap how many avenue calls hit the network at once. The growth loop fans a
+# handful of queries × several avenues each; without a ceiling that's dozens of
+# simultaneous DuckDuckGo calls from one IP, which trips throttling. One bounded
+# pool across the whole process keeps discovery fast but polite.
+_MAX_CONCURRENCY = 6
+_sem: "asyncio.Semaphore | None" = None
+
+
+def _semaphore() -> "asyncio.Semaphore":
+    global _sem
+    if _sem is None:
+        _sem = asyncio.Semaphore(_MAX_CONCURRENCY)
+    return _sem
+
+
+async def _guarded(fn, *args) -> list[dict]:
+    """Run a sync avenue worker in a thread, under the global concurrency cap."""
+    async with _semaphore():
+        return await asyncio.to_thread(fn, *args)
+
+
 # Social platforms we explicitly hunt for follow-up stories on. Generic web/news
 # search under-surfaces these, so we target them with site: queries.
 SOCIAL_SITES = ("tiktok.com", "instagram.com", "reddit.com", "x.com", "twitter.com")
@@ -139,16 +160,16 @@ async def search_web(
 
     tasks: list = []
     if "web" in avenues:
-        tasks.append(asyncio.to_thread(_ddg_text, query, max_results))
+        tasks.append(_guarded(_ddg_text, query, max_results))
     if "news" in avenues:
-        tasks.append(asyncio.to_thread(_ddg_news, query, max(3, max_results // 2)))
+        tasks.append(_guarded(_ddg_news, query, max(3, max_results // 2)))
     if "video" in avenues:
-        tasks.append(asyncio.to_thread(_ddg_videos, query, max(2, max_results // 3)))
-        tasks.append(asyncio.to_thread(_yt_search, query, max(2, max_results // 3)))
+        tasks.append(_guarded(_ddg_videos, query, max(2, max_results // 3)))
+        tasks.append(_guarded(_yt_search, query, max(2, max_results // 3)))
     if "social" in avenues:
         per = max(2, max_results // len(SOCIAL_SITES))
         for site in SOCIAL_SITES:
-            tasks.append(asyncio.to_thread(_ddg_site, query, site, per))
+            tasks.append(_guarded(_ddg_site, query, site, per))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
