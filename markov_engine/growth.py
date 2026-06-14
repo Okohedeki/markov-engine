@@ -8,6 +8,7 @@ per-cycle cost cap keep Chains from ballooning and bound LLM spend.
 from __future__ import annotations
 
 import logging
+import re
 
 from markov_engine.config import get_settings
 from markov_engine.embeddings import embed
@@ -77,12 +78,14 @@ async def _build_queries(
         n_subject=3,
         bridge_rule=bridge_rule,
     )
+
+    queries: list[dict] = []
+    # LLM-generated queries (best-effort — never the sole source).
     try:
         data, _ = await complete_json(
             prompt, schema=_QUERY_SCHEMA, model=model, max_tokens=512
         )
         raw = data.get("queries") or data.get("items") or []
-        queries = []
         for q in raw if isinstance(raw, list) else []:
             if isinstance(q, str) and q.strip():
                 queries.append({"q": q.strip(), "hop": 0})
@@ -92,10 +95,79 @@ async def _build_queries(
                 except (TypeError, ValueError):
                     hop = 0
                 queries.append({"q": str(q["q"]).strip(), "hop": hop})
-        return queries or [{"q": chain.title, "hop": 0}]
     except Exception as e:
-        logger.warning("Query generation failed (%s); falling back to subject", e)
-        return [{"q": chain.title, "hop": 0}]
+        logger.warning("LLM query generation failed (%s); using templates only", e)
+
+    # Deterministic expansion — backend-agnostic, so discovery stays strong even
+    # offline. Freshness/follow-up intent (latest/news/explained) surfaces NEW
+    # stories; entity & neighbor combos reach connecting ones.
+    queries += _template_queries(chain.title, entity_names, neighbors, hop_depth)
+
+    # De-dup (case-insensitive), keep the lowest hop for each query, and cap the
+    # count so the fan-out stays fast.
+    best: dict[str, dict] = {}
+    for q in queries:
+        text = q["q"].strip()
+        if not text:
+            continue
+        key = text.lower()
+        if key not in best or q["hop"] < best[key]["hop"]:
+            best[key] = {"q": text, "hop": q["hop"]}
+    out = list(best.values())[:_MAX_QUERIES]
+    return out or [{"q": chain.title, "hop": 0}]
+
+
+# Strip site/source suffixes so queries read like a person's, not a page title.
+_SUFFIX_RE = re.compile(r"\s*[-|–·]\s*(wikipedia|youtube|reddit|tiktok|instagram|x|twitter)\b.*$", re.I)
+_FRESH_TERMS = ("latest", "news", "explained", "update 2026")
+_MAX_QUERIES = 6  # cap the fan-out so a growth cycle stays snappy
+
+
+def _subject_terms(title: str) -> str:
+    return _SUFFIX_RE.sub("", title or "").strip() or (title or "").strip()
+
+
+def _template_queries(
+    title: str, entities: list[str], neighbors: list[str], hop_depth: int
+) -> list[dict]:
+    subj = _subject_terms(title)
+    out: list[dict] = []
+    # On-subject freshness / follow-up queries (find NEW stories).
+    for term in _FRESH_TERMS:
+        out.append({"q": f"{subj} {term}", "hop": 0})
+    # Deepen on the chain's own strongest entities.
+    for e in entities[:3]:
+        if e and e.lower() not in subj.lower():
+            out.append({"q": f"{subj} {e}", "hop": 0})
+    # Bridge into adjacent subjects (connecting stories).
+    if hop_depth >= 1:
+        for nb in list(dict.fromkeys(neighbors))[:4]:
+            out.append({"q": f"{subj} {nb}", "hop": 1})
+    return out
+
+
+# Avenue freshness bias — news/video/social break and carry NEW stories that
+# generic web search buries.
+_FRESH_BONUS = {"news": 0.12, "video": 0.10, "social": 0.08, "web": 0.0}
+_STOP = {"the", "and", "for", "with", "from", "what", "how", "why", "this",
+         "that", "are", "was", "your", "you", "wikipedia", "part", "explained"}
+
+
+def _words(title: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9]+", (title or "").lower())
+            if len(w) >= 3 and w not in _STOP}
+
+
+def _too_similar(words: set, others: list[set], threshold: float = 0.7) -> bool:
+    """True if `words` overlaps any of `others` past the Jaccard threshold."""
+    for o in others:
+        if not o:
+            continue
+        inter = len(words & o)
+        union = len(words | o) or 1
+        if inter / union >= threshold:
+            return True
+    return False
 
 
 async def grow_chain(
@@ -127,21 +199,42 @@ async def grow_chain(
     queries = await _build_queries(store, chain, hop_depth, query_model)
     await store.log_event("queries", chain_id=chain.id, detail={"queries": queries})
 
+    # Titles already in the chain — for novelty (skip near-duplicate stories,
+    # not just identical URLs).
+    existing = await store.list_chain_sources(chain.id, limit=500)
+    existing_words = [_words(cs.source.title) for cs in existing if cs.source.title]
+
+    # Fan out every query across every avenue concurrently — the network round
+    # trips dominate, so run them all at once instead of query-by-query.
+    import asyncio
+    per_query = await asyncio.gather(
+        *(search_web(item["q"], max_results=max(3, source_budget)) for item in queries),
+        return_exceptions=True,
+    )
+
     # Gather + pre-filter candidates (cheap snippet embedding before full ingest).
     seen: set[str] = set()
+    accepted_words: list[set] = []
     candidates: list[dict] = []
-    for item in queries:
-        for r in await search_web(item["q"], max_results=max(3, source_budget)):
+    for item, results in zip(queries, per_query):
+        if isinstance(results, Exception):
+            continue
+        for r in results:
             url = (r.get("url") or "").strip()
             if not url or url.lower() in seen:
                 continue
             seen.add(url.lower())
             if await store.get_source_by_url(url):
                 continue
+            title = r.get("title") or ""
+            tw = _words(title)
+            # Novelty: drop near-duplicate stories (same headline, different URL).
+            if tw and (_too_similar(tw, existing_words) or _too_similar(tw, accepted_words)):
+                continue
             sim = 1.0
             if centroid is not None:
                 snippet_emb = await embed(
-                    f"{r.get('title', '')} {r.get('snippet', '')}", input_type="query"
+                    f"{title} {r.get('snippet', '')}", input_type="query"
                 )
                 sim = _cosine(snippet_emb, centroid)
             decayed = sim * (decay ** item["hop"])
@@ -152,7 +245,20 @@ async def grow_chain(
                     detail={"url": url, "hop": item["hop"], "decayed": round(decayed, 4)},
                 )
                 continue
-            candidates.append({"url": url, "hop": item["hop"], "relevance": sim})
+            if tw:
+                accepted_words.append(tw)
+            kind = r.get("kind", "web")
+            # Freshness/novelty bias: news & video break NEW stories; the social
+            # avenues are exactly what generic web search buries — surface them.
+            fresh = _FRESH_BONUS.get(kind, 0.0) + (0.05 if r.get("date") else 0.0)
+            candidates.append({
+                "url": url, "hop": item["hop"], "relevance": sim,
+                "kind": kind, "platform": r.get("platform", "web"),
+                "score": decayed + fresh,
+            })
+
+    # Best stories first: relevance + freshness, newest/most-novel surfaced.
+    candidates.sort(key=lambda c: c["score"], reverse=True)
 
     # Ingest up to the budget, enforcing the per-cycle cost cap.
     spent = 0.0
@@ -175,10 +281,14 @@ async def grow_chain(
         )
         added += 1
 
+    from collections import Counter
+    avenues = dict(Counter(c["platform"] for c in candidates))
     await store.touch_chain_grown(chain.id)
     await store.log_event(
         "grow",
         chain_id=chain.id,
-        detail={"added": added, "spent": round(spent, 4), "candidates": len(candidates)},
+        detail={"added": added, "spent": round(spent, 4),
+                "candidates": len(candidates), "avenues": avenues},
     )
-    return {"success": True, "chain_id": chain.id, "added": added, "cost_usd": spent}
+    return {"success": True, "chain_id": chain.id, "added": added,
+            "cost_usd": spent, "avenues": avenues}

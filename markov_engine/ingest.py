@@ -67,7 +67,8 @@ async def ingest_url(
         content = await extract_content(
             url,
             tmp_dir or _settings.tmp_dir,
-            whisper_model or _settings.whisper_model,
+            whisper_model
+            or (_settings.whisper_model if _settings.transcribe_media else None),
         )
         if not content.success or not (content.content_text or "").strip():
             return {"success": False, "error": content.error or "No text content found"}

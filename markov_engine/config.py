@@ -60,6 +60,9 @@ class Settings(BaseSettings):
 
     # ── Content extraction ──────────────────────────────────────────
     whisper_model: str = Field("base", alias="WHISPER_MODEL")
+    # When False, video/social sources ingest from metadata + captions only
+    # (no audio download + Whisper) — much faster, plenty for headlines/clustering.
+    transcribe_media: bool = Field(True, alias="TRANSCRIBE_MEDIA")
     tmp_dir: str = Field("data/tmp", alias="TMP_DIR")
 
 
