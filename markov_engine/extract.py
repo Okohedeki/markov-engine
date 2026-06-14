@@ -115,8 +115,13 @@ async def _extract_media(
                 metadata=_extract_metadata(info),
             )
 
-        # Step 3: No subtitles — download audio and transcribe
-        transcript = await _download_and_transcribe(url, tmp_dir, whisper_model)
+        # Step 3: No subtitles — download audio and transcribe (skip when
+        # transcription is disabled; metadata + description are enough).
+        transcript = (
+            await _download_and_transcribe(url, tmp_dir, whisper_model)
+            if whisper_model
+            else ""
+        )
 
         if transcript:
             content = (
@@ -208,7 +213,13 @@ def _extract_metadata(info: dict) -> dict:
 async def _download_and_transcribe(
     url: str, tmp_dir: str, whisper_model: str
 ) -> str | None:
-    """Download audio from URL via yt-dlp and transcribe with whisper."""
+    """Download audio from URL via yt-dlp and transcribe with whisper.
+
+    A falsy ``whisper_model`` disables transcription entirely (metadata-only
+    ingestion) — much faster for video/social discovery.
+    """
+    if not whisper_model:
+        return ""
     os.makedirs(tmp_dir, exist_ok=True)
     audio_path = os.path.join(tmp_dir, f"audio_{id(url)}")
 
