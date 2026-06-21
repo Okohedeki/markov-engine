@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 
 from markov_engine.config import get_settings
 from markov_engine.embeddings import embed
@@ -260,13 +261,19 @@ async def grow_chain(
     # Best stories first: relevance + freshness, newest/most-novel surfaced.
     candidates.sort(key=lambda c: c["score"], reverse=True)
 
-    # Ingest up to the budget, enforcing the per-cycle cost cap.
+    # Ingest up to the budget, enforcing the per-cycle cost + wall-clock caps.
     spent = 0.0
     added = 0
+    deadline = time.monotonic() + _settings.grow_time_budget_s
     for cand in candidates[:source_budget]:
         if spent >= cycle_cost_cap:
             await store.log_event(
                 "info", chain_id=chain.id, detail={"stopped": "cost_cap"}
+            )
+            break
+        if time.monotonic() > deadline:
+            await store.log_event(
+                "info", chain_id=chain.id, detail={"stopped": "time_cap", "added": added}
             )
             break
         res = await ingest_url(store, cand["url"], model=model, cluster=True)
