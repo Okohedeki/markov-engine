@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     combine_threshold: float = Field(0.82, alias="COMBINE_THRESHOLD")
     relevance_decay: float = Field(0.7, alias="RELEVANCE_DECAY")
     relevance_floor: float = Field(0.45, alias="RELEVANCE_FLOOR")
+    # Wall-clock ceiling for one growth cycle's ingest loop. Slow/blocked source
+    # extractions can otherwise run a cycle for many minutes, holding a DB
+    # connection open until the pooler drops it. Bounds "go deeper" latency.
+    grow_time_budget_s: float = Field(90.0, alias="GROW_TIME_BUDGET_S")
 
     # ── Content extraction ──────────────────────────────────────────
     whisper_model: str = Field("base", alias="WHISPER_MODEL")
