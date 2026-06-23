@@ -133,17 +133,22 @@ def _template_queries(
 ) -> list[dict]:
     subj = _subject_terms(title)
     out: list[dict] = []
-    # On-subject freshness / follow-up queries (find NEW stories).
+    # On-subject freshness / follow-up queries (find NEW stories) — hop 0.
     for term in _FRESH_TERMS:
         out.append({"q": f"{subj} {term}", "hop": 0})
-    # Deepen on the chain's own strongest entities.
+    # Deepen on the chain's own strongest entities — each is a step OUT from the
+    # seed, so it branches the walk (hop 1). Without this, chains never wire up a
+    # multi-hop structure when there are no entity-graph neighbors (the common
+    # case offline / early in a chain's life).
+    deepen_hop = 1 if hop_depth >= 1 else 0
     for e in entities[:3]:
         if e and e.lower() not in subj.lower():
-            out.append({"q": f"{subj} {e}", "hop": 0})
-    # Bridge into adjacent subjects (connecting stories).
+            out.append({"q": f"{subj} {e}", "hop": deepen_hop})
+    # Bridge into adjacent subjects (connecting stories) — deeper still.
     if hop_depth >= 1:
+        bridge_hop = min(2, hop_depth)
         for nb in list(dict.fromkeys(neighbors))[:4]:
-            out.append({"q": f"{subj} {nb}", "hop": 1})
+            out.append({"q": f"{subj} {nb}", "hop": bridge_hop})
     return out
 
 
@@ -276,7 +281,11 @@ async def grow_chain(
                 "info", chain_id=chain.id, detail={"stopped": "time_cap", "added": added}
             )
             break
-        res = await ingest_url(store, cand["url"], model=model, cluster=True)
+        # Ingest WITHOUT clustering: the walk is explicitly attaching this find to
+        # *this* chain at the hop it was discovered. Letting clustering run would
+        # attach it at hop 0 first, and the INSERT-OR-IGNORE below would then be a
+        # no-op — collapsing every discovery to hop 0 (no graph structure).
+        res = await ingest_url(store, cand["url"], model=model, cluster=False)
         if not res.get("success"):
             continue
         spent += res.get("cost_usd", 0.0)
