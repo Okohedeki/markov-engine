@@ -278,7 +278,8 @@ async def _extract_twitter(
 
     try:
         async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
-            resp = await client.get(api_url)
+            # fxtwitter 403s requests without a browser-like User-Agent.
+            resp = await client.get(api_url, headers={"User-Agent": "Mozilla/5.0"})
             resp.raise_for_status()
             data = resp.json()
 
