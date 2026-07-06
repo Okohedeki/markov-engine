@@ -34,6 +34,8 @@ _LAZY = {
     "ingest_url": ("markov_engine.ingest", "ingest_url"),
     "assign_topic": ("markov_engine.clustering", "assign_topic"),
     "grow_chain": ("markov_engine.growth", "grow_chain"),
+    "discover_candidates": ("markov_engine.growth", "discover_candidates"),
+    "ingest_chosen": ("markov_engine.growth", "ingest_chosen"),
     "generate_artifact": ("markov_engine.generate", "generate_artifact"),
 }
 
@@ -49,11 +51,12 @@ def __getattr__(name: str):
 if TYPE_CHECKING:  # for type checkers / IDEs only
     from markov_engine.clustering import assign_topic
     from markov_engine.generate import generate_artifact
-    from markov_engine.growth import grow_chain
+    from markov_engine.growth import discover_candidates, grow_chain, ingest_chosen
     from markov_engine.ingest import ingest_url
 
 __all__ = [
     "Settings", "get_settings", "Store", "SqliteStore",
     "SourceRec", "TopicRec", "ChainRec", "ChainSourceRec", "EntityRec", "ArtifactRec",
-    "ingest_url", "assign_topic", "grow_chain", "generate_artifact",
+    "ingest_url", "assign_topic", "grow_chain", "discover_candidates",
+    "ingest_chosen", "generate_artifact",
 ]

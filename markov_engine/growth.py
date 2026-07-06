@@ -176,22 +176,26 @@ def _too_similar(words: set, others: list[set], threshold: float = 0.7) -> bool:
     return False
 
 
-async def grow_chain(
+async def discover_candidates(
     store: Store,
     chain,
     *,
     hop_depth: int,
     source_budget: int,
-    cycle_cost_cap: float,
     decay: float | None = None,
     floor: float | None = None,
     model: str | None = None,
-) -> dict:
-    """Run one growth cycle for a Chain. Returns a summary dict.
+) -> list[dict]:
+    """Discover + rank NEW candidate Sources for a Chain WITHOUT ingesting them.
 
-    Discovery reach and spend are controlled entirely by the caller via
-    ``hop_depth`` / ``source_budget`` / ``cycle_cost_cap``. ``decay`` and
-    ``floor`` default to the engine settings (relevance decay 0.7, floor 0.45).
+    The first half of a growth cycle: build queries, search every avenue, filter
+    for novelty + relevance, and return the ranked candidates (each a dict with
+    ``url/title/snippet/hop/relevance/kind/platform/score``, best first).
+
+    Discovery is cheap — query generation + snippet embeddings only; it never
+    fetches or LLM-parses a full page — so it is safe to run on demand to power a
+    "pick where this Chain goes next" UI. Feed the chosen subset to
+    ``ingest_chosen`` to actually grow the Chain.
     """
     decay = decay if decay is not None else _settings.relevance_decay
     floor = floor if floor is not None else _settings.relevance_floor
@@ -259,18 +263,37 @@ async def grow_chain(
             fresh = _FRESH_BONUS.get(kind, 0.0) + (0.05 if r.get("date") else 0.0)
             candidates.append({
                 "url": url, "hop": item["hop"], "relevance": sim,
+                # title/snippet carried through so a guided-walk UI can render
+                # candidate cards without re-fetching.
+                "title": title, "snippet": r.get("snippet", ""),
                 "kind": kind, "platform": r.get("platform", "web"),
                 "score": decayed + fresh,
             })
 
     # Best stories first: relevance + freshness, newest/most-novel surfaced.
     candidates.sort(key=lambda c: c["score"], reverse=True)
+    return candidates
 
-    # Ingest up to the budget, enforcing the per-cycle cost + wall-clock caps.
+
+async def ingest_chosen(
+    store: Store,
+    chain,
+    candidates: list[dict],
+    *,
+    cycle_cost_cap: float,
+    model: str | None = None,
+) -> dict:
+    """Ingest an already-chosen, ranked list of candidates into a Chain.
+
+    The second half of a growth cycle. ``candidates`` is whatever the caller
+    decided to commit: the top-``source_budget`` slice of ``discover_candidates``
+    for auto-grow, or the user's hand-picked subset for a guided walk. Enforces
+    the per-cycle cost + wall-clock caps. Returns a summary dict.
+    """
     spent = 0.0
     added = 0
     deadline = time.monotonic() + _settings.grow_time_budget_s
-    for cand in candidates[:source_budget]:
+    for cand in candidates:
         if spent >= cycle_cost_cap:
             await store.log_event(
                 "info", chain_id=chain.id, detail={"stopped": "cost_cap"}
@@ -308,3 +331,34 @@ async def grow_chain(
     )
     return {"success": True, "chain_id": chain.id, "added": added,
             "cost_usd": spent, "avenues": avenues}
+
+
+async def grow_chain(
+    store: Store,
+    chain,
+    *,
+    hop_depth: int,
+    source_budget: int,
+    cycle_cost_cap: float,
+    decay: float | None = None,
+    floor: float | None = None,
+    model: str | None = None,
+) -> dict:
+    """Run one automatic growth cycle: discover candidates, then ingest the top
+    ``source_budget`` of them.
+
+    Equivalent to ``discover_candidates`` followed by ``ingest_chosen`` on the
+    highest-scoring slice — kept as one call for the auto-grow cron. Guided
+    ("pick your own hop") growth calls the two halves separately. Discovery
+    reach and spend are controlled entirely by the caller via ``hop_depth`` /
+    ``source_budget`` / ``cycle_cost_cap``; ``decay`` and ``floor`` default to
+    the engine settings (relevance decay 0.7, floor 0.45).
+    """
+    candidates = await discover_candidates(
+        store, chain, hop_depth=hop_depth, source_budget=source_budget,
+        decay=decay, floor=floor, model=model,
+    )
+    return await ingest_chosen(
+        store, chain, candidates[:source_budget],
+        cycle_cost_cap=cycle_cost_cap, model=model,
+    )
