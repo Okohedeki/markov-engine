@@ -205,7 +205,7 @@ def _extract_metadata(info: dict) -> dict:
     """Pull useful metadata from yt-dlp info."""
     keys = [
         "uploader", "upload_date", "duration", "view_count",
-        "like_count", "channel", "webpage_url",
+        "like_count", "channel", "webpage_url", "thumbnail",
     ]
     return {k: info[k] for k in keys if k in info and info[k] is not None}
 

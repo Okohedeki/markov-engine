@@ -36,6 +36,7 @@ class Store(ABC):
         content_text: str | None,
         summary: str | None,
         is_note: bool = False,
+        metadata: dict | None = None,
     ) -> SourceRec: ...
 
     @abstractmethod

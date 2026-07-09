@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS sources (
     summary TEXT,
     topic_id INTEGER,
     is_note INTEGER NOT NULL DEFAULT 0,
+    metadata TEXT,
     ingested_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ix_sources_url ON sources(url) WHERE url IS NOT NULL;
@@ -169,6 +170,7 @@ class SqliteStore(Store):
             is_note=bool(row["is_note"]),
             topic_id=row["topic_id"],
             ingested_at=_ts(row["ingested_at"]),
+            metadata=json.loads(row["metadata"]) if row["metadata"] else None,
         )
 
     @staticmethod
@@ -196,11 +198,13 @@ class SqliteStore(Store):
         content_text: str | None,
         summary: str | None,
         is_note: bool = False,
+        metadata: dict | None = None,
     ) -> SourceRec:
         cur = await self._conn.execute(
-            "INSERT INTO sources (url, title, source_type, content_text, summary, is_note) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (url, title, source_type, content_text, summary, int(is_note)),
+            "INSERT INTO sources (url, title, source_type, content_text, summary, is_note, metadata) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (url, title, source_type, content_text, summary, int(is_note),
+             json.dumps(metadata) if metadata else None),
         )
         await self._conn.commit()
         rec = await self.get_source(cur.lastrowid)

@@ -23,6 +23,7 @@ class SourceRec:
     is_note: bool = False
     topic_id: int | None = None
     ingested_at: dt.datetime | None = None
+    metadata: dict | None = None
 
 
 @dataclass
