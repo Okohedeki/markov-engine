@@ -42,6 +42,16 @@ CREATE TABLE IF NOT EXISTS sources (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ix_sources_url ON sources(url) WHERE url IS NOT NULL;
 
+CREATE TABLE IF NOT EXISTS source_key_points (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_id INTEGER NOT NULL,
+    ordinal INTEGER NOT NULL DEFAULT 0,
+    title TEXT NOT NULL,
+    detail TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_key_points_source ON source_key_points(source_id);
+
 CREATE TABLE IF NOT EXISTS topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     canonical_title TEXT NOT NULL,
@@ -210,6 +220,17 @@ class SqliteStore(Store):
         rec = await self.get_source(cur.lastrowid)
         assert rec is not None
         return rec
+
+    async def add_key_points(self, *, source_id: int, key_points: list[dict]) -> None:
+        if not key_points:
+            return
+        await self._conn.executemany(
+            "INSERT INTO source_key_points (source_id, ordinal, title, detail) "
+            "VALUES (?, ?, ?, ?)",
+            [(source_id, i, kp.get("title") or "", kp.get("detail") or "")
+             for i, kp in enumerate(key_points)],
+        )
+        await self._conn.commit()
 
     async def get_source(self, source_id: int) -> SourceRec | None:
         async with self._conn.execute(

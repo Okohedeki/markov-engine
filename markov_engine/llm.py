@@ -64,8 +64,8 @@ def _heuristic_json(prompt: str, schema: dict) -> dict:
         return {"queries": [{"q": f"{subj} latest", "hop": 0},
                             {"q": f"{subj} explained", "hop": 0},
                             {"q": f"{subj} analysis", "hop": 1}]}
-    # entity-extraction schema (trim the prompt's trailing "Rules:" template)
-    content = prompt.split("Content:\n", 1)[-1].split("\n\nRules:")[0]
+    # entity-extraction schema (trim the prompt's trailing instruction template)
+    content = prompt.split("Content:\n", 1)[-1].split("\n\nProduce:")[0].split("\n\nRules:")[0]
     caps = _re.findall(r"\b([A-Z][a-zA-Z0-9]+(?:\s+[A-Z][a-zA-Z0-9]+){0,2})\b", content)
     names, seen = [], set()
     for c in caps:
@@ -75,10 +75,19 @@ def _heuristic_json(prompt: str, schema: dict) -> dict:
             names.append(c)
     ents = [{"name": n, "type": "concept", "description": ""} for n in names[:8]] or \
            [{"name": "Subject", "type": "topic", "description": ""}]
-    sentences = _re.split(r"(?<=[.!?])\s+", content.strip())
+    sentences = [s.strip() for s in _re.split(r"(?<=[.!?])\s+", content.strip()) if s.strip()]
     summary = " ".join(sentences[:3])[:400]
+    # Fabricate key points from the leading sentences (offline mode has no model
+    # to explain, so the sentence stands in as its own detail).
+    key_points = [
+        {"title": " ".join(s.split()[:8]), "detail": s}
+        for s in sentences[:6]
+    ] if "key_points" in props else []
     rels = [{"source": ents[0]["name"], "target": e["name"], "type": "related_to"} for e in ents[1:4]]
-    return {"summary": summary, "entities": ents, "relationships": rels}
+    out = {"summary": summary, "entities": ents, "relationships": rels}
+    if "key_points" in props:
+        out["key_points"] = key_points
+    return out
 
 
 def _heuristic_text(prompt: str) -> str:
