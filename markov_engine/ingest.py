@@ -87,6 +87,9 @@ async def ingest_url(
             metadata=content.metadata or None,
         )
         ent_count, rel_count = await _link_extraction(store, src.id, extraction)
+        await store.add_key_points(
+            source_id=src.id, key_points=extraction.get("key_points", [])
+        )
 
         chain_id = None
         if cluster:

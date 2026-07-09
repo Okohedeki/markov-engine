@@ -40,6 +40,14 @@ class Store(ABC):
     ) -> SourceRec: ...
 
     @abstractmethod
+    async def add_key_points(
+        self, *, source_id: int, key_points: list[dict]
+    ) -> None:
+        """Persist a source's detailed key points ([{title, detail}], in order).
+        These are the deep-dive units and the seeds for chain branches."""
+        ...
+
+    @abstractmethod
     async def get_source(self, source_id: int) -> SourceRec | None: ...
 
     @abstractmethod

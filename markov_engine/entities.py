@@ -11,23 +11,40 @@ from markov_engine.llm import complete_json
 logger = logging.getLogger(__name__)
 _settings = get_settings()
 
-_PROMPT_TEMPLATE = """Extract key entities and relationships from this {source_type} content.
+_PROMPT_TEMPLATE = """You are MARKOV, doing a deep dive on this {source_type} so the reader never has to
+open the original. Explain it in detail — do NOT reproduce, quote, or transcribe it.
 
 Title: {title}
 
 Content:
 {content}
 
-Rules:
-- Write a thorough summary (1-2 paragraphs) covering all key points so a reader fully
-  understands the content without the original.
-- Normalize entity names (proper capitalization, full names); merge near-duplicates.
-- Include 3-15 entities depending on length; only clear, meaningful relationships."""
+Produce:
+- summary: a 1-2 paragraph overview of what this source is about and why it matters.
+- key_points: the 5-9 most important points. For EACH, write:
+    - title: a short, specific claim or takeaway (not a topic label).
+    - detail: 2-4 sentences that EXPLAIN the point in your own words — the reasoning,
+      evidence, context and implication — so the reader fully understands it without the
+      original. Explain, don't quote. Don't say "the video says"; state the substance.
+  Order key_points from most to least important.
+- entities / relationships: normalize names (proper capitalization, full names), merge
+  near-duplicates; 3-15 entities by length; only clear, meaningful relationships."""
 
 _SCHEMA = {
     "type": "object",
     "properties": {
         "summary": {"type": "string"},
+        "key_points": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "detail": {"type": "string"},
+                },
+                "required": ["title", "detail"],
+            },
+        },
         "entities": {
             "type": "array",
             "items": {
@@ -59,7 +76,7 @@ _SCHEMA = {
             },
         },
     },
-    "required": ["summary", "entities", "relationships"],
+    "required": ["summary", "key_points", "entities", "relationships"],
 }
 
 _VALID_TYPES = {"person", "topic", "concept", "org", "place", "technology", "event"}
@@ -78,6 +95,20 @@ def _coerce_entities(items) -> list[dict]:
                 etype = str(e.get("type") or "concept").lower()
                 out.append({"name": str(name), "type": etype if etype in _VALID_TYPES else "concept",
                             "description": str(e.get("description") or "")})
+    return out
+
+
+def _coerce_key_points(items) -> list[dict]:
+    """Normalize key points to {title, detail}; accept bare strings from small
+    models (title only) and drop blanks."""
+    out = []
+    for k in items if isinstance(items, list) else []:
+        if isinstance(k, str) and k.strip():
+            out.append({"title": k.strip(), "detail": ""})
+        elif isinstance(k, dict):
+            title = k.get("title") or k.get("point") or k.get("name")
+            if title:
+                out.append({"title": str(title), "detail": str(k.get("detail") or k.get("explanation") or "")})
     return out
 
 
@@ -108,6 +139,7 @@ async def extract_entities(
         )
         return {
             "summary": str(data.get("summary") or ""),
+            "key_points": _coerce_key_points(data.get("key_points") or []),
             "entities": _coerce_entities(data.get("entities") or data.get("items") or []),
             "relationships": _coerce_relationships(data.get("relationships") or []),
             "cost_usd": cost,
@@ -118,6 +150,7 @@ async def extract_entities(
         logger.exception("Entity extraction failed")
         return {
             "summary": "",
+            "key_points": [],
             "entities": [],
             "relationships": [],
             "cost_usd": 0.0,
