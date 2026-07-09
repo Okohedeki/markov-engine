@@ -84,6 +84,7 @@ async def ingest_url(
             source_type=content.source_type,
             content_text=content.content_text,
             summary=summary,
+            metadata=content.metadata or None,
         )
         ent_count, rel_count = await _link_extraction(store, src.id, extraction)
 
