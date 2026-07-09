@@ -57,8 +57,19 @@ Rules:
 """
 
 
+def _seed_queries(seed: str, title: str) -> list[dict]:
+    """Queries that steer discovery toward a specific key point (hop 0 — this IS
+    the direction the user chose to follow)."""
+    s = seed.strip()
+    subj = _subject_terms(title)
+    out = [{"q": s, "hop": 0}, {"q": f"{s} explained", "hop": 0}, {"q": f"{s} latest", "hop": 0}]
+    if subj and subj.lower() not in s.lower():
+        out.append({"q": f"{subj} {s}", "hop": 0})
+    return out
+
+
 async def _build_queries(
-    store: Store, chain, hop_depth: int, model: str
+    store: Store, chain, hop_depth: int, model: str, seed: str | None = None
 ) -> list[dict]:
     top = await store.top_entities_for_chain(chain.id, limit=6)
     entity_names = [t["name"] for t in top]
@@ -80,7 +91,9 @@ async def _build_queries(
         bridge_rule=bridge_rule,
     )
 
-    queries: list[dict] = []
+    # Seed queries first so they survive the de-dup + _MAX_QUERIES cap: when the
+    # user follows a key point, discovery is steered toward it.
+    queries: list[dict] = _seed_queries(seed, chain.title) if seed else []
     # LLM-generated queries (best-effort — never the sole source).
     try:
         data, _ = await complete_json(
@@ -185,8 +198,12 @@ async def discover_candidates(
     decay: float | None = None,
     floor: float | None = None,
     model: str | None = None,
+    seed: str | None = None,
 ) -> list[dict]:
     """Discover + rank NEW candidate Sources for a Chain WITHOUT ingesting them.
+
+    ``seed`` (optional) steers discovery toward a specific key point the user
+    chose to follow — its queries take priority so the walk branches that way.
 
     The first half of a growth cycle: build queries, search every avenue, filter
     for novelty + relevance, and return the ranked candidates (each a dict with
@@ -206,7 +223,7 @@ async def discover_candidates(
         else None
     )
 
-    queries = await _build_queries(store, chain, hop_depth, query_model)
+    queries = await _build_queries(store, chain, hop_depth, query_model, seed=seed)
     await store.log_event("queries", chain_id=chain.id, detail={"queries": queries})
 
     # Titles already in the chain — for novelty (skip near-duplicate stories,
