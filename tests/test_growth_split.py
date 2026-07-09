@@ -17,7 +17,7 @@ from markov_engine import growth
 from markov_engine.store.sqlite import SqliteStore
 
 
-async def _fixed_queries(store, chain, hop_depth, model):
+async def _fixed_queries(store, chain, hop_depth, model, seed=None):
     return [{"q": "q1", "hop": 0}]
 
 
