@@ -117,6 +117,20 @@ The V1 runner executes background tasks in the API process. That is suitable for
 one-instance demand testing. See [`docs/operations.md`](docs/operations.md) for
 restart behavior, backups, reviewer operation, billing, and production limits.
 
+## Public landing-page build
+
+The GitHub Pages site is generated from the same Jinja templates used by the
+FastAPI app. Rebuild the committed `docs/` output after changing a public
+template or static asset:
+
+```bash
+python scripts/build_pages.py
+```
+
+GitHub Pages publishes the `docs/` directory from `main`. The static build links
+the workspace and API calls to the repository setup instructions because Pages
+does not run the FastAPI service.
+
 ## API quick start
 
 ```bash
