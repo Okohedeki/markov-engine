@@ -8,7 +8,7 @@
       <p class="eyebrow">Markov API / v1</p>
       <h1>Give your agents evidence they can inspect.</h1>
       <p class="lede">Send one asynchronous research job. Receive a finished artifact and the claims, passages, provenance, costs, and state your software needs to audit or continue it.</p>
-      <div class="button-row"><a class="button" href="/docs">Open API reference</a><a class="button button-secondary" href="/app/login">Open Markov</a></div>
+      <div class="button-row"><a class="button" href="{{ api_docs_url }}">Open API reference</a><a class="button button-secondary" href="{{ workspace_url }}">Open Markov</a></div>
     </section>
     <section class="content-narrow section-rule">
       <p class="eyebrow">Submit once</p>
@@ -60,7 +60,7 @@
         <div class="fit-list"><h3>Operational surface</h3><ul><li>Bearer or X-Markov-Key authentication</li><li>Owner-scoped jobs and cases</li><li>Idempotent job creation</li><li>Webhook delivery with polling fallback</li></ul></div>
         <div class="fit-list"><h3>Continuation surface</h3><ul><li>Convert one case into another format</li><li>Deepen one unresolved claim</li><li>Revise script sections without inventing evidence IDs</li><li>Export Markdown, HTML, or JSON</li></ul></div>
       </div>
-      <div class="button-row" style="margin-top: 2rem"><a class="button" href="/docs">Read the API reference</a><a class="button button-secondary" href="/sample">Inspect a finished case</a></div>
+      <div class="button-row" style="margin-top: 2rem"><a class="button" href="{{ api_docs_url }}">Read the API reference</a><a class="button button-secondary" href="{{ site_base }}/sample/">Inspect a finished case</a></div>
     </section>
   </main>
   {% include "partials/public_footer.html" %}
