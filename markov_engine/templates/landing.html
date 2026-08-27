@@ -10,8 +10,8 @@
         <h1>Research you can publish.</h1>
         <p class="lede">Markov turns a source, question, or premise into a finished Brief, Research Report, or factual Script—with every important claim linked to evidence you can inspect.</p>
         <div class="button-row">
-          <a class="button" href="/app/login">Open Markov</a>
-          <a class="button button-secondary" href="/sample">See a finished case</a>
+          <a class="button" href="{{ workspace_url }}">Open Markov</a>
+          <a class="button button-secondary" href="{{ site_base }}/sample/">See a finished case</a>
         </div>
         <p class="trust-line">Built for work where “it sounds right” is not enough. Markov keeps uncertainty visible and the source trail close.</p>
       </div>
@@ -139,14 +139,14 @@
           <h3>The calm evidence desk.</h3>
           <p>Follow the work, read the finished document with evidence beside it, and decide the next editorial move.</p>
           <ul><li>Projects and processing timeline</li><li>Document reader and claim ledger</li><li>Export, convert, deepen, and revise</li></ul>
-          <a class="button" href="/app/login">Open Markov</a>
+          <a class="button" href="{{ workspace_url }}">Open Markov</a>
         </article>
         <article class="door">
           <p class="door-kicker">MARKOV API</p>
           <h3>Research your agents can inspect.</h3>
           <p>Submit asynchronous jobs, consume stage events, retrieve structured claims and evidence, and receive webhooks.</p>
           <ul><li>Idempotent job submission</li><li>Machine-readable cases and artifacts</li><li>Shared credits and owner boundaries</li></ul>
-          <a class="button button-secondary" href="/developers">Read the API guide</a>
+          <a class="button button-secondary" href="{{ site_base }}/developers/">Read the API guide</a>
         </article>
       </div>
     </section>
@@ -176,7 +176,7 @@
         <p class="eyebrow">A finished case, not another answer</p>
         <h2 id="closing-heading">Know what holds up, what does not, and what you can ship now.</h2>
         <p class="lede">Start in the workspace, or inspect the product before you sign in.</p>
-        <div class="button-row"><a class="button" href="/app/login">Open Markov</a><a class="button button-secondary" href="/sample">See a finished case</a></div>
+        <div class="button-row"><a class="button" href="{{ workspace_url }}">Open Markov</a><a class="button button-secondary" href="{{ site_base }}/sample/">See a finished case</a></div>
       </div>
     </section>
   </main>
