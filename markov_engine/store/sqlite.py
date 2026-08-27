@@ -10,6 +10,7 @@ with ``await store.close()``.
 
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
 import json
 import os
@@ -152,6 +153,7 @@ def _ts(raw: str | None) -> dt.datetime | None:
 class SqliteStore(ResearchSqliteMixin, Store):
     def __init__(self, conn: aiosqlite.Connection):
         self._conn = conn
+        self._credit_lock = asyncio.Lock()
 
     @classmethod
     async def open(cls, path: str) -> "SqliteStore":
