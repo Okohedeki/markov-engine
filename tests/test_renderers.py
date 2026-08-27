@@ -259,5 +259,7 @@ async def test_youtube_brief_converts_without_repeating_research():
         assert len(await store.list_claims(case.id)) == 6
         assert len(await store.list_case_artifacts(case.id)) == 3
         assert (await store.get_research_case(case.id)).purpose == "brief,research,script"
+        low, high = script.structured_content["target_word_range"]
+        assert low <= script.structured_content["actual_narration_word_count"] <= high
     finally:
         await store.close()
