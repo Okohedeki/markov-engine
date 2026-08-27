@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import httpx
 import pytest
@@ -272,3 +273,16 @@ def test_html_export_escapes_source_markup():
     rendered = markdown_to_safe_html("# Test\n\n<img src=x onerror=alert(1)>")
     assert "&lt;img" in rendered
     assert "<img" not in rendered
+
+
+def test_github_pages_export_is_static_and_project_relative():
+    root = Path(__file__).resolve().parents[1]
+    landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
+    assert 'href="/markov-engine/static/markov.css"' in landing
+    assert 'href="/markov-engine/pricing/"' in landing
+    assert 'href="/markov-engine/sample/"' in landing
+    assert 'href="/app/login"' not in landing
+    assert landing.count("<h1") == 1
+    assert (root / "docs" / "developers" / "index.html").is_file()
+    assert (root / "docs" / "pricing" / "index.html").is_file()
+    assert (root / "docs" / "sample" / "index.html").is_file()
