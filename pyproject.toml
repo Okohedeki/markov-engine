@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "markov-engine"
-version = "0.1.0"
-description = "A storage-agnostic knowledge engine that turns saved links into living, self-growing Chains of knowledge."
+version = "1.0.0"
+description = "An evidence-first engine and delivery app for finished briefs, research reports, and factual scripts."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
