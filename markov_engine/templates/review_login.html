@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Reviewer sign in — Markov{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block body %}<main class="content-narrow" id="main-content"><a class="wordmark" href="/">MARKOV</a><div style="margin-top:5rem"><p class="eyebrow">Internal quality desk</p><h1 style="font-size:4rem">Reviewer queue</h1><p class="lede">Audit claim status and evidence decisions before a Verified artifact is delivered.</p>{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}<form method="post" action="/app/reviewer/login"><div class="field"><label for="review-key">Internal reviewer key</label><input id="review-key" name="api_key" type="password" required></div><div class="form-actions"><span></span><button type="submit">Sign in</button></div></form></div></main>{% endblock %}
