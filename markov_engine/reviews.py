@@ -39,6 +39,8 @@ async def begin_review(
     review = await store.get_review_job(review_id)
     if review is None:
         raise ValueError("Review job not found")
+    if review.status == "completed":
+        raise ValueError("Review job is already completed")
     await store.update_review_job(
         review.id, status="in_review", assigned_reviewer=reviewer_id
     )
@@ -76,6 +78,8 @@ async def record_review_decision(
     review = await store.get_review_job(review_id)
     if review is None:
         raise ValueError("Review job not found")
+    if review.status == "completed":
+        raise ValueError("Review job is already completed")
     artifact = await store.get_artifact(review.artifact_id)
     if artifact is None or artifact.research_case_id is None:
         raise ValueError("Reviewed artifact is not case-scoped")
@@ -145,7 +149,9 @@ async def record_review_decision(
             )
     elif decision_type in {"passage_corrected", "citation_locator_corrected"}:
         evidence = await store.get_evidence_passage(int(entity_id))
-        if evidence is None:
+        if evidence is None or not await store.evidence_belongs_to_case(
+            evidence_passage_id=evidence.id, case_id=case.id
+        ):
             raise ValueError("Evidence passage not found")
         values = new_value if isinstance(new_value, dict) else {}
         previous_value = {
@@ -186,6 +192,8 @@ async def record_review_decision(
             change_kind="reviewer_edit",
         )
     elif decision_type == "source_replaced":
+        if not await store.case_has_source(case_id=case.id, source_id=int(entity_id)):
+            raise ValueError("Source is outside the reviewed case")
         previous_value = {"source_id": entity_id}
 
     return await store.add_review_decision(
@@ -213,12 +221,18 @@ async def finalize_review(
     review = await store.get_review_job(review_id)
     if review is None:
         raise ValueError("Review job not found")
+    if review.status == "completed":
+        return review
     artifact = await store.get_artifact(review.artifact_id)
     if artifact is None or artifact.research_case_id is None:
         raise ValueError("Reviewed artifact is not case-scoped")
     case = await store.get_research_case(artifact.research_case_id)
     if case is None:
         raise ValueError("Research case not found")
+    if review.status == "queued":
+        review = await begin_review(
+            store, review_id=review.id, reviewer_id=reviewer_id
+        )
     # Record a final immutable artifact version, even when only structured
     # claim/evidence decisions changed during review.
     structured = dict(artifact.structured_content or {})
