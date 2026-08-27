@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -105,5 +106,29 @@ async def test_completed_stripe_checkout_grants_credits_once():
         assert (await store.get_credit_account("owner-1")).balance == 25
         events = await store.list_usage_events(owner_id="owner-1")
         assert [item.event_type for item in events] == ["payment_completed"]
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_credit_debits_cannot_overspend():
+    store = await SqliteStore.open(":memory:")
+    try:
+        await store.ensure_credit_account("owner-1", opening_balance=10)
+
+        async def debit(key):
+            return await store.apply_credit_transaction(
+                owner_id="owner-1",
+                amount=-6,
+                reason="concurrent_fixture",
+                idempotency_key=key,
+            )
+
+        results = await asyncio.gather(
+            debit("debit-1"), debit("debit-2"), return_exceptions=True
+        )
+        assert sum(not isinstance(item, Exception) for item in results) == 1
+        assert sum(isinstance(item, ValueError) for item in results) == 1
+        assert (await store.get_credit_account("owner-1")).balance == 4
     finally:
         await store.close()
