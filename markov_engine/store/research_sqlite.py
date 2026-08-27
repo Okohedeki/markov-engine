@@ -222,7 +222,13 @@ class ResearchSqliteMixin:
         return [self._research_case(row) for row in rows]
 
     async def update_research_case(
-        self, case_id: int, *, status: str | None = None, purpose: str | None = None
+        self,
+        case_id: int,
+        *,
+        status: str | None = None,
+        purpose: str | None = None,
+        title: str | None = None,
+        constraints: dict | None = None,
     ) -> None:
         updates: list[str] = []
         values: list[object] = []
@@ -232,6 +238,12 @@ class ResearchSqliteMixin:
         if purpose is not None:
             updates.append("purpose = ?")
             values.append(purpose)
+        if title is not None:
+            updates.append("title = ?")
+            values.append(title)
+        if constraints is not None:
+            updates.append("constraints = ?")
+            values.append(json.dumps(constraints))
         if not updates:
             return
         updates.append("updated_at = datetime('now')")
