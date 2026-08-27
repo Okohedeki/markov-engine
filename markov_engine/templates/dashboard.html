@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Workspace — Markov{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block body %}
+  <div class="app-frame">
+    {% include "partials/app_sidebar.html" %}
+    <main class="app-main" id="main-content">
+      <header class="app-topbar"><span class="breadcrumbs">WORKSPACE / OVERVIEW</span><span class="fine">{{ owner_id }}</span></header>
+      <div class="app-content">
+        <div class="app-title"><div><p class="eyebrow">Evidence desk</p><h1>What should Markov work with?</h1></div><p class="lede">Start with a public source, topic, or question. Markov returns one finished artifact and keeps the evidence trail attached.</p></div>
+        <div class="workspace-grid">
+          <form class="panel intake-form" id="new-research" method="post" action="/app/jobs" data-mode-picker>
+            <label>Choose the finished form</label>
+            <div class="mode-picker">
+              <div class="choice"><input id="mode-brief" name="mode" type="radio" value="brief" checked><label for="mode-brief"><strong>Brief it</strong><span>Know the bottom line</span></label></div>
+              <div class="choice"><input id="mode-research" name="mode" type="radio" value="research"><label for="mode-research"><strong>Research it</strong><span>Make the full case</span></label></div>
+              <div class="choice"><input id="mode-script" name="mode" type="radio" value="script"><label for="mode-script"><strong>Script it</strong><span>Prepare to record</span></label></div>
+            </div>
+            <div class="field"><label for="source-value">Topic, question, or public URL</label><textarea id="source-value" name="value" placeholder="Paste a public URL or describe the question that needs a defensible answer." required></textarea><span class="field-hint">Private or paywalled sources must be accessible to the running Markov instance.</span></div>
+            <div class="field-grid">
+              <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — agentic</option><option value="verified">Verified — human-reviewed</option></select></div>
+              <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claims or question that matter most"></div>
+            </div>
+            <div class="field-grid" data-script-fields hidden>
+              <div class="field"><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
+              <div class="field"><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
+            </div>
+            <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
+            <div class="form-actions"><span class="fine">The exact credit cost follows the selected output and quality.</span><button type="submit">Create research case</button></div>
+          </form>
+          <aside>
+            <section class="panel"><p class="eyebrow">Available</p><h2>{{ account.balance | number }} credits</h2><p class="muted">Shared by the Workspace and API.</p><details><summary>Product costs</summary><ul>{% for product in products %}<li>{{ product.variant | humanize }} — {{ product.credit_cost | credits }}</li>{% endfor %}</ul></details></section>
+            <section class="panel" id="projects" style="margin-top:1.5rem"><p class="eyebrow">Recent projects</p><ul class="project-list">{% for job in jobs %}<li class="project-item"><a href="/app/jobs/{{ job.id }}"><span><strong>{{ job.mode | title }} case</strong><span class="fine mono">{{ job.id }}</span></span><span class="badge {{ job.status | badge_class }}">{{ job.status | humanize }}</span></a></li>{% else %}<li class="empty">No projects yet. Your first case will appear here.</li>{% endfor %}</ul></section>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+{% endblock %}
