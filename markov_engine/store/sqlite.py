@@ -16,6 +16,8 @@ import os
 
 import aiosqlite
 
+from markov_engine.store.migrations import apply_migrations
+from markov_engine.store.research_sqlite import ResearchSqliteMixin
 from markov_engine.store.base import Store
 from markov_engine.store.records import (
     ArtifactRec,
@@ -147,7 +149,7 @@ def _ts(raw: str | None) -> dt.datetime | None:
         return None
 
 
-class SqliteStore(Store):
+class SqliteStore(ResearchSqliteMixin, Store):
     def __init__(self, conn: aiosqlite.Connection):
         self._conn = conn
 
@@ -160,7 +162,9 @@ class SqliteStore(Store):
             os.makedirs(parent, exist_ok=True)
         conn = await aiosqlite.connect(path)
         conn.row_factory = aiosqlite.Row
+        await conn.execute("PRAGMA foreign_keys = ON")
         await conn.executescript(_SCHEMA)
+        await apply_migrations(conn)
         await conn.commit()
         return cls(conn)
 
@@ -181,6 +185,13 @@ class SqliteStore(Store):
             topic_id=row["topic_id"],
             ingested_at=_ts(row["ingested_at"]),
             metadata=json.loads(row["metadata"]) if row["metadata"] else None,
+            source_role=row["source_role"],
+            source_quality=row["source_quality"],
+            source_quality_rationale=row["source_quality_rationale"],
+            publisher=row["publisher"],
+            author=row["author"],
+            published_at=_ts(row["published_at"]),
+            retrieved_at=_ts(row["retrieved_at"]),
         )
 
     @staticmethod
@@ -574,6 +585,16 @@ class SqliteStore(Store):
                 model_used=r["model_used"],
                 cost_usd=float(r["cost_usd"]),
                 created_at=_ts(r["created_at"]),
+                research_case_id=r["research_case_id"],
+                review_level=r["review_level"] or "instant",
+                status=r["status"] or "completed",
+                structured_content=(
+                    json.loads(r["structured_content"])
+                    if r["structured_content"]
+                    else None
+                ),
+                word_count=int(r["word_count"] or 0),
+                updated_at=_ts(r["updated_at"]),
             )
             for r in rows
         ]
