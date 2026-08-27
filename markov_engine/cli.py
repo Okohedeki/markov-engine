@@ -16,6 +16,13 @@ from markov_engine.config import get_settings
 from markov_engine.generate import generate_artifact
 from markov_engine.growth import grow_chain
 from markov_engine.ingest import ingest_url
+from markov_engine.research import (
+    MODE_TO_ARTIFACT,
+    create_research_case,
+    generate_case_artifact,
+    process_research_case,
+)
+from markov_engine.revisions import deepen_claim
 from markov_engine.store.sqlite import SqliteStore
 
 DEFAULT_DB = "~/.markov/markov.db"
@@ -155,6 +162,89 @@ async def _cmd_search(store: SqliteStore, args) -> int:
     return 0
 
 
+async def _cmd_create(store: SqliteStore, args) -> int:
+    constraints = {
+        key: value
+        for key, value in {
+            "focus": args.focus,
+            "audience": args.audience,
+            "tone": args.tone,
+            "target_minutes": args.target_minutes,
+        }.items()
+        if value is not None
+    }
+    case = await create_research_case(
+        store,
+        owner_id=args.owner,
+        original_input=args.input,
+        mode=args.mode,
+        constraints=constraints,
+    )
+    artifacts = await process_research_case(
+        store,
+        case_id=case.id,
+        review_level=args.review_level,
+        modes=[args.mode],
+    )
+    _print_json(
+        {
+            "research_case_id": case.id,
+            "artifact_ids": [artifact.id for artifact in artifacts],
+            "status": "awaiting_review"
+            if args.review_level == "verified"
+            else "completed",
+        }
+    )
+    return 0
+
+
+async def _cmd_case(store: SqliteStore, args) -> int:
+    case = await store.get_research_case(args.case_id, owner_id=args.owner)
+    if case is None:
+        _print_json({"error": f"research case {args.case_id} not found"})
+        return 1
+    _print_json(
+        {
+            "case": case.__dict__,
+            "claims": [item.__dict__ for item in await store.list_claims(case.id)],
+            "research_gaps": [
+                item.__dict__ for item in await store.list_research_gaps(case.id)
+            ],
+            "artifacts": [
+                item.__dict__ for item in await store.list_case_artifacts(case.id)
+            ],
+        }
+    )
+    return 0
+
+
+async def _cmd_convert(store: SqliteStore, args) -> int:
+    case = await store.get_research_case(args.case_id, owner_id=args.owner)
+    if case is None:
+        _print_json({"error": f"research case {args.case_id} not found"})
+        return 1
+    existing_ids = {item.id for item in await store.list_case_artifacts(case.id)}
+    artifact = await generate_case_artifact(
+        store,
+        case_id=args.case_id,
+        artifact_type=MODE_TO_ARTIFACT[args.mode],
+        review_level=args.review_level,
+    )
+    _print_json({"artifact_id": artifact.id, "created": artifact.id not in existing_ids})
+    return 0
+
+
+async def _cmd_deepen(store: SqliteStore, args) -> int:
+    result = await deepen_claim(
+        store,
+        claim_id=args.claim_id,
+        owner_id=args.owner,
+        max_sources=args.max_sources,
+    )
+    _print_json(result)
+    return 0
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="markov", description="Markov knowledge engine CLI."
@@ -201,6 +291,43 @@ def _build_parser() -> argparse.ArgumentParser:
     p_search = sub.add_parser("search", help="Best-effort local entity/source search.")
     p_search.add_argument("query")
     p_search.set_defaults(func=_cmd_search)
+
+    p_create = sub.add_parser(
+        "create", help="Create a Brief, Research report, or Script research case."
+    )
+    p_create.add_argument("input", help="Public URL, topic, or research question.")
+    p_create.add_argument("--owner", default="local-cli")
+    p_create.add_argument("--mode", choices=["brief", "research", "script"], default="brief")
+    p_create.add_argument(
+        "--review-level", choices=["instant", "verified"], default="instant"
+    )
+    p_create.add_argument("--focus")
+    p_create.add_argument("--audience")
+    p_create.add_argument("--tone")
+    p_create.add_argument("--target-minutes", type=float)
+    p_create.set_defaults(func=_cmd_create)
+
+    p_case = sub.add_parser("case", help="Inspect one research case.")
+    p_case.add_argument("case_id", type=int)
+    p_case.add_argument("--owner", default="local-cli")
+    p_case.set_defaults(func=_cmd_case)
+
+    p_convert = sub.add_parser(
+        "convert", help="Render another product from an existing research case."
+    )
+    p_convert.add_argument("case_id", type=int)
+    p_convert.add_argument("--owner", default="local-cli")
+    p_convert.add_argument("--mode", choices=["brief", "research", "script"], required=True)
+    p_convert.add_argument(
+        "--review-level", choices=["instant", "verified"], default="instant"
+    )
+    p_convert.set_defaults(func=_cmd_convert)
+
+    p_deepen = sub.add_parser("deepen", help="Research one claim more deeply.")
+    p_deepen.add_argument("claim_id", type=int)
+    p_deepen.add_argument("--owner", default="local-cli")
+    p_deepen.add_argument("--max-sources", type=int, default=5)
+    p_deepen.set_defaults(func=_cmd_deepen)
 
     return parser
 
