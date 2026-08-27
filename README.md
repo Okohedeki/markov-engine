@@ -33,8 +33,9 @@ automatically merge into Chains.
   locators.
 - Authenticated asynchronous API with idempotency, stage events, errors,
   webhooks, owner isolation, and rate limits.
-- Focused server-rendered intake, processing, artifact, evidence, conversion,
-  deepening, revision, export, and reviewer pages.
+- Public product, pricing, finished-case, and developer pages plus a
+  server-rendered SaaS workspace for intake, processing, artifact reading,
+  evidence, conversion, deepening, revision, export, and review.
 - Six configurable credit products and optional Stripe Checkout/webhooks.
 - Usage analytics, variable-cost records, artifact versions, structured review
   decisions, and review-time accounting.
@@ -57,6 +58,9 @@ Web / API / CLI
 The detailed repository audit, migration plan, module decisions, risks, and
 vertical-slice map are in
 [`docs/markov-v1-architecture.md`](docs/markov-v1-architecture.md).
+The positioning, audience, brand character, experience rules, proof inventory,
+and public-page narrative are recorded in
+[`docs/product-dream.md`](docs/product-dream.md).
 
 ## Local setup
 
@@ -100,6 +104,10 @@ Then run:
 
 ```bash
 markov-api
+# Public site: http://127.0.0.1:8000/
+# Pricing: http://127.0.0.1:8000/pricing
+# Developer guide: http://127.0.0.1:8000/developers
+# Finished-case demo: http://127.0.0.1:8000/sample
 # API docs: http://127.0.0.1:8000/docs
 # Customer app: http://127.0.0.1:8000/app
 # Reviewer app: http://127.0.0.1:8000/app/reviewer/login
