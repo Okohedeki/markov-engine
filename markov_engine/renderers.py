@@ -455,8 +455,14 @@ async def render_script(
 
     narration_parts = [
         hooks[0],
-        f"By the end, {audience} will understand the evidence for the central claim, its limits, and the context most summaries miss.",
+        f"By the end, {audience} will understand the evidence for the central claim, "
+        "the limits of that evidence, and the context most summaries miss.",
         f"Our defensible thesis is this: {thesis} [C{thesis_claim[0].id}]" if thesis_claim else thesis,
+        (
+            "To get there, we need to separate three things that are often blurred "
+            "together: what the original source says, what independent passages "
+            "actually establish, and what remains interpretation or prediction."
+        ),
     ]
     narration_claim_ids = [claim.id for claim in thesis_claim]
     evidence_ids = []
@@ -470,8 +476,11 @@ async def render_script(
     for index, claim in enumerate(claims[:8]):
         narration_parts.append(transitions[index % len(transitions)])
         narration_parts.append(
-            f"{claim.claim_text} [C{claim.id}] The current assessment is "
-            f"{claim.verification_status.replace('_', ' ')}."
+            f"At {_segment_locator(context['segments'].get(claim.source_start_segment_id or -1))}, "
+            f"the source presents this claim: {claim.claim_text} [C{claim.id}] "
+            f"It is a {claim.claim_type.replace('_', ' ')} statement, presented with "
+            f"{claim.speaker_certainty.replace('_', ' ')} certainty. The current "
+            f"evidence assessment is {claim.verification_status.replace('_', ' ')}."
         )
         narration_claim_ids.append(claim.id)
         links = context["evidence"][claim.id]
@@ -479,16 +488,56 @@ async def render_script(
             if link.evidence is None:
                 continue
             narration_parts.append(
-                f"The inspected {link.evidence.source_quality or 'source'} passage "
-                f"{link.stance.replace('_', ' ')} this point: {link.rationale} [E{link.evidence.id}]"
+                f"Here is the strongest inspected {link.evidence.source_quality or 'source'} "
+                f"passage in the case: {link.evidence.passage_text} [E{link.evidence.id}] "
+                f"That passage {link.stance.replace('_', ' ')} the claim. The reason is "
+                f"specific: {link.rationale} This connection is narrower than saying the "
+                "source proves every possible version of the argument."
             )
             evidence_ids.append(link.evidence.id)
         if not links:
             narration_parts.append(
-                "No independent passage was obtained for this point, so it should not be stated more strongly."
+                "No independent passage was obtained for this point. That absence is part "
+                "of the result. It means the statement should not be promoted from a source "
+                "claim into the narrator's voice as settled fact. We can explain that it was "
+                "said, but we should not make the audience inherit its certainty."
+            )
+        if claim.claim_type == "predictive":
+            narration_parts.append(
+                "Because this is a prediction, even supportive background evidence cannot "
+                "turn it into a current fact. The honest phrasing is conditional: this is a "
+                "possible outcome whose assumptions and time horizon need to remain visible."
+            )
+        elif claim.claim_type in {"opinion", "inference"}:
+            narration_parts.append(
+                "This point is best treated as interpretation. The evidence can make the "
+                "interpretation more or less reasonable, but it cannot make a judgment call "
+                "identical to an observed fact."
+            )
+        elif index % 2 == 0:
+            narration_parts.append(
+                "For the finished video, the safe move is to state only the version that the "
+                "located evidence supports. Any broader causal story, comparison, or implied "
+                "forecast would need its own claim and its own evidence."
+            )
+    if context["gaps"]:
+        narration_parts.append(
+            "The research also surfaced questions that the available passages do not settle. "
+            "Those gaps matter because a clean explanation should show the edge of the record, "
+            "not quietly fill it with confidence."
+        )
+        for gap in context["gaps"][:4]:
+            narration_parts.append(
+                f"One open question is: {gap.question} Until that gap is resolved, its "
+                "importance should be reflected in the conclusion rather than hidden in the notes."
             )
     narration_parts.append(
-        "The responsible conclusion is not to erase uncertainty, but to separate what the evidence supports from what remains interpretation or prediction."
+        "Taken together, this leaves us with a stronger story than a simple endorsement or "
+        "debunking. We can show what the source claimed, where it said it, which independent "
+        "passages bear on each important point, and where the case still runs out of evidence. "
+        "The responsible conclusion is not to erase uncertainty, but to separate what the "
+        "record supports from what remains interpretation or prediction. That is also what "
+        "gives the audience something useful: a conclusion they can inspect instead of merely trust."
     )
     narration = "\n\n".join(narration_parts)
     actual_words = _words(narration)
@@ -529,7 +578,13 @@ async def render_script(
         {
             "id": "recommended-angle",
             "title": "Recommended angle",
-            "content": "Lead with the gap between the source's strongest assertion and the quality of evidence available for it.",
+            "content": (
+                "Lead with the gap between the source's strongest assertion and the quality "
+                "of evidence available for it. This angle is grounded in the linked passages, "
+                "offers audience value by making uncertainty legible, and is more distinctive "
+                "than a recap. Its risk is overstating absence of evidence as disproof, so the "
+                "script keeps qualifications and unresolved gaps explicit."
+            ),
             "claim_ids": [claim.id for claim in thesis_claim],
         },
         {"id": "title-options", "title": "Title options", "content": "\n".join(f"- {item}" for item in title_options)},
