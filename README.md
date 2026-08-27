@@ -1,215 +1,219 @@
-# markov-engine
+# Markov
 
-A storage-agnostic **knowledge engine** that turns saved links — articles, PDFs,
-YouTube / TikTok / Reddit / Twitter posts, audio — into living **Chains** of
-knowledge that grow on their own.
+Markov turns a source, topic, or question into one of three finished,
+evidence-linked products:
 
-Give it a URL and it will: extract the content (transcribing media when needed),
-pull out a summary plus entities and relationships with an LLM, embed the
-summary, and **cluster** the result into the most similar existing Chain (or seed
-a new one). On demand it will **grow** a Chain by searching the web for new
-related sources, and **generate** publication-quality artifacts (articles,
-newsletters) synthesized across a Chain's sources.
+- **Markov Brief** — the bottom line, important points, what can be skipped,
+  missing context, claim status, and exact source navigation.
+- **Markov Research** — a professional research report organized around atomic
+  claims, exact evidence passages, counterevidence, gaps, and source quality.
+- **Markov Script** — a ready-to-record factual YouTube package with a production
+  verdict, thesis, complete narration, production notes, evidence markers,
+  fact-check appendix, and do-not-repeat list.
 
-It is **storage-agnostic**: all persistence goes through a small `Store`
-interface. A local single-file **SQLite** backend ships as the default; plug in
-your own backend (Postgres, a vector DB, anything) by implementing `Store`.
+Every product can be **Instant** (fully agentic) or **Verified** (the same
+structured case followed by audited human review). Brief, Research, and Script
+reuse one isolated research case, so converting a finished project does not
+repeat unchanged extraction or research.
 
-This is the open-source engine extracted from a closed-source full-stack product.
-There is **no multi-tenancy, no tiers/billing, and no web framework** here — just
-the engine and a CLI.
+The original open-source Chain, growth, ingestion, and article/newsletter APIs
+remain available for compatibility. New customer submissions do not
+automatically merge into Chains.
 
-## What's in the box
+## What V1 includes
 
-| Module | What it does |
-| --- | --- |
-| `markov_engine.extract` / `transcribe` | Pure content extraction (trafilatura, yt-dlp, PyMuPDF, faster-whisper) |
-| `markov_engine.llm` | Anthropic client (`complete` / `complete_json` / `stream_complete`) |
-| `markov_engine.embeddings` | Voyage embeddings |
-| `markov_engine.entities` | Summary + entity/relationship extraction (returns a dict) |
-| `markov_engine.vectors` | Pure cosine similarity + incremental-mean helpers |
-| `markov_engine.search` | DuckDuckGo web/news/video search |
-| `markov_engine.clustering` | `assign_topic` — embed a source and cluster it into a Chain |
-| `markov_engine.growth` | `grow_chain` — discover + ingest new sources for a Chain |
-| `markov_engine.generate` | `generate_artifact` — synthesize an article/newsletter |
-| `markov_engine.ingest` | `ingest_url` — the full extract → entities → store → cluster pipeline |
-| `markov_engine.store` | The `Store` ABC, record dataclasses, and `SqliteStore` |
+- YouTube captions first, with timestamped Whisper fallback.
+- Structured video/audio, PDF-page, article-section, and social segments.
+- Long-source claim extraction with overlap, deduplication, types, certainty,
+  importance, and research gaps.
+- Claim-specific authority, data, limitation, history, counterevidence, and
+  alternative-explanation searches.
+- Exact inspected passages; search snippets never become evidence.
+- Deterministic citations, claim markers, evidence appendices, and source
+  locators.
+- Authenticated asynchronous API with idempotency, stage events, errors,
+  webhooks, owner isolation, and rate limits.
+- Focused server-rendered intake, processing, artifact, evidence, conversion,
+  deepening, revision, export, and reviewer pages.
+- Six configurable credit products and optional Stripe Checkout/webhooks.
+- Usage analytics, variable-cost records, artifact versions, structured review
+  decisions, and review-time accounting.
+- Additive SQLite migrations that preserve legacy data.
 
-## Install
+## Architecture
 
-```bash
-pip install markov-engine
+```text
+Web / API / CLI
+  -> authenticated owner + configured credit reservation
+  -> durable Job + isolated ResearchCase
+  -> Extract -> SourceSegments with timestamps/pages/sections
+  -> Claim -> atomic Claims + ResearchGaps
+  -> Research -> exact EvidencePassages + ClaimEvidence stance
+  -> Render -> Brief / Research Report / Script
+  -> Deliver -> versions, exports, usage, costs
+  -> Verified only -> structured ReviewJob -> final delivery
 ```
 
-Set your provider keys (or put them in a `.env` file):
+The detailed repository audit, migration plan, module decisions, risks, and
+vertical-slice map are in
+[`docs/markov-v1-architecture.md`](docs/markov-v1-architecture.md).
+
+## Local setup
+
+Requirements: Python 3.11+ and FFmpeg when Whisper transcription is needed.
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-export VOYAGE_API_KEY=...
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+python -m pip install -e .
 ```
 
-## Run on a local model (no API keys)
+Copy [`.env.example`](.env.example) to `.env`. At minimum, configure an API key
+mapping, an opening or purchased credit balance, and one LLM/search setup.
+`MARKOV_API_KEYS` maps secret keys to stable owner IDs; it must be JSON.
 
-The LLM and embeddings are pluggable. Point the engine at any OpenAI-compatible
-endpoint (Ollama, llama.cpp server, vLLM, LM Studio), or run a GGUF in-process.
+Cloud example:
+
+```dotenv
+LLM_BACKEND=anthropic
+ANTHROPIC_API_KEY=replace-me
+VOYAGE_API_KEY=replace-me
+MARKOV_API_KEYS={"local-customer-key":"local-customer"}
+MARKOV_INTERNAL_API_KEYS={"local-review-key":"reviewer-1"}
+MARKOV_OPENING_CREDITS=20
+MARKOV_WEB_SESSION_SECRET=replace-with-a-random-secret
+```
+
+Local model example:
+
+```dotenv
+LLM_BACKEND=openai
+EMBED_BACKEND=openai
+OPENAI_BASE_URL=http://localhost:11434/v1
+LLM_MODEL=qwen2.5:7b-instruct
+OPENAI_EMBED_MODEL=nomic-embed-text
+MARKOV_API_KEYS={"local-customer-key":"local-customer"}
+```
+
+Then run:
 
 ```bash
-# Option A — any OpenAI-compatible server (e.g. Ollama)
-export LLM_BACKEND=openai   EMBED_BACKEND=openai
-export OPENAI_BASE_URL=http://localhost:11434/v1
-export LLM_MODEL=qwen2.5:3b-instruct   OPENAI_EMBED_MODEL=nomic-embed-text
-
-# Option B — an in-process GGUF (no server)
-pip install 'markov-engine[local]'
-export LLM_BACKEND=llamacpp EMBED_BACKEND=llamacpp
-export LLAMACPP_MODEL=/path/to/Qwen2.5-3B-Instruct-Q4_K_M.gguf
-
-markov ingest https://www.youtube.com/watch?v=UF8uR6Z6KLc
-markov walk 1 --steps 3 --hops 2
-markov generate 1 --type article
+markov-api
+# API docs: http://127.0.0.1:8000/docs
+# Customer app: http://127.0.0.1:8000/app
+# Reviewer app: http://127.0.0.1:8000/app/reviewer/login
 ```
 
-Verified end-to-end on a 3B GGUF: real entity extraction, embeddings, clustering,
-the walk, and article synthesis — no cloud calls. Small models return loose JSON,
-so the engine normalizes their output to its schema. `EMBED_BACKEND=hash` runs
-clustering with zero model setup (lexical similarity only).
+The V1 runner executes background tasks in the API process. That is suitable for
+one-instance demand testing. See [`docs/operations.md`](docs/operations.md) for
+restart behavior, backups, reviewer operation, billing, and production limits.
+
+## API quick start
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/jobs \
+  -H "X-Markov-Key: local-customer-key" \
+  -H "Idempotency-Key: demo-brief-1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "brief",
+    "review_level": "instant",
+    "inputs": [{"type":"url","value":"https://www.youtube.com/watch?v=..."}],
+    "constraints": {"focus":"economic claims","depth":"standard"}
+  }'
+```
+
+Poll `GET /v1/jobs/{job_id}` or inspect ordered events at
+`GET /v1/jobs/{job_id}/events`. Full requests for all three modes, conversion,
+deepening, revision, export, review, and checkout are in
+[`docs/api-examples.md`](docs/api-examples.md).
+
+## Product and billing configuration
+
+The product catalog has exactly six variants:
+
+```text
+brief_instant        brief_verified
+research_instant     research_verified
+script_instant       script_verified
+```
+
+Credit costs are configuration, not business-logic constants. Override all six
+with `MARKOV_PRODUCT_CREDIT_COSTS`. To sell credit packs through Stripe,
+configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_IDS`, and
+`STRIPE_CREDIT_PACKS`. The webhook grants credits idempotently and records
+`payment_completed` or `payment_failed` usage events.
+
+## Database migrations
+
+`SqliteStore.open()` applies numbered, additive migrations automatically. V1
+adds research cases, segments, claims, gaps, evidence, jobs, versions, reviews,
+usage, cost, and credit tables and only nullable/defaulted columns to legacy
+tables. It does not delete or rewrite Chain-era records.
+
+Back up the SQLite file before deploying a new release:
+
+```bash
+python -c "import sqlite3; src=sqlite3.connect('data/markov.db'); dst=sqlite3.connect('data/markov.backup.db'); src.backup(dst); dst.close(); src.close()"
+```
 
 ## CLI
 
-The CLI is backed by the local SQLite store (default `~/.markov/markov.db`,
-override with `--db`).
+The V1 CLI is useful for local, unmetered operation:
 
 ```bash
-# Ingest a URL and cluster it into a Chain
-markov ingest https://example.com/some-article
-# -> {"source_id": 1, "title": "...", "chain_id": 1, "entities": 7, "cost_usd": 0.0123}
+markov create "https://www.youtube.com/watch?v=..." --mode brief
+markov case 1
+markov convert 1 --mode script
+markov deepen 3
+```
 
-# Grow a Chain once — discover and ingest related sources
+Legacy engine commands remain available:
+
+```bash
+markov ingest https://example.com/article
 markov grow 1 --hops 2 --budget 10
-
-# Take the walk — several growth steps in a row (knowledge that walks)
-markov walk 1 --steps 3 --hops 2
-
-# Generate an artifact from a Chain (prints markdown)
+markov walk 1 --steps 3
 markov generate 1 --type article
-
-# Inspect state
-markov chains        # id, title, status, topic_count
-markov sources       # recent sources
-markov search "transformers"   # best-effort entity/source search
+markov chains
 ```
 
-## Use it from your own agent / code
+## Tests
 
-Everything is async. Open a store, then call the engine functions directly:
-
-```python
-import asyncio
-from markov_engine import SqliteStore, ingest_url, grow_chain, generate_artifact
-
-async def main():
-    store = await SqliteStore.open("~/.markov/markov.db")
-    try:
-        # 1. Ingest + cluster
-        res = await ingest_url(store, "https://example.com/article")
-        chain_id = res["chain_id"]
-
-        # 2. Grow the chain (caller controls reach + spend — no tiers)
-        await grow_chain(
-            store,
-            await store.get_chain(chain_id),
-            hop_depth=2,
-            source_budget=10,
-            cycle_cost_cap=0.50,
-        )
-
-        # 3. Generate an artifact
-        artifact = await generate_artifact(store, chain_id, artifact_type="article")
-        print(artifact["content"])
-    finally:
-        await store.close()
-
-asyncio.run(main())
+```bash
+python -m pytest -q
+python -m ruff check markov_engine tests
 ```
 
-The pure pieces are usable on their own too — e.g. `markov_engine.extract.extract_content`,
-`markov_engine.entities.extract_entities`, `markov_engine.embeddings.embed`,
-`markov_engine.vectors.cosine_similarity`.
+The suite includes a full network-free vertical slice covering timestamped
+YouTube extraction, claims, priority evidence research, all three outputs,
+deepening, targeted regeneration, section revision, export, Verified review,
+structured correction, costs, and analytics.
 
-## The `Store` interface — bring your own backend
+## Samples
 
-The engine never touches a database directly; it talks only to a `Store`. To
-back it with Postgres, a vector store, or an in-memory dict, implement the
-abstract base class in `markov_engine.store.base.Store`. Records returned must
-expose attributes (e.g. `chain.id`, `chain.centroid_embedding`,
-`source.content_text`) — the dataclasses in `markov_engine.store.records` are the
-canonical shape.
+- [`samples/markov-brief.md`](samples/markov-brief.md)
+- [`samples/markov-research.md`](samples/markov-research.md)
+- [`samples/markov-script.md`](samples/markov-script.md)
 
-All methods are async:
+These are compact fixtures demonstrating structure and provenance, not claims
+about a real company or event.
 
-```text
-# sources
-add_source(*, url, title, source_type, content_text, summary, is_note=False) -> SourceRec
-get_source(source_id) -> SourceRec | None
-get_source_by_url(url) -> SourceRec | None
-list_sources(limit=20) -> list[SourceRec]
-set_source_topic(source_id, topic_id)
+## Known V1 limits
 
-# topics
-add_topic(*, canonical_title, summary, embedding) -> TopicRec
-attach_topic_to_chain(topic_id, chain_id)
-
-# chains
-create_chain(*, title, centroid, hop_depth, source_budget, cadence_hours) -> ChainRec
-get_chain(chain_id) -> ChainRec | None
-list_chains(limit=50) -> list[ChainRec]
-nearest_chain(embedding) -> tuple[ChainRec, float] | None    # (chain, cosine_similarity)
-update_chain_centroid(chain_id, centroid, topic_count)
-touch_chain_grown(chain_id)
-update_chain(chain_id, **fields)
-
-# chain_sources
-add_chain_source(*, chain_id, source_id, hop_distance, relevance) -> bool   # False if already linked
-list_chain_sources(chain_id, limit=50) -> list[ChainSourceRec]              # .source, .hop_distance, .relevance, .added_at
-
-# entities / relationships
-add_entity(*, name, entity_type, description) -> int
-get_entity_by_name(name) -> EntityRec | None
-add_relationship(*, src_id, tgt_id, rel_type)
-link_entity_to_source(entity_id, source_id)
-gather_entity_neighbors(entity_id, limit=8) -> list[str]
-top_entities_for_chain(chain_id, limit=8) -> list[dict]      # {"id": .., "name": ..}
-
-# artifacts
-add_artifact(*, chain_id, artifact_type, title, content, parameters, model_used, cost_usd, source_ids) -> ArtifactRec
-list_artifacts(chain_id=None, limit=20) -> list[ArtifactRec]
-
-# events
-log_event(kind, *, chain_id=None, detail=None)
-```
-
-Then pass your store to any engine function — `ingest_url(my_store, url)`, etc.
-
-## Configuration
-
-All settings come from the environment (pydantic-settings) with safe defaults so
-import never fails. Set credentials before making real calls.
-
-| Env var | Default | Purpose |
-| --- | --- | --- |
-| `ANTHROPIC_API_KEY` | `""` | Anthropic API key |
-| `VOYAGE_API_KEY` | `""` | Voyage AI API key |
-| `MODEL_SYNTHESIS` | `claude-opus-4-8` | Model for artifact generation |
-| `MODEL_EXTRACTION` | `claude-sonnet-4-6` | Model for entity/summary + growth queries |
-| `MODEL_CLASSIFY` | `claude-haiku-4-5` | Model for lightweight classification |
-| `EMBED_MODEL` | `voyage-3` | Embedding model |
-| `EMBED_DIM` | `1024` | Embedding dimension |
-| `COMBINE_THRESHOLD` | `0.82` | Min cosine similarity to merge into an existing Chain |
-| `RELEVANCE_DECAY` | `0.7` | Per-hop relevance decay during growth |
-| `RELEVANCE_FLOOR` | `0.45` | Min decayed relevance to keep a growth candidate |
-| `WHISPER_MODEL` | `base` | faster-whisper model size |
-| `TMP_DIR` | `data/tmp` | Scratch dir for downloaded media/PDFs |
+- Background execution is single-process; there is no distributed queue or
+  automatic restart recovery yet.
+- SQLite is intended for one API instance, not horizontally scaled writes.
+- URL intake is public-source only. Upload transport and signed object storage
+  are not included in this repository.
+- Authentication is configured API-key ownership, not a full identity provider.
+- Stripe supports configurable one-time credit packs; subscriptions, invoicing,
+  tax, refunds, and enterprise contracts are intentionally deferred.
+- Human review is a queue and audit workflow, not workforce scheduling.
+- Evidence quality is conservative metadata plus inspectable rationale; reviewers
+  remain responsible for final editorial and legal judgment.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT — see [LICENSE](LICENSE).
