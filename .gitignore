@@ -37,6 +37,7 @@ data/
 # Secrets / env
 .env
 .env.*
+!.env.example
 
 # Editor / OS
 .DS_Store
