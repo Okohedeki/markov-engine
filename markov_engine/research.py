@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import re
 from urllib.parse import urlparse
 
@@ -51,8 +52,6 @@ async def create_research_case(
     if mode not in MODE_TO_ARTIFACT:
         raise ValueError(f"Unsupported mode: {mode}")
     input_type = classify_input(original_input)
-    if input_type == "topic":
-        raise ValueError("The first vertical slice accepts a public URL")
     return await store.create_research_case(
         owner_id=owner_id,
         title=_initial_title(original_input),
@@ -78,6 +77,42 @@ async def _ensure_seed_source(
         segments = await store.list_source_segments(seed_row["id"])
         if source is not None and segments:
             return source, segments
+
+    if case.input_type == "topic":
+        source = await store.add_source(
+            url=None,
+            title=case.title,
+            source_type="topic",
+            content_text=case.original_input,
+            summary="Customer research question",
+            is_note=True,
+            metadata={"input_type": "topic"},
+        )
+        segments = await store.add_source_segments(
+            source_id=source.id,
+            segments=[
+                {
+                    "ordinal": 0,
+                    "text": case.original_input,
+                    "section_title": "Research question",
+                    "character_start": 0,
+                    "character_end": len(case.original_input),
+                }
+            ],
+        )
+        await store.update_source_provenance(
+            source.id,
+            source_role="seed",
+            source_quality="customer_prompt",
+            source_quality_rationale=(
+                "Customer-supplied research question; it is context, not evidence."
+            ),
+        )
+        await store.add_research_case_source(
+            research_case_id=case.id, source_id=source.id, source_role="seed"
+        )
+        await store.update_research_case(case.id, status="extracting_claims")
+        return source, segments
 
     content = await extractor(
         case.original_input,
@@ -135,6 +170,25 @@ async def _ensure_claims(
     existing = await store.list_claims(case.id)
     if existing:
         return existing
+    if case.input_type == "topic":
+        claim = await store.add_claim(
+            research_case_id=case.id,
+            seed_source_id=seed_source.id,
+            claim_text=case.original_input.rstrip("?"),
+            claim_type="inference",
+            importance=1.0,
+            speaker_certainty="research_question",
+            source_start_segment_id=segments[0].id,
+            source_end_segment_id=segments[0].id,
+        )
+        await store.add_research_gap(
+            research_case_id=case.id,
+            claim_id=claim.id,
+            gap_type="unresolved_evidence",
+            question=case.original_input,
+            importance=1.0,
+        )
+        return [claim]
     extracted, gaps, cost = await claim_extractor(segments)
     by_id = {segment.id: segment for segment in segments}
     records = []
@@ -269,6 +323,7 @@ async def process_research_case(
     max_priority_claims: int = 5,
     max_sources_per_claim: int = 3,
     claim_time_budget_s: float = 60,
+    stage_handler=None,
 ) -> list[ArtifactRec]:
     """Run or resume one case without repeating completed extraction/research."""
     case = await store.get_research_case(case_id)
@@ -277,7 +332,18 @@ async def process_research_case(
     if review_level not in REVIEW_LEVELS:
         raise ValueError(f"Unsupported review level: {review_level}")
     selected_modes = modes or [case.purpose.split(",")[0]]
+    unsupported = [mode for mode in selected_modes if mode not in MODE_TO_ARTIFACT]
+    if unsupported:
+        raise ValueError(f"Unsupported mode: {unsupported[0]}")
     artifact_types = [MODE_TO_ARTIFACT[mode] for mode in selected_modes]
+
+    async def stage(name: str, detail: dict | None = None) -> None:
+        if stage_handler is None:
+            return
+        result = stage_handler(name, detail or {})
+        if inspect.isawaitable(result):
+            await result
+
     await store.update_research_case(case.id, status="extracting")
     await store.record_usage_event(
         owner_id=case.owner_id,
@@ -286,9 +352,12 @@ async def process_research_case(
         metadata={"modes": selected_modes, "review_level": review_level},
     )
     try:
+        await stage("extracting_sources", {"input_type": case.input_type})
         seed_source, segments = await _ensure_seed_source(
             store, case, extractor=extractor
         )
+        await stage("preserving_locators", {"segments": len(segments)})
+        await stage("identifying_claims")
         claims = await _ensure_claims(
             store,
             case,
@@ -296,12 +365,14 @@ async def process_research_case(
             segments=segments,
             claim_extractor=claim_extractor,
         )
+        await stage("planning_research", {"claims": len(claims)})
         await store.update_research_case(case.id, status="researching")
         for claim in [
             item
             for item in claims
             if item.verification_status == "not_researched"
         ][:max_priority_claims]:
+            await stage("finding_evidence", {"claim_id": claim.id})
             kwargs = {
                 "case_id": case.id,
                 "claim": claim,
@@ -312,11 +383,13 @@ async def process_research_case(
             if searcher is not None:
                 kwargs["searcher"] = searcher
             await claim_researcher(store, **kwargs)
+        await stage("comparing_sources")
         await store.update_research_case(case.id, status="rendering")
         refreshed = await store.get_research_case(case.id)
         assert refreshed is not None
         artifacts = []
         for artifact_type in artifact_types:
+            await stage("building_artifact", {"artifact_type": artifact_type})
             rendered = await render_artifact(
                 store,
                 case.id,
@@ -332,6 +405,7 @@ async def process_research_case(
                 )
             )
         final_status = "awaiting_review" if review_level == "verified" else "completed"
+        await stage(final_status, {"artifact_ids": [item.id for item in artifacts]})
         await store.update_research_case(case.id, status=final_status)
         await store.record_usage_event(
             owner_id=case.owner_id,
