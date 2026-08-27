@@ -245,12 +245,14 @@ async def research_claim(
     sources_added = 0
     total_cost = 0.0
     timed_out = False
+    query_attempts = 0
 
     async def run() -> None:
-        nonlocal sources_added, total_cost
+        nonlocal query_attempts, sources_added, total_cost
         for family in query_families(claim.claim_text):
             if sources_added >= max_sources:
                 break
+            query_attempts += 1
             results = await searcher(family["query"], max_results=4)
             for result in results:
                 if sources_added >= max_sources:
@@ -309,6 +311,20 @@ async def research_claim(
         operation="evidence_stance",
         units=len(stances),
         cost=total_cost,
+    )
+    await store.record_cost(
+        research_case_id=case_id,
+        provider="search",
+        operation="evidence_queries",
+        units=query_attempts,
+        cost=0,
+    )
+    await store.record_cost(
+        research_case_id=case_id,
+        provider="storage",
+        operation="evidence_passages",
+        units=len(stances),
+        cost=0,
     )
     return {
         "claim_id": claim.id,
