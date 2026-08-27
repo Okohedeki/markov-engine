@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Pricing — Markov{% endblock %}
+{% block description %}Markov uses one credit balance across the Workspace and API. Compare Brief, Research, and Script in Instant and Verified modes.{% endblock %}
+{% block body %}
+  {% include "partials/public_header.html" %}
+  <main id="main-content">
+    <section class="page-hero">
+      <p class="eyebrow">Pricing</p>
+      <h1>Pay for finished work.</h1>
+      <p class="lede">One credit balance works across the Workspace and API. Choose Instant for an inspectable agentic run or Verified when a trained reviewer should audit the claim-and-evidence decisions before delivery.</p>
+    </section>
+    <section class="content-narrow section-rule" aria-labelledby="catalog-heading">
+      <h2 id="catalog-heading">Product credits</h2>
+      <p class="lede">Credit prices shown here come from the live product catalog. Monetary pack prices are configured by the operator and appear at checkout.</p>
+      <div class="price-table">
+        {% for product in products %}
+          <div class="price-row">
+            <span class="price-name">{{ product.variant | humanize }}</span>
+            <span class="muted">{% if product.variant.endswith('_verified') %}Structured human review before final delivery.{% else %}Agentic delivery with uncertainty and evidence visible.{% endif %}</span>
+            <span class="credit-cost">{{ product.credit_cost | credits }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="note" style="margin-top: 2rem">
+        <strong>What a credit is not.</strong>
+        <p>Credits do not buy a guarantee that every question has a clean answer. They fund a bounded research job and the resulting artifact, evidence packet, and decision trail.</p>
+      </div>
+      <div class="button-row" style="margin-top: 2rem"><a class="button" href="/app/login">Open Markov</a><a class="button button-secondary" href="/developers">Build with the API</a></div>
+    </section>
+  </main>
+  {% include "partials/public_footer.html" %}
+{% endblock %}
