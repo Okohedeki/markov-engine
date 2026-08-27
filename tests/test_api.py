@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import httpx
 import pytest
 
@@ -179,6 +181,89 @@ async def test_web_login_and_focused_intake_page():
             assert "Research it" in signed_in.text
             assert "Script it" in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_public_site_explains_product_and_api_without_invented_proof():
+    store = await SqliteStore.open(":memory:")
+    app = create_app(store=store, settings=_settings(), process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            landing = await client.get("/")
+            assert landing.status_code == 200
+            assert "Research you can publish." in landing.text
+            assert "Brief, Research Report, or factual Script" in landing.text
+            assert "A workspace for people. An API for agents." in landing.text
+            assert "See a finished case" in landing.text
+            assert "Demonstration fixture" in landing.text
+            assert "Skip to content" in landing.text
+            assert landing.text.count("<h1") == 1
+            assert "customer logos" not in landing.text.lower()
+            assert "free trial" not in landing.text.lower()
+
+            pricing = await client.get("/pricing")
+            assert pricing.status_code == 200
+            assert "Brief Instant" in pricing.text
+            assert "2 credits" in pricing.text
+            assert "live product catalog" in pricing.text
+
+            developers = await client.get("/developers")
+            assert developers.status_code == 200
+            assert "Idempotency-Key" in developers.text
+            assert "POST /v1/jobs" in developers.text
+            assert "claims, passages, provenance, costs" in developers.text
+
+            sample = await client.get("/sample")
+            assert sample.status_code == 200
+            assert "CASE MKV–024" in sample.text
+            assert "Claim ledger" in sample.text
+            assert "illustrative" in sample.text
+
+            css = await client.get("/static/markov.css")
+            assert css.status_code == 200
+            assert "prefers-reduced-motion" in css.text
+            assert ":focus-visible" in css.text
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_workspace_job_and_artifact_reader_form_one_flow():
+    store = await SqliteStore.open(":memory:")
+    app = create_app(store=store, settings=_settings(), process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test", follow_redirects=True
+        ) as client:
+            await client.post(
+                "/app/login",
+                content="api_key=customer-key",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            job = await client.post(
+                "/app/jobs",
+                content=(
+                    "mode=brief&review_level=instant&"
+                    "value=What+evidence+holds+up%3F&focus=priority+claims"
+                ),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            assert job.status_code == 200
+            assert "Your brief is ready." in job.text
+            artifact_match = re.search(r'href="(/app/artifacts/\d+)"', job.text)
+            assert artifact_match is not None
+
+            artifact = await client.get(artifact_match.group(1))
+            assert artifact.status_code == 200
+            assert "Continue this case" in artifact.text
+            assert "Claim ledger" in artifact.text
+            assert "Export JSON" in artifact.text
+            assert "&lt;script&gt;" in artifact.text
+            assert "<script>alert('unsafe')</script>" not in artifact.text
     finally:
         await store.close()
 
