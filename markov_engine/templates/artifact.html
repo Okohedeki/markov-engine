@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ artifact.title }} — Markov{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block body %}
+  <main id="main-content">
+    <div class="action-bar">
+      <div><a class="wordmark" href="/app">MARKOV</a> <span class="breadcrumbs">/ CASE {{ case.id }} / {{ artifact.artifact_type | humanize }}</span></div>
+      <div class="action-group"><a class="button button-small button-secondary" href="/app/artifacts/{{ artifact.id }}/export?format=markdown">Export Markdown</a><a class="button button-small button-secondary" href="/app/artifacts/{{ artifact.id }}/export?format=html">Export HTML</a><a class="button button-small button-secondary" href="/app/artifacts/{{ artifact.id }}/export?format=json">Export JSON</a></div>
+    </div>
+    <div class="artifact-layout">
+      <aside class="artifact-outline">
+        <nav aria-label="Artifact outline"><p class="eyebrow">Outline</p>{% for section in sections %}<a href="#section-{{ loop.index }}">{{ section.title }}</a>{% else %}<a href="#document">Document</a>{% endfor %}<a href="#sources">Sources</a><a href="#gaps">Research gaps</a></nav>
+      </aside>
+      <article class="artifact-document" id="document">
+        <header class="artifact-document-header">
+          <div class="artifact-meta"><span>CASE {{ case.id }}</span><span>{{ artifact.artifact_type | humanize | upper }}</span><span>{{ artifact.review_level | upper }}</span><span>{{ artifact.word_count }} WORDS</span></div>
+          <h1>{{ artifact.title }}</h1>
+          <p style="margin-top:1rem"><span class="badge {{ artifact.status | badge_class }}">{{ artifact.status | humanize }}</span></p>
+        </header>
+        <div class="artifact-copy">{{ artifact_body }}</div>
+        {% if artifact.artifact_type == 'script' and sections %}
+          <section class="panel" style="margin-top:3rem"><p class="eyebrow">Revise in place</p><h2>Replace one script section</h2><p class="muted">Existing claim and evidence markers may be reused. Unknown markers are rejected.</p><form method="post" action="/app/artifacts/{{ artifact.id }}/revisions"><div class="field"><label for="section-id">Section</label><select id="section-id" name="section_id">{% for section in sections %}<option value="{{ section.id }}">{{ section.title }}</option>{% endfor %}</select></div><div class="field"><label for="replacement">Replacement</label><textarea id="replacement" name="replacement" required></textarea></div><button type="submit">Save revision</button></form></section>
+        {% endif %}
+      </article>
+      <aside class="artifact-tools" aria-label="Evidence and artifact actions">
+        <section class="tool-section"><h2>Continue this case</h2><p class="fine">Another output reuses the same claims and evidence.</p><div class="action-group">{% for mode, label in [('brief','Brief'),('research','Research'),('script','Script')] %}<form method="post" action="/app/cases/{{ case.id }}/convert"><input type="hidden" name="mode" value="{{ mode }}"><input type="hidden" name="review_level" value="instant"><button class="button-secondary button-small" type="submit">{{ label }}</button></form>{% endfor %}</div></section>
+        <section class="tool-section"><h2>Claim ledger · {{ claim_rows | length }}</h2>{% for row in claim_rows %}<details class="claim-detail" id="claim-{{ row.claim.id }}"><summary><span class="claim-id">C{{ row.claim.id }}</span>{{ row.claim.claim_text }} <span class="badge {{ row.claim.verification_status | badge_class }}">{{ row.claim.verification_status | humanize }}</span></summary>{% for link in row.evidence %}<div class="passage">{{ link.evidence.passage_text if link.evidence else 'No passage text was retained.' }}<div class="passage-meta">{{ link.stance | upper }} · {{ (link.strength * 100) | round | int }}% STRENGTH<br>{{ link.evidence | locator if link.evidence else 'No locator' }} · {{ link.rationale }}</div></div>{% else %}<p class="fine">No independent passage obtained.</p>{% endfor %}<form class="compact-form" method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Deepen this claim</button></form></details>{% else %}<p class="empty">No claims were extracted.</p>{% endfor %}</section>
+        <section class="tool-section" id="sources"><h2>Sources · {{ sources | length }}</h2><ul class="source-list">{% for source in sources %}<li>{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Source' }}</a>{% else %}{{ source.title or 'Source' }}{% endif %}<span class="badge badge-neutral">{{ source.source_quality or 'unclassified' }}</span><small>{{ source.source_quality_rationale or 'No quality rationale recorded.' }}</small></li>{% else %}<li>No sources retained.</li>{% endfor %}</ul></section>
+        <section class="tool-section" id="gaps"><h2>Research gaps · {{ gaps | length }}</h2><ul class="source-list">{% for gap in gaps %}<li>{{ gap.question }}<small>{{ gap.gap_type | humanize }} · {{ gap.status | humanize }}</small></li>{% else %}<li>No explicit gaps.</li>{% endfor %}</ul></section>
+      </aside>
+    </div>
+  </main>
+{% endblock %}
