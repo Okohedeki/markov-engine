@@ -533,6 +533,86 @@ class ResearchSqliteMixin:
             )
         return result
 
+    async def get_evidence_passage(
+        self, evidence_id: int
+    ) -> EvidencePassageRec | None:
+        async with self._conn.execute(
+            "SELECT * FROM evidence_passages WHERE id = ?", (evidence_id,)
+        ) as cur:
+            row = await cur.fetchone()
+        return self._evidence(row) if row else None
+
+    async def update_evidence_passage(
+        self,
+        evidence_id: int,
+        *,
+        passage_text: str | None = None,
+        start_seconds: float | None = None,
+        end_seconds: float | None = None,
+        page_number: int | None = None,
+        section_title: str | None = None,
+    ) -> EvidencePassageRec:
+        existing = await self.get_evidence_passage(evidence_id)
+        if existing is None:
+            raise ValueError("Evidence passage not found")
+        await self._conn.execute(
+            "UPDATE evidence_passages SET passage_text = ?, start_seconds = ?, "
+            "end_seconds = ?, page_number = ?, section_title = ? WHERE id = ?",
+            (
+                existing.passage_text if passage_text is None else passage_text,
+                existing.start_seconds if start_seconds is None else start_seconds,
+                existing.end_seconds if end_seconds is None else end_seconds,
+                existing.page_number if page_number is None else page_number,
+                existing.section_title if section_title is None else section_title,
+                evidence_id,
+            ),
+        )
+        await self._conn.commit()
+        updated = await self.get_evidence_passage(evidence_id)
+        assert updated is not None
+        return updated
+
+    async def update_claim_evidence(
+        self,
+        *,
+        claim_id: int,
+        evidence_passage_id: int,
+        stance: str | None = None,
+        strength: float | None = None,
+        rationale: str | None = None,
+        review_status: str | None = None,
+    ) -> ClaimEvidenceRec:
+        links = await self.list_claim_evidence(claim_id)
+        existing = next(
+            (
+                link
+                for link in links
+                if link.evidence_passage_id == evidence_passage_id
+            ),
+            None,
+        )
+        if existing is None:
+            raise ValueError("Claim-evidence link not found")
+        await self._conn.execute(
+            "UPDATE claim_evidence SET stance = ?, strength = ?, rationale = ?, "
+            "review_status = ? WHERE claim_id = ? AND evidence_passage_id = ?",
+            (
+                existing.stance if stance is None else stance,
+                existing.strength if strength is None else float(strength),
+                existing.rationale if rationale is None else rationale,
+                existing.review_status if review_status is None else review_status,
+                claim_id,
+                evidence_passage_id,
+            ),
+        )
+        await self._conn.commit()
+        updated = next(
+            link
+            for link in await self.list_claim_evidence(claim_id)
+            if link.evidence_passage_id == evidence_passage_id
+        )
+        return updated
+
     async def add_case_artifact(
         self,
         *,
@@ -746,6 +826,15 @@ class ResearchSqliteMixin:
         ) as cur:
             row = await cur.fetchone()
         return self._job(row) if row else None
+
+    async def list_jobs(self, *, owner_id: str, limit: int = 50) -> list[JobRec]:
+        async with self._conn.execute(
+            "SELECT * FROM jobs WHERE owner_id = ? "
+            "ORDER BY created_at DESC, id DESC LIMIT ?",
+            (owner_id, int(limit)),
+        ) as cur:
+            rows = await cur.fetchall()
+        return [self._job(row) for row in rows]
 
     async def update_job(
         self,
@@ -1093,3 +1182,13 @@ class ResearchSqliteMixin:
         )
         await self._conn.commit()
         return CreditAccountRec(owner_id=owner_id, balance=balance)
+
+    async def has_credit_transaction(
+        self, *, owner_id: str, idempotency_key: str
+    ) -> bool:
+        async with self._conn.execute(
+            "SELECT 1 FROM credit_transactions "
+            "WHERE owner_id = ? AND idempotency_key = ?",
+            (owner_id, idempotency_key),
+        ) as cur:
+            return await cur.fetchone() is not None
