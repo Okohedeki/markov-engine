@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ job.mode | title }} case — Markov{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block meta %}{% if refresh %}<meta http-equiv="refresh" content="{{ refresh }}">{% endif %}{% endblock %}
+{% block body %}
+  <div class="app-frame">
+    {% include "partials/app_sidebar.html" %}
+    <main class="app-main" id="main-content">
+      <header class="app-topbar"><span class="breadcrumbs"><a href="/app">WORKSPACE</a> / CASE {{ job.research_case_id }}</span><span class="badge {{ job.status | badge_class }}">{{ job.status | humanize }}</span></header>
+      <div class="app-content">
+        <div class="app-title"><div><p class="eyebrow">{{ job.review_level }} {{ job.mode }}</p><h1>{{ stage_title }}</h1></div><p class="lede">{{ stage_description }}</p></div>
+        {% if job.error %}<p class="error" role="alert">{{ job.error }}</p>{% endif %}
+        <section class="job-stage" aria-live="polite"><div><p class="eyebrow" style="color:#9ec1b4">Current state</p><h2>{{ job.stage | humanize }}</h2><p style="color:#bfc8c1">Case {{ job.research_case_id }} · Job <span class="mono">{{ job.id }}</span></p></div>{% if refresh %}<span class="activity-mark" aria-label="Work in progress"></span>{% endif %}</section>
+        <div class="workspace-grid" style="margin-top:1.5rem">
+          <section class="panel"><p class="eyebrow">Processing timeline</p><div class="timeline">{% for event in events %}<article class="timeline-event"><h3>{{ event.stage | humanize }}</h3><p>{{ event.detail }}</p></article>{% else %}<p class="empty">The job is queued. Its first stage will appear here.</p>{% endfor %}</div></section>
+          <aside class="panel"><p class="eyebrow">Delivery</p>{% if job.status == 'awaiting_review' %}<h2>In review</h2><p class="muted">A reviewer is checking claim and evidence decisions before delivery.</p>{% elif artifacts %}<p>Your artifact is ready.</p>{% for item in artifacts %}<a class="button" href="/app/artifacts/{{ item.id }}">Open {{ item.artifact_type | humanize }}</a>{% endfor %}{% elif job.status == 'failed' %}<h2>Needs attention</h2><p class="muted">The case stopped safely. No completed artifact was delivered.</p>{% else %}<h2>Building the case</h2><p class="muted">This page refreshes while the work advances. You can leave and return from Projects.</p>{% endif %}</aside>
+        </div>
+      </div>
+    </main>
+  </div>
+{% endblock %}
