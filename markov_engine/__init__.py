@@ -40,7 +40,7 @@ from markov_engine.store.records import (
 )
 from markov_engine.store.sqlite import SqliteStore
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 # Lazy heavy entrypoints (PEP 562).
 _LAZY = {
@@ -50,6 +50,11 @@ _LAZY = {
     "discover_candidates": ("markov_engine.growth", "discover_candidates"),
     "ingest_chosen": ("markov_engine.growth", "ingest_chosen"),
     "generate_artifact": ("markov_engine.generate", "generate_artifact"),
+    "create_research_case": ("markov_engine.research", "create_research_case"),
+    "process_research_case": ("markov_engine.research", "process_research_case"),
+    "convert_case_artifact": ("markov_engine.research", "convert_case_artifact"),
+    "deepen_claim": ("markov_engine.revisions", "deepen_claim"),
+    "create_app": ("markov_engine.api", "create_app"),
 }
 
 
@@ -76,4 +81,6 @@ __all__ = [
     "CreditAccountRec",
     "ingest_url", "assign_topic", "grow_chain", "discover_candidates",
     "ingest_chosen", "generate_artifact",
+    "create_research_case", "process_research_case", "convert_case_artifact",
+    "deepen_claim", "create_app",
 ]
