@@ -1,0 +1,351 @@
+"""One reusable research-case pipeline for Brief, Research, and Script."""
+
+from __future__ import annotations
+
+import re
+from urllib.parse import urlparse
+
+from markov_engine.claims import extract_claims
+from markov_engine.config import get_settings
+from markov_engine.evidence import research_claim
+from markov_engine.extract import classify_url, extract_content
+from markov_engine.renderers import RenderedArtifact, render_artifact
+from markov_engine.store.records import ArtifactRec, ResearchCaseRec
+from markov_engine.store.sqlite import SqliteStore
+
+_settings = get_settings()
+
+MODE_TO_ARTIFACT = {
+    "brief": "brief",
+    "research": "research_report",
+    "research_report": "research_report",
+    "script": "script",
+}
+REVIEW_LEVELS = {"instant", "verified"}
+
+
+def classify_input(value: str) -> str:
+    clean = (value or "").strip()
+    parsed = urlparse(clean)
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        return classify_url(clean)
+    return "topic"
+
+
+def _initial_title(value: str) -> str:
+    clean = re.sub(r"\s+", " ", value).strip()
+    if classify_input(clean) == "topic":
+        return clean[:200] or "Untitled research case"
+    host = (urlparse(clean).hostname or "Source").removeprefix("www.")
+    return f"Research from {host}"[:200]
+
+
+async def create_research_case(
+    store: SqliteStore,
+    *,
+    owner_id: str,
+    original_input: str,
+    mode: str,
+    constraints: dict | None = None,
+) -> ResearchCaseRec:
+    if mode not in MODE_TO_ARTIFACT:
+        raise ValueError(f"Unsupported mode: {mode}")
+    input_type = classify_input(original_input)
+    if input_type == "topic":
+        raise ValueError("The first vertical slice accepts a public URL")
+    return await store.create_research_case(
+        owner_id=owner_id,
+        title=_initial_title(original_input),
+        original_input=original_input.strip(),
+        input_type=input_type,
+        purpose=mode,
+        constraints=constraints or {},
+    )
+
+
+async def _ensure_seed_source(
+    store: SqliteStore,
+    case: ResearchCaseRec,
+    *,
+    extractor,
+) -> tuple[object, list]:
+    case_sources = await store.list_research_case_sources(case.id)
+    seed_row = next(
+        (row for row in case_sources if row["case_source_role"] == "seed"), None
+    )
+    if seed_row is not None:
+        source = await store.get_source(seed_row["id"])
+        segments = await store.list_source_segments(seed_row["id"])
+        if source is not None and segments:
+            return source, segments
+
+    content = await extractor(
+        case.original_input,
+        _settings.tmp_dir,
+        _settings.whisper_model if _settings.transcribe_media else None,
+    )
+    if not content.success:
+        raise RuntimeError(content.error or "Source could not be extracted")
+    if not content.segments:
+        raise RuntimeError("Source extraction returned no stable segments")
+    source = await store.get_source_by_url(case.original_input)
+    if source is None:
+        source = await store.add_source(
+            url=case.original_input,
+            title=content.title or case.title,
+            source_type=content.source_type,
+            content_text=content.content_text,
+            summary="",
+            metadata=content.metadata or None,
+        )
+    segments = await store.add_source_segments(
+        source_id=source.id,
+        segments=[segment.as_dict() for segment in content.segments],
+    )
+    metadata = content.metadata or {}
+    await store.update_source_provenance(
+        source.id,
+        source_role="seed",
+        source_quality="commentary" if content.source_type == "youtube" else "analysis",
+        source_quality_rationale=(
+            "Seed source supplied by the customer; its claims require independent evidence."
+        ),
+        publisher=metadata.get("channel") or metadata.get("uploader"),
+        author=metadata.get("uploader") or metadata.get("author"),
+        published_at=metadata.get("upload_date") or metadata.get("published_at"),
+        retrieved_at=None,
+    )
+    await store.add_research_case_source(
+        research_case_id=case.id, source_id=source.id, source_role="seed"
+    )
+    await store.update_research_case(
+        case.id, title=(content.title or case.title)[:200], status="extracting_claims"
+    )
+    return source, segments
+
+
+async def _ensure_claims(
+    store: SqliteStore,
+    case: ResearchCaseRec,
+    *,
+    seed_source,
+    segments,
+    claim_extractor,
+) -> list:
+    existing = await store.list_claims(case.id)
+    if existing:
+        return existing
+    extracted, gaps, cost = await claim_extractor(segments)
+    by_id = {segment.id: segment for segment in segments}
+    records = []
+    for item in extracted:
+        located = [by_id[segment_id] for segment_id in item["source_segment_ids"] if segment_id in by_id]
+        if not located:
+            continue
+        records.append(
+            await store.add_claim(
+                research_case_id=case.id,
+                seed_source_id=seed_source.id,
+                claim_text=item["claim_text"],
+                claim_type=item["claim_type"],
+                importance=item["importance"],
+                speaker_certainty=item["speaker_certainty"],
+                source_start_segment_id=located[0].id,
+                source_end_segment_id=located[-1].id,
+            )
+        )
+    if not records:
+        raise RuntimeError("No located claims were persisted")
+    for gap in gaps:
+        related = str(gap.get("related_claim_text") or "").lower()
+        claim_id = next(
+            (claim.id for claim in records if related and claim.claim_text.lower() == related),
+            None,
+        )
+        await store.add_research_gap(
+            research_case_id=case.id,
+            claim_id=claim_id,
+            gap_type=gap["gap_type"],
+            question=gap["question"],
+            importance=gap["importance"],
+        )
+    await store.record_cost(
+        research_case_id=case.id,
+        provider="llm",
+        operation="claim_extraction",
+        units=len(records),
+        cost=cost,
+    )
+    return await store.list_claims(case.id)
+
+
+async def persist_rendered_artifact(
+    store: SqliteStore,
+    *,
+    case: ResearchCaseRec,
+    rendered: RenderedArtifact,
+    review_level: str,
+) -> ArtifactRec:
+    status = "awaiting_review" if review_level == "verified" else "completed"
+    artifact = await store.add_case_artifact(
+        research_case_id=case.id,
+        artifact_type=rendered.artifact_type,
+        review_level=review_level,
+        status=status,
+        title=rendered.title,
+        content=rendered.content,
+        structured_content=rendered.structured_content,
+        word_count=rendered.word_count,
+        model_used="deterministic-v1",
+        generation_cost=0,
+        source_ids=rendered.source_ids,
+    )
+    if review_level == "verified":
+        await store.create_review_job(artifact.id)
+    await store.record_usage_event(
+        owner_id=case.owner_id,
+        event_type="artifact_generated",
+        research_case_id=case.id,
+        artifact_id=artifact.id,
+        metadata={
+            "mode": rendered.artifact_type,
+            "review_level": review_level,
+            "word_count": rendered.word_count,
+        },
+    )
+    return artifact
+
+
+async def generate_case_artifact(
+    store: SqliteStore,
+    *,
+    case_id: int,
+    artifact_type: str,
+    review_level: str = "instant",
+    constraints: dict | None = None,
+    force: bool = False,
+) -> ArtifactRec:
+    if artifact_type not in {"brief", "research_report", "script"}:
+        raise ValueError(f"Unsupported artifact type: {artifact_type}")
+    if review_level not in REVIEW_LEVELS:
+        raise ValueError(f"Unsupported review level: {review_level}")
+    case = await store.get_research_case(case_id)
+    if case is None:
+        raise ValueError("Research case not found")
+    if not force:
+        existing = next(
+            (
+                artifact
+                for artifact in await store.list_case_artifacts(case_id)
+                if artifact.artifact_type == artifact_type
+                and artifact.review_level == review_level
+            ),
+            None,
+        )
+        if existing is not None:
+            return existing
+    rendered = await render_artifact(
+        store, case_id, artifact_type, constraints=constraints
+    )
+    artifact = await persist_rendered_artifact(
+        store, case=case, rendered=rendered, review_level=review_level
+    )
+    purposes = set(filter(None, case.purpose.split(",")))
+    purposes.add("research" if artifact_type == "research_report" else artifact_type)
+    await store.update_research_case(case_id, purpose=",".join(sorted(purposes)))
+    return artifact
+
+
+async def process_research_case(
+    store: SqliteStore,
+    *,
+    case_id: int,
+    review_level: str = "instant",
+    modes: list[str] | None = None,
+    extractor=extract_content,
+    claim_extractor=extract_claims,
+    claim_researcher=research_claim,
+    searcher=None,
+    max_priority_claims: int = 5,
+    max_sources_per_claim: int = 3,
+    claim_time_budget_s: float = 60,
+) -> list[ArtifactRec]:
+    """Run or resume one case without repeating completed extraction/research."""
+    case = await store.get_research_case(case_id)
+    if case is None:
+        raise ValueError("Research case not found")
+    if review_level not in REVIEW_LEVELS:
+        raise ValueError(f"Unsupported review level: {review_level}")
+    selected_modes = modes or [case.purpose.split(",")[0]]
+    artifact_types = [MODE_TO_ARTIFACT[mode] for mode in selected_modes]
+    await store.update_research_case(case.id, status="extracting")
+    await store.record_usage_event(
+        owner_id=case.owner_id,
+        event_type="job_started",
+        research_case_id=case.id,
+        metadata={"modes": selected_modes, "review_level": review_level},
+    )
+    try:
+        seed_source, segments = await _ensure_seed_source(
+            store, case, extractor=extractor
+        )
+        claims = await _ensure_claims(
+            store,
+            case,
+            seed_source=seed_source,
+            segments=segments,
+            claim_extractor=claim_extractor,
+        )
+        await store.update_research_case(case.id, status="researching")
+        for claim in [
+            item
+            for item in claims
+            if item.verification_status == "not_researched"
+        ][:max_priority_claims]:
+            kwargs = {
+                "case_id": case.id,
+                "claim": claim,
+                "extractor": extractor,
+                "max_sources": max_sources_per_claim,
+                "time_budget_s": claim_time_budget_s,
+            }
+            if searcher is not None:
+                kwargs["searcher"] = searcher
+            await claim_researcher(store, **kwargs)
+        await store.update_research_case(case.id, status="rendering")
+        refreshed = await store.get_research_case(case.id)
+        assert refreshed is not None
+        artifacts = []
+        for artifact_type in artifact_types:
+            rendered = await render_artifact(
+                store,
+                case.id,
+                artifact_type,
+                constraints=refreshed.constraints,
+            )
+            artifacts.append(
+                await persist_rendered_artifact(
+                    store,
+                    case=refreshed,
+                    rendered=rendered,
+                    review_level=review_level,
+                )
+            )
+        final_status = "awaiting_review" if review_level == "verified" else "completed"
+        await store.update_research_case(case.id, status=final_status)
+        await store.record_usage_event(
+            owner_id=case.owner_id,
+            event_type="job_completed",
+            research_case_id=case.id,
+            metadata={"modes": artifact_types, "review_level": review_level},
+        )
+        return artifacts
+    except Exception as exc:
+        await store.update_research_case(case.id, status="failed")
+        await store.record_usage_event(
+            owner_id=case.owner_id,
+            event_type="job_failed",
+            research_case_id=case.id,
+            metadata={"error": str(exc)},
+        )
+        raise
