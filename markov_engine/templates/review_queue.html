@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Reviewer queue — Markov{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block body %}<main class="app-content" id="main-content"><div class="app-title"><div><a class="wordmark" href="/app/reviews">MARKOV</a><p class="eyebrow" style="margin-top:3rem">Internal quality desk</p><h1>Reviewer queue</h1></div><p class="lede">Structured decisions only. Every correction requires a reason.</p></div><section class="panel"><ul class="project-list">{% for item in reviews %}<li class="project-item"><a href="/app/reviews/{{ item.id }}"><span><strong>Review {{ item.id }}</strong><span class="fine">Artifact {{ item.artifact_id }}</span></span><span class="badge {{ item.status | badge_class }}">{{ item.status | humanize }}</span></a></li>{% else %}<li class="empty">The queue is empty.</li>{% endfor %}</ul></section></main>{% endblock %}
