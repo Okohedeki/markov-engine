@@ -417,7 +417,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         if review_job is None:
             raise HTTPException(status_code=404, detail="Review not found")
         artifact = await store.get_artifact(review_job.artifact_id)
+        if artifact is None or artifact.research_case_id is None:
+            raise HTTPException(status_code=404, detail="Reviewed artifact not found")
         case = await store.get_research_case(artifact.research_case_id)
+        if case is None:
+            raise HTTPException(status_code=404, detail="Research case not found")
         claims = await store.list_claims(case.id)
         claim_forms = []
         for claim in claims:
