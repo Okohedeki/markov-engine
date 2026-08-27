@@ -21,6 +21,7 @@ from fastapi import (
 )
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from markov_engine.billing import (
@@ -168,6 +169,8 @@ def create_app(
     app.state.settings = settings
     app.state.store = store
     app.state.process_case = process_case
+    static_dir = Path(__file__).resolve().parent / "static"
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
     limiter = _RateLimiter(settings.api_rate_limit_per_minute)
 
     async def owner_auth(
