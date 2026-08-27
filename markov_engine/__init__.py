@@ -19,11 +19,24 @@ from markov_engine.config import Settings, get_settings
 from markov_engine.store.base import Store
 from markov_engine.store.records import (
     ArtifactRec,
+    ClaimEvidenceRec,
+    ClaimRec,
     ChainRec,
     ChainSourceRec,
+    CostLedgerRec,
+    CreditAccountRec,
     EntityRec,
+    EvidencePassageRec,
+    JobEventRec,
+    JobRec,
+    ResearchCaseRec,
+    ResearchGapRec,
+    ReviewDecisionRec,
+    ReviewJobRec,
     SourceRec,
+    SourceSegmentRec,
     TopicRec,
+    UsageEventRec,
 )
 from markov_engine.store.sqlite import SqliteStore
 
@@ -57,6 +70,10 @@ if TYPE_CHECKING:  # for type checkers / IDEs only
 __all__ = [
     "Settings", "get_settings", "Store", "SqliteStore",
     "SourceRec", "TopicRec", "ChainRec", "ChainSourceRec", "EntityRec", "ArtifactRec",
+    "ResearchCaseRec", "SourceSegmentRec", "ClaimRec", "ResearchGapRec",
+    "EvidencePassageRec", "ClaimEvidenceRec", "JobRec", "JobEventRec",
+    "ReviewJobRec", "ReviewDecisionRec", "UsageEventRec", "CostLedgerRec",
+    "CreditAccountRec",
     "ingest_url", "assign_topic", "grow_chain", "discover_candidates",
     "ingest_chosen", "generate_artifact",
 ]
