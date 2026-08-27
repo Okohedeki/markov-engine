@@ -74,6 +74,7 @@ async def submit_job(
             raise ValueError("URL input must be a public HTTP(S) URL")
     webhook_url = validate_webhook_url(webhook_url)
     job_id = str(uuid.uuid4())
+    prior_jobs = await store.list_jobs(owner_id=owner_id, limit=1)
     await reserve_job_credits(
         store,
         owner_id=owner_id,
@@ -116,6 +117,13 @@ async def submit_job(
                 "input_type": case.input_type,
             },
         )
+        if prior_jobs:
+            await store.record_usage_event(
+                owner_id=owner_id,
+                event_type="repeat_project",
+                research_case_id=case.id,
+                metadata={"previous_job_id": prior_jobs[0].id},
+            )
         return job, True
     except Exception:
         await refund_job_credits(
@@ -169,7 +177,7 @@ async def run_job(
     job = await store.get_job(job_id)
     if job is None:
         raise ValueError("Job not found")
-    if job.status not in {"queued", "failed"}:
+    if job.status != "queued":
         return job
     await store.update_job(job.id, status="running", stage="starting", error=None)
     await store.add_job_event(job_id=job.id, stage="starting")
