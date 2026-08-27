@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{% block description %}Markov turns source material into finished briefs, research reports, and factual scripts with inspectable evidence.{% endblock %}">
+  {% block meta %}{% endblock %}
+  <title>{% block title %}Markov{% endblock %}</title>
+  <link rel="icon" href="/static/markov-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/markov.css">
+  <script defer src="/static/markov.js"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  {% block body %}{% endblock %}
+</body>
+</html>
