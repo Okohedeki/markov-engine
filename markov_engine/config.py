@@ -69,6 +69,58 @@ class Settings(BaseSettings):
     transcribe_media: bool = Field(True, alias="TRANSCRIBE_MEDIA")
     tmp_dir: str = Field("data/tmp", alias="TMP_DIR")
 
+    # ── Commercial V1 delivery ─────────────────────────────────────
+    database_path: str = Field("data/markov.db", alias="MARKOV_DATABASE_PATH")
+    api_keys: dict[str, str] = Field(
+        default_factory=dict,
+        alias="MARKOV_API_KEYS",
+        description="JSON mapping of API key to owner id.",
+    )
+    internal_api_keys: dict[str, str] = Field(
+        default_factory=dict,
+        alias="MARKOV_INTERNAL_API_KEYS",
+        description="JSON mapping of reviewer API key to reviewer id.",
+    )
+    web_session_secret: str = Field("change-me", alias="MARKOV_WEB_SESSION_SECRET")
+    api_rate_limit_per_minute: int = Field(
+        60, alias="MARKOV_API_RATE_LIMIT_PER_MINUTE"
+    )
+    opening_credits: float = Field(0, alias="MARKOV_OPENING_CREDITS")
+    product_credit_costs: dict[str, float] = Field(
+        default_factory=lambda: {
+            "brief_instant": 1,
+            "brief_verified": 3,
+            "research_instant": 3,
+            "research_verified": 6,
+            "script_instant": 4,
+            "script_verified": 8,
+        },
+        alias="MARKOV_PRODUCT_CREDIT_COSTS",
+        description="Configurable credits charged for each sellable variant.",
+    )
+    stripe_secret_key: str = Field("", alias="STRIPE_SECRET_KEY")
+    stripe_webhook_secret: str = Field("", alias="STRIPE_WEBHOOK_SECRET")
+    stripe_price_ids: dict[str, str] = Field(
+        default_factory=dict,
+        alias="STRIPE_PRICE_IDS",
+        description="JSON mapping of credit-pack names to Stripe Price ids.",
+    )
+    stripe_credit_packs: dict[str, float] = Field(
+        default_factory=dict,
+        alias="STRIPE_CREDIT_PACKS",
+        description="JSON mapping of Stripe Price ids to granted credits.",
+    )
+    stripe_success_url: str = Field(
+        "http://localhost:8000/app?payment=success", alias="STRIPE_SUCCESS_URL"
+    )
+    stripe_cancel_url: str = Field(
+        "http://localhost:8000/app?payment=cancelled", alias="STRIPE_CANCEL_URL"
+    )
+    webhook_signing_secret: str = Field("", alias="MARKOV_WEBHOOK_SIGNING_SECRET")
+    human_review_hourly_cost: float = Field(
+        0, alias="MARKOV_HUMAN_REVIEW_HOURLY_COST"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
