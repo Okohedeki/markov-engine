@@ -1,0 +1,8 @@
+{
+  "events": [
+    {"tStartMs": 0, "dDurationMs": 2200, "segs": [{"utf8": "Opening context."}]},
+    {"tStartMs": 2200, "dDurationMs": 3100, "segs": [{"utf8": "The first factual claim."}]},
+    {"tStartMs": 5300, "dDurationMs": 2700, "segs": [{"utf8": "A qualification follows."}]},
+    {"tStartMs": 8000, "dDurationMs": 2500, "segs": [{"utf8": "The conclusion."}]}
+  ]
+}

@@ -8,13 +8,18 @@ Dispatches by URL/domain to the right extractor: PDFs (PyMuPDF), articles
 from __future__ import annotations
 
 import asyncio
+import html
+import json
 import logging
 import os
+import re
 from dataclasses import dataclass, field
+from html.parser import HTMLParser
+from urllib.parse import urlparse
 
 import httpx
 
-from markov_engine.transcribe import transcribe
+from markov_engine.transcribe import transcribe_segments
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +46,45 @@ _MEDIA_TYPES = {"youtube", "tiktok", "instagram", "twitter", "reddit", "audio", 
 
 
 @dataclass
+class ExtractedSegment:
+    """One stable, source-addressable unit of extracted content."""
+
+    ordinal: int
+    text: str
+    start_seconds: float | None = None
+    end_seconds: float | None = None
+    page_number: int | None = None
+    section_title: str | None = None
+    heading_path: list[str] = field(default_factory=list)
+    character_start: int | None = None
+    character_end: int | None = None
+    speaker: str | None = None
+    caption_source: str | None = None
+
+    def as_dict(self) -> dict:
+        return {
+            "ordinal": self.ordinal,
+            "text": self.text,
+            "start_seconds": self.start_seconds,
+            "end_seconds": self.end_seconds,
+            "page_number": self.page_number,
+            "section_title": self.section_title,
+            "heading_path": self.heading_path,
+            "character_start": self.character_start,
+            "character_end": self.character_end,
+            "speaker": self.speaker,
+            "caption_source": self.caption_source,
+        }
+
+
+@dataclass
 class ExtractedContent:
     url: str | None
     source_type: str
     title: str
     content_text: str
     metadata: dict = field(default_factory=dict)
+    segments: list[ExtractedSegment] = field(default_factory=list)
     success: bool = True
     error: str | None = None
 
@@ -54,14 +92,16 @@ class ExtractedContent:
 def classify_url(url: str) -> str:
     """Classify a URL into a source type based on domain."""
     url_lower = url.lower().rstrip("/")
+    parsed = urlparse(url_lower)
+    host = (parsed.hostname or "").lower()
     # Check if URL points to a PDF
     if url_lower.endswith(".pdf"):
         return "pdf"
     # arxiv.org/pdf/ URLs are always PDFs
-    if "arxiv.org/pdf/" in url_lower:
+    if (host == "arxiv.org" or host.endswith(".arxiv.org")) and parsed.path.startswith("/pdf/"):
         return "pdf"
     for domain, stype in _DOMAIN_MAP.items():
-        if domain in url_lower:
+        if host == domain or host.endswith("." + domain):
             return stype
     return "article"
 
@@ -99,7 +139,8 @@ async def _extract_media(
         description = info.get("description", "")
 
         # Step 2: Try to get subtitles/captions
-        subtitle_text = _extract_subtitles_from_info(info)
+        caption_segments = await _extract_caption_segments(info)
+        subtitle_text = " ".join(segment.text for segment in caption_segments)
 
         if subtitle_text:
             content = (
@@ -113,15 +154,17 @@ async def _extract_media(
                 title=title,
                 content_text=content,
                 metadata=_extract_metadata(info),
+                segments=caption_segments,
             )
 
         # Step 3: No subtitles — download audio and transcribe (skip when
         # transcription is disabled; metadata + description are enough).
-        transcript = (
-            await _download_and_transcribe(url, tmp_dir, whisper_model)
+        transcript_segments = (
+            await _download_and_transcribe_segments(url, tmp_dir, whisper_model)
             if whisper_model
-            else ""
+            else []
         )
+        transcript = " ".join(segment.text for segment in transcript_segments)
 
         if transcript:
             content = (
@@ -140,6 +183,10 @@ async def _extract_media(
             title=title,
             content_text=content,
             metadata=_extract_metadata(info),
+            segments=(
+                transcript_segments
+                or _plain_segments(description or title, section_title="Description")
+            ),
         )
 
     except Exception as e:
@@ -183,21 +230,220 @@ def _ytdlp_info_sync(url: str) -> dict | None:
         return ydl.extract_info(url, download=False)
 
 
-def _extract_subtitles_from_info(info: dict) -> str | None:
-    """Try to extract subtitle text from yt-dlp info dict."""
-    for sub_key in ("requested_subtitles", "subtitles", "automatic_captions"):
-        subs = info.get(sub_key)
-        if not subs:
+def _with_character_offsets(
+    segments: list[ExtractedSegment], *, start_at: int = 0
+) -> list[ExtractedSegment]:
+    cursor = start_at
+    for ordinal, segment in enumerate(segments):
+        segment.ordinal = ordinal
+        segment.character_start = cursor
+        cursor += len(segment.text)
+        segment.character_end = cursor
+        cursor += 1
+    return segments
+
+
+def _plain_segments(
+    text: str, *, section_title: str | None = None, caption_source: str | None = None
+) -> list[ExtractedSegment]:
+    clean = (text or "").strip()
+    if not clean:
+        return []
+    return _with_character_offsets(
+        [
+            ExtractedSegment(
+                ordinal=0,
+                text=clean,
+                section_title=section_title,
+                caption_source=caption_source,
+            )
+        ]
+    )
+
+
+def _parse_json3_segments(
+    payload: str | dict, *, caption_source: str
+) -> list[ExtractedSegment]:
+    try:
+        data = json.loads(payload) if isinstance(payload, str) else payload
+    except (TypeError, ValueError):
+        return []
+    output: list[ExtractedSegment] = []
+    for event in data.get("events", []) if isinstance(data, dict) else []:
+        pieces = event.get("segs") or []
+        text = "".join(str(piece.get("utf8") or "") for piece in pieces)
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
             continue
+        start = float(event.get("tStartMs") or 0) / 1000
+        duration = float(event.get("dDurationMs") or 0) / 1000
+        output.append(
+            ExtractedSegment(
+                ordinal=len(output),
+                text=text,
+                start_seconds=start,
+                end_seconds=start + duration,
+                caption_source=caption_source,
+            )
+        )
+    return _with_character_offsets(output)
+
+
+def _caption_timestamp(raw: str) -> float | None:
+    value = raw.strip().replace(",", ".")
+    try:
+        parts = [float(part) for part in value.split(":")]
+    except ValueError:
+        return None
+    if len(parts) == 3:
+        return parts[0] * 3600 + parts[1] * 60 + parts[2]
+    if len(parts) == 2:
+        return parts[0] * 60 + parts[1]
+    return None
+
+
+def _parse_timed_text_segments(
+    payload: str, *, caption_source: str
+) -> list[ExtractedSegment]:
+    """Parse WebVTT or SRT cues without discarding cue boundaries."""
+    lines = payload.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    output: list[ExtractedSegment] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index].strip()
+        if "-->" not in line:
+            index += 1
+            continue
+        left, right = line.split("-->", 1)
+        start = _caption_timestamp(left)
+        end = _caption_timestamp(right.strip().split(" ", 1)[0])
+        index += 1
+        cue_lines: list[str] = []
+        while index < len(lines) and lines[index].strip():
+            cue_lines.append(lines[index].strip())
+            index += 1
+        text = html.unescape(re.sub(r"<[^>]+>", "", " ".join(cue_lines)))
+        text = re.sub(r"\s+", " ", text).strip()
+        if text and start is not None and end is not None:
+            # Auto-captions often repeat the previous rolling window. Remove exact
+            # consecutive duplicates while keeping stable timestamps.
+            if output and output[-1].text == text:
+                output[-1].end_seconds = max(output[-1].end_seconds or 0, end)
+            else:
+                output.append(
+                    ExtractedSegment(
+                        ordinal=len(output),
+                        text=text,
+                        start_seconds=start,
+                        end_seconds=end,
+                        caption_source=caption_source,
+                    )
+                )
+        index += 1
+    return _with_character_offsets(output)
+
+
+def _subtitle_payload_segments(
+    payload, *, extension: str, caption_source: str
+) -> list[ExtractedSegment]:
+    if extension == "json3" or isinstance(payload, dict):
+        return _parse_json3_segments(payload, caption_source=caption_source)
+    if isinstance(payload, str):
+        return _parse_timed_text_segments(payload, caption_source=caption_source)
+    return []
+
+
+async def _extract_caption_segments(info: dict) -> list[ExtractedSegment]:
+    """Fetch and parse the best available English caption track from yt-dlp."""
+    sources = (
+        ("requested_subtitles", "youtube_caption"),
+        ("subtitles", "youtube_manual"),
+        ("automatic_captions", "youtube_auto"),
+    )
+    for sub_key, caption_source in sources:
+        subs = info.get(sub_key) or {}
         for lang in ("en", "en-US", "en-GB"):
-            if lang in subs:
-                sub_data = subs[lang]
-                if isinstance(sub_data, list):
-                    for fmt in sub_data:
-                        if isinstance(fmt, dict) and fmt.get("ext") == "json3":
-                            pass
-                elif isinstance(sub_data, dict) and "data" in sub_data:
-                    return sub_data["data"]
+            sub_data = subs.get(lang) if isinstance(subs, dict) else None
+            if not sub_data:
+                continue
+            formats = sub_data if isinstance(sub_data, list) else [sub_data]
+            formats = sorted(
+                (fmt for fmt in formats if isinstance(fmt, dict)),
+                key=lambda fmt: {"json3": 0, "vtt": 1, "srt": 2}.get(
+                    str(fmt.get("ext") or "").lower(), 9
+                ),
+            )
+            for fmt in formats:
+                extension = str(fmt.get("ext") or "vtt").lower()
+                if "data" in fmt:
+                    segments = _subtitle_payload_segments(
+                        fmt["data"],
+                        extension=extension,
+                        caption_source=caption_source,
+                    )
+                    if segments:
+                        return segments
+                file_path = fmt.get("filepath") or fmt.get("filename")
+                if file_path and os.path.isfile(file_path):
+                    try:
+                        with open(file_path, encoding="utf-8") as handle:
+                            payload = handle.read()
+                    except OSError:
+                        payload = ""
+                    segments = _subtitle_payload_segments(
+                        payload,
+                        extension=extension,
+                        caption_source=caption_source,
+                    )
+                    if segments:
+                        return segments
+                subtitle_url = fmt.get("url")
+                if subtitle_url:
+                    try:
+                        async with httpx.AsyncClient(
+                            follow_redirects=True, timeout=30
+                        ) as client:
+                            response = await client.get(
+                                subtitle_url, headers={"User-Agent": "Mozilla/5.0"}
+                            )
+                            response.raise_for_status()
+                        segments = _subtitle_payload_segments(
+                            response.text,
+                            extension=extension,
+                            caption_source=caption_source,
+                        )
+                        if segments:
+                            return segments
+                    except Exception as exc:
+                        logger.debug("Caption fetch failed for %s: %s", subtitle_url, exc)
+    return []
+
+
+def _extract_subtitles_from_info(info: dict) -> str | None:
+    """Compatibility helper for inline caption data.
+
+    Network-backed caption URLs require the async ``_extract_caption_segments``
+    path used by media extraction.
+    """
+    for sub_key, caption_source in (
+        ("requested_subtitles", "youtube_caption"),
+        ("subtitles", "youtube_manual"),
+        ("automatic_captions", "youtube_auto"),
+    ):
+        subs = info.get(sub_key) or {}
+        for lang in ("en", "en-US", "en-GB"):
+            sub_data = subs.get(lang) if isinstance(subs, dict) else None
+            formats = sub_data if isinstance(sub_data, list) else [sub_data]
+            for fmt in formats:
+                if not isinstance(fmt, dict) or "data" not in fmt:
+                    continue
+                segments = _subtitle_payload_segments(
+                    fmt["data"],
+                    extension=str(fmt.get("ext") or "vtt").lower(),
+                    caption_source=caption_source,
+                )
+                if segments:
+                    return " ".join(segment.text for segment in segments)
     return None
 
 
@@ -218,10 +464,25 @@ async def _download_and_transcribe(
     A falsy ``whisper_model`` disables transcription entirely (metadata-only
     ingestion) — much faster for video/social discovery.
     """
+    segments = await _download_and_transcribe_segments(url, tmp_dir, whisper_model)
+    return " ".join(segment.text for segment in segments)
+
+
+async def _download_and_transcribe_segments(
+    url: str, tmp_dir: str, whisper_model: str
+) -> list[ExtractedSegment]:
+    """Download audio and preserve every Whisper segment boundary."""
     if not whisper_model:
-        return ""
+        return []
     os.makedirs(tmp_dir, exist_ok=True)
-    audio_path = os.path.join(tmp_dir, f"audio_{id(url)}")
+    import tempfile
+
+    handle, audio_path = tempfile.mkstemp(prefix="markov_audio_", dir=tmp_dir)
+    os.close(handle)
+    try:
+        os.remove(audio_path)
+    except OSError:
+        pass
 
     try:
         loop = asyncio.get_running_loop()
@@ -229,11 +490,26 @@ async def _download_and_transcribe(
             None, _ytdlp_download_audio_sync, url, audio_path
         )
         if actual_path and os.path.exists(actual_path):
-            return await transcribe(actual_path, model_size=whisper_model)
-        return None
+            transcript = await transcribe_segments(
+                actual_path, model_size=whisper_model
+            )
+            return _with_character_offsets(
+                [
+                    ExtractedSegment(
+                        ordinal=index,
+                        text=segment.text,
+                        start_seconds=segment.start_seconds,
+                        end_seconds=segment.end_seconds,
+                        speaker=segment.speaker,
+                        caption_source=f"whisper:{whisper_model}",
+                    )
+                    for index, segment in enumerate(transcript)
+                ]
+            )
+        return []
     except Exception as e:
         logger.warning("Download+transcribe failed for %s: %s", url, e)
-        return None
+        return []
     finally:
         for ext in ("", ".opus", ".m4a", ".webm", ".mp3", ".wav", ".ogg"):
             p = audio_path + ext
@@ -310,17 +586,19 @@ async def _extract_twitter(
 
         title = f"@{author_handle}: {text[:80]}{'...' if len(text) > 80 else ''}"
 
+        content_text = "\n".join(parts)
         return ExtractedContent(
             url=url,
             source_type="twitter",
             title=title,
-            content_text="\n".join(parts),
+            content_text=content_text,
             metadata={
                 "author": author_handle,
                 "likes": tweet.get("likes", 0),
                 "retweets": tweet.get("retweets", 0),
                 "replies": tweet.get("replies", 0),
             },
+            segments=_plain_segments(content_text, section_title="Post"),
         )
 
     except Exception as e:
@@ -392,12 +670,14 @@ async def _extract_reddit(
                 parts.append("\n--- Top Comments ---")
                 parts.extend(top_comments)
 
+        content_text = "\n".join(parts)
         return ExtractedContent(
             url=url,
             source_type="reddit",
             title=title,
-            content_text="\n".join(parts),
+            content_text=content_text,
             metadata={"author": author, "subreddit": subreddit, "score": score},
+            segments=_plain_segments(content_text, section_title="Post and comments"),
         )
 
     except Exception as e:
@@ -423,7 +703,9 @@ async def _extract_pdf(url: str, tmp_dir: str) -> ExtractedContent:
                 f.write(resp.content)
 
         loop = asyncio.get_running_loop()
-        title, text = await loop.run_in_executor(None, _pymupdf_extract_sync, pdf_path)
+        title, text, segments = await loop.run_in_executor(
+            None, _pymupdf_extract_structured_sync, pdf_path
+        )
 
         if not text or not text.strip():
             return ExtractedContent(
@@ -436,7 +718,11 @@ async def _extract_pdf(url: str, tmp_dir: str) -> ExtractedContent:
             )
 
         return ExtractedContent(
-            url=url, source_type="pdf", title=title or "", content_text=text
+            url=url,
+            source_type="pdf",
+            title=title or "",
+            content_text=text,
+            segments=segments,
         )
 
     except Exception as e:
@@ -459,15 +745,36 @@ async def _extract_pdf(url: str, tmp_dir: str) -> ExtractedContent:
 
 def _pymupdf_extract_sync(pdf_path: str) -> tuple[str, str]:
     """Extract title and text from a PDF file."""
+    title, text, _segments = _pymupdf_extract_structured_sync(pdf_path)
+    return title, text
+
+
+def _pymupdf_extract_structured_sync(
+    pdf_path: str,
+) -> tuple[str, str, list[ExtractedSegment]]:
+    """Extract ordered PDF text blocks with stable one-based page locators."""
     import fitz  # PyMuPDF
 
     doc = fitz.open(pdf_path)
     title = doc.metadata.get("title", "") if doc.metadata else ""
-
-    pages = [page.get_text() for page in doc]
+    segments: list[ExtractedSegment] = []
+    for page_index, page in enumerate(doc):
+        blocks = sorted(page.get_text("blocks"), key=lambda block: (block[1], block[0]))
+        for block in blocks:
+            text = re.sub(r"\s+", " ", str(block[4] or "")).strip()
+            if not text:
+                continue
+            segments.append(
+                ExtractedSegment(
+                    ordinal=len(segments),
+                    text=text,
+                    page_number=page_index + 1,
+                    section_title=f"Page {page_index + 1}",
+                )
+            )
     doc.close()
-
-    return title, "\n".join(pages)
+    _with_character_offsets(segments)
+    return title, "\n\n".join(segment.text for segment in segments), segments
 
 
 async def _extract_article(url: str) -> ExtractedContent:
@@ -476,18 +783,26 @@ async def _extract_article(url: str) -> ExtractedContent:
         import trafilatura
 
         loop = asyncio.get_running_loop()
+        downloaded = await loop.run_in_executor(None, trafilatura.fetch_url, url)
 
-        text = await loop.run_in_executor(None, _trafilatura_extract_sync, url)
-
-        if text:
-            downloaded = await loop.run_in_executor(None, trafilatura.fetch_url, url)
-            metadata = None
-            if downloaded:
-                metadata = trafilatura.extract_metadata(downloaded)
-            title = metadata.title if metadata and metadata.title else ""
-            return ExtractedContent(
-                url=url, source_type="article", title=title, content_text=text
+        if downloaded:
+            text = await loop.run_in_executor(
+                None,
+                lambda: trafilatura.extract(
+                    downloaded, include_tables=True, output_format="txt"
+                ),
             )
+            metadata = trafilatura.extract_metadata(downloaded)
+            title = metadata.title if metadata and metadata.title else ""
+            if text:
+                segments = _article_segments_from_html(downloaded)
+                return ExtractedContent(
+                    url=url,
+                    source_type="article",
+                    title=title,
+                    content_text=text,
+                    segments=segments or _plain_segments(text, section_title=title or None),
+                )
 
         async with httpx.AsyncClient(follow_redirects=True, timeout=30) as client:
             resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -499,8 +814,13 @@ async def _extract_article(url: str) -> ExtractedContent:
         if text:
             metadata = trafilatura.extract_metadata(html)
             title = metadata.title if metadata and metadata.title else ""
+            segments = _article_segments_from_html(html)
             return ExtractedContent(
-                url=url, source_type="article", title=title, content_text=text
+                url=url,
+                source_type="article",
+                title=title,
+                content_text=text,
+                segments=segments or _plain_segments(text, section_title=title or None),
             )
 
         return ExtractedContent(
@@ -533,18 +853,107 @@ def _trafilatura_extract_sync(url: str) -> str | None:
     return None
 
 
+class _ArticleSegmentParser(HTMLParser):
+    """Small HTML structure parser for headings and paragraph-like blocks."""
+
+    _BLOCK_TAGS = {"p", "li", "blockquote", "figcaption", "pre"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.heading_stack: list[str] = []
+        self.items: list[tuple[str, list[str]]] = []
+        self._capture_tag: str | None = None
+        self._capture_level: int | None = None
+        self._parts: list[str] = []
+        self._ignored_depth = 0
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        tag = tag.lower()
+        if tag in {"script", "style", "nav", "footer", "noscript"}:
+            self._ignored_depth += 1
+            return
+        if self._ignored_depth:
+            return
+        if re.fullmatch(r"h[1-6]", tag):
+            self._capture_tag = tag
+            self._capture_level = int(tag[1])
+            self._parts = []
+        elif tag in self._BLOCK_TAGS and self._capture_tag is None:
+            self._capture_tag = tag
+            self._capture_level = None
+            self._parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag in {"script", "style", "nav", "footer", "noscript"}:
+            self._ignored_depth = max(0, self._ignored_depth - 1)
+            return
+        if self._ignored_depth or tag != self._capture_tag:
+            return
+        text = re.sub(r"\s+", " ", " ".join(self._parts)).strip()
+        if self._capture_level is not None:
+            if text:
+                level = self._capture_level
+                self.heading_stack = self.heading_stack[: level - 1]
+                self.heading_stack.append(text)
+        elif text:
+            self.items.append((text, list(self.heading_stack)))
+        self._capture_tag = None
+        self._capture_level = None
+        self._parts = []
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignored_depth and self._capture_tag:
+            clean = data.strip()
+            if clean:
+                self._parts.append(clean)
+
+
+def _article_segments_from_html(payload: str) -> list[ExtractedSegment]:
+    parser = _ArticleSegmentParser()
+    try:
+        parser.feed(payload)
+    except Exception:
+        return []
+    segments = [
+        ExtractedSegment(
+            ordinal=index,
+            text=text,
+            section_title=headings[-1] if headings else None,
+            heading_path=headings,
+        )
+        for index, (text, headings) in enumerate(parser.items)
+    ]
+    return _with_character_offsets(segments)
+
+
 async def extract_from_file(
     file_path: str, source_type: str, whisper_model: str = "base"
 ) -> ExtractedContent:
     """Extract content from a local file (voice message, audio, video)."""
     try:
-        transcript = await transcribe(file_path, model_size=whisper_model)
-        if transcript:
+        timed = await transcribe_segments(file_path, model_size=whisper_model)
+        segments = _with_character_offsets(
+            [
+                ExtractedSegment(
+                    ordinal=index,
+                    text=segment.text,
+                    start_seconds=segment.start_seconds,
+                    end_seconds=segment.end_seconds,
+                    speaker=segment.speaker,
+                    caption_source=f"whisper:{whisper_model}",
+                )
+                for index, segment in enumerate(timed)
+            ]
+        )
+        transcript = " ".join(segment.text for segment in segments)
+        if segments:
             return ExtractedContent(
                 url=None,
                 source_type=source_type,
                 title=f"Direct {source_type}",
                 content_text=transcript,
+                segments=segments,
             )
         return ExtractedContent(
             url=None,
