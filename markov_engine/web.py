@@ -77,12 +77,21 @@ _TEMPLATES.env.filters.update(
     locator=_locator,
 )
 
+_PUBLIC_CONTEXT = {
+    "site_base": "",
+    "workspace_url": "/app/login",
+    "workspace_label": "Sign in",
+    "api_docs_url": "/docs",
+    "repository_url": "https://github.com/Okohedeki/markov-engine",
+    "static_preview": False,
+}
+
 
 def _render(request: Request, template: str, **context):
     return _TEMPLATES.TemplateResponse(
         request=request,
         name=template,
-        context={"request": request, **context},
+        context={"request": request, **_PUBLIC_CONTEXT, **context},
     )
 
 
