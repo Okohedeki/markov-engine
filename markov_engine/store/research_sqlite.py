@@ -798,3 +798,286 @@ class ResearchSqliteMixin:
         return rec
 
     async def get_review_job(self, review_id: int) -> ReviewJobRec | None:
+        async with self._conn.execute(
+            "SELECT * FROM review_jobs WHERE id = ?", (review_id,)
+        ) as cur:
+            row = await cur.fetchone()
+        if not row:
+            return None
+        return ReviewJobRec(
+            id=row["id"],
+            artifact_id=row["artifact_id"],
+            status=row["status"],
+            assigned_reviewer=row["assigned_reviewer"],
+            started_at=_ts(row["started_at"]),
+            completed_at=_ts(row["completed_at"]),
+            review_minutes=float(row["review_minutes"] or 0),
+        )
+
+    async def list_review_jobs(self, status: str | None = None) -> list[ReviewJobRec]:
+        query = "SELECT id FROM review_jobs"
+        params: tuple = ()
+        if status is not None:
+            query += " WHERE status = ?"
+            params = (status,)
+        query += " ORDER BY id"
+        async with self._conn.execute(query, params) as cur:
+            rows = await cur.fetchall()
+        result = []
+        for row in rows:
+            rec = await self.get_review_job(row["id"])
+            if rec is not None:
+                result.append(rec)
+        return result
+
+    async def update_review_job(
+        self,
+        review_id: int,
+        *,
+        status: str,
+        assigned_reviewer: str | None = None,
+        review_minutes: float | None = None,
+    ) -> None:
+        started = "datetime('now')" if status == "in_review" else "started_at"
+        completed = "datetime('now')" if status == "completed" else "completed_at"
+        await self._conn.execute(
+            f"UPDATE review_jobs SET status = ?, assigned_reviewer = COALESCE(?, assigned_reviewer), "
+            f"review_minutes = COALESCE(?, review_minutes), started_at = {started}, "
+            f"completed_at = {completed} WHERE id = ?",
+            (status, assigned_reviewer, review_minutes, review_id),
+        )
+        await self._conn.commit()
+
+    async def add_review_decision(
+        self,
+        *,
+        review_job_id: int,
+        entity_type: str,
+        entity_id: str,
+        decision_type: str,
+        previous_value,
+        new_value,
+        reason: str,
+    ) -> ReviewDecisionRec:
+        cur = await self._conn.execute(
+            "INSERT INTO review_decisions (review_job_id, entity_type, entity_id, "
+            "decision_type, previous_value, new_value, reason) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                review_job_id,
+                entity_type,
+                str(entity_id),
+                decision_type,
+                json.dumps(previous_value),
+                json.dumps(new_value),
+                reason,
+            ),
+        )
+        await self._conn.commit()
+        async with self._conn.execute(
+            "SELECT * FROM review_decisions WHERE id = ?", (cur.lastrowid,)
+        ) as cursor:
+            row = await cursor.fetchone()
+        assert row is not None
+        return ReviewDecisionRec(
+            id=row["id"],
+            review_job_id=row["review_job_id"],
+            entity_type=row["entity_type"],
+            entity_id=row["entity_id"],
+            decision_type=row["decision_type"],
+            previous_value=_json(row["previous_value"], None),
+            new_value=_json(row["new_value"], None),
+            reason=row["reason"],
+            created_at=_ts(row["created_at"]),
+        )
+
+    async def list_review_decisions(self, review_id: int) -> list[ReviewDecisionRec]:
+        async with self._conn.execute(
+            "SELECT * FROM review_decisions WHERE review_job_id = ? ORDER BY id",
+            (review_id,),
+        ) as cur:
+            rows = await cur.fetchall()
+        return [
+            ReviewDecisionRec(
+                id=row["id"],
+                review_job_id=row["review_job_id"],
+                entity_type=row["entity_type"],
+                entity_id=row["entity_id"],
+                decision_type=row["decision_type"],
+                previous_value=_json(row["previous_value"], None),
+                new_value=_json(row["new_value"], None),
+                reason=row["reason"],
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    async def record_usage_event(
+        self,
+        *,
+        owner_id: str,
+        event_type: str,
+        research_case_id: int | None = None,
+        artifact_id: int | None = None,
+        metadata: dict | None = None,
+    ) -> UsageEventRec:
+        cur = await self._conn.execute(
+            "INSERT INTO usage_events "
+            "(owner_id, research_case_id, artifact_id, event_type, metadata) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                owner_id,
+                research_case_id,
+                artifact_id,
+                event_type,
+                json.dumps(metadata or {}),
+            ),
+        )
+        await self._conn.commit()
+        return UsageEventRec(
+            id=cur.lastrowid,
+            owner_id=owner_id,
+            event_type=event_type,
+            research_case_id=research_case_id,
+            artifact_id=artifact_id,
+            metadata=metadata or {},
+        )
+
+    async def list_usage_events(self, *, owner_id: str) -> list[UsageEventRec]:
+        async with self._conn.execute(
+            "SELECT * FROM usage_events WHERE owner_id = ? ORDER BY id", (owner_id,)
+        ) as cur:
+            rows = await cur.fetchall()
+        return [
+            UsageEventRec(
+                id=row["id"],
+                owner_id=row["owner_id"],
+                event_type=row["event_type"],
+                research_case_id=row["research_case_id"],
+                artifact_id=row["artifact_id"],
+                metadata=_json(row["metadata"], {}),
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    async def record_cost(
+        self,
+        *,
+        provider: str,
+        operation: str,
+        units: float,
+        cost: float,
+        research_case_id: int | None = None,
+        artifact_id: int | None = None,
+    ) -> CostLedgerRec:
+        cur = await self._conn.execute(
+            "INSERT INTO cost_ledger "
+            "(research_case_id, artifact_id, provider, operation, units, cost) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                research_case_id,
+                artifact_id,
+                provider,
+                operation,
+                float(units),
+                float(cost),
+            ),
+        )
+        await self._conn.commit()
+        return CostLedgerRec(
+            id=cur.lastrowid,
+            provider=provider,
+            operation=operation,
+            units=float(units),
+            cost=float(cost),
+            research_case_id=research_case_id,
+            artifact_id=artifact_id,
+        )
+
+    async def list_costs(self, case_id: int) -> list[CostLedgerRec]:
+        async with self._conn.execute(
+            "SELECT * FROM cost_ledger WHERE research_case_id = ? ORDER BY id", (case_id,)
+        ) as cur:
+            rows = await cur.fetchall()
+        return [
+            CostLedgerRec(
+                id=row["id"],
+                provider=row["provider"],
+                operation=row["operation"],
+                units=float(row["units"]),
+                cost=float(row["cost"]),
+                research_case_id=row["research_case_id"],
+                artifact_id=row["artifact_id"],
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    async def ensure_credit_account(
+        self, owner_id: str, *, opening_balance: float = 0
+    ) -> CreditAccountRec:
+        await self._conn.execute(
+            "INSERT OR IGNORE INTO credit_accounts (owner_id, balance) VALUES (?, ?)",
+            (owner_id, float(opening_balance)),
+        )
+        await self._conn.commit()
+        return await self.get_credit_account(owner_id)
+
+    async def get_credit_account(self, owner_id: str) -> CreditAccountRec:
+        async with self._conn.execute(
+            "SELECT * FROM credit_accounts WHERE owner_id = ?", (owner_id,)
+        ) as cur:
+            row = await cur.fetchone()
+        if not row:
+            return CreditAccountRec(owner_id=owner_id, balance=0.0)
+        return CreditAccountRec(
+            owner_id=row["owner_id"],
+            balance=float(row["balance"]),
+            updated_at=_ts(row["updated_at"]),
+        )
+
+    async def apply_credit_transaction(
+        self,
+        *,
+        owner_id: str,
+        amount: float,
+        reason: str,
+        product_variant: str | None = None,
+        reference: str | None = None,
+        idempotency_key: str | None = None,
+        allow_negative: bool = False,
+    ) -> CreditAccountRec:
+        await self.ensure_credit_account(owner_id)
+        if idempotency_key:
+            async with self._conn.execute(
+                "SELECT balance_after FROM credit_transactions "
+                "WHERE owner_id = ? AND idempotency_key = ?",
+                (owner_id, idempotency_key),
+            ) as cur:
+                prior = await cur.fetchone()
+            if prior:
+                return CreditAccountRec(owner_id=owner_id, balance=float(prior[0]))
+        account = await self.get_credit_account(owner_id)
+        balance = account.balance + float(amount)
+        if balance < 0 and not allow_negative:
+            raise ValueError("Insufficient credits")
+        await self._conn.execute(
+            "UPDATE credit_accounts SET balance = ?, updated_at = datetime('now') "
+            "WHERE owner_id = ?",
+            (balance, owner_id),
+        )
+        await self._conn.execute(
+            "INSERT INTO credit_transactions (owner_id, amount, balance_after, reason, "
+            "product_variant, reference, idempotency_key) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                owner_id,
+                float(amount),
+                balance,
+                reason,
+                product_variant,
+                reference,
+                idempotency_key,
+            ),
+        )
+        await self._conn.commit()
+        return CreditAccountRec(owner_id=owner_id, balance=balance)
