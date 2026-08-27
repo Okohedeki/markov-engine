@@ -33,6 +33,8 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "aiosqlite",
+    "fastapi",
+    "uvicorn",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +47,7 @@ Source = "https://github.com/Okohedeki/markov-engine"
 
 [project.scripts]
 markov = "markov_engine.cli:main"
+markov-api = "markov_engine.api:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["markov_engine"]
