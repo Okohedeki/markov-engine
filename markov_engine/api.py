@@ -434,10 +434,15 @@ def create_app(
         artifact = await request.app.state.store.get_artifact(review.artifact_id)
         if artifact is None or artifact.research_case_id is None:
             raise HTTPException(status_code=404, detail="Reviewed artifact not found")
+        case = await request.app.state.store.get_research_case(
+            artifact.research_case_id
+        )
+        if case is None:
+            raise HTTPException(status_code=404, detail="Research case not found")
         case_payload = await _case_payload(
             request.app.state.store,
             artifact.research_case_id,
-            (await request.app.state.store.get_research_case(artifact.research_case_id)).owner_id,
+            case.owner_id,
         )
         return {
             "reviewer_id": reviewer_id,
