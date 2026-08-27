@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import uuid
 from urllib.parse import urlparse
 
 from markov_engine.claims import extract_claims
@@ -308,6 +309,74 @@ async def generate_case_artifact(
     purposes.add("research" if artifact_type == "research_report" else artifact_type)
     await store.update_research_case(case_id, purpose=",".join(sorted(purposes)))
     return artifact
+
+
+async def convert_case_artifact(
+    store: SqliteStore,
+    *,
+    case_id: int,
+    owner_id: str,
+    mode: str,
+    review_level: str = "instant",
+    constraints: dict | None = None,
+    settings=None,
+) -> tuple[ArtifactRec, bool]:
+    """Create another sellable output from existing research without rerunning it."""
+    from markov_engine.billing import refund_job_credits, reserve_job_credits
+
+    if mode not in MODE_TO_ARTIFACT:
+        raise ValueError(f"Unsupported mode: {mode}")
+    case = await store.get_research_case(case_id, owner_id=owner_id)
+    if case is None:
+        raise ValueError("Research case not found")
+    artifact_type = MODE_TO_ARTIFACT[mode]
+    existing = next(
+        (
+            artifact
+            for artifact in await store.list_case_artifacts(case.id)
+            if artifact.artifact_type == artifact_type
+            and artifact.review_level == review_level
+        ),
+        None,
+    )
+    if existing is not None:
+        return existing, False
+    reference = f"conversion:{case.id}:{artifact_type}:{uuid.uuid4()}"
+    await reserve_job_credits(
+        store,
+        owner_id=owner_id,
+        job_id=reference,
+        mode=mode,
+        review_level=review_level,
+        settings=settings,
+    )
+    try:
+        artifact = await generate_case_artifact(
+            store,
+            case_id=case.id,
+            artifact_type=artifact_type,
+            review_level=review_level,
+            constraints=constraints,
+        )
+    except Exception:
+        await refund_job_credits(
+            store,
+            owner_id=owner_id,
+            job_id=reference,
+            mode=mode,
+            review_level=review_level,
+            settings=settings,
+        )
+        raise
+    event_mode = "research" if artifact_type == "research_report" else artifact_type
+    await store.record_usage_event(
+        owner_id=owner_id,
+        event_type=f"converted_to_{event_mode}",
+        research_case_id=case.id,
+        artifact_id=artifact.id,
+        metadata={"review_level": review_level},
+    )
+    return artifact, True
 
 
 async def process_research_case(
