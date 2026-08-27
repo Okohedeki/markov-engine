@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re as _re
 
 import httpx
 
@@ -53,7 +54,6 @@ def _local_model() -> str:
 
 
 # ── heuristic backend (offline, instant, no model) ───────────────
-import re as _re
 
 
 def _heuristic_json(prompt: str, schema: dict) -> dict:
