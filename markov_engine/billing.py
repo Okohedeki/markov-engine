@@ -84,6 +84,10 @@ async def reserve_job_credits(
     settings = settings or get_settings()
     variant = product_variant(mode, review_level)
     cost = credit_cost(mode, review_level, settings)
+    idempotency_key = f"reserve:{job_id}"
+    already_reserved = await store.has_credit_transaction(
+        owner_id=owner_id, idempotency_key=idempotency_key
+    )
     await store.ensure_credit_account(
         owner_id, opening_balance=float(settings.opening_credits)
     )
@@ -93,18 +97,19 @@ async def reserve_job_credits(
         reason="job_reserved",
         product_variant=variant,
         reference=job_id,
-        idempotency_key=f"reserve:{job_id}",
+        idempotency_key=idempotency_key,
     )
-    await store.record_usage_event(
-        owner_id=owner_id,
-        event_type="credits_reserved",
-        metadata={
-            "job_id": job_id,
-            "variant": variant,
-            "credits": cost,
-            "balance": account.balance,
-        },
-    )
+    if not already_reserved:
+        await store.record_usage_event(
+            owner_id=owner_id,
+            event_type="credits_reserved",
+            metadata={
+                "job_id": job_id,
+                "variant": variant,
+                "credits": cost,
+                "balance": account.balance,
+            },
+        )
     return cost
 
 
