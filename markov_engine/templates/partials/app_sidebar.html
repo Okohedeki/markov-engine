@@ -1,0 +1,14 @@
+<aside class="app-sidebar">
+  <a class="wordmark" href="/app" aria-label="Markov workspace">MARKOV</a>
+  <nav class="app-nav" aria-label="Workspace navigation">
+    <a href="/app" {% if active == 'overview' %}aria-current="page"{% endif %}>Overview</a>
+    <a href="/app#new-research" {% if active == 'new' %}aria-current="page"{% endif %}>New research</a>
+    <a href="/app#projects" {% if active == 'projects' %}aria-current="page"{% endif %}>Projects</a>
+    <a href="/pricing">Usage & credits</a>
+    <a href="/developers">API access</a>
+  </nav>
+  <div class="app-sidebar-foot">
+    {% if account %}<span class="credit-meter">{{ account.balance | number }} cr</span><p class="fine">Available credits</p>{% endif %}
+    <a class="fine" href="/">Public site ↗</a>
+  </div>
+</aside>
