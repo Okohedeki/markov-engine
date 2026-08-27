@@ -58,6 +58,60 @@ def _local_model() -> str:
 
 def _heuristic_json(prompt: str, schema: dict) -> dict:
     props = (schema or {}).get("properties", {})
+    if "claims" in props:
+        located = _re.findall(r"^\[S(\d+)\]\s+(.+)$", prompt, flags=_re.MULTILINE)
+        claims = []
+        for index, (segment_id, segment_text) in enumerate(located):
+            sentences = [
+                sentence.strip()
+                for sentence in _re.split(r"(?<=[.!?])\s+", segment_text)
+                if len(sentence.strip()) >= 8
+            ]
+            for sentence in sentences[:2]:
+                lowered = sentence.lower()
+                claim_type = (
+                    "predictive"
+                    if any(word in lowered for word in (" will ", " may ", " could "))
+                    else "quantitative"
+                    if _re.search(r"\b\d+(?:\.\d+)?%?\b", sentence)
+                    else "opinion"
+                    if any(word in lowered for word in ("i think", "i believe", "should"))
+                    else "factual"
+                )
+                claims.append(
+                    {
+                        "claim_text": sentence,
+                        "claim_type": claim_type,
+                        "importance": max(0.4, 0.9 - index * 0.05),
+                        "speaker_certainty": (
+                            "speculative" if claim_type == "predictive" else "asserted_as_fact"
+                        ),
+                        "source_segment_ids": [int(segment_id)],
+                    }
+                )
+        gaps = []
+        if claims:
+            gaps.append(
+                {
+                    "gap_type": "unresolved_evidence",
+                    "question": f"What independent evidence verifies: {claims[0]['claim_text']}",
+                    "importance": claims[0]["importance"],
+                    "related_claim_text": claims[0]["claim_text"],
+                }
+            )
+        return {"claims": claims, "research_gaps": gaps}
+    if "stance" in props:
+        claim_match = _re.search(r"CLAIM:\s*(.+)", prompt)
+        passage_match = _re.search(r"PASSAGE:\s*(.+)", prompt, flags=_re.DOTALL)
+        claim_words = set(_re.findall(r"[a-z0-9]+", (claim_match.group(1) if claim_match else "").lower()))
+        passage_words = set(_re.findall(r"[a-z0-9]+", (passage_match.group(1) if passage_match else "").lower()))
+        overlap = len(claim_words & passage_words) / max(1, len(claim_words))
+        return {
+            "stance": "supports" if overlap >= 0.35 else "context_only",
+            "strength": min(0.9, max(0.2, overlap)),
+            "rationale": "Lexical overlap heuristic; requires human review for verified delivery.",
+            "confidence": min(0.8, max(0.2, overlap)),
+        }
     if "queries" in props:
         m = _re.search(r"SUBJECT:\s*(.+)", prompt)
         subj = (m.group(1).strip() if m else "topic")[:80]
