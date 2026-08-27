@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Markov API — Research infrastructure for agents{% endblock %}
+{% block description %}Submit asynchronous Markov research jobs and retrieve structured cases, claims, evidence, artifacts, events, and exports.{% endblock %}
+{% block body %}
+  {% include "partials/public_header.html" %}
+  <main id="main-content">
+    <section class="page-hero">
+      <p class="eyebrow">Markov API / v1</p>
+      <h1>Give your agents evidence they can inspect.</h1>
+      <p class="lede">Send one asynchronous research job. Receive a finished artifact and the claims, passages, provenance, costs, and state your software needs to audit or continue it.</p>
+      <div class="button-row"><a class="button" href="/docs">Open API reference</a><a class="button button-secondary" href="/app/login">Open Markov</a></div>
+    </section>
+    <section class="content-narrow section-rule">
+      <p class="eyebrow">Submit once</p>
+      <h2>One case. Stable state.</h2>
+      <p class="lede">Use an idempotency key when retrying submission. Poll the job or consume its webhook, then retrieve the shared research case and artifact.</p>
+      <div class="code-shell" aria-label="Example API request">
+        <div class="code-bar"><span>REQUEST</span><span>POST /v1/jobs</span></div>
+        <pre><code>curl -X POST https://your-markov-host/v1/jobs \
+  -H "X-Markov-Key: $MARKOV_API_KEY" \
+  -H "Idempotency-Key: housing-rates-2026-08" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mode": "research",
+    "review_level": "instant",
+    "inputs": [{
+      "type": "url",
+      "value": "https://example.org/source"
+    }],
+    "constraints": {
+      "focus": "Which claims survive independent checking?"
+    },
+    "webhook_url": "https://agent.example/hooks/markov"
+  }'</code></pre>
+      </div>
+      <div class="code-shell" aria-label="Example API response">
+        <div class="code-bar"><span>202 ACCEPTED</span><span>APPLICATION/JSON</span></div>
+        <pre><code>{
+  "job": {
+    "id": "job_01J...",
+    "research_case_id": 24,
+    "status": "queued",
+    "stage": "accepted"
+  },
+  "created": true
+}</code></pre>
+      </div>
+    </section>
+    <section class="section section-rule" aria-labelledby="api-contract-heading">
+      <div class="section-heading"><div><p class="eyebrow">The contract</p><h2 id="api-contract-heading">More than an endpoint.</h2></div><p class="lede">The API exposes the work around the artifact so another system can reason about it instead of treating generated prose as ground truth.</p></div>
+      <div class="outcome-grid">
+        <article class="outcome"><span class="outcome-number">STATE</span><h3>Jobs and events</h3><p>Queued, running, awaiting review, complete, or failed—with meaningful stages.</p></article>
+        <article class="outcome"><span class="outcome-number">EVIDENCE</span><h3>Claims and passages</h3><p>Stance, strength, rationale, source quality, and exact locators remain structured.</p></article>
+        <article class="outcome"><span class="outcome-number">OUTPUT</span><h3>Artifacts and exports</h3><p>Briefs, reports, and scripts can be fetched as structured data or exported documents.</p></article>
+      </div>
+    </section>
+    <section class="content-narrow section-rule">
+      <h2>Designed for retries, ownership, and continuation.</h2>
+      <div class="fit-grid" style="margin-top: 2rem">
+        <div class="fit-list"><h3>Operational surface</h3><ul><li>Bearer or X-Markov-Key authentication</li><li>Owner-scoped jobs and cases</li><li>Idempotent job creation</li><li>Webhook delivery with polling fallback</li></ul></div>
+        <div class="fit-list"><h3>Continuation surface</h3><ul><li>Convert one case into another format</li><li>Deepen one unresolved claim</li><li>Revise script sections without inventing evidence IDs</li><li>Export Markdown, HTML, or JSON</li></ul></div>
+      </div>
+      <div class="button-row" style="margin-top: 2rem"><a class="button" href="/docs">Read the API reference</a><a class="button button-secondary" href="/sample">Inspect a finished case</a></div>
+    </section>
+  </main>
+  {% include "partials/public_footer.html" %}
+{% endblock %}
