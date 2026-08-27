@@ -113,6 +113,13 @@ async def _ensure_seed_source(
             research_case_id=case.id, source_id=source.id, source_role="seed"
         )
         await store.update_research_case(case.id, status="extracting_claims")
+        await store.record_cost(
+            research_case_id=case.id,
+            provider="extraction",
+            operation="topic_seed",
+            units=1,
+            cost=0,
+        )
         return source, segments
 
     content = await extractor(
@@ -156,6 +163,15 @@ async def _ensure_seed_source(
     )
     await store.update_research_case(
         case.id, title=(content.title or case.title)[:200], status="extracting_claims"
+    )
+    await store.record_cost(
+        research_case_id=case.id,
+        provider="transcription"
+        if any(segment.caption_source and segment.caption_source.startswith("whisper:") for segment in segments)
+        else "extraction",
+        operation=f"{content.source_type}_segments",
+        units=len(segments),
+        cost=0,
     )
     return source, segments
 
@@ -267,6 +283,14 @@ async def persist_rendered_artifact(
             "review_level": review_level,
             "word_count": rendered.word_count,
         },
+    )
+    await store.record_cost(
+        research_case_id=case.id,
+        artifact_id=artifact.id,
+        provider="deterministic",
+        operation=f"render_{rendered.artifact_type}",
+        units=rendered.word_count,
+        cost=rendered.word_count * 0,
     )
     return artifact
 
@@ -452,6 +476,7 @@ async def process_research_case(
             if searcher is not None:
                 kwargs["searcher"] = searcher
             await claim_researcher(store, **kwargs)
+        claims = await store.list_claims(case.id)
         await stage("comparing_sources")
         await store.update_research_case(case.id, status="rendering")
         refreshed = await store.get_research_case(case.id)
@@ -476,11 +501,28 @@ async def process_research_case(
         final_status = "awaiting_review" if review_level == "verified" else "completed"
         await stage(final_status, {"artifact_ids": [item.id for item in artifacts]})
         await store.update_research_case(case.id, status=final_status)
+        source_rows = await store.list_research_case_sources(case.id)
+        evidence_count = 0
+        for claim in claims:
+            evidence_count += len(await store.list_claim_evidence(claim.id))
         await store.record_usage_event(
             owner_id=case.owner_id,
             event_type="job_completed",
             research_case_id=case.id,
-            metadata={"modes": artifact_types, "review_level": review_level},
+            metadata={
+                "modes": artifact_types,
+                "review_level": review_level,
+                "input_type": case.input_type,
+                "claim_count": len(claims),
+                "researched_claim_count": sum(
+                    claim.verification_status != "not_researched" for claim in claims
+                ),
+                "source_count": len(source_rows),
+                "evidence_passage_count": evidence_count,
+                "artifact_word_counts": {
+                    artifact.artifact_type: artifact.word_count for artifact in artifacts
+                },
+            },
         )
         return artifacts
     except Exception as exc:
