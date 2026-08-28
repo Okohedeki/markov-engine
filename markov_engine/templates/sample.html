@@ -1,71 +1,73 @@
 {% extends "base.html" %}
 {% block title %}A real source-to-finished-work example — Markov{% endblock %}
-{% block description %}Inspect how Markov separates evidence, interpretation, and hypothesis while following an idea from Japan's demographics to Treasury-market research and a script opening.{% endblock %}
+{% block description %}Inspect how Markov separates context, commentary, catalyst, mechanism, and proof while following a Japan source packet into Treasury-market research and a script opening.{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
   <main id="main-content" class="sample-page">
     <header class="sample-hero">
       <p class="plain-kicker">Inspectable sample · published sources</p>
-      <h1>From Japan’s ageing population to a question about Treasury hedging.</h1>
-      <p class="v2-lede">This is not proof of one long causal chain. It is a demonstration of how Markov follows an idea while keeping each step at the evidence level it has earned.</p>
+      <h1>From a Japan source packet to a defensible Treasury-market thesis.</h1>
+      <p class="v2-lede">Five sources enter the same chain, but they do not receive equal weight. Markov keeps context, commentary, catalyst, mechanism, and unresolved proof separate.</p>
       <div class="sample-legend" aria-label="Evidence levels"><span class="evidence-level established">Established</span><span class="evidence-level interpretation">Evidence-backed interpretation</span><span class="evidence-level hypothesis">Plausible hypothesis</span></div>
     </header>
 
     <section class="sample-workspace" aria-label="Source to insight path">
-      <aside class="sample-outline"><nav aria-label="Sample outline"><a href="#starting-node">Starting node</a><a href="#connection-one">Saving channel</a><a href="#connection-two">Treasury exposure</a><a href="#connection-three">Hedging pressure</a><a href="#insight">Resulting insight</a><a href="#script-output">Finished script opening</a><a href="#sources">Sources</a></nav></aside>
+      <aside class="sample-outline"><nav aria-label="Sample outline"><a href="#starting-node">Starting question</a><a href="#connection-one">Source roles</a><a href="#connection-two">Policy catalyst</a><a href="#connection-three">Rates and hedging</a><a href="#insight">Resulting insight</a><a href="#script-output">Finished script opening</a><a href="#sources">Sources</a></nav></aside>
       <article class="sample-document">
         <section id="starting-node">
-          <span class="evidence-level established">Established</span>
-          <h2>Starting node: Japan’s population is getting older.</h2>
-          <p>The Statistics Bureau’s 2025 handbook reports that people aged 65 and over were 29.3% of Japan’s population in 2024. Its projection reaches 38.7% in 2070.</p>
-          <p class="source-note"><strong>What this establishes:</strong> the demographic shift. It does not, by itself, establish a market outcome.</p>
+          <span class="evidence-level hypothesis">Open question</span>
+          <p class="connection-type">Starting node · user question</p>
+          <h2>Why would Japanese investors sell U.S. Treasuries?</h2>
+          <p>The wording contains two hidden assumptions: that “Japan” acts as one investor, and that a shift in foreign assets necessarily means a Treasury sale.</p>
+          <dl class="connection-anatomy"><div><dt>Question asks</dt><dd>What mechanism could move Japanese capital away from U.S. government debt?</dd></div><div><dt>Question assumes</dt><dd>A sale happened and can be attributed to one national actor.</dd></div><div><dt>Next check</dt><dd>Separate investor classes, the policy catalyst, and the assets actually affected.</dd></div></dl>
         </section>
         <section id="connection-one">
-          <span class="connection-type">Shared mechanism · longevity and saving</span>
-          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
-          <h2>Ageing can alter aggregate saving and the current account.</h2>
-          <p>A Bank of Japan Research Lab article uses overlapping-generations models and explicitly warns that results depend on assumptions. Its simulations indicate that longer expected lives can increase aggregate saving and that ageing may have pushed Japan’s current account toward surplus.</p>
-          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>Longer expected retirement changes saving behavior and capital allocation.</dd></div><div><dt>Weakens</dt><dd>The result is model-dependent; ageing does not imply a simple, permanent fall in saving.</dd></div><div><dt>Could lead to</dt><dd>Inspect which sectors hold the surplus and which domestic or foreign assets receive it.</dd></div></dl>
+          <span class="connection-type">Source classification · what each item can support</span>
+          <span class="evidence-level interpretation">Mixed evidence packet</span>
+          <h2>The most compelling source is not automatically the strongest evidence.</h2>
+          <p>The Financial Times film supplies demographic context. The TikTok post is a personal child-free perspective and is not Japan-specific evidence. The retirement podcast frames the Treasury-demand thesis, but its captured description is commentary rather than proof.</p>
+          <dl class="connection-anatomy"><div><dt>Useful for</dt><dd>Context, audience questions, language, and the originating thesis.</dd></div><div><dt>Weakens</dt><dd>No transcript was available for the video, TikTok, or podcast; their claims cannot be inspected passage by passage yet.</dd></div><div><dt>Could lead to</dt><dd>Find reporting for the live catalyst and research for the financial mechanism.</dd></div></dl>
         </section>
         <section id="connection-two">
-          <span class="connection-type">Dependency link · Japanese portfolios and U.S. debt</span>
-          <span class="evidence-level established">Established exposure</span>
-          <h2>Japan is materially exposed to U.S. securities, including Treasuries.</h2>
-          <p>The U.S. Treasury’s annual survey reports $2.883 trillion in U.S. securities held from Japan at June 2025, including $1.024 trillion in long-term Treasury debt. The survey is a position measurement, not evidence that demographics caused those holdings.</p>
-          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>Japanese households do not buy every bond directly; banks, insurers, pensions, and funds transmit portfolio choices.</dd></div><div><dt>Weakens</dt><dd>Custody and survey classification limit what country totals reveal about the ultimate investor.</dd></div><div><dt>Could lead to</dt><dd>Separate insurers, pensions, banks, and official institutions before making a demand claim.</dd></div></dl>
+          <span class="connection-type">Live catalyst · domestic-allocation proposal</span>
+          <span class="evidence-level established">Established proposal</span>
+          <h2>Japan’s finance minister proposed steering pension capital toward domestic assets.</h2>
+          <p>Reuters reported in July 2026 that the government wanted the $1.8 trillion GPIF and other retirement funds to increase domestic allocations. The reporting also stressed that implementation details were unsettled.</p>
+          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>A higher domestic target could require selling foreign assets or directing new contributions at home.</dd></div><div><dt>Weakens</dt><dd>A proposal is not a completed allocation change, and “foreign assets” includes more than Treasuries.</dd></div><div><dt>Could lead to</dt><dd>Track final GPIF guidance and sector-level transactions after the policy date.</dd></div></dl>
         </section>
         <section id="connection-three">
-          <span class="connection-type">Second-order consequence · currency hedging</span>
+          <span class="connection-type">Financial mechanism · relative yields and currency hedging</span>
           <span class="evidence-level interpretation">Evidence-backed interpretation</span>
-          <h2>The relevant constraint may be the hedged return, not the headline Treasury yield.</h2>
-          <p>The Bank of Japan’s October 2023 Financial System Report says life insurers reduced currency-hedged foreign bonds as foreign-currency funding and hedging costs rose, and that hedge ratios declined substantially.</p>
-          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>A yen-based institution evaluates foreign bonds after the cost of reducing currency risk.</dd></div><div><dt>Weakens</dt><dd>Insurers are only one investor class, and the cited period reflects a particular rate environment.</dd></div><div><dt>Could lead to</dt><dd>Compare hedged yields, insurer hedge ratios, and net Treasury transactions on aligned dates.</dd></div></dl>
+          <h2>The decision turns on domestic yields and the return after converting dollars back into yen.</h2>
+          <p>The 2026 NBER paper describes a consolidated Japanese public-sector balance sheet with duration and currency mismatches. It shows how BOJ purchases displaced private JGB holders, pension funds expanded foreign risky assets, and currency hedging can erase the extra return on foreign investments.</p>
+          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>As JGB yields rise and USD/JPY hedging remains costly, domestic assets can compete more effectively with U.S. bonds.</dd></div><div><dt>Weakens</dt><dd>The paper explains incentives and constraints; it does not observe a coordinated Treasury liquidation.</dd></div><div><dt>Could lead to</dt><dd>Compare allocation targets, hedge ratios, foreign-bond flows, and Treasury transactions on aligned dates.</dd></div></dl>
         </section>
         <section id="insight" class="insight-result">
           <span class="evidence-level hypothesis">Plausible hypothesis</span>
-          <h2>Resulting insight: watch the hedge before the headline holding.</h2>
-          <p>If demographic change alters the institutions managing Japanese savings, the first observable market adjustment may be in hedge ratios and FX-swap demand—not necessarily a clean fall or rise in aggregate Treasury holdings.</p>
-          <p><strong>Why this is useful:</strong> it turns a vague macro story into a testable research design.</p>
-          <p><strong>What would falsify it:</strong> stable hedging behavior across investor groups while Treasury flows change for unrelated reasons.</p>
-          <p><strong>Next research packet:</strong> sector-level foreign-bond holdings, hedge ratios, USD/JPY hedge costs, and TIC transactions on the same frequency.</p>
+          <h2>Resulting insight: repatriation is plausible; a Treasury dump is unproven.</h2>
+          <p>The strongest chain is: domestic-allocation proposal → higher JGB appeal → weaker hedged foreign returns → gradual, institution-specific rebalancing. That can reduce marginal Treasury demand without producing one dramatic sale.</p>
+          <p><strong>Why this is useful:</strong> it separates a real policy signal and mechanism from a headline that outruns the evidence.</p>
+          <p><strong>What would strengthen it:</strong> final GPIF targets followed by aligned sector-level foreign-asset outflows and Treasury transaction data.</p>
+          <p><strong>What would weaken it:</strong> domestic allocations rising entirely through new contributions while foreign holdings and hedge behavior remain stable.</p>
         </section>
         <section id="script-output" class="sample-output">
           <p class="plain-kicker">Turned into a script</p>
           <h2>The research trail becomes finished work without disappearing.</h2>
-          <blockquote>Japan is getting older. That sounds like a story about pensions and hospitals. But one of its earliest market signals may appear somewhere less obvious: in the price Japanese institutions pay to hedge U.S. bonds.</blockquote>
-          <p>This opening is an original framing, not a quotation from a source. A production Script would retain the demographic measurement, model caveat, Treasury exposure, hedging evidence, and the unproven causal step in its fact-check notes.</p>
+          <blockquote>Japan did not wake up and decide to dump America’s debt. Its government floated a narrower idea: steer more pension capital toward Japanese assets. Whether that reaches the Treasury market depends on what those funds own, what they sell, and what it costs them to hedge the dollars they keep.</blockquote>
+          <p>This opening is an original framing, not a quotation. A production script would retain the proposal’s unsettled status, the rates-and-hedging mechanism, and the missing instrument-level flow evidence in its fact notes.</p>
           <div class="source-note"><strong>What remains attached:</strong> evidence level, supporting passages, weakening conditions, the next check, and the branch decision that produced this angle.</div>
         </section>
       </article>
       <aside class="sample-sources" id="sources" aria-label="Published sources">
         <h2>Source packet</h2>
         <ol>
-          <li><a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Statistics Bureau of Japan, Statistical Handbook 2025</a><small>Population chapter, page 28. Demographic measurement and projection.</small></li>
-          <li><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Bank of Japan, Demographic Trends and Household Savings and Investment</a><small>Research Lab No. 24-E-1, July 2024. Model-based interpretation with caveats.</small></li>
-          <li><a href="https://home.treasury.gov/news/press-releases/sb0482">U.S. Treasury, Foreign Portfolio Holdings at End-June 2025</a><small>Table B. Country and security-type positions.</small></li>
-          <li><a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Bank of Japan, Financial System Report, October 2023</a><small>Page 28. Foreign-bond positions and currency hedge ratios.</small></li>
+          <li><a href="https://www.youtube.com/watch?v=nmdujC0MUKA">Financial Times, Japan’s population crisis reaches tipping point</a><small>YouTube film. Demographic context; metadata and chapter description captured.</small></li>
+          <li><a href="https://www.tiktok.com/@seling459/video/7664551582888971542">Selin, child-free creator post</a><small>TikTok. Audience signal; not Japan-specific evidence.</small></li>
+          <li><a href="https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708">U.S. Debt, Japanese Yen and Your Retirement?</a><small>Podcast. Originating market thesis and financial commentary.</small></li>
+          <li><a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/">Reuters, Japan’s pension pivot</a><small>July 10, 2026. Live policy catalyst with implementation caveats.</small></li>
+          <li><a href="https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf">Chien, Cole, and Lustig, What about Japan?</a><small>NBER, March 2026. Public-sector balance sheet, duration, rates, and currency-hedging mechanism.</small></li>
         </ol>
-        <div class="source-note"><strong>Source discipline</strong><p>All quotations are paraphrases. Dates, figures, caveats, and links are retained so the reader can inspect the original record.</p></div>
+        <div class="source-note"><strong>Source discipline</strong><p>Claims are paraphrased. Dates, figures, caveats, source roles, and links are retained so the reader can inspect the original record.</p></div>
         <a class="button" href="{{ workspace_url }}">{{ workspace_label }}</a>
       </aside>
     </section>

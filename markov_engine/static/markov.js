@@ -22,75 +22,81 @@
     const route = (phrase, steps, options = {}) => ({ phrase, steps, ...options });
     const examples = {
       japan: {
-        sourceLabel: 'YouTube video',
-        startCopy: 'You started with a video.',
-        sentenceText: 'Japan’s aging population could force it to sell U.S. Treasuries.',
-        defaultRoute: 'force',
-        scriptOpening: 'Japan may not dump Treasuries overnight. The quieter mechanism could matter more.',
+        sourceLabel: 'Japan source packet',
+        startCopy: 'You started with a video and a question.',
+        sentenceText: 'Why would Japanese investors sell U.S. Treasuries?',
+        defaultRoute: 'sell',
+        scriptOpening: 'Japan did not wake up and decide to dump America’s debt. The real story is a slower repricing of where its largest investors put their money.',
         media: {
           kind: 'youtube',
-          title: 'Japan’s Ageing And Shrinking Population',
-          meta: 'YouTube · Oxford research talk',
-          embed: 'https://www.youtube-nocookie.com/embed/nlBqZ74_Jbo',
+          title: 'Japan’s population crisis reaches tipping point',
+          meta: 'YouTube · Financial Times film · 20 min',
+          embed: 'https://www.youtube-nocookie.com/embed/nmdujC0MUKA',
         },
         sources: [
-          ['Statistical Handbook of Japan 2025', 'Aging population', 'https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf'],
-          ['Bank of Japan Financial System Report', 'Institutional portfolio conditions', 'https://www.boj.or.jp/en/research/brp/fsr/index.htm'],
-          ['U.S. Treasury TIC holdings table', 'Observed Japanese Treasury holdings', 'https://ticdata.treasury.gov/Publish/slt_table5.html'],
+          ['FT Film: Japan’s population crisis', 'Demographic context', 'https://www.youtube.com/watch?v=nmdujC0MUKA'],
+          ['Child-free creator post', 'Audience signal · not Japan-specific evidence', 'https://www.tiktok.com/@seling459/video/7664551582888971542'],
+          ['U.S. Debt, Japanese Yen and Your Retirement?', 'Podcast thesis · commentary', 'https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708'],
+          ['Japan’s pension pivot', 'Reuters · live policy catalyst', 'https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/'],
+          ['What about Japan?', 'NBER · rates and hedging mechanism', 'https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf'],
         ],
         sentence: [
-          'Japan’s ',
-          { route: 'aging', text: 'aging population' },
-          ' could ',
-          { route: 'force', text: 'force' },
-          ' it to ',
-          { route: 'treasuries', text: 'sell U.S. Treasuries' },
-          '.',
+          'Why would ',
+          { route: 'investors', text: 'Japanese investors' },
+          ' ',
+          { route: 'sell', text: 'sell' },
+          ' ',
+          { route: 'treasuries', text: 'U.S. Treasuries' },
+          '?',
         ],
         routes: {
-          aging: route('aging population', [
-            ['Context', 'What does this phrase actually imply?', 'Demographic aging'],
-            ['Mechanism', 'How could demographics affect investment?', 'Pension obligations'],
-            ['Hidden intermediary', 'Which institutions translate saving into assets?', 'Insurers and pension funds'],
-            ['Constraint', 'Where could their portfolios turn?', 'Domestic capital demand and Japanese yields', 'Plausible hypothesis', 'warning'],
-          ], {
-            note: 'Demography changes the decision-makers and their constraints; it does not mechanically determine one asset sale.',
-            evidence: ['Inspect Japan’s Statistical Handbook, page 28', 'https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf'],
-            angle: 'The market signal may appear first in the institutions adapting to longevity—not in Treasury holdings themselves.',
-            mechanism: 'Insurers and pension funds translate longer lives into duration, liability, and allocation decisions.',
-            comparison: 'Aging may increase aggregate saving while still changing which institutions hold foreign assets.',
-          }),
-          force: route('force', [
-            ['Missing premise', 'What would create the pressure?', 'Higher Japanese yields'],
-            ['Mechanism', 'What changes the relative return?', 'Currency-hedging costs'],
-            ['Hidden intermediary', 'Who makes the allocation decision?', 'Insurer portfolio committees'],
-            ['Consequence', 'What could happen next?', 'Reduced demand for foreign bonds', 'Stronger interpretation', 'evidence'],
+          investors: route('Japanese investors', [
+            ['Actor', 'Who can actually change the allocation?', 'GPIF, insurers, banks, and private funds'],
+            ['Constraint', 'Do they face the same incentives?', 'Different liabilities, mandates, and hedge policies'],
+            ['Decision', 'What does each institution compare?', 'Domestic assets versus hedged foreign returns'],
+            ['Test', 'What evidence would show a real move?', 'Sector-level flows—not a national headline', 'Required distinction', 'warning'],
           ], {
             branches: [
-              ['Sudden forced selloff', 'Needs more evidence', ''],
-              ['Gradual portfolio repricing', 'Stronger path', 'strong'],
+              ['Japan as one coordinated seller', 'Not established', ''],
+              ['Institution-specific rebalancing', 'Evidence-compatible', 'strong'],
             ],
-            note: 'The original sentence skips four steps between demographics and Treasury selling.',
-            evidence: ['Inspect the BOJ Financial System Report, page 28', 'https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf'],
-            angle: 'The real risk may be gradual portfolio repricing driven by Japanese rates and currency-hedging economics.',
-            mechanism: 'The pressure runs through relative yields, hedge costs, and insurer portfolio rules—not through demography alone.',
-            comparison: 'A sudden forced selloff needs more evidence; gradual repricing has the stronger mechanism.',
+            note: '“Japan” compresses institutions with different balance sheets into a single actor.',
+            evidence: ['Inspect the NBER public-sector balance-sheet analysis', 'https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf'],
+            angle: 'The better question is which Japanese balance sheet would sell, under which mandate, and at what hedge cost.',
+            mechanism: 'Pension funds, insurers, banks, households, and the central bank do not make one synchronized portfolio decision.',
+            comparison: 'Institution-specific rebalancing is plausible; a coordinated national selloff is not established.',
           }),
-          treasuries: route('sell U.S. Treasuries', [
-            ['Ownership', 'Who actually owns the assets?', 'Government, banks, insurers, and funds'],
-            ['Evidence', 'What happened during earlier rate shifts?', 'Hedge ratios moved before headline holdings'],
-            ['Consequence', 'How might demand transmit to the U.S.?', 'Marginal auction demand and yields'],
-            ['Test', 'Which explanation survives?', 'Track repricing before declaring a dump', 'Needs more evidence', 'warning'],
+          sell: route('sell', [
+            ['Catalyst', 'What changed now?', 'A proposal to steer pension capital home'],
+            ['Relative return', 'Why reconsider foreign bonds?', 'Higher Japanese government-bond yields'],
+            ['Friction', 'What erodes the dollar yield?', 'Costly USD/JPY currency hedging'],
+            ['Portfolio action', 'What could institutions do?', 'Buy fewer foreign bonds or rebalance gradually', 'Stronger interpretation', 'evidence'],
           ], {
             branches: [
-              ['Sudden forced selloff', 'Needs more evidence', ''],
-              ['Gradual portfolio repricing', 'Stronger path', 'strong'],
+              ['A sudden Treasury dump', 'Not demonstrated', ''],
+              ['Gradual capital repatriation', 'Stronger path', 'strong'],
             ],
-            note: 'Headline ownership is not the same as the marginal decision that moves price.',
-            evidence: ['Inspect the U.S. Treasury foreign-portfolio survey', 'https://home.treasury.gov/news/press-releases/sb0482'],
-            angle: 'Watch hedging demand and portfolio repricing before treating aggregate holdings as the leading signal.',
-            mechanism: 'Different Japanese holders face different liabilities, mandates, and hedging choices.',
-            comparison: 'The forced-sale story is dramatic; the gradual-demand story is more defensible and observable.',
+            note: 'The Reuters catalyst is a policy proposal. It does not yet establish the size, timing, or instruments of any sale.',
+            evidence: ['Inspect the Reuters policy report', 'https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/'],
+            angle: 'The near-term story is not demographics forcing a dump; it is domestic yields and policy changing the relative appeal of overseas assets.',
+            mechanism: 'Policy direction, higher JGB yields, and FX-hedging costs can make repatriation rational for specific portfolios.',
+            comparison: 'Gradual capital repatriation has a visible mechanism; a sudden Treasury dump does not yet have confirming flow data.',
+          }),
+          treasuries: route('U.S. Treasuries', [
+            ['Asset scope', 'Does “foreign assets” mean Treasuries?', 'No—foreign bonds, equities, and other holdings differ'],
+            ['Transmission', 'How could rebalancing reach the U.S.?', 'Lower marginal demand or outright bond sales'],
+            ['Observation', 'What must be measured?', 'Holder-level flows and Treasury transaction data'],
+            ['Limit', 'What do these sources prove today?', 'A mechanism and catalyst—not a completed selloff', 'Needs confirmation', 'warning'],
+          ], {
+            branches: [
+              ['Foreign-asset shift equals Treasury sale', 'Category error', ''],
+              ['Treasury demand may weaken at the margin', 'Defensible inference', 'strong'],
+            ],
+            note: 'A shift toward Japanese assets could come from new contributions, equities, other foreign bonds, or Treasuries. The instrument mix remains open.',
+            evidence: ['Inspect U.S. Treasury holdings data next', 'https://ticdata.treasury.gov/Publish/slt_table5.html'],
+            angle: 'Watch which assets move before turning a broad repatriation thesis into a Treasury-specific claim.',
+            mechanism: 'The Treasury-market effect depends on which institutions rebalance, what they own, and whether they sell or simply stop adding.',
+            comparison: 'Weaker marginal Treasury demand is a defensible implication; an observed Treasury selloff still needs holder-level flow evidence.',
           }),
         },
       },
@@ -398,6 +404,7 @@
       start: document.querySelector('[data-story-start]'),
       seed: document.querySelector('[data-story-seed]'),
       sourceArtifact: document.querySelector('[data-story-source-artifact]'),
+      sourcePacket: document.querySelector('[data-story-source-packet]'),
       mechanismNodes: document.querySelector('[data-story-mechanism-nodes]'),
       mechanism: document.querySelector('[data-story-mechanism]'),
       comparisonRows: document.querySelector('[data-story-comparison-rows]'),
@@ -451,6 +458,23 @@
       storyFields.sourceArtifact.append(caption);
     };
 
+    const renderSourcePacket = (sources = []) => {
+      storyFields.sourcePacket.replaceChildren();
+      storyFields.sourcePacket.hidden = sources.length === 0;
+      sources.forEach(([titleText, roleText, href]) => {
+        const source = document.createElement('a');
+        source.href = href;
+        source.target = '_blank';
+        source.rel = 'noreferrer';
+        const title = document.createElement('strong');
+        title.textContent = titleText;
+        const role = document.createElement('span');
+        role.textContent = roleText;
+        source.append(title, role);
+        storyFields.sourcePacket.append(source);
+      });
+    };
+
     const renderMechanismArtifact = (selected) => {
       storyFields.mechanismNodes.replaceChildren();
       selected.steps.forEach((step) => {
@@ -486,6 +510,7 @@
       storyFields.seed.textContent = example.sentenceText;
       storyFields.destination.textContent = example.sourceLabel;
       renderSourceArtifact(example.media);
+      renderSourcePacket(example.sources || []);
       renderMechanismArtifact(resolved);
       renderComparisonArtifact(resolved);
       storyFields.mechanism.textContent = resolved.mechanism;

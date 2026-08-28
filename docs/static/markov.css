@@ -1319,6 +1319,13 @@ body.landing-page {
 .source-artifact-caption strong { font-size: .78rem; font-weight: 680; line-height: 1.35; }
 .source-artifact-caption small { color: var(--muted); font-size: .64rem; line-height: 1.35; text-align: right; }
 
+.source-packet { border-bottom: 1px solid var(--line-strong); margin: .65rem 0 0; max-width: 520px; text-align: left; }
+.source-packet[hidden] { display: none; }
+.source-packet a { align-items: baseline; border-top: 1px solid var(--line); display: grid; gap: .35rem 1rem; grid-template-columns: minmax(0, 1fr) minmax(110px, .58fr); padding: .62rem 0; text-decoration: none; }
+.source-packet a:hover strong { color: var(--moss-dark); }
+.source-packet strong { font-size: .68rem; font-weight: 680; line-height: 1.35; }
+.source-packet span { color: var(--muted); font-size: .59rem; line-height: 1.35; text-align: right; }
+
 .source-preview {
   background: var(--ink);
   color: var(--paper);

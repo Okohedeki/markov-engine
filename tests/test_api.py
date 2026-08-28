@@ -262,10 +262,10 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Open your workspace" not in landing.text
             assert 'href="/app/login"' in landing.text
             assert ">Sign in</a>" in landing.text
-            assert "Japan’s" in landing.text
-            assert ">aging population</button>" in landing.text
-            assert ">force</button>" in landing.text
-            assert ">sell U.S. Treasuries</button>" in landing.text
+            assert "Why would" in landing.text
+            assert ">Japanese investors</button>" in landing.text
+            assert ">sell</button>" in landing.text
+            assert ">U.S. Treasuries</button>" in landing.text
             assert landing.text.count('aria-controls="idea-route"') == 3
             assert "Hover or focus a phrase to follow the idea." in landing.text
             assert "The missing steps will unfold here." in landing.text
@@ -273,11 +273,17 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Catch me up" in landing.text
             assert "Explore this chain" in landing.text
             assert "Turn this angle into a script" in landing.text
-            assert "You started with a video." in landing.text
+            assert "You started with a video and a question." in landing.text
             assert "Current thread" not in landing.text
-            assert "Source captured" in landing.text
-            assert "youtube-nocookie.com/embed/nlBqZ74_Jbo" in landing.text
-            assert "Japan’s Ageing And Shrinking Population" in landing.text
+            assert "Source packet" in landing.text
+            assert "youtube-nocookie.com/embed/nmdujC0MUKA" in landing.text
+            assert "Japan’s population crisis reaches tipping point" in landing.text
+            assert "data-story-source-packet" in landing.text
+            assert "Child-free creator post" in landing.text
+            assert "Audience signal · not Japan-specific evidence" in landing.text
+            assert "U.S. Debt, Japanese Yen and Your Retirement?" in landing.text
+            assert "Japan’s pension pivot" in landing.text
+            assert "What about Japan?" in landing.text
             assert "Markov started a chain." in landing.text
             assert "Markov found the missing mechanism." not in landing.text
             assert "Mechanism artifact" in landing.text
@@ -305,7 +311,8 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "MARKOV BRIEF" in landing.text
             assert "MARKOV RESEARCH REPORT" in landing.text
             assert "MARKOV SCRIPT" in landing.text
-            assert "4 PUBLISHED SOURCES" in landing.text
+            assert "5 COLLECTED SOURCES" in landing.text
+            assert "A coordinated Treasury dump is not established" in landing.text
             assert "What would change the conclusion" in landing.text
             assert "READY TO RECORD" in landing.text
             assert "Open the full evidence-linked sample" in landing.text
@@ -348,10 +355,12 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
 
             sample = await client.get("/sample")
             assert sample.status_code == 200
-            assert "From Japan’s ageing population" in sample.text
+            assert "From a Japan source packet" in sample.text
             assert "Resulting insight" in sample.text
-            assert "U.S. Treasury" in sample.text
+            assert "U.S. Treasuries" in sample.text
             assert "published sources" in sample.text
+            assert "Japan’s pension pivot" in sample.text
+            assert "What about Japan?" in sample.text
             assert "CASE MKV" not in sample.text
 
             css = await client.get("/static/markov.css")
@@ -368,7 +377,7 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "event.key !== 'Escape'" in javascript.text
             assert "aria-expanded" in javascript.text
             assert "markov.pendingSource" in javascript.text
-            assert "You started with a video." in javascript.text
+            assert "You started with a video and a question." in javascript.text
             assert "You started with 10 seconds." in javascript.text
             assert "You started with an article." in javascript.text
             assert "You started with a paper." in javascript.text
@@ -376,6 +385,7 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "You started with a question." in javascript.text
             assert "storyFields.start.textContent = example.startCopy" in javascript.text
             assert "renderSourceArtifact(example.media)" in javascript.text
+            assert "renderSourcePacket(example.sources || [])" in javascript.text
             assert "renderMechanismArtifact(resolved)" in javascript.text
             assert "renderComparisonArtifact(resolved)" in javascript.text
             assert "storyFields.report.textContent = resolved.comparison" in javascript.text
