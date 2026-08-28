@@ -1,15 +1,17 @@
 # Markov
 
-Markov turns a source, topic, or question into one of three finished,
-evidence-linked products:
+**Start anywhere. Follow the idea. Make something original.**
 
-- **Markov Brief** — the bottom line, important points, what can be skipped,
-  missing context, claim status, and exact source navigation.
-- **Markov Research** — a professional research report organized around atomic
-  claims, exact evidence passages, counterevidence, gaps, and source quality.
-- **Markov Script** — a ready-to-record factual YouTube package with a production
-  verdict, thesis, complete narration, production notes, evidence markers,
-  fact-check appendix, and do-not-repeat list.
+Markov treats a source as the first node, not the answer. It checks the claims,
+discovers and validates typed connections, builds paths through the strongest
+ideas, and turns the shared case into one of three useful outcomes:
+
+- **Catch me up** — bottom line, assumptions, omissions, weak points, exact
+  navigation, and threads worth pulling.
+- **Explore where it leads** — a connection map, hidden story, hypotheses,
+  ranked research paths, counterevidence, and source packet.
+- **Turn it into a script** — candidate angles, an original defensible angle,
+  full narration, production and fact-check notes, and a do-not-repeat list.
 
 Every product can be **Instant** (fully agentic) or **Verified** (the same
 structured case followed by audited human review). Brief, Research, and Script
@@ -20,7 +22,7 @@ The original open-source Chain, growth, ingestion, and article/newsletter APIs
 remain available for compatibility. New customer submissions do not
 automatically merge into Chains.
 
-## What V1 includes
+## What V2 includes
 
 - YouTube captions first, with timestamped Whisper fallback.
 - Structured video/audio, PDF-page, article-section, and social segments.
@@ -29,14 +31,23 @@ automatically merge into Chains.
 - Claim-specific authority, data, limitation, history, counterevidence, and
   alternative-explanation searches.
 - Exact inspected passages; search snippets never become evidence.
+- Ten closed connection types with explicit endpoints, mechanisms, significance,
+  support, weakening conditions, next steps, and evidence levels.
+- Reproducible scoring across relevance, evidence strength, novelty,
+  explanatory value, output usefulness, and risk.
+- Connection paths, insight candidates, persistent branch decisions, and
+  follow-to-revised-Script behavior.
 - Deterministic citations, claim markers, evidence appendices, and source
   locators.
-- Authenticated asynchronous API with idempotency, stage events, errors,
+- Authenticated asynchronous `/v2` API with idempotency, graph resources,
+  branching, stage events, errors,
   webhooks, owner isolation, and rate limits.
 - Public product, pricing, finished-case, and developer pages plus a
   server-rendered SaaS workspace for intake, processing, artifact reading,
   evidence, conversion, deepening, revision, export, and review.
-- Six configurable credit products and optional Stripe Checkout/webhooks.
+- Configurable Community, Cloud Free, Cloud Plus, Cloud Pro, and Verified
+  entitlements. Accuracy, citations, uncertainty, and source packets are never
+  premium features.
 - Usage analytics, variable-cost records, artifact versions, structured review
   decisions, and review-time accounting.
 - Additive SQLite migrations that preserve legacy data.
@@ -50,17 +61,18 @@ Web / API / CLI
   -> Extract -> SourceSegments with timestamps/pages/sections
   -> Claim -> atomic Claims + ResearchGaps
   -> Research -> exact EvidencePassages + ClaimEvidence stance
+  -> Connect -> typed candidates -> deterministic validation and scoring
+  -> Path -> ordered Connections -> InsightCandidates
   -> Render -> Brief / Research Report / Script
-  -> Deliver -> versions, exports, usage, costs
+  -> Branch -> follow / save / dismiss -> revised artifact versions
+  -> Deliver -> exports, usage, costs
   -> Verified only -> structured ReviewJob -> final delivery
 ```
 
-The detailed repository audit, migration plan, module decisions, risks, and
-vertical-slice map are in
-[`docs/markov-v1-architecture.md`](docs/markov-v1-architecture.md).
-The positioning, audience, brand character, experience rules, proof inventory,
-and public-page narrative are recorded in
-[`docs/product-dream.md`](docs/product-dream.md).
+The V2 product contract, repository audit, domain model, trust rules, API,
+entitlements, analytics, and acceptance slice are in
+[`docs/markov-v2-architecture.md`](docs/markov-v2-architecture.md). The original
+V1 audit remains in [`docs/markov-v1-architecture.md`](docs/markov-v1-architecture.md).
 
 ## Local setup
 
@@ -134,26 +146,33 @@ does not run the FastAPI service.
 ## API quick start
 
 ```bash
-curl -X POST http://127.0.0.1:8000/v1/jobs \
+curl -X POST http://127.0.0.1:8000/v2/jobs \
   -H "X-Markov-Key: local-customer-key" \
   -H "Idempotency-Key: demo-brief-1" \
   -H "Content-Type: application/json" \
   -d '{
-    "mode": "brief",
+    "job": "Explore where it leads",
     "review_level": "instant",
-    "inputs": [{"type":"url","value":"https://www.youtube.com/watch?v=..."}],
-    "constraints": {"focus":"economic claims","depth":"standard"}
+    "source": {"type":"url","value":"https://www.youtube.com/watch?v=..."},
+    "options": {"focus":"economic claims","max_connections":8}
   }'
 ```
 
-Poll `GET /v1/jobs/{job_id}` or inspect ordered events at
-`GET /v1/jobs/{job_id}/events`. Full requests for all three modes, conversion,
-deepening, revision, export, review, and checkout are in
+Poll `GET /v2/jobs/{job_id}` or inspect ordered events at
+`GET /v2/jobs/{job_id}/events`. Fetch connections, paths, and insights under
+`/v2/cases/{case_id}`; follow a branch with
+`POST /v2/connections/{connection_id}/follow`. Full requests are in
 [`docs/api-examples.md`](docs/api-examples.md).
 
-## Product and billing configuration
+## Entitlements and billing configuration
 
-The product catalog has exactly six variants:
+Owners resolve to `community`, `cloud_free`, `cloud_plus`, `cloud_pro`, or
+`verified_add_on`. Configure the default with
+`MARKOV_DEFAULT_ENTITLEMENT_PROFILE`, owner mappings with
+`MARKOV_OWNER_ENTITLEMENT_PROFILES`, and deployment-specific limits with
+`MARKOV_ENTITLEMENT_OVERRIDES`. Trust-floor capabilities cannot be switched off.
+
+Cloud credit pricing still has six job variants:
 
 ```text
 brief_instant        brief_verified
@@ -170,9 +189,9 @@ configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_IDS`, and
 ## Database migrations
 
 `SqliteStore.open()` applies numbered, additive migrations automatically. V1
-adds research cases, segments, claims, gaps, evidence, jobs, versions, reviews,
-usage, cost, and credit tables and only nullable/defaulted columns to legacy
-tables. It does not delete or rewrite Chain-era records.
+adds the evidence-oriented case model. V2 adds connections, connection evidence,
+paths, insights, and branch decisions. Neither migration deletes or rewrites
+Chain-era records.
 
 Back up the SQLite file before deploying a new release:
 
@@ -208,10 +227,11 @@ python -m pytest -q
 python -m ruff check markov_engine tests
 ```
 
-The suite includes a full network-free vertical slice covering timestamped
-YouTube extraction, claims, priority evidence research, all three outputs,
-deepening, targeted regeneration, section revision, export, Verified review,
-structured correction, costs, and analytics.
+The suite includes a full network-free V2 vertical slice covering timestamped
+YouTube extraction, claims and gaps, evidence research, three typed validated
+connections, an explicitly rejected candidate, one path and insight, all three
+outputs, a followed branch, and a revised Script version. Store, API,
+entitlement, export, review, cost, and analytics contracts are also tested.
 
 ## Samples
 
