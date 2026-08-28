@@ -263,7 +263,112 @@ async def _migration_1(conn: aiosqlite.Connection) -> None:
     await conn.executescript(_RESEARCH_SCHEMA)
 
 
-_MIGRATIONS = ((1, "research_case_v1", _migration_1),)
+_CONNECTION_SCHEMA = """
+CREATE TABLE IF NOT EXISTS connections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    source_node_type TEXT NOT NULL,
+    source_node_id INTEGER NOT NULL,
+    target_node_type TEXT NOT NULL,
+    target_node_id INTEGER NOT NULL,
+    connection_type TEXT NOT NULL,
+    statement TEXT NOT NULL,
+    mechanism TEXT NOT NULL,
+    why_it_matters TEXT NOT NULL,
+    supports TEXT NOT NULL DEFAULT '',
+    weakens TEXT NOT NULL DEFAULT '',
+    could_lead_to TEXT NOT NULL DEFAULT '',
+    evidence_level TEXT NOT NULL,
+    validation_status TEXT NOT NULL DEFAULT 'candidate',
+    relevance REAL NOT NULL DEFAULT 0,
+    evidence_strength REAL NOT NULL DEFAULT 0,
+    novelty REAL NOT NULL DEFAULT 0,
+    explanatory_value REAL NOT NULL DEFAULT 0,
+    output_usefulness REAL NOT NULL DEFAULT 0,
+    risk REAL NOT NULL DEFAULT 0,
+    total_score REAL NOT NULL DEFAULT 0,
+    rejection_reason TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (
+        research_case_id, source_node_type, source_node_id,
+        target_node_type, target_node_id, connection_type
+    )
+);
+CREATE INDEX IF NOT EXISTS ix_connections_case_score
+    ON connections(research_case_id, validation_status, total_score DESC, id);
+
+CREATE TABLE IF NOT EXISTS connection_evidence (
+    connection_id INTEGER NOT NULL REFERENCES connections(id) ON DELETE CASCADE,
+    evidence_passage_id INTEGER NOT NULL REFERENCES evidence_passages(id) ON DELETE CASCADE,
+    stance TEXT NOT NULL,
+    strength REAL NOT NULL DEFAULT 0,
+    rationale TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (connection_id, evidence_passage_id)
+);
+
+CREATE TABLE IF NOT EXISTS connection_paths (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    connection_ids TEXT NOT NULL DEFAULT '[]',
+    relevance REAL NOT NULL DEFAULT 0,
+    evidence_strength REAL NOT NULL DEFAULT 0,
+    novelty REAL NOT NULL DEFAULT 0,
+    explanatory_value REAL NOT NULL DEFAULT 0,
+    output_usefulness REAL NOT NULL DEFAULT 0,
+    risk REAL NOT NULL DEFAULT 0,
+    total_score REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'candidate',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_connection_paths_case_score
+    ON connection_paths(research_case_id, status, total_score DESC, id);
+
+CREATE TABLE IF NOT EXISTS insight_candidates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    thesis TEXT NOT NULL,
+    connection_path_ids TEXT NOT NULL DEFAULT '[]',
+    supporting_claim_ids TEXT NOT NULL DEFAULT '[]',
+    novelty_basis TEXT NOT NULL DEFAULT '',
+    evidence_level TEXT NOT NULL,
+    evidence_strength REAL NOT NULL DEFAULT 0,
+    counterevidence TEXT NOT NULL DEFAULT '',
+    uncertainty TEXT NOT NULL DEFAULT '',
+    next_step TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'candidate',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_insight_candidates_case
+    ON insight_candidates(research_case_id, status, evidence_strength DESC, id);
+
+CREATE TABLE IF NOT EXISTS user_branch_decisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    owner_id TEXT NOT NULL,
+    connection_id INTEGER NOT NULL REFERENCES connections(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    metadata TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS ix_user_branch_decisions_case
+    ON user_branch_decisions(research_case_id, owner_id, created_at DESC, id);
+"""
+
+
+async def _migration_2(conn: aiosqlite.Connection) -> None:
+    await conn.executescript(_CONNECTION_SCHEMA)
+
+
+_MIGRATIONS = (
+    (1, "research_case_v1", _migration_1),
+    (2, "connection_graph_v2", _migration_2),
+)
 
 
 async def apply_migrations(conn: aiosqlite.Connection) -> None:

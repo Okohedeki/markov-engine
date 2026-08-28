@@ -15,17 +15,22 @@ from markov_engine.store.records import (
     ArtifactRec,
     ClaimEvidenceRec,
     ClaimRec,
+    ConnectionEvidenceRec,
+    ConnectionPathRec,
+    ConnectionRec,
     CostLedgerRec,
     CreditAccountRec,
     EvidencePassageRec,
     JobEventRec,
     JobRec,
+    InsightCandidateRec,
     ResearchCaseRec,
     ResearchGapRec,
     ReviewDecisionRec,
     ReviewJobRec,
     SourceSegmentRec,
     UsageEventRec,
+    UserBranchDecisionRec,
 )
 
 if TYPE_CHECKING:
@@ -164,6 +169,76 @@ class ResearchSqliteMixin:
             webhook_url=row["webhook_url"],
             idempotency_key=row["idempotency_key"],
             error=row["error"],
+            created_at=_ts(row["created_at"]),
+            updated_at=_ts(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _connection(row) -> ConnectionRec:
+        return ConnectionRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            source_node_type=row["source_node_type"],
+            source_node_id=row["source_node_id"],
+            target_node_type=row["target_node_type"],
+            target_node_id=row["target_node_id"],
+            connection_type=row["connection_type"],
+            statement=row["statement"],
+            mechanism=row["mechanism"],
+            why_it_matters=row["why_it_matters"],
+            supports=row["supports"],
+            weakens=row["weakens"],
+            could_lead_to=row["could_lead_to"],
+            evidence_level=row["evidence_level"],
+            validation_status=row["validation_status"],
+            relevance=float(row["relevance"]),
+            evidence_strength=float(row["evidence_strength"]),
+            novelty=float(row["novelty"]),
+            explanatory_value=float(row["explanatory_value"]),
+            output_usefulness=float(row["output_usefulness"]),
+            risk=float(row["risk"]),
+            total_score=float(row["total_score"]),
+            rejection_reason=row["rejection_reason"],
+            created_at=_ts(row["created_at"]),
+            updated_at=_ts(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _connection_path(row) -> ConnectionPathRec:
+        return ConnectionPathRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            title=row["title"],
+            summary=row["summary"],
+            connection_ids=_json(row["connection_ids"], []),
+            relevance=float(row["relevance"]),
+            evidence_strength=float(row["evidence_strength"]),
+            novelty=float(row["novelty"]),
+            explanatory_value=float(row["explanatory_value"]),
+            output_usefulness=float(row["output_usefulness"]),
+            risk=float(row["risk"]),
+            total_score=float(row["total_score"]),
+            status=row["status"],
+            created_at=_ts(row["created_at"]),
+            updated_at=_ts(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _insight(row) -> InsightCandidateRec:
+        return InsightCandidateRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            title=row["title"],
+            thesis=row["thesis"],
+            connection_path_ids=_json(row["connection_path_ids"], []),
+            supporting_claim_ids=_json(row["supporting_claim_ids"], []),
+            novelty_basis=row["novelty_basis"],
+            evidence_level=row["evidence_level"],
+            evidence_strength=float(row["evidence_strength"]),
+            counterevidence=row["counterevidence"],
+            uncertainty=row["uncertainty"],
+            next_step=row["next_step"],
+            status=row["status"],
             created_at=_ts(row["created_at"]),
             updated_at=_ts(row["updated_at"]),
         )
@@ -631,6 +706,382 @@ class ResearchSqliteMixin:
             (case_id, source_id),
         ) as cur:
             return await cur.fetchone() is not None
+
+    async def add_connection(
+        self,
+        *,
+        research_case_id: int,
+        source_node_type: str,
+        source_node_id: int,
+        target_node_type: str,
+        target_node_id: int,
+        connection_type: str,
+        statement: str,
+        mechanism: str,
+        why_it_matters: str,
+        supports: str,
+        weakens: str,
+        could_lead_to: str,
+        evidence_level: str,
+        validation_status: str = "candidate",
+        relevance: float = 0,
+        evidence_strength: float = 0,
+        novelty: float = 0,
+        explanatory_value: float = 0,
+        output_usefulness: float = 0,
+        risk: float = 0,
+        total_score: float = 0,
+        rejection_reason: str | None = None,
+    ) -> ConnectionRec:
+        values = (
+            research_case_id,
+            source_node_type,
+            int(source_node_id),
+            target_node_type,
+            int(target_node_id),
+            connection_type,
+            statement,
+            mechanism,
+            why_it_matters,
+            supports,
+            weakens,
+            could_lead_to,
+            evidence_level,
+            validation_status,
+            float(relevance),
+            float(evidence_strength),
+            float(novelty),
+            float(explanatory_value),
+            float(output_usefulness),
+            float(risk),
+            float(total_score),
+            rejection_reason,
+        )
+        await self._conn.execute(
+            "INSERT INTO connections (research_case_id, source_node_type, source_node_id, "
+            "target_node_type, target_node_id, connection_type, statement, mechanism, "
+            "why_it_matters, supports, weakens, could_lead_to, evidence_level, "
+            "validation_status, relevance, evidence_strength, novelty, explanatory_value, "
+            "output_usefulness, risk, total_score, rejection_reason) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT (research_case_id, source_node_type, source_node_id, "
+            "target_node_type, target_node_id, connection_type) DO UPDATE SET "
+            "statement=excluded.statement, mechanism=excluded.mechanism, "
+            "why_it_matters=excluded.why_it_matters, supports=excluded.supports, "
+            "weakens=excluded.weakens, could_lead_to=excluded.could_lead_to, "
+            "evidence_level=excluded.evidence_level, "
+            "validation_status=excluded.validation_status, relevance=excluded.relevance, "
+            "evidence_strength=excluded.evidence_strength, novelty=excluded.novelty, "
+            "explanatory_value=excluded.explanatory_value, "
+            "output_usefulness=excluded.output_usefulness, risk=excluded.risk, "
+            "total_score=excluded.total_score, rejection_reason=excluded.rejection_reason, "
+            "updated_at=datetime('now')",
+            values,
+        )
+        await self._conn.commit()
+        async with self._conn.execute(
+            "SELECT * FROM connections WHERE research_case_id = ? AND "
+            "source_node_type = ? AND source_node_id = ? AND target_node_type = ? "
+            "AND target_node_id = ? AND connection_type = ?",
+            values[:6],
+        ) as cur:
+            row = await cur.fetchone()
+        assert row is not None
+        return self._connection(row)
+
+    async def get_connection(
+        self, connection_id: int, *, owner_id: str | None = None
+    ) -> ConnectionRec | None:
+        query = "SELECT c.* FROM connections c"
+        params: tuple = (connection_id,)
+        if owner_id is not None:
+            query += " JOIN research_cases rc ON rc.id = c.research_case_id"
+        query += " WHERE c.id = ?"
+        if owner_id is not None:
+            query += " AND rc.owner_id = ?"
+            params += (owner_id,)
+        async with self._conn.execute(query, params) as cur:
+            row = await cur.fetchone()
+        return self._connection(row) if row else None
+
+    async def list_connections(
+        self,
+        case_id: int,
+        *,
+        status: str | None = None,
+        limit: int | None = None,
+    ) -> list[ConnectionRec]:
+        query = "SELECT * FROM connections WHERE research_case_id = ?"
+        params: tuple = (case_id,)
+        if status is not None:
+            query += " AND validation_status = ?"
+            params += (status,)
+        query += " ORDER BY total_score DESC, id"
+        if limit is not None:
+            query += " LIMIT ?"
+            params += (int(limit),)
+        async with self._conn.execute(query, params) as cur:
+            rows = await cur.fetchall()
+        return [self._connection(row) for row in rows]
+
+    async def update_connection_validation(
+        self,
+        connection_id: int,
+        *,
+        validation_status: str,
+        evidence_level: str | None = None,
+        evidence_strength: float | None = None,
+        total_score: float | None = None,
+        rejection_reason: str | None = None,
+    ) -> ConnectionRec:
+        existing = await self.get_connection(connection_id)
+        if existing is None:
+            raise ValueError("Connection not found")
+        await self._conn.execute(
+            "UPDATE connections SET validation_status = ?, evidence_level = ?, "
+            "evidence_strength = ?, total_score = ?, rejection_reason = ?, "
+            "updated_at = datetime('now') WHERE id = ?",
+            (
+                validation_status,
+                existing.evidence_level if evidence_level is None else evidence_level,
+                existing.evidence_strength
+                if evidence_strength is None
+                else float(evidence_strength),
+                existing.total_score if total_score is None else float(total_score),
+                rejection_reason,
+                connection_id,
+            ),
+        )
+        await self._conn.commit()
+        updated = await self.get_connection(connection_id)
+        assert updated is not None
+        return updated
+
+    async def link_connection_evidence(
+        self,
+        *,
+        connection_id: int,
+        evidence_passage_id: int,
+        stance: str,
+        strength: float,
+        rationale: str,
+    ) -> None:
+        await self._conn.execute(
+            "INSERT INTO connection_evidence "
+            "(connection_id, evidence_passage_id, stance, strength, rationale) "
+            "VALUES (?, ?, ?, ?, ?) ON CONFLICT (connection_id, evidence_passage_id) "
+            "DO UPDATE SET stance=excluded.stance, strength=excluded.strength, "
+            "rationale=excluded.rationale",
+            (
+                connection_id,
+                evidence_passage_id,
+                stance,
+                float(strength),
+                rationale,
+            ),
+        )
+        await self._conn.commit()
+
+    async def list_connection_evidence(
+        self, connection_id: int
+    ) -> list[ConnectionEvidenceRec]:
+        async with self._conn.execute(
+            "SELECT ce.*, ep.* FROM connection_evidence ce "
+            "JOIN evidence_passages ep ON ep.id = ce.evidence_passage_id "
+            "WHERE ce.connection_id = ? ORDER BY ce.strength DESC, ep.id",
+            (connection_id,),
+        ) as cur:
+            rows = await cur.fetchall()
+        return [
+            ConnectionEvidenceRec(
+                connection_id=row["connection_id"],
+                evidence_passage_id=row["evidence_passage_id"],
+                stance=row["stance"],
+                strength=float(row["strength"]),
+                rationale=row["rationale"],
+                evidence=self._evidence(row),
+            )
+            for row in rows
+        ]
+
+    async def add_connection_path(
+        self,
+        *,
+        research_case_id: int,
+        title: str,
+        summary: str,
+        connection_ids: list[int],
+        relevance: float,
+        evidence_strength: float,
+        novelty: float,
+        explanatory_value: float,
+        output_usefulness: float,
+        risk: float,
+        total_score: float,
+        status: str = "candidate",
+    ) -> ConnectionPathRec:
+        cur = await self._conn.execute(
+            "INSERT INTO connection_paths (research_case_id, title, summary, "
+            "connection_ids, relevance, evidence_strength, novelty, explanatory_value, "
+            "output_usefulness, risk, total_score, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                research_case_id,
+                title,
+                summary,
+                json.dumps(connection_ids),
+                float(relevance),
+                float(evidence_strength),
+                float(novelty),
+                float(explanatory_value),
+                float(output_usefulness),
+                float(risk),
+                float(total_score),
+                status,
+            ),
+        )
+        await self._conn.commit()
+        rec = await self.get_connection_path(cur.lastrowid)
+        assert rec is not None
+        return rec
+
+    async def get_connection_path(self, path_id: int) -> ConnectionPathRec | None:
+        async with self._conn.execute(
+            "SELECT * FROM connection_paths WHERE id = ?", (path_id,)
+        ) as cur:
+            row = await cur.fetchone()
+        return self._connection_path(row) if row else None
+
+    async def list_connection_paths(self, case_id: int) -> list[ConnectionPathRec]:
+        async with self._conn.execute(
+            "SELECT * FROM connection_paths WHERE research_case_id = ? "
+            "ORDER BY total_score DESC, id",
+            (case_id,),
+        ) as cur:
+            rows = await cur.fetchall()
+        return [self._connection_path(row) for row in rows]
+
+    async def add_insight_candidate(
+        self,
+        *,
+        research_case_id: int,
+        title: str,
+        thesis: str,
+        connection_path_ids: list[int],
+        supporting_claim_ids: list[int],
+        novelty_basis: str,
+        evidence_level: str,
+        evidence_strength: float,
+        counterevidence: str,
+        uncertainty: str,
+        next_step: str,
+        status: str = "candidate",
+    ) -> InsightCandidateRec:
+        cur = await self._conn.execute(
+            "INSERT INTO insight_candidates (research_case_id, title, thesis, "
+            "connection_path_ids, supporting_claim_ids, novelty_basis, evidence_level, "
+            "evidence_strength, counterevidence, uncertainty, next_step, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                research_case_id,
+                title,
+                thesis,
+                json.dumps(connection_path_ids),
+                json.dumps(supporting_claim_ids),
+                novelty_basis,
+                evidence_level,
+                float(evidence_strength),
+                counterevidence,
+                uncertainty,
+                next_step,
+                status,
+            ),
+        )
+        await self._conn.commit()
+        rec = await self.get_insight_candidate(cur.lastrowid)
+        assert rec is not None
+        return rec
+
+    async def get_insight_candidate(
+        self, insight_id: int
+    ) -> InsightCandidateRec | None:
+        async with self._conn.execute(
+            "SELECT * FROM insight_candidates WHERE id = ?", (insight_id,)
+        ) as cur:
+            row = await cur.fetchone()
+        return self._insight(row) if row else None
+
+    async def list_insight_candidates(
+        self, case_id: int
+    ) -> list[InsightCandidateRec]:
+        async with self._conn.execute(
+            "SELECT * FROM insight_candidates WHERE research_case_id = ? "
+            "ORDER BY evidence_strength DESC, id",
+            (case_id,),
+        ) as cur:
+            rows = await cur.fetchall()
+        return [self._insight(row) for row in rows]
+
+    async def add_user_branch_decision(
+        self,
+        *,
+        research_case_id: int,
+        owner_id: str,
+        connection_id: int,
+        action: str,
+        metadata: dict | None = None,
+    ) -> UserBranchDecisionRec:
+        cur = await self._conn.execute(
+            "INSERT INTO user_branch_decisions "
+            "(research_case_id, owner_id, connection_id, action, metadata) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                research_case_id,
+                owner_id,
+                connection_id,
+                action,
+                json.dumps(metadata or {}),
+            ),
+        )
+        await self._conn.commit()
+        async with self._conn.execute(
+            "SELECT * FROM user_branch_decisions WHERE id = ?", (cur.lastrowid,)
+        ) as cursor:
+            row = await cursor.fetchone()
+        assert row is not None
+        return UserBranchDecisionRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            owner_id=row["owner_id"],
+            connection_id=row["connection_id"],
+            action=row["action"],
+            metadata=_json(row["metadata"], {}),
+            created_at=_ts(row["created_at"]),
+        )
+
+    async def list_user_branch_decisions(
+        self, case_id: int, *, owner_id: str | None = None
+    ) -> list[UserBranchDecisionRec]:
+        query = "SELECT * FROM user_branch_decisions WHERE research_case_id = ?"
+        params: tuple = (case_id,)
+        if owner_id is not None:
+            query += " AND owner_id = ?"
+            params += (owner_id,)
+        query += " ORDER BY id"
+        async with self._conn.execute(query, params) as cur:
+            rows = await cur.fetchall()
+        return [
+            UserBranchDecisionRec(
+                id=row["id"],
+                research_case_id=row["research_case_id"],
+                owner_id=row["owner_id"],
+                connection_id=row["connection_id"],
+                action=row["action"],
+                metadata=_json(row["metadata"], {}),
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
 
     async def add_case_artifact(
         self,

@@ -189,6 +189,94 @@ class ClaimEvidenceRec:
 
 
 @dataclass
+class ConnectionRec:
+    id: int
+    research_case_id: int
+    source_node_type: str
+    source_node_id: int
+    target_node_type: str
+    target_node_id: int
+    connection_type: str
+    statement: str
+    mechanism: str
+    why_it_matters: str
+    supports: str
+    weakens: str
+    could_lead_to: str
+    evidence_level: str
+    validation_status: str = "candidate"
+    relevance: float = 0.0
+    evidence_strength: float = 0.0
+    novelty: float = 0.0
+    explanatory_value: float = 0.0
+    output_usefulness: float = 0.0
+    risk: float = 0.0
+    total_score: float = 0.0
+    rejection_reason: str | None = None
+    created_at: dt.datetime | None = None
+    updated_at: dt.datetime | None = None
+
+
+@dataclass
+class ConnectionEvidenceRec:
+    connection_id: int
+    evidence_passage_id: int
+    stance: str
+    strength: float
+    rationale: str
+    evidence: EvidencePassageRec | None = None
+
+
+@dataclass
+class ConnectionPathRec:
+    id: int
+    research_case_id: int
+    title: str
+    summary: str
+    connection_ids: list[int] = field(default_factory=list)
+    relevance: float = 0.0
+    evidence_strength: float = 0.0
+    novelty: float = 0.0
+    explanatory_value: float = 0.0
+    output_usefulness: float = 0.0
+    risk: float = 0.0
+    total_score: float = 0.0
+    status: str = "candidate"
+    created_at: dt.datetime | None = None
+    updated_at: dt.datetime | None = None
+
+
+@dataclass
+class InsightCandidateRec:
+    id: int
+    research_case_id: int
+    title: str
+    thesis: str
+    connection_path_ids: list[int] = field(default_factory=list)
+    supporting_claim_ids: list[int] = field(default_factory=list)
+    novelty_basis: str = ""
+    evidence_level: str = "speculative_lead"
+    evidence_strength: float = 0.0
+    counterevidence: str = ""
+    uncertainty: str = ""
+    next_step: str = ""
+    status: str = "candidate"
+    created_at: dt.datetime | None = None
+    updated_at: dt.datetime | None = None
+
+
+@dataclass
+class UserBranchDecisionRec:
+    id: int
+    research_case_id: int
+    owner_id: str
+    connection_id: int
+    action: str
+    metadata: dict = field(default_factory=dict)
+    created_at: dt.datetime | None = None
+
+
+@dataclass
 class JobRec:
     id: str
     owner_id: str
