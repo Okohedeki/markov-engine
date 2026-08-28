@@ -365,9 +365,50 @@ async def _migration_2(conn: aiosqlite.Connection) -> None:
     await conn.executescript(_CONNECTION_SCHEMA)
 
 
+_RESEARCH_PLAN_SCHEMA = """
+CREATE TABLE IF NOT EXISTS research_topics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    focus TEXT NOT NULL,
+    importance REAL NOT NULL DEFAULT 0,
+    claim_ids TEXT NOT NULL DEFAULT '[]',
+    status TEXT NOT NULL DEFAULT 'planned',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (research_case_id, title)
+);
+CREATE INDEX IF NOT EXISTS ix_research_topics_case
+    ON research_topics(research_case_id, importance DESC, id);
+
+CREATE TABLE IF NOT EXISTS case_entities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    research_case_id INTEGER NOT NULL REFERENCES research_cases(id) ON DELETE CASCADE,
+    canonical_name TEXT NOT NULL,
+    aliases TEXT NOT NULL DEFAULT '[]',
+    entity_type TEXT NOT NULL DEFAULT 'unknown',
+    rationale TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (research_case_id, canonical_name)
+);
+CREATE INDEX IF NOT EXISTS ix_case_entities_case
+    ON case_entities(research_case_id, canonical_name);
+"""
+
+
+async def _migration_3(conn: aiosqlite.Connection) -> None:
+    await _ensure_column(conn, "claims", "canonical_claim_text", "TEXT")
+    await _ensure_column(conn, "claims", "research_topic_id", "INTEGER")
+    await _ensure_column(conn, "claims", "research_priority", "REAL NOT NULL DEFAULT 0")
+    await _ensure_column(
+        conn, "claims", "disposition", "TEXT NOT NULL DEFAULT 'unplanned'"
+    )
+    await conn.executescript(_RESEARCH_PLAN_SCHEMA)
+
+
 _MIGRATIONS = (
     (1, "research_case_v1", _migration_1),
     (2, "connection_graph_v2", _migration_2),
+    (3, "focused_research_plan_v2", _migration_3),
 )
 
 

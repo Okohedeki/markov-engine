@@ -196,7 +196,8 @@ async def discover_connection_candidates(
     store: SqliteStore, *, case_id: int, model: str | None = None
 ) -> tuple[list[dict], float]:
     """Ask the configured model for candidates using stored, inspectable inputs."""
-    claims = await store.list_claims(case_id)
+    all_claims = await store.list_claims(case_id)
+    claims = [claim for claim in all_claims if claim.disposition == "core"] or all_claims
     gaps = await store.list_research_gaps(case_id)
     evidence_rows = []
     seen_evidence: set[int] = set()
@@ -214,7 +215,7 @@ async def discover_connection_candidates(
     ):
         # Offline mode proposes research directions, never fabricated findings.
         # The validator keeps these at hypothesis level until evidence is linked.
-        nodes = [("claim", item.id, item.claim_text) for item in claims]
+        nodes = [("claim", item.id, item.research_text) for item in claims]
         nodes += [("gap", item.id, item.question) for item in gaps]
         kinds = ["shared_mechanism", "hidden_intermediary", "constraint_link"]
         candidates = []
@@ -256,7 +257,8 @@ async def discover_connection_candidates(
         return candidates, 0.0
     prompt = _CONNECTION_PROMPT.format(
         claims="\n".join(
-            f"[C{item.id}] {item.claim_text} ({item.verification_status})"
+            f"[C{item.id}] {item.research_text} ({item.verification_status}; "
+            f"topic={item.research_topic_id or 'unplanned'})"
             for item in claims
         ),
         gaps="\n".join(f"[G{item.id}] {item.question}" for item in gaps),

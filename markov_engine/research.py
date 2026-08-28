@@ -15,6 +15,7 @@ from markov_engine.connections import (
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
 from markov_engine.extract import classify_url, extract_content, segment_text
+from markov_engine.planning import plan_research_case
 from markov_engine.renderers import RenderedArtifact, render_artifact
 from markov_engine.store.records import ArtifactRec, ResearchCaseRec
 from markov_engine.store.sqlite import SqliteStore
@@ -475,9 +476,10 @@ async def process_research_case(
     extractor=extract_content,
     claim_extractor=extract_claims,
     claim_researcher=research_claim,
+    research_planner=plan_research_case,
     connection_discoverer=discover_connection_candidates,
     searcher=None,
-    max_priority_claims: int = 5,
+    max_priority_claims: int = 18,
     max_sources_per_claim: int = 3,
     max_connections: int | None = None,
     claim_time_budget_s: float = 60,
@@ -523,11 +525,19 @@ async def process_research_case(
             segments=segments,
             claim_extractor=claim_extractor,
         )
-        await stage("planning_research", {"claims": len(claims)})
+        core_claims = await research_planner(
+            store,
+            case_id=case.id,
+            max_core_claims=max_priority_claims,
+        )
+        await stage(
+            "planning_research",
+            {"extracted_claims": len(claims), "core_claims": len(core_claims)},
+        )
         await store.update_research_case(case.id, status="researching")
         for claim in [
             item
-            for item in claims
+            for item in core_claims
             if item.verification_status == "not_researched"
         ][:max_priority_claims]:
             await stage("finding_evidence", {"claim_id": claim.id})
@@ -542,6 +552,7 @@ async def process_research_case(
                 kwargs["searcher"] = searcher
             await claim_researcher(store, **kwargs)
         claims = await store.list_claims(case.id)
+        core_claims = [item for item in claims if item.disposition == "core"]
         await stage("comparing_sources")
         await stage("discovering_connections")
         graph = await process_connection_graph(
@@ -586,7 +597,16 @@ async def process_research_case(
                     review_level=review_level,
                 )
             )
-        final_status = "awaiting_review" if review_level == "verified" else "completed"
+        incomplete_core = [
+            item for item in core_claims if item.verification_status == "not_researched"
+        ]
+        final_status = (
+            "partial"
+            if incomplete_core
+            else "awaiting_review"
+            if review_level == "verified"
+            else "completed"
+        )
         await stage(final_status, {"artifact_ids": [item.id for item in artifacts]})
         await store.update_research_case(case.id, status=final_status)
         source_rows = await store.list_research_case_sources(case.id)
@@ -601,9 +621,11 @@ async def process_research_case(
                 "modes": artifact_types,
                 "review_level": review_level,
                 "input_type": case.input_type,
-                "claim_count": len(claims),
+                "extracted_claim_count": len(claims),
+                "core_claim_count": len(core_claims),
                 "researched_claim_count": sum(
-                    claim.verification_status != "not_researched" for claim in claims
+                    claim.verification_status != "not_researched"
+                    for claim in core_claims
                 ),
                 "source_count": len(source_rows),
                 "evidence_passage_count": evidence_count,

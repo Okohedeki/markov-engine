@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from markov_engine.store.records import (
     ArtifactRec,
+    CaseEntityRec,
     ClaimEvidenceRec,
     ClaimRec,
     ConnectionEvidenceRec,
@@ -26,6 +27,7 @@ from markov_engine.store.records import (
     InsightCandidateRec,
     ResearchCaseRec,
     ResearchGapRec,
+    ResearchTopicRec,
     ReviewDecisionRec,
     ReviewJobRec,
     SourceSegmentRec,
@@ -104,6 +106,10 @@ class ResearchSqliteMixin:
             source_start_segment_id=row["source_start_segment_id"],
             source_end_segment_id=row["source_end_segment_id"],
             verification_status=row["verification_status"],
+            canonical_claim_text=row["canonical_claim_text"],
+            research_topic_id=row["research_topic_id"],
+            research_priority=float(row["research_priority"] or 0),
+            disposition=row["disposition"] or "unplanned",
             created_at=_ts(row["created_at"]),
             updated_at=_ts(row["updated_at"]),
         )
@@ -468,7 +474,7 @@ class ResearchSqliteMixin:
     ) -> list[ClaimRec]:
         query = (
             "SELECT * FROM claims WHERE research_case_id = ? "
-            "ORDER BY importance DESC, id"
+            "ORDER BY research_priority DESC, importance DESC, id"
         )
         params: tuple = (research_case_id,)
         if limit is not None:
@@ -477,6 +483,160 @@ class ResearchSqliteMixin:
         async with self._conn.execute(query, params) as cur:
             rows = await cur.fetchall()
         return [self._claim(row) for row in rows]
+
+    async def update_claim_plan(
+        self,
+        claim_id: int,
+        *,
+        canonical_claim_text: str | None,
+        research_topic_id: int | None,
+        research_priority: float,
+        disposition: str,
+    ) -> ClaimRec:
+        await self._conn.execute(
+            "UPDATE claims SET canonical_claim_text = ?, research_topic_id = ?, "
+            "research_priority = ?, disposition = ?, updated_at = datetime('now') "
+            "WHERE id = ?",
+            (
+                canonical_claim_text,
+                research_topic_id,
+                float(research_priority),
+                disposition,
+                claim_id,
+            ),
+        )
+        await self._conn.commit()
+        claim = await self.get_claim(claim_id)
+        if claim is None:
+            raise ValueError("Claim not found")
+        return claim
+
+    async def add_research_topic(
+        self,
+        *,
+        research_case_id: int,
+        title: str,
+        focus: str,
+        importance: float,
+        claim_ids: list[int],
+        status: str = "planned",
+    ) -> ResearchTopicRec:
+        await self._conn.execute(
+            "INSERT INTO research_topics "
+            "(research_case_id, title, focus, importance, claim_ids, status) "
+            "VALUES (?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(research_case_id, title) DO UPDATE SET "
+            "focus = excluded.focus, importance = excluded.importance, "
+            "claim_ids = excluded.claim_ids, status = excluded.status",
+            (
+                research_case_id,
+                title,
+                focus,
+                float(importance),
+                json.dumps(claim_ids),
+                status,
+            ),
+        )
+        await self._conn.commit()
+        async with self._conn.execute(
+            "SELECT * FROM research_topics WHERE research_case_id = ? AND title = ?",
+            (research_case_id, title),
+        ) as cursor:
+            row = await cursor.fetchone()
+        assert row is not None
+        return ResearchTopicRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            title=row["title"],
+            focus=row["focus"],
+            importance=float(row["importance"]),
+            claim_ids=_json(row["claim_ids"], []),
+            status=row["status"],
+            created_at=_ts(row["created_at"]),
+        )
+
+    async def list_research_topics(self, case_id: int) -> list[ResearchTopicRec]:
+        async with self._conn.execute(
+            "SELECT * FROM research_topics WHERE research_case_id = ? "
+            "ORDER BY importance DESC, id",
+            (case_id,),
+        ) as cursor:
+            rows = await cursor.fetchall()
+        return [
+            ResearchTopicRec(
+                id=row["id"],
+                research_case_id=row["research_case_id"],
+                title=row["title"],
+                focus=row["focus"],
+                importance=float(row["importance"]),
+                claim_ids=_json(row["claim_ids"], []),
+                status=row["status"],
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
+
+    async def add_case_entity(
+        self,
+        *,
+        research_case_id: int,
+        canonical_name: str,
+        aliases: list[str],
+        entity_type: str,
+        rationale: str,
+    ) -> CaseEntityRec:
+        await self._conn.execute(
+            "INSERT INTO case_entities "
+            "(research_case_id, canonical_name, aliases, entity_type, rationale) "
+            "VALUES (?, ?, ?, ?, ?) "
+            "ON CONFLICT(research_case_id, canonical_name) DO UPDATE SET "
+            "aliases = excluded.aliases, entity_type = excluded.entity_type, "
+            "rationale = excluded.rationale",
+            (
+                research_case_id,
+                canonical_name,
+                json.dumps(aliases),
+                entity_type,
+                rationale,
+            ),
+        )
+        await self._conn.commit()
+        async with self._conn.execute(
+            "SELECT * FROM case_entities WHERE research_case_id = ? "
+            "AND canonical_name = ?",
+            (research_case_id, canonical_name),
+        ) as cursor:
+            row = await cursor.fetchone()
+        assert row is not None
+        return CaseEntityRec(
+            id=row["id"],
+            research_case_id=row["research_case_id"],
+            canonical_name=row["canonical_name"],
+            aliases=_json(row["aliases"], []),
+            entity_type=row["entity_type"],
+            rationale=row["rationale"],
+            created_at=_ts(row["created_at"]),
+        )
+
+    async def list_case_entities(self, case_id: int) -> list[CaseEntityRec]:
+        async with self._conn.execute(
+            "SELECT * FROM case_entities WHERE research_case_id = ? "
+            "ORDER BY canonical_name, id",
+            (case_id,),
+        ) as cursor:
+            rows = await cursor.fetchall()
+        return [
+            CaseEntityRec(
+                id=row["id"],
+                research_case_id=row["research_case_id"],
+                canonical_name=row["canonical_name"],
+                aliases=_json(row["aliases"], []),
+                entity_type=row["entity_type"],
+                rationale=row["rationale"],
+                created_at=_ts(row["created_at"]),
+            )
+            for row in rows
+        ]
 
     async def update_claim_status(self, claim_id: int, status: str) -> None:
         await self._conn.execute(

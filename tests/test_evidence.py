@@ -143,3 +143,48 @@ def test_claim_status_preserves_conflict_and_uncertainty():
     assert evidence.status_from_stances(["supports", "qualifies"]) == "qualified"
     assert evidence.status_from_stances(["supports", "contradicts"]) == "disputed"
     assert evidence.status_from_stances([]) == "unverifiable"
+
+
+def test_weighted_status_does_not_let_a_social_lead_overrule_official_evidence():
+    status = evidence.status_from_evidence(
+        [
+            {
+                "stance": "supports",
+                "strength": 0.9,
+                "confidence": 0.9,
+                "source_quality": "official_data",
+            },
+            {
+                "stance": "contradicts",
+                "strength": 1,
+                "confidence": 1,
+                "source_quality": "social_lead",
+            },
+        ]
+    )
+    assert status == "supported"
+
+
+@pytest.mark.asyncio
+async def test_stance_prompt_receives_entity_alias_context(monkeypatch):
+    captured = {}
+
+    async def fake_complete(prompt, *, schema, model, max_tokens):
+        captured["prompt"] = prompt
+        return {
+            "stance": "supports",
+            "strength": 0.9,
+            "rationale": "The passage reports the same person's death.",
+            "confidence": 0.9,
+        }, 0
+
+    monkeypatch.setattr(evidence, "complete_json", fake_complete)
+    result = await evidence.classify_stance(
+        "Jason Arday died.",
+        "Jason Arde has died, according to the university.",
+        entity_context="Jason Arday: Jason Arde",
+    )
+
+    assert result[0] == "supports"
+    assert "A spelling difference is not a contradiction" in captured["prompt"]
+    assert "Jason Arday: Jason Arde" in captured["prompt"]

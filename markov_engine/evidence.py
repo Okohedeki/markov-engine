@@ -50,10 +50,32 @@ Do not use outside knowledge. A passage may support, partially support, qualify,
 contradict, or provide context only. Explain the connection without inventing a
 quotation or fact.
 
+Identity rules:
+- Treat a transcript misspelling and a canonical spelling as the same entity when
+  the supplied alias context and passage clearly identify the same person.
+- A spelling difference is not a contradiction.
+- A denial of a different allegation is not a contradiction. Use contradicts only
+  when the passage directly rejects the claim or states an incompatible fact.
+
+KNOWN ENTITY ALIASES:
+{entity_context}
+
 CLAIM: {claim}
 
 PASSAGE: {passage}
 """
+
+SOURCE_QUALITY_WEIGHTS = {
+    "primary_evidence": 1.0,
+    "official_data": 0.95,
+    "academic_research": 0.95,
+    "authoritative_secondary": 0.88,
+    "high_quality_reporting": 0.88,
+    "analysis": 0.62,
+    "commentary": 0.4,
+    "social_lead": 0.22,
+    "unverified_lead": 0.12,
+}
 
 
 def query_families(claim_text: str) -> list[dict]:
@@ -130,10 +152,18 @@ def _bounded(value, default: float) -> float:
 
 
 async def classify_stance(
-    claim_text: str, passage_text: str, *, model: str | None = None
+    claim_text: str,
+    passage_text: str,
+    *,
+    entity_context: str = "None recorded.",
+    model: str | None = None,
 ) -> tuple[str, float, str, float, float]:
     data, cost = await complete_json(
-        _STANCE_PROMPT.format(claim=claim_text, passage=passage_text),
+        _STANCE_PROMPT.format(
+            claim=claim_text,
+            passage=passage_text,
+            entity_context=entity_context,
+        ),
         schema=_STANCE_SCHEMA,
         model=model or _settings.model_extraction,
         max_tokens=512,
@@ -170,6 +200,46 @@ def status_from_stances(stances: list[str]) -> str:
     if "partially_supports" in stances:
         return "partially_supported"
     if has_qualification:
+        return "qualified"
+    return "unverifiable"
+
+
+def status_from_evidence(assessments: list[dict]) -> str:
+    """Aggregate stance using evidence quality, strength, and model confidence."""
+    support = 0.0
+    partial = 0.0
+    qualification = 0.0
+    contradiction = 0.0
+    for item in assessments:
+        stance = str(item.get("stance") or "context_only")
+        quality = SOURCE_QUALITY_WEIGHTS.get(
+            str(item.get("source_quality") or "analysis"), 0.5
+        )
+        score = (
+            quality
+            * _bounded(item.get("strength"), 0.5)
+            * _bounded(item.get("confidence"), 0.5)
+        )
+        if stance == "supports":
+            support = max(support, score)
+        elif stance == "partially_supports":
+            partial = max(partial, score)
+        elif stance == "qualifies":
+            qualification = max(qualification, score)
+        elif stance == "contradicts":
+            contradiction = max(contradiction, score)
+    positive = max(support, partial)
+    if contradiction >= 0.35 and positive >= 0.35:
+        if abs(contradiction - positive) <= 0.15:
+            return "disputed"
+        return "contradicted" if contradiction > positive else "qualified"
+    if contradiction >= 0.35:
+        return "contradicted"
+    if support >= 0.35:
+        return "qualified" if qualification >= 0.3 else "supported"
+    if partial >= 0.25:
+        return "partially_supported"
+    if qualification >= 0.25:
         return "qualified"
     return "unverifiable"
 
@@ -241,15 +311,21 @@ async def research_claim(
     seed = await store.get_source(claim.seed_source_id) if claim.seed_source_id else None
     seed_url = (seed.url or "").lower() if seed else ""
     used_urls: set[str] = set()
-    stances: list[str] = []
+    assessments: list[dict] = []
     sources_added = 0
     total_cost = 0.0
     timed_out = False
     query_attempts = 0
+    entities = await store.list_case_entities(case_id)
+    entity_context = "\n".join(
+        f"{entity.canonical_name}: {', '.join(entity.aliases) or 'no aliases'}"
+        for entity in entities
+    ) or "None recorded."
+    research_text = claim.research_text
 
     async def run() -> None:
         nonlocal query_attempts, sources_added, total_cost
-        for family in query_families(claim.claim_text):
+        for family in query_families(research_text):
             if sources_added >= max_sources:
                 break
             query_attempts += 1
@@ -267,12 +343,15 @@ async def research_claim(
                 )
                 if source is None:
                     continue
-                passages = select_relevant_segments(claim.claim_text, segments, limit=1)
+                passages = select_relevant_segments(research_text, segments, limit=1)
                 if not passages:
                     continue
                 segment = passages[0]
                 stance, strength, rationale, confidence, cost = await classify_stance(
-                    claim.claim_text, segment.text, model=model
+                    research_text,
+                    segment.text,
+                    entity_context=entity_context,
+                    model=model,
                 )
                 total_cost += cost
                 evidence = await store.add_evidence_passage(
@@ -292,7 +371,14 @@ async def research_claim(
                     rationale=rationale,
                     model_confidence=confidence,
                 )
-                stances.append(stance)
+                assessments.append(
+                    {
+                        "stance": stance,
+                        "strength": strength,
+                        "confidence": confidence,
+                        "source_quality": quality,
+                    }
+                )
                 sources_added += 1
 
     if _settings.search_enabled or searcher is not search_web:
@@ -302,15 +388,15 @@ async def research_claim(
         except TimeoutError:
             timed_out = True
 
-    status = status_from_stances(stances)
-    if claim.claim_type in {"opinion", "inference"} and not stances:
+    status = status_from_evidence(assessments)
+    if claim.claim_type in {"opinion", "inference"} and not assessments:
         status = "opinion_or_inference"
     await store.update_claim_status(claim.id, status)
     await store.record_cost(
         research_case_id=case_id,
         provider="llm",
         operation="evidence_stance",
-        units=len(stances),
+        units=len(assessments),
         cost=total_cost,
     )
     await store.record_cost(
@@ -324,7 +410,7 @@ async def research_claim(
         research_case_id=case_id,
         provider="storage",
         operation="evidence_passages",
-        units=len(stances),
+        units=len(assessments),
         cost=0,
     )
     return {
@@ -332,7 +418,7 @@ async def research_claim(
         "status": status,
         "query_attempts": query_attempts,
         "sources_added": sources_added,
-        "evidence_passages": len(stances),
+        "evidence_passages": len(assessments),
         "cost": total_cost,
         "timed_out": timed_out,
     }

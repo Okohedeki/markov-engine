@@ -147,8 +147,39 @@ class ClaimRec:
     source_start_segment_id: int | None = None
     source_end_segment_id: int | None = None
     verification_status: str = "not_researched"
+    canonical_claim_text: str | None = None
+    research_topic_id: int | None = None
+    research_priority: float = 0.0
+    disposition: str = "unplanned"
     created_at: dt.datetime | None = None
     updated_at: dt.datetime | None = None
+
+    @property
+    def research_text(self) -> str:
+        return self.canonical_claim_text or self.claim_text
+
+
+@dataclass
+class ResearchTopicRec:
+    id: int
+    research_case_id: int
+    title: str
+    focus: str
+    importance: float
+    claim_ids: list[int] = field(default_factory=list)
+    status: str = "planned"
+    created_at: dt.datetime | None = None
+
+
+@dataclass
+class CaseEntityRec:
+    id: int
+    research_case_id: int
+    canonical_name: str
+    aliases: list[str] = field(default_factory=list)
+    entity_type: str = "unknown"
+    rationale: str = ""
+    created_at: dt.datetime | None = None
 
 
 @dataclass

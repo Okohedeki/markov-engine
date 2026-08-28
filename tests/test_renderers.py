@@ -261,7 +261,7 @@ async def test_youtube_brief_converts_without_repeating_research():
         )
 
         assert extraction_calls == 1
-        assert len(researched_claim_ids) == 5
+        assert len(researched_claim_ids) == 6
         assert [brief.artifact_type, report.artifact_type, script.artifact_type] == [
             "brief",
             "research_report",

@@ -39,6 +39,7 @@ async def test_legacy_database_gains_new_columns_and_remains_writable(tmp_path):
             assert [tuple(row) for row in await cur.fetchall()] == [
                 (1, "research_case_v1"),
                 (2, "connection_graph_v2"),
+                (3, "focused_research_plan_v2"),
             ]
     finally:
         await store.close()
@@ -50,6 +51,6 @@ async def test_legacy_database_gains_new_columns_and_remains_writable(tmp_path):
         async with reopened._conn.execute(
             "SELECT COUNT(*) FROM schema_migrations"
         ) as cur:
-            assert (await cur.fetchone())[0] == 2
+            assert (await cur.fetchone())[0] == 3
     finally:
         await reopened.close()

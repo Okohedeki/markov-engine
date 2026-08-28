@@ -65,7 +65,11 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
     case = await store.get_research_case(case_id)
     if case is None:
         raise ValueError("Research case not found")
-    claims = await store.list_claims(case_id)
+    all_claims = await store.list_claims(case_id)
+    planned_claims = [claim for claim in all_claims if claim.disposition == "core"]
+    claims = planned_claims or [
+        claim for claim in all_claims if claim.disposition != "background"
+    ] or all_claims
     gaps = await store.list_research_gaps(case_id)
     source_rows = await store.list_research_case_sources(case_id)
     source_ids = [row["id"] for row in source_rows]
@@ -84,6 +88,7 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
     return {
         "case": case,
         "claims": claims,
+        "all_claims": all_claims,
         "gaps": gaps,
         "sources": source_rows,
         "source_ids": source_ids,
@@ -93,6 +98,8 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
         "connection_evidence": connection_evidence,
         "paths": await store.list_connection_paths(case_id),
         "insights": await store.list_insight_candidates(case_id),
+        "topics": await store.list_research_topics(case_id),
+        "entities": await store.list_case_entities(case_id),
         "branch_decisions": await store.list_user_branch_decisions(case_id),
     }
 
@@ -101,7 +108,7 @@ def _claim_line(claim: ClaimRec, segments: dict[int, SourceSegmentRec]) -> str:
     locator = _segment_locator(segments.get(claim.source_start_segment_id or -1))
     return (
         f"**C{claim.id} — {claim.verification_status.replace('_', ' ').title()}**: "
-        f"{claim.claim_text} *(seed: {locator})*"
+        f"{claim.research_text} *(seed: {locator})*"
     )
 
 
