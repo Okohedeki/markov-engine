@@ -1,6 +1,7 @@
 """Authenticated asynchronous HTTP API and application entrypoint for Markov V1."""
 
 import asyncio
+import re
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
@@ -31,7 +32,13 @@ from markov_engine.billing import (
     public_catalog,
     verify_stripe_signature,
 )
+from markov_engine.branching import (
+    follow_connection_into_script,
+    record_connection_decision,
+)
+from markov_engine.connections import revalidate_connection
 from markov_engine.config import Settings, get_settings
+from markov_engine.entitlements import require_capability, resolve_entitlements
 from markov_engine.exports import export_artifact
 from markov_engine.jobs import run_job, submit_job
 from markov_engine.research import convert_case_artifact, process_research_case
@@ -53,6 +60,14 @@ class JobCreate(BaseModel):
     webhook_url: str | None = None
 
 
+class V2JobCreate(BaseModel):
+    job: str
+    source: InputItem
+    review_level: str = "instant"
+    options: dict[str, Any] = Field(default_factory=dict)
+    webhook_url: str | None = None
+
+
 class ArtifactCreate(BaseModel):
     mode: str
     review_level: str = "instant"
@@ -69,6 +84,16 @@ class DeepenCreate(BaseModel):
     time_budget_s: float = Field(90, ge=5, le=300)
 
 
+class BranchDecisionCreate(BaseModel):
+    action: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class FollowConnectionCreate(BaseModel):
+    artifact_id: int | None = None
+    options: dict[str, Any] = Field(default_factory=dict)
+
+
 class ReviewDecisionCreate(BaseModel):
     entity_type: str
     entity_id: str
@@ -83,6 +108,25 @@ class ReviewFinalizeCreate(BaseModel):
 
 class CheckoutCreate(BaseModel):
     pack_name: str
+
+
+V2_JOB_TO_MODE = {
+    "catch_me_up": "brief",
+    "brief": "brief",
+    "explore": "research",
+    "explore_where_it_leads": "research",
+    "research": "research",
+    "turn_it_into_a_script": "script",
+    "script": "script",
+}
+
+
+def _v2_mode(value: str) -> str:
+    key = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
+    try:
+        return V2_JOB_TO_MODE[key]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported V2 job: {value}") from exc
 
 
 class _RateLimiter:
@@ -129,11 +173,26 @@ async def _case_payload(store: SqliteStore, case_id: int, owner_id: str) -> dict
         source["segments"] = [
             _as_json(segment) for segment in await store.list_source_segments(source["id"])
         ]
+    connections = await store.list_connections(case.id)
+    connection_payload = []
+    for connection in connections:
+        item = _as_json(connection)
+        item["evidence"] = [
+            _as_json(link)
+            for link in await store.list_connection_evidence(connection.id)
+        ]
+        connection_payload.append(item)
     return {
         "case": _as_json(case),
         "sources": _as_json(sources),
         "claims": claim_payload,
         "research_gaps": _as_json(await store.list_research_gaps(case.id)),
+        "connections": connection_payload,
+        "connection_paths": _as_json(await store.list_connection_paths(case.id)),
+        "insights": _as_json(await store.list_insight_candidates(case.id)),
+        "branch_decisions": _as_json(
+            await store.list_user_branch_decisions(case.id, owner_id=owner_id)
+        ),
         "artifacts": _as_json(await store.list_case_artifacts(case.id)),
         "costs": _as_json(await store.list_costs(case.id)),
     }
@@ -196,6 +255,16 @@ def create_app(
             raise HTTPException(status_code=401, detail="Invalid reviewer API key")
         await limiter.check(f"reviewer:{reviewer_id}")
         return reviewer_id
+
+    async def v2_owner_auth(
+        owner_id: Annotated[str, Depends(owner_auth)],
+    ) -> str:
+        entitlements = resolve_entitlements(owner_id, settings=settings)
+        try:
+            require_capability(entitlements, "api_access")
+        except ValueError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        return owner_id
 
     @app.get("/health")
     async def health():
@@ -411,6 +480,320 @@ def create_app(
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.get("/v2/entitlements")
+    async def get_v2_entitlements(
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        return {
+            "entitlements": resolve_entitlements(
+                owner_id, settings=settings
+            ).public_dict()
+        }
+
+    @app.post("/v2/jobs")
+    async def post_v2_job(
+        payload: V2JobCreate,
+        request: Request,
+        background_tasks: BackgroundTasks,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+        idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+    ):
+        try:
+            mode = _v2_mode(payload.job)
+            job, created = await submit_job(
+                request.app.state.store,
+                owner_id=owner_id,
+                mode=mode,
+                review_level=payload.review_level,
+                inputs=[payload.source.model_dump()],
+                constraints=payload.options,
+                webhook_url=payload.webhook_url,
+                idempotency_key=idempotency_key,
+                settings=settings,
+            )
+        except ValueError as exc:
+            message = str(exc)
+            status = 402 if "Insufficient credits" in message else 403 if "profile" in message or "limit" in message else 422
+            raise HTTPException(status_code=status, detail=message) from exc
+        if created:
+            background_tasks.add_task(
+                run_job,
+                request.app.state.store,
+                job_id=job.id,
+                settings=settings,
+                process_case=request.app.state.process_case,
+            )
+        return JSONResponse(
+            status_code=202 if created else 200,
+            content=jsonable_encoder(
+                {
+                    "job": _as_json(job),
+                    "created": created,
+                    "links": {
+                        "self": f"/v2/jobs/{job.id}",
+                        "events": f"/v2/jobs/{job.id}/events",
+                        "case": f"/v2/cases/{job.research_case_id}",
+                    },
+                }
+            ),
+        )
+
+    @app.get("/v2/jobs/{job_id}")
+    async def get_v2_job(
+        job_id: str,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        job = await request.app.state.store.get_job(job_id, owner_id=owner_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return {
+            "job": _as_json(job),
+            "artifacts": _as_json(
+                await request.app.state.store.list_case_artifacts(job.research_case_id)
+            ),
+            "links": {
+                "events": f"/v2/jobs/{job.id}/events",
+                "case": f"/v2/cases/{job.research_case_id}",
+            },
+        }
+
+    @app.get("/v2/jobs/{job_id}/events")
+    async def get_v2_job_events(
+        job_id: str,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        job = await request.app.state.store.get_job(job_id, owner_id=owner_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return {
+            "events": _as_json(
+                await request.app.state.store.list_job_events(job.id)
+            )
+        }
+
+    @app.get("/v2/cases/{case_id}")
+    async def get_v2_case(
+        case_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        return await _case_payload(request.app.state.store, case_id, owner_id)
+
+    @app.get("/v2/cases/{case_id}/connections")
+    async def get_v2_connections(
+        case_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+        status: str | None = None,
+    ):
+        case = await request.app.state.store.get_research_case(
+            case_id, owner_id=owner_id
+        )
+        if case is None:
+            raise HTTPException(status_code=404, detail="Research case not found")
+        connections = await request.app.state.store.list_connections(
+            case.id, status=status
+        )
+        return {"connections": _as_json(connections)}
+
+    @app.get("/v2/connections/{connection_id}")
+    async def get_v2_connection(
+        connection_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        connection = await request.app.state.store.get_connection(
+            connection_id, owner_id=owner_id
+        )
+        if connection is None:
+            raise HTTPException(status_code=404, detail="Connection not found")
+        await request.app.state.store.record_usage_event(
+            owner_id=owner_id,
+            event_type="connection_opened",
+            research_case_id=connection.research_case_id,
+            metadata={"connection_id": connection.id},
+        )
+        return {
+            "connection": _as_json(connection),
+            "evidence": _as_json(
+                await request.app.state.store.list_connection_evidence(connection.id)
+            ),
+        }
+
+    @app.post("/v2/connections/{connection_id}/validate")
+    async def post_v2_validate_connection(
+        connection_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        try:
+            connection = await revalidate_connection(
+                request.app.state.store,
+                connection_id=connection_id,
+                owner_id=owner_id,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        await request.app.state.store.record_usage_event(
+            owner_id=owner_id,
+            event_type=(
+                "connection_validated"
+                if connection.validation_status == "validated"
+                else "connection_rejected"
+            ),
+            research_case_id=connection.research_case_id,
+            metadata={"connection_id": connection.id, "score": connection.total_score},
+        )
+        return {"connection": _as_json(connection)}
+
+    @app.post("/v2/connections/{connection_id}/decisions")
+    async def post_v2_connection_decision(
+        connection_id: int,
+        payload: BranchDecisionCreate,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        try:
+            decision = await record_connection_decision(
+                request.app.state.store,
+                connection_id=connection_id,
+                owner_id=owner_id,
+                action=payload.action,
+                metadata=payload.metadata,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {"decision": _as_json(decision)}
+
+    @app.post("/v2/connections/{connection_id}/follow")
+    async def post_v2_follow_connection(
+        connection_id: int,
+        payload: FollowConnectionCreate,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        try:
+            decision, artifact = await follow_connection_into_script(
+                request.app.state.store,
+                connection_id=connection_id,
+                owner_id=owner_id,
+                artifact_id=payload.artifact_id,
+                constraints=payload.options,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {"decision": _as_json(decision), "artifact": _as_json(artifact)}
+
+    @app.get("/v2/cases/{case_id}/paths")
+    async def get_v2_paths(
+        case_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        case = await request.app.state.store.get_research_case(
+            case_id, owner_id=owner_id
+        )
+        if case is None:
+            raise HTTPException(status_code=404, detail="Research case not found")
+        paths = await request.app.state.store.list_connection_paths(case.id)
+        for path in paths:
+            await request.app.state.store.record_usage_event(
+                owner_id=owner_id,
+                event_type="path_opened",
+                research_case_id=case.id,
+                metadata={"path_id": path.id},
+            )
+        return {"paths": _as_json(paths)}
+
+    @app.get("/v2/cases/{case_id}/insights")
+    async def get_v2_insights(
+        case_id: int,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        case = await request.app.state.store.get_research_case(
+            case_id, owner_id=owner_id
+        )
+        if case is None:
+            raise HTTPException(status_code=404, detail="Research case not found")
+        return {
+            "insights": _as_json(
+                await request.app.state.store.list_insight_candidates(case.id)
+            )
+        }
+
+    @app.post("/v2/insights/{insight_id}/convert")
+    async def post_v2_insight_conversion(
+        insight_id: int,
+        payload: ArtifactCreate,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        insight = await request.app.state.store.get_insight_candidate(insight_id)
+        if insight is None:
+            raise HTTPException(status_code=404, detail="Insight not found")
+        case = await request.app.state.store.get_research_case(
+            insight.research_case_id, owner_id=owner_id
+        )
+        if case is None:
+            raise HTTPException(status_code=404, detail="Insight not found")
+        await request.app.state.store.record_usage_event(
+            owner_id=owner_id,
+            event_type="insight_selected",
+            research_case_id=case.id,
+            metadata={"insight_id": insight.id},
+        )
+        try:
+            artifact, created = await convert_case_artifact(
+                request.app.state.store,
+                case_id=case.id,
+                owner_id=owner_id,
+                mode=_v2_mode(payload.mode),
+                review_level=payload.review_level,
+                constraints={**payload.constraints, "selected_insight_id": insight.id},
+                settings=settings,
+            )
+        except ValueError as exc:
+            status = 402 if "Insufficient credits" in str(exc) else 422
+            raise HTTPException(status_code=status, detail=str(exc)) from exc
+        await request.app.state.store.record_usage_event(
+            owner_id=owner_id,
+            event_type="insight_converted",
+            research_case_id=case.id,
+            artifact_id=artifact.id,
+            metadata={"insight_id": insight.id, "mode": artifact.artifact_type},
+        )
+        return {"artifact": _as_json(artifact), "created": created}
+
+    @app.post("/v2/artifacts/{artifact_id}/convert")
+    async def post_v2_artifact_conversion(
+        artifact_id: int,
+        payload: ArtifactCreate,
+        request: Request,
+        owner_id: Annotated[str, Depends(v2_owner_auth)],
+    ):
+        source_artifact = await request.app.state.store.get_artifact(
+            artifact_id, owner_id=owner_id
+        )
+        if source_artifact is None or source_artifact.research_case_id is None:
+            raise HTTPException(status_code=404, detail="Artifact not found")
+        try:
+            artifact, created = await convert_case_artifact(
+                request.app.state.store,
+                case_id=source_artifact.research_case_id,
+                owner_id=owner_id,
+                mode=_v2_mode(payload.mode),
+                review_level=payload.review_level,
+                constraints=payload.constraints,
+                settings=settings,
+            )
+        except ValueError as exc:
+            status = 402 if "Insufficient credits" in str(exc) else 422
+            raise HTTPException(status_code=status, detail=str(exc)) from exc
+        return {"artifact": _as_json(artifact), "created": created}
 
     @app.get("/internal/reviews")
     async def get_reviews(

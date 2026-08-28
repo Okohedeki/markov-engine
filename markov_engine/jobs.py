@@ -14,6 +14,7 @@ import httpx
 
 from markov_engine.billing import refund_job_credits, reserve_job_credits
 from markov_engine.config import Settings, get_settings
+from markov_engine.entitlements import require_capability, resolve_entitlements
 from markov_engine.research import create_research_case, process_research_case
 from markov_engine.store.records import JobRec
 from markov_engine.store.sqlite import SqliteStore
@@ -61,6 +62,9 @@ async def submit_job(
         raise ValueError(f"Unsupported mode: {mode}")
     if review_level not in JOB_REVIEW_LEVELS:
         raise ValueError(f"Unsupported review level: {review_level}")
+    entitlements = resolve_entitlements(owner_id, settings=settings)
+    if review_level == "verified":
+        require_capability(entitlements, "human_review")
     if len(inputs) != 1:
         raise ValueError("V1 accepts exactly one input per research case")
     input_item = inputs[0]
@@ -75,6 +79,31 @@ async def submit_job(
     webhook_url = validate_webhook_url(webhook_url)
     job_id = str(uuid.uuid4())
     prior_jobs = await store.list_jobs(owner_id=owner_id, limit=1)
+    if entitlements.concurrent_jobs is not None:
+        active = [
+            item
+            for item in await store.list_jobs(owner_id=owner_id)
+            if item.status in {"queued", "running"}
+        ]
+        if len(active) >= entitlements.concurrent_jobs:
+            raise ValueError("Concurrent job limit reached for this entitlement profile")
+    constraints = dict(constraints or {})
+    if entitlements.max_connections is not None:
+        requested = int(
+            constraints.get("max_connections") or entitlements.max_connections
+        )
+        constraints["max_connections"] = min(
+            max(1, requested), entitlements.max_connections
+        )
+    if entitlements.max_connection_depth is not None:
+        requested_depth = int(
+            constraints.get("max_connection_depth")
+            or entitlements.max_connection_depth
+        )
+        constraints["max_connection_depth"] = min(
+            max(1, requested_depth), entitlements.max_connection_depth
+        )
+    constraints["entitlement_profile"] = entitlements.profile
     await reserve_job_credits(
         store,
         owner_id=owner_id,
@@ -89,7 +118,7 @@ async def submit_job(
             owner_id=owner_id,
             original_input=value,
             mode=mode,
-            constraints=constraints or {},
+            constraints=constraints,
         )
         job = await store.create_job(
             job_id=job_id,
@@ -97,7 +126,7 @@ async def submit_job(
             research_case_id=case.id,
             mode=mode,
             review_level=review_level,
-            constraints=constraints or {},
+            constraints=constraints,
             webhook_url=webhook_url,
             idempotency_key=idempotency_key,
         )

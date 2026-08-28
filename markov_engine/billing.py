@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 import httpx
 
 from markov_engine.config import Settings, get_settings
+from markov_engine.entitlements import resolve_entitlements
 from markov_engine.store.sqlite import SqliteStore
 
 PRODUCT_VARIANTS = {
@@ -83,6 +84,14 @@ async def reserve_job_credits(
     """Reserve credits once. Idempotent retries return the same balance."""
     settings = settings or get_settings()
     variant = product_variant(mode, review_level)
+    entitlements = resolve_entitlements(owner_id, settings=settings)
+    if not entitlements.metered_credits:
+        await store.record_usage_event(
+            owner_id=owner_id,
+            event_type="unmetered_job_reserved",
+            metadata={"job_id": job_id, "variant": variant},
+        )
+        return 0.0
     cost = credit_cost(mode, review_level, settings)
     idempotency_key = f"reserve:{job_id}"
     already_reserved = await store.has_credit_transaction(
@@ -124,6 +133,9 @@ async def refund_job_credits(
 ) -> float:
     settings = settings or get_settings()
     variant = product_variant(mode, review_level)
+    entitlements = resolve_entitlements(owner_id, settings=settings)
+    if not entitlements.metered_credits:
+        return (await store.get_credit_account(owner_id)).balance
     cost = credit_cost(mode, review_level, settings)
     account = await store.apply_credit_transaction(
         owner_id=owner_id,

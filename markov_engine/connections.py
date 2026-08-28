@@ -408,6 +408,50 @@ async def validate_and_persist_connection(
     return connection
 
 
+async def revalidate_connection(
+    store: SqliteStore, *, connection_id: int, owner_id: str
+) -> ConnectionRec:
+    """Re-run the deterministic trust boundary against current linked evidence."""
+    existing = await store.get_connection(connection_id, owner_id=owner_id)
+    if existing is None:
+        raise ValueError("Connection not found")
+    links = await store.list_connection_evidence(existing.id)
+    candidate = {
+        "source_node_type": existing.source_node_type,
+        "source_node_id": existing.source_node_id,
+        "target_node_type": existing.target_node_type,
+        "target_node_id": existing.target_node_id,
+        "connection_type": existing.connection_type,
+        "statement": existing.statement,
+        "mechanism": existing.mechanism,
+        "why_it_matters": existing.why_it_matters,
+        "supports": existing.supports,
+        "weakens": existing.weakens,
+        "could_lead_to": existing.could_lead_to,
+        "evidence_level": existing.evidence_level,
+        "relevance": existing.relevance,
+        "evidence_strength": existing.evidence_strength,
+        "novelty": existing.novelty,
+        "explanatory_value": existing.explanatory_value,
+        "output_usefulness": existing.output_usefulness,
+        "risk": existing.risk,
+        "evidence": [
+            {
+                "evidence_passage_id": link.evidence_passage_id,
+                "stance": link.stance,
+                "strength": link.strength,
+                "rationale": link.rationale,
+            }
+            for link in links
+        ],
+    }
+    return await validate_and_persist_connection(
+        store,
+        case_id=existing.research_case_id,
+        candidate=candidate,
+    )
+
+
 def _endpoints(connection: ConnectionRec) -> set[tuple[str, int]]:
     return {
         (connection.source_node_type, connection.source_node_id),

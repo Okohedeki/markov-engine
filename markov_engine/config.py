@@ -139,6 +139,19 @@ class Settings(BaseSettings):
     connection_min_score: float = Field(
         0.25, alias="MARKOV_CONNECTION_MIN_SCORE"
     )
+    default_entitlement_profile: str = Field(
+        "cloud_pro", alias="MARKOV_DEFAULT_ENTITLEMENT_PROFILE"
+    )
+    owner_entitlement_profiles: dict[str, str] = Field(
+        default_factory=dict,
+        alias="MARKOV_OWNER_ENTITLEMENT_PROFILES",
+        description="JSON mapping of owner id to entitlement profile.",
+    )
+    entitlement_overrides: dict[str, dict] = Field(
+        default_factory=dict,
+        alias="MARKOV_ENTITLEMENT_OVERRIDES",
+        description="JSON profile overrides for deployment-specific limits.",
+    )
 
 
 @lru_cache

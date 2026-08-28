@@ -433,6 +433,7 @@ async def process_research_case(
     searcher=None,
     max_priority_claims: int = 5,
     max_sources_per_claim: int = 3,
+    max_connections: int | None = None,
     claim_time_budget_s: float = 60,
     stage_handler=None,
 ) -> list[ArtifactRec]:
@@ -501,6 +502,14 @@ async def process_research_case(
             store,
             case_id=case.id,
             discoverer=connection_discoverer,
+            max_connections=max(
+                1,
+                int(
+                    max_connections
+                    or case.constraints.get("max_connections")
+                    or 8
+                ),
+            ),
         )
         await stage(
             "validating_connections",

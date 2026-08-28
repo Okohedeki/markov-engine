@@ -123,6 +123,69 @@ async def test_api_job_idempotency_auth_status_and_safe_export():
 
 
 @pytest.mark.asyncio
+async def test_v2_job_and_graph_resources_use_customer_language():
+    store = await SqliteStore.open(":memory:")
+    app = create_app(store=store, settings=_settings(), process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            created = await client.post(
+                "/v2/jobs",
+                headers={"X-Markov-Key": "customer-key"},
+                json={
+                    "job": "Explore where it leads",
+                    "source": {
+                        "type": "url",
+                        "value": "https://youtube.com/watch?v=v2-api",
+                    },
+                    "options": {"max_connections": 3},
+                },
+            )
+            assert created.status_code == 202
+            body = created.json()
+            assert body["job"]["mode"] == "research"
+            assert body["links"]["case"].startswith("/v2/cases/")
+
+            case = await client.get(
+                body["links"]["case"],
+                headers={"X-Markov-Key": "customer-key"},
+            )
+            assert case.status_code == 200
+            assert {
+                "connections",
+                "connection_paths",
+                "insights",
+                "branch_decisions",
+            } <= set(case.json())
+            entitlements = await client.get(
+                "/v2/entitlements",
+                headers={"X-Markov-Key": "customer-key"},
+            )
+            assert entitlements.json()["entitlements"]["citations"] is True
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_v2_api_access_is_an_entitlement():
+    store = await SqliteStore.open(":memory:")
+    settings = _settings()
+    settings.owner_entitlement_profiles = {"owner-1": "cloud_free"}
+    app = create_app(store=store, settings=settings, process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.get(
+                "/v2/entitlements",
+                headers={"X-Markov-Key": "customer-key"},
+            )
+            assert response.status_code == 403
+            assert "api access" in response.json()["detail"]
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
 async def test_verified_job_enters_internal_review_and_finalizes():
     store = await SqliteStore.open(":memory:")
     app = create_app(store=store, settings=_settings(), process_case=_fake_process)
