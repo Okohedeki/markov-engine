@@ -434,6 +434,15 @@ def create_app(
         owner_id: Annotated[str, Depends(owner_auth)],
         export_format: Annotated[str, Query(alias="format")] = "markdown",
     ):
+        entitlements = resolve_entitlements(owner_id, settings=settings)
+        if export_format not in entitlements.export_formats:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"The {entitlements.profile} profile does not include "
+                    f"{export_format} export"
+                ),
+            )
         try:
             content, media_type, filename = await export_artifact(
                 request.app.state.store,
