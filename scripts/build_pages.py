@@ -50,7 +50,7 @@ def build() -> None:
     context = {
         "site_base": SITE_BASE,
         "workspace_url": f"{REPOSITORY_URL}#local-setup",
-        "workspace_label": "Run Markov",
+        "workspace_label": "Run locally",
         "api_docs_url": f"{REPOSITORY_URL}#api-quick-start",
         "repository_url": REPOSITORY_URL,
         "static_preview": True,

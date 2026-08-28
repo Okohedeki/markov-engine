@@ -2,11 +2,15 @@
   const modes = document.querySelectorAll('[data-mode-picker] input[name="mode"]');
   const scriptFields = document.querySelectorAll('[data-script-fields]');
   if (modes.length && scriptFields.length) {
+    const advancedOptions = document.querySelector('[data-advanced-options]');
     const syncMode = () => {
       const selected = document.querySelector('[data-mode-picker] input[name="mode"]:checked');
       scriptFields.forEach((field) => {
         field.hidden = !selected || selected.value !== 'script';
       });
+      if (advancedOptions && selected && selected.value === 'script') {
+        advancedOptions.open = true;
+      }
     };
 
     modes.forEach((input) => input.addEventListener('change', syncMode));
@@ -29,10 +33,14 @@
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => select(tab.dataset.sampleTab));
       tab.addEventListener('keydown', (event) => {
-        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
-        const offset = event.key === 'ArrowRight' ? 1 : -1;
-        const next = tabs[(index + offset + tabs.length) % tabs.length];
+        let nextIndex = index;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (['ArrowRight', 'ArrowDown'].includes(event.key)) nextIndex = (index + 1) % tabs.length;
+        if (['ArrowLeft', 'ArrowUp'].includes(event.key)) nextIndex = (index - 1 + tabs.length) % tabs.length;
+        const next = tabs[nextIndex];
         select(next.dataset.sampleTab);
         next.focus();
       });

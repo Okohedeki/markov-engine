@@ -5,32 +5,57 @@
   <div class="app-frame">
     {% include "partials/app_sidebar.html" %}
     <main class="app-main" id="main-content">
-      <header class="app-topbar"><span class="breadcrumbs">WORKSPACE / OVERVIEW</span><span class="fine">{{ owner_id }}</span></header>
-      <div class="app-content">
-        <div class="app-title"><div><p class="eyebrow">Start anywhere</p><h1>What did you find?</h1></div><p class="lede">Give Markov a source or question. It will check the claims, follow the useful connections, and keep the source trail attached.</p></div>
+      <header class="app-topbar"><a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a><span class="breadcrumbs">Workspace / New trail</span><span class="mobile-context">New trail</span><span class="fine">{{ owner_id }}</span></header>
+      <div class="app-content workspace-content">
+        <div class="app-title workspace-title"><div><p class="eyebrow">Start anywhere</p><h1>What did you find?</h1></div><p class="lede">Give Markov one source or question. The evidence and connections stay attached to everything you make from it.</p></div>
+
         <div class="workspace-grid">
-          <form class="panel intake-form" id="new-research" method="post" action="/app/jobs" data-mode-picker>
-            <div class="field" style="margin-top:0"><label for="source-value">Source or question</label><textarea id="source-value" name="value" placeholder="Paste a YouTube, TikTok, article, paper, podcast, or describe the question you want to follow." required></textarea><span class="field-hint">Markov treats the source as the first node—not as the answer.</span></div>
-            <label style="margin-top:1.5rem">What do you want from it?</label>
-            <div class="mode-picker">
-              <div class="choice"><input id="mode-brief" name="mode" type="radio" value="brief" checked><label for="mode-brief"><strong>Catch me up</strong><span>Bottom line, gaps, and threads</span></label></div>
-              <div class="choice"><input id="mode-research" name="mode" type="radio" value="research"><label for="mode-research"><strong>Explore where it leads</strong><span>Connections, paths, and insights</span></label></div>
-              <div class="choice"><input id="mode-script" name="mode" type="radio" value="script"><label for="mode-script"><strong>Turn it into a script</strong><span>An original, defensible angle</span></label></div>
-            </div>
-            <div class="field-grid">
-              <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — agentic</option><option value="verified">Verified — human-reviewed</option></select></div>
-              <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claims or question that matter most"></div>
-            </div>
-            <div class="field-grid" data-script-fields hidden>
-              <div class="field"><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
-              <div class="field"><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
-            </div>
-            <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
-            <div class="form-actions"><span class="fine">Accuracy, citations, and uncertainty labels are included on every plan.</span><button type="submit">Start with this source</button></div>
+          <form class="intake-flow" id="new-research" method="post" action="/app/jobs" data-mode-picker>
+            <section class="intake-step">
+              <div class="intake-step-number">01</div>
+              <div class="intake-step-body">
+                <label for="source-value">Source or question</label>
+                <textarea id="source-value" name="value" placeholder="Paste a YouTube, TikTok, article, paper, podcast, or ask the question you want to follow." required></textarea>
+                <span class="field-hint">The source is the first node—not an answer Markov has to defend.</span>
+              </div>
+            </section>
+
+            <section class="intake-step">
+              <div class="intake-step-number">02</div>
+              <div class="intake-step-body">
+                <span class="field-label">Where should this trail take you?</span>
+                <div class="mode-picker">
+                  <div class="choice"><input id="mode-brief" name="mode" type="radio" value="brief" checked><label for="mode-brief"><span class="choice-number">A</span><strong>Catch me up</strong><span>Bottom line, gaps, and threads worth pulling</span></label></div>
+                  <div class="choice"><input id="mode-research" name="mode" type="radio" value="research"><label for="mode-research"><span class="choice-number">B</span><strong>Explore where it leads</strong><span>Connections, paths, and testable insights</span></label></div>
+                  <div class="choice"><input id="mode-script" name="mode" type="radio" value="script"><label for="mode-script"><span class="choice-number">C</span><strong>Turn it into a script</strong><span>An original angle with its fact-check attached</span></label></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="intake-step intake-step-options">
+              <div class="intake-step-number">03</div>
+              <div class="intake-step-body">
+                <details class="advanced-options" data-advanced-options>
+                  <summary><strong>Set quality, focus, or script details</strong><span>Optional</span></summary>
+                  <div class="field-grid">
+                    <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — model reviewed</option><option value="verified">Verified — human reviewed</option></select></div>
+                    <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claim or question that matters most"></div>
+                  </div>
+                  <div class="field-grid" data-script-fields hidden>
+                    <div class="field"><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
+                    <div class="field"><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
+                  </div>
+                  <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
+                </details>
+              </div>
+            </section>
+
+            <div class="form-actions intake-actions"><span>Accuracy controls, citations, uncertainty labels, and the source packet are included on every plan.</span><button type="submit">Start this trail</button></div>
           </form>
-          <aside>
-            <section class="panel"><p class="eyebrow">{{ entitlements.profile | humanize }}</p>{% if entitlements.metered_credits %}<h2>{{ account.balance | number }} credits</h2><p class="muted">Shared by the Workspace and API.</p><details><summary>Product costs</summary><ul>{% for product in products %}<li>{{ product.variant | humanize }} — {{ product.credit_cost | credits }}</li>{% endfor %}</ul></details>{% else %}<h2>Unmetered</h2><p class="muted">Community mode does not debit artificial credits.</p>{% endif %}</section>
-            <section class="panel" id="projects" style="margin-top:1.5rem"><p class="eyebrow">Recent projects</p><ul class="project-list">{% for job in jobs %}<li class="project-item"><a href="/app/jobs/{{ job.id }}"><span><strong>{{ job.mode | title }} case</strong><span class="fine mono">{{ job.id }}</span></span><span class="badge {{ job.status | badge_class }}">{{ job.status | humanize }}</span></a></li>{% else %}<li class="empty">No projects yet. Your first case will appear here.</li>{% endfor %}</ul></section>
+
+          <aside class="workspace-aside">
+            <section class="workspace-account"><p class="eyebrow">{{ entitlements.profile | humanize }}</p>{% if entitlements.metered_credits %}<p class="account-value">{{ account.balance | number }} <span>credits</span></p><p class="muted">Shared by the Workspace and API.</p><details><summary>See product costs</summary><ul>{% for product in products %}<li>{{ product.variant | humanize }} <span>{{ product.credit_cost | credits }}</span></li>{% endfor %}</ul></details>{% else %}<p class="account-value">Unmetered</p><p class="muted">Community mode does not debit artificial credits.</p>{% endif %}</section>
+            <section class="workspace-projects" id="projects"><div class="workspace-section-heading"><p class="eyebrow">Recent trails</p><span>{{ jobs | length }}</span></div><ul class="project-list">{% for job in jobs %}<li class="project-item"><a href="/app/jobs/{{ job.id }}"><span><strong>{{ {'brief':'Catch up','research':'Explore','script':'Script'}[job.mode] if job.mode in ['brief','research','script'] else job.mode | humanize }}</strong><span class="fine mono">{{ job.id }}</span></span><span class="badge {{ job.status | badge_class }}">{{ job.status | humanize }}</span></a></li>{% else %}<li class="empty"><strong>No trails yet.</strong><span>Your first source will appear here with its status and next action.</span></li>{% endfor %}</ul></section>
           </aside>
         </div>
       </div>

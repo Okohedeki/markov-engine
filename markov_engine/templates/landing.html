@@ -4,74 +4,110 @@
 {% block body %}
   {% include "partials/public_header.html" %}
   <main class="public-main" id="main-content">
-    <section class="v2-hero">
-      <div class="v2-hero-copy">
+    <section class="trail-hero">
+      <div class="trail-hero-copy">
         <p class="plain-kicker">Start anywhere. Follow the idea.</p>
         <h1>Turn anything you find into something you can use.</h1>
-        <p class="v2-lede">Markov starts with a video, post, article, paper, or question. It checks the claims, finds the non-obvious connections, and helps you make a brief, a research path, or an original script.</p>
-        <div class="source-start" aria-label="Example Markov source input">
-          <label for="landing-source">Paste a source or ask a question</label>
-          <div class="source-start-row">
-            <input id="landing-source" value="How could Japan's ageing population reach the U.S. Treasury market?" readonly>
-            <a class="button" href="{{ site_base }}/sample/">Explore this sample</a>
+        <p class="v2-lede">Bring a video, post, article, paper, podcast, or question. Markov checks the claims, fills in what is missing, follows the strongest connections, and helps you finish the work.</p>
+      </div>
+
+      <div class="source-start source-start-hero" aria-label="Example Markov source input">
+        <span class="source-start-marker" aria-hidden="true"></span>
+        <label for="landing-source">Paste a source or ask a question</label>
+        <div class="source-start-row">
+          <textarea id="landing-source" rows="2" readonly>How could Japan's ageing population reach the U.S. Treasury market?</textarea>
+          <a class="button" href="#trail">Follow this source</a>
+        </div>
+        <div class="source-start-foot">
+          <ul class="source-types" aria-label="Supported starting points">
+            <li>YouTube</li><li>TikTok</li><li>Articles</li><li>PDFs</li><li>Audio</li><li>Questions</li>
+          </ul>
+          <a class="local-action" href="{{ workspace_url }}">{% if static_preview %}Run locally — free and open source{% else %}Sign in to use your own source{% endif %}</a>
+        </div>
+      </div>
+
+      <div class="hero-branches" aria-label="Available outcomes">
+        <span class="branch-origin">One research trail</span>
+        <div><strong>Catch me up</strong><span>Understand it</span></div>
+        <div><strong>Explore where it leads</strong><span>Discover something</span></div>
+        <div><strong>Turn it into a script</strong><span>Finish the work</span></div>
+      </div>
+    </section>
+
+    <section class="v2-section trail-section" id="trail" aria-labelledby="trail-title">
+      <div class="v2-section-heading trail-heading">
+        <div><p class="plain-kicker">One real source trail</p><h2 id="trail-title">The source is the first stop, not the answer.</h2></div>
+        <p>Walk the same research Markov used to move from a demographic fact to a testable market idea and a finished script opening.</p>
+      </div>
+
+      <div class="research-trail sample-switcher" data-sample-switcher>
+        <div class="trail-tabs" role="tablist" aria-label="Source trail" aria-orientation="vertical">
+          <button type="button" role="tab" aria-selected="true" aria-controls="trail-source" id="tab-source" data-sample-tab="source"><span>01</span>Starting source</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="trail-claim" id="tab-claim" data-sample-tab="claim"><span>02</span>Important claim</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="trail-gap" id="tab-gap" data-sample-tab="gap"><span>03</span>What is missing</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="trail-connection" id="tab-connection" data-sample-tab="connection"><span>04</span>Connection</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="trail-insight" id="tab-insight" data-sample-tab="insight"><span>05</span>New angle</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="trail-output" id="tab-output" data-sample-tab="output"><span>06</span>Finished work</button>
+        </div>
+
+        <div class="trail-panels">
+          <div class="trail-panel" id="trail-source" role="tabpanel" aria-labelledby="tab-source" data-sample-panel="source">
+            <p class="trail-stage">Starting source</p>
+            <h3>How could Japan's ageing population reach the U.S. Treasury market?</h3>
+            <p>This begins as a question, not a premise Markov must defend. The research can reject the framing, narrow it, or follow a better intermediary.</p>
+            <div class="trail-next"><span>Next</span><strong>Separate the demographic fact from the market story.</strong></div>
           </div>
-          {% if static_preview %}<p>This is a static product preview. The sample below is interactive; run Markov to process your own source.</p>{% else %}<p>Sign in to process your own source. The sample below uses published, inspectable evidence.</p>{% endif %}
+          <div class="trail-panel" id="trail-claim" role="tabpanel" aria-labelledby="tab-claim" data-sample-panel="claim" hidden>
+            <span class="evidence-level established">Established</span>
+            <h3>Japan is ageing rapidly.</h3>
+            <p>Japan’s Statistical Handbook reports that people aged 65 and over were 29.3% of the population in 2024 and projects 38.7% by 2070.</p>
+            <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Inspect the Statistics Bureau source, page 28</a>
+          </div>
+          <div class="trail-panel" id="trail-gap" role="tabpanel" aria-labelledby="tab-gap" data-sample-panel="gap" hidden>
+            <p class="trail-stage">What the source leaves out</p>
+            <h3>A demographic shift does not tell us who saves, who invests, or which constraint controls the portfolio.</h3>
+            <p>The missing intermediary is institutional: households, insurers, pensions, banks, and official institutions translate saving into different assets under different rules.</p>
+            <div class="trail-next"><span>Research branch</span><strong>Find evidence for the saving channel and identify the actual asset holders.</strong></div>
+          </div>
+          <div class="trail-panel" id="trail-connection" role="tabpanel" aria-labelledby="tab-connection" data-sample-panel="connection" hidden>
+            <span class="evidence-level interpretation">Evidence-backed interpretation</span>
+            <h3>Ageing can change saving and cross-border asset allocation.</h3>
+            <p>A 2024 Bank of Japan analysis, with explicit model caveats, finds that longer lives can raise aggregate saving and push the current account toward surplus. U.S. Treasury data separately show Japan held $1.024 trillion in long-term U.S. Treasuries at June 2025.</p>
+            <div class="inline-links"><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Inspect the BOJ analysis</a><a href="https://home.treasury.gov/news/press-releases/sb0482">Inspect the Treasury survey</a></div>
+          </div>
+          <div class="trail-panel" id="trail-insight" role="tabpanel" aria-labelledby="tab-insight" data-sample-panel="insight" hidden>
+            <span class="evidence-level hypothesis">Plausible hypothesis</span>
+            <h3>Watch the hedge before the headline holding.</h3>
+            <p>BOJ evidence shows Japanese insurers reduced currency-hedged foreign bonds when hedging costs rose. The first observable adjustment may therefore appear in hedge ratios and FX-swap demand—not in aggregate Treasury holdings.</p>
+            <div class="trail-next"><span>Could break if</span><strong>Hedging stays stable while Treasury flows change for unrelated reasons.</strong></div>
+            <a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Inspect the BOJ Financial System Report, page 28</a>
+          </div>
+          <div class="trail-panel trail-output" id="trail-output" role="tabpanel" aria-labelledby="tab-output" data-sample-panel="output" hidden>
+            <p class="trail-stage">Script opening · followed from this connection</p>
+            <blockquote>Japan is getting older. That sounds like a story about pensions and hospitals. But one of its earliest market signals may appear somewhere less obvious: in the price Japanese institutions pay to hedge U.S. bonds.</blockquote>
+            <p>The script keeps the demographic measurement, the model caveat, the Treasury exposure, and the unproven causal step attached for fact-checking.</p>
+            <a class="button button-secondary" href="{{ site_base }}/sample/">Inspect the complete research path</a>
+          </div>
         </div>
-        <ul class="source-types" aria-label="Supported starting points">
-          <li>YouTube</li><li>TikTok</li><li>Articles</li><li>Papers &amp; PDFs</li><li>Podcasts &amp; audio</li><li>Questions</li>
-        </ul>
       </div>
+      <p class="sample-disclosure">No quotations attributed to sources. No invented evidence IDs. Facts link to published sources; interpretation and hypothesis remain visibly distinct.</p>
     </section>
 
-    <section class="v2-section" id="product" aria-labelledby="jobs-title">
+    <section class="v2-section outcome-section" id="product" aria-labelledby="jobs-title">
       <div class="v2-section-heading">
-        <h2 id="jobs-title">One starting point. Three useful outcomes.</h2>
-        <p>The research stays attached, so you can change the output without starting over.</p>
+        <div><p class="plain-kicker">Choose where the trail ends</p><h2 id="jobs-title">One case. Three ways to finish.</h2></div>
+        <p>The claims, evidence, and connections stay attached, so changing the output does not mean starting the research again.</p>
       </div>
-      <div class="job-cards">
-        <article><h3>Catch me up</h3><p>Get the bottom line, assumptions, omissions, weak points, and the threads worth pulling.</p></article>
-        <article><h3>Explore where it leads</h3><p>See typed connections, hidden mechanisms, competing hypotheses, and ranked research paths.</p></article>
-        <article><h3>Turn it into a script</h3><p>Choose an original angle, write the full narration, and keep fact-check and revision notes beside it.</p></article>
+      <div class="outcome-branches">
+        <article><span>01 · Understand</span><h3>Catch me up</h3><p>The bottom line, assumptions, omissions, weak points, and threads worth pulling.</p></article>
+        <article><span>02 · Discover</span><h3>Explore where it leads</h3><p>Hidden mechanisms, competing hypotheses, and ranked paths for the next research pass.</p></article>
+        <article><span>03 · Create</span><h3>Turn it into a script</h3><p>An original defensible angle, full narration, and the fact-check notes needed to record it.</p></article>
       </div>
-    </section>
-
-    <section class="v2-section demo-section" aria-labelledby="demo-title">
-      <div class="v2-section-heading">
-        <div><p class="plain-kicker">A real source-to-insight path</p><h2 id="demo-title">The first answer is not the interesting part.</h2></div>
-        <p>This example uses published data from Japan’s Statistics Bureau, the Bank of Japan, and the U.S. Treasury. The final step remains a hypothesis—and is labeled that way.</p>
-      </div>
-      <div class="sample-switcher" data-sample-switcher>
-        <div class="sample-tabs" role="tablist" aria-label="Sample research stages">
-          <button type="button" role="tab" aria-selected="true" aria-controls="sample-evidence" id="tab-evidence" data-sample-tab="evidence">1. Evidence</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="sample-connections" id="tab-connections" data-sample-tab="connections">2. Connections</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="sample-insight" id="tab-insight" data-sample-tab="insight">3. Insight</button>
-        </div>
-        <div class="sample-panel" id="sample-evidence" role="tabpanel" aria-labelledby="tab-evidence" data-sample-panel="evidence">
-          <span class="evidence-level established">Established</span>
-          <h3>Japan is ageing rapidly.</h3>
-          <p>Japan’s Statistical Handbook reports that people aged 65 and over were 29.3% of the population in 2024 and projects 38.7% by 2070.</p>
-          <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Inspect the Statistics Bureau source, page 28</a>
-        </div>
-        <div class="sample-panel" id="sample-connections" role="tabpanel" aria-labelledby="tab-connections" data-sample-panel="connections" hidden>
-          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
-          <h3>Ageing can change saving and cross-border asset allocation.</h3>
-          <p>A 2024 Bank of Japan research note, with explicit model caveats, finds that longer lives can raise aggregate saving and push the current account toward surplus. U.S. Treasury survey data separately show Japan held $1.024 trillion in long-term U.S. Treasuries at June 2025.</p>
-          <div class="inline-links"><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Inspect the BOJ analysis</a><a href="https://home.treasury.gov/news/press-releases/sb0482">Inspect the Treasury survey</a></div>
-        </div>
-        <div class="sample-panel" id="sample-insight" role="tabpanel" aria-labelledby="tab-insight" data-sample-panel="insight" hidden>
-          <span class="evidence-level hypothesis">Plausible hypothesis</span>
-          <h3>The market signal may show up in hedging behavior before headline Treasury holdings.</h3>
-          <p>BOJ evidence shows Japanese insurers reduced currency-hedged foreign bonds when hedging costs rose. That makes hedge ratios and FX-swap costs a useful early research branch—but the demographic-to-hedging chain is not established by these sources alone.</p>
-          <div class="sample-next"><strong>Next check</strong><span>Compare insurer hedge ratios, net Treasury purchases, and demographic saving measures over the same periods.</span></div>
-          <a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Inspect the BOJ Financial System Report, page 28</a>
-        </div>
-      </div>
-      <p class="sample-disclosure">No generated quotations. No invented evidence IDs. Every factual statement above links to the published source; the causal leap stays visible as a hypothesis.</p>
     </section>
 
     <section class="v2-section two-doors" aria-labelledby="doors-title">
-      <div><p class="plain-kicker">For people</p><h2 id="doors-title">Work in a calm, inspectable workspace.</h2><p>Read the artifact, open a connection, follow or dismiss it, and revise without losing the source trail.</p><a class="button" href="{{ workspace_url }}">{{ workspace_label }}</a></div>
-      <div><p class="plain-kicker">For software and agents</p><h2>Use the same graph through the API.</h2><p>Submit asynchronous jobs and retrieve claims, connections, paths, insights, artifacts, and branch decisions as structured data.</p><a href="{{ site_base }}/developers/">Read the API guide</a></div>
+      <div><p class="plain-kicker">For people</p><h2 id="doors-title">Work in a calm, inspectable workspace.</h2><p>Paste the source, choose the job, then read and revise the finished work without losing its trail.</p><a class="button" href="{{ workspace_url }}">{% if static_preview %}Run locally — free and open source{% else %}Open the workspace{% endif %}</a></div>
+      <div><p class="plain-kicker">For software and agents</p><h2>Continue the same trail through the API.</h2><p>Submit asynchronous jobs and retrieve claims, connections, paths, insights, artifacts, and branch decisions as structured data.</p><a href="{{ site_base }}/developers/">Read the API guide</a></div>
     </section>
   </main>
   {% include "partials/public_footer.html" %}

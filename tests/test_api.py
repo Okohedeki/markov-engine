@@ -262,7 +262,10 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
             assert "Catch me up" in landing.text
             assert "Explore where it leads" in landing.text
             assert "Turn it into a script" in landing.text
-            assert "A real source-to-insight path" in landing.text
+            assert "One real source trail" in landing.text
+            assert "Starting source" in landing.text
+            assert "What is missing" in landing.text
+            assert "Finished work" in landing.text
             assert "Plausible hypothesis" in landing.text
             assert "No invented evidence IDs" in landing.text
             assert "Skip to content" in landing.text
@@ -394,6 +397,9 @@ def test_github_pages_export_is_static_and_project_relative():
     assert 'href="/markov-engine/pricing/"' in landing
     assert 'href="/markov-engine/sample/"' in landing
     assert 'href="/app/login"' not in landing
+    assert "Run locally — free and open source" in landing
+    assert 'aria-orientation="vertical"' in landing
+    assert 'id="trail-output"' in landing
     assert landing.count("<h1") == 1
     assert (root / "docs" / "developers" / "index.html").is_file()
     assert (root / "docs" / "pricing" / "index.html").is_file()
