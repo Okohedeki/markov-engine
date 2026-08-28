@@ -3,6 +3,37 @@
 Status: working product and art-direction contract, 2026-08-27
 Applies to: public site, workspace intake, job progress, artifact reader, and API surfaces
 
+## Product surface boundary
+
+- **V1 is web-first.** The complete research, connection exploration, revision,
+  review, and artifact experience belongs in the web workspace.
+- **Mobile is capture, not a second workspace.** Its job is to send a link,
+  selection, or question to Markov from the browsing context and sync that new
+  trail to the web workspace for continued work.
+- Public pages remain responsive and their demonstration remains tappable, but
+  product copy must not imply that the full V1 workspace is a mobile app.
+
+## Landing conversion brief
+
+- **Best fit:** a creator, analyst, researcher, or agent operator who has found
+  one consequential source or question and needs to understand it, test the
+  missing links, and turn the strongest defensible angle into finished work.
+- **Poor fit:** someone seeking an uninspectable instant answer, a generic
+  association graph, or a complete phone-native research and editing workspace.
+- **Positioning:** Markov helps evidence-conscious creators and analysts turn one
+  source into an original, inspectable brief, research path, or script without
+  losing the claims, mechanisms, uncertainty, or provenance along the way.
+- **Primary conversion:** experience the phrase-driven chain, then follow the
+  visitor's own source into the web workspace. On GitHub Pages, the truthful
+  equivalent is to run the open-source product locally.
+- **Proof available now:** the working interactive trail, a documented Japan–Treasury
+  example with direct public-source links, the open repository, and a
+  working local product journey. No customer, revenue, or outcome claims are
+  implied.
+- **Brand archetype:** Sage first, Creator second. The voice is calm, exact, and
+  curious. Motion reveals reasoning; it does not decorate. Avoid omniscient AI
+  language, breathless transformation claims, and faux-academic costume.
+
 ## The progress we sell
 
 **Functional progress** — turn a source or question into an understood claim,
@@ -41,8 +72,9 @@ graph. Every stop explains what changed and keeps its evidence level attached.
 - Use a strong vertical journey rather than a generic sequence of marketing
   sections.
 - Give the source trail the largest canvas. On desktop, pair the trail with a
-  sticky explanation or finished-output pane. On mobile, recompose it as one
-  readable line with the active branch kept in view.
+  sticky explanation or finished-output pane. On narrow landing-page viewports,
+  recompose the demonstration as one readable line; do not imply that this is
+  the full mobile product workspace.
 - Use wide, quiet fields and thin rules. Reserve containers for interactive or
   inspectable objects, not every paragraph.
 - Treat the three jobs as turns the same research can take, not three equal
@@ -155,8 +187,9 @@ open source**. The static page must not imply that Hosted Markov is available.
   → finished work.
 - A visitor understands the accepted input, useful output, and truthful next
   action within five seconds.
-- Desktop and mobile preserve the source trail without overflow or illegible
-  metadata.
+- Desktop carries the complete product interaction. Narrow landing-page
+  viewports preserve the demonstration without overflow or illegible metadata;
+  mobile product capture hands continued work back to the web workspace.
 - Keyboard users can operate every tab, job choice, and disclosure with visible
   focus; reduced-motion behavior remains intact.
 - Real content and explicit uncertainty survive every breakpoint.
