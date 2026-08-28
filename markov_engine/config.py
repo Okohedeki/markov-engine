@@ -121,6 +121,25 @@ class Settings(BaseSettings):
         0, alias="MARKOV_HUMAN_REVIEW_HOURLY_COST"
     )
 
+    # ── V2 connection graph ────────────────────────────────────────
+    connection_score_weights: dict[str, float] = Field(
+        default_factory=lambda: {
+            "relevance": 0.22,
+            "evidence_strength": 0.28,
+            "novelty": 0.16,
+            "explanatory_value": 0.18,
+            "output_usefulness": 0.16,
+        },
+        alias="MARKOV_CONNECTION_SCORE_WEIGHTS",
+        description="JSON weights for reproducible V2 connection ranking.",
+    )
+    connection_risk_penalty: float = Field(
+        0.2, alias="MARKOV_CONNECTION_RISK_PENALTY"
+    )
+    connection_min_score: float = Field(
+        0.25, alias="MARKOV_CONNECTION_MIN_SCORE"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
