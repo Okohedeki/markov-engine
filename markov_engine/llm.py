@@ -2,13 +2,14 @@
 local model or in the cloud:
 
 - ``anthropic`` — Anthropic API, structured output via forced tool-use.
-- ``openai``    — any OpenAI-compatible /chat/completions endpoint (Ollama,
-  llama.cpp server, vLLM, LM Studio, OpenAI). JSON via prompt + lenient parse.
+- ``openai``    — official OpenAI Responses API with Structured Outputs, or an
+  OpenAI-compatible /chat/completions endpoint (Ollama, llama.cpp, vLLM,
+  LM Studio).
 - ``llamacpp``  — an in-process GGUF via llama-cpp-python.
 
 Public surface (``complete`` / ``complete_json`` / ``stream_complete``) is the
 same across backends. Provider SDKs are imported lazily, so you only need the
-one you use. Cost is real for Anthropic and 0.0 for local backends.
+one you use. Cost is estimated for known cloud models and 0.0 for local models.
 """
 
 from __future__ import annotations
@@ -16,6 +17,8 @@ from __future__ import annotations
 import json
 import logging
 import re as _re
+from copy import deepcopy
+from urllib.parse import urlparse
 
 import httpx
 
@@ -25,10 +28,16 @@ from markov_engine.config import get_settings
 logger = logging.getLogger(__name__)
 _settings = get_settings()
 
-RATES: dict[str, tuple[float, float]] = {
+ANTHROPIC_RATES: dict[str, tuple[float, float]] = {
     "claude-opus-4": (5.0, 25.0),
     "claude-sonnet-4": (3.0, 15.0),
     "claude-haiku-4": (1.0, 5.0),
+}
+
+OPENAI_RATES: dict[str, tuple[float, float]] = {
+    "gpt-5.6-sol": (4.0, 20.0),
+    "gpt-5.6-terra": (2.0, 12.0),
+    "gpt-5.6-luna": (0.2, 1.2),
 }
 
 _anthropic_client = None
@@ -43,14 +52,65 @@ def _anthropic():
 
 
 def _cost(model: str, usage) -> float:
-    rate = next((v for k, v in RATES.items() if model.startswith(k)), (0.0, 0.0))
+    rate = next(
+        (v for k, v in ANTHROPIC_RATES.items() if model.startswith(k)),
+        (0.0, 0.0),
+    )
     it = getattr(usage, "input_tokens", 0) or 0
     ot = getattr(usage, "output_tokens", 0) or 0
     return (it * rate[0] + ot * rate[1]) / 1_000_000
 
 
+def _openai_cost(model: str, usage: dict | None) -> float:
+    rate = next(
+        (v for k, v in OPENAI_RATES.items() if model.startswith(k)),
+        (0.0, 0.0),
+    )
+    usage = usage or {}
+    input_tokens = usage.get("input_tokens", usage.get("prompt_tokens", 0)) or 0
+    output_tokens = usage.get("output_tokens", usage.get("completion_tokens", 0)) or 0
+    return (input_tokens * rate[0] + output_tokens * rate[1]) / 1_000_000
+
+
 def _local_model() -> str:
     return _settings.llm_model or "local-model"
+
+
+def _openai_mode() -> str:
+    mode = _settings.openai_api_mode.strip().lower()
+    if mode not in {"auto", "responses", "chat_completions"}:
+        raise ValueError(
+            "OPENAI_API_MODE must be auto, responses, or chat_completions"
+        )
+    if mode != "auto":
+        return mode
+    hostname = (urlparse(_settings.openai_base_url).hostname or "").lower()
+    return "responses" if hostname == "api.openai.com" else "chat_completions"
+
+
+def _strict_openai_schema(schema: dict) -> dict:
+    """Make the engine's existing JSON Schemas acceptable to strict outputs.
+
+    Anthropic permits optional object properties. OpenAI strict schemas require
+    every declared property to be named in ``required``. Markov's callers already
+    coerce missing/empty values, so requiring the model to emit those fields is
+    both safe and more predictable.
+    """
+    normalized = deepcopy(schema)
+
+    def visit(node) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object" and isinstance(node.get("properties"), dict):
+                node["additionalProperties"] = False
+                node["required"] = list(node["properties"])
+            for value in node.values():
+                visit(value)
+        elif isinstance(node, list):
+            for value in node:
+                visit(value)
+
+    visit(normalized)
+    return normalized
 
 
 # ── heuristic backend (offline, instant, no model) ───────────────
@@ -155,7 +215,9 @@ def _heuristic_text(prompt: str) -> str:
 
 
 # ── OpenAI-compatible chat ────────────────────────────────────────
-async def _openai_chat(messages: list[dict], *, max_tokens: int, json_mode: bool) -> str:
+async def _openai_chat(
+    messages: list[dict], *, max_tokens: int, json_mode: bool
+) -> tuple[str, float]:
     payload = {"model": _local_model(), "messages": messages,
                "max_tokens": max_tokens, "temperature": 0.3}
     if json_mode:
@@ -167,7 +229,61 @@ async def _openai_chat(messages: list[dict], *, max_tokens: int, json_mode: bool
     async with httpx.AsyncClient(timeout=300) as client:
         r = await client.post(url, json=payload, headers=headers)
         r.raise_for_status()
-        return (r.json()["choices"][0]["message"].get("content") or "").strip()
+        data = r.json()
+        text = (data["choices"][0]["message"].get("content") or "").strip()
+        return text, _openai_cost(_local_model(), data.get("usage"))
+
+
+def _responses_output_text(data: dict) -> str:
+    if isinstance(data.get("output_text"), str):
+        return data["output_text"].strip()
+    texts: list[str] = []
+    for item in data.get("output", []):
+        if item.get("type") != "message":
+            continue
+        for block in item.get("content", []):
+            if block.get("type") == "output_text" and isinstance(block.get("text"), str):
+                texts.append(block["text"])
+    return "".join(texts).strip()
+
+
+async def _openai_responses(
+    messages: list[dict],
+    *,
+    max_tokens: int,
+    schema: dict | None = None,
+) -> tuple[str, float]:
+    model = _local_model()
+    payload: dict = {
+        "model": model,
+        "input": messages,
+        "max_output_tokens": max_tokens,
+        "store": False,
+    }
+    effort = _settings.openai_reasoning_effort.strip().lower()
+    if effort:
+        payload["reasoning"] = {"effort": effort}
+    if schema is not None:
+        payload["text"] = {
+            "format": {
+                "type": "json_schema",
+                "name": "markov_result",
+                "strict": True,
+                "schema": _strict_openai_schema(schema),
+            }
+        }
+    headers = {"Content-Type": "application/json"}
+    if _settings.openai_api_key:
+        headers["Authorization"] = f"Bearer {_settings.openai_api_key}"
+    url = _settings.openai_base_url.rstrip("/") + "/responses"
+    async with httpx.AsyncClient(timeout=300) as client:
+        response = await client.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+    text = _responses_output_text(data)
+    if not text:
+        raise RuntimeError("OpenAI Responses API returned no output text")
+    return text, _openai_cost(model, data.get("usage"))
 
 
 # ── in-process llama-cpp chat ─────────────────────────────────────
@@ -181,14 +297,22 @@ def _llamacpp_chat(messages: list[dict], *, max_tokens: int, json_mode: bool) ->
     return (r["choices"][0]["message"].get("content") or "").strip()
 
 
-async def _chat(messages: list[dict], *, max_tokens: int, json_mode: bool = False) -> str:
+async def _chat(
+    messages: list[dict], *, max_tokens: int, json_mode: bool = False
+) -> tuple[str, float]:
     b = _settings.llm_backend
-    max_tokens = min(max_tokens, _settings.local_max_tokens)  # local models are slow; keep it bounded
     if b == "openai":
+        if _openai_mode() == "responses":
+            return await _openai_responses(messages, max_tokens=max_tokens)
+        max_tokens = min(max_tokens, _settings.local_max_tokens)
         return await _openai_chat(messages, max_tokens=max_tokens, json_mode=json_mode)
     if b == "llamacpp":
         import asyncio
-        return await asyncio.to_thread(_llamacpp_chat, messages, max_tokens=max_tokens, json_mode=json_mode)
+        max_tokens = min(max_tokens, _settings.local_max_tokens)
+        text = await asyncio.to_thread(
+            _llamacpp_chat, messages, max_tokens=max_tokens, json_mode=json_mode
+        )
+        return text, 0.0
     raise RuntimeError(f"Unknown LLM_BACKEND: {b!r}")
 
 
@@ -206,7 +330,7 @@ async def complete(prompt: str, *, model: str, max_tokens: int = 4096,
         text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
         return text, _cost(model, resp.usage)
     msgs = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": prompt}]
-    return await _chat(msgs, max_tokens=max_tokens), 0.0
+    return await _chat(msgs, max_tokens=max_tokens)
 
 
 async def complete_json(prompt: str, *, schema: dict, model: str,
@@ -230,13 +354,21 @@ async def complete_json(prompt: str, *, schema: dict, model: str,
             if getattr(block, "type", None) == "tool_use":
                 return block.input, cost
         return {}, cost
+    if _settings.llm_backend == "openai" and _openai_mode() == "responses":
+        msgs = (
+            [{"role": "system", "content": system}] if system else []
+        ) + [{"role": "user", "content": prompt}]
+        text, cost = await _openai_responses(
+            msgs, max_tokens=max_tokens, schema=schema
+        )
+        return parse_json_loose(text), cost
     # local: instruct + parse
     instr = ("Respond with ONLY a single JSON object that matches this JSON schema. "
              "No prose, no code fences.\n\nSCHEMA:\n" + json.dumps(schema))
     sys_msg = (system + "\n\n" + instr) if system else instr
     msgs = [{"role": "system", "content": sys_msg}, {"role": "user", "content": prompt}]
-    text = await _chat(msgs, max_tokens=max_tokens, json_mode=True)
-    return parse_json_loose(text), 0.0
+    text, cost = await _chat(msgs, max_tokens=max_tokens, json_mode=True)
+    return parse_json_loose(text), cost
 
 
 async def stream_complete(prompt: str, *, model: str, max_tokens: int = 8192,
@@ -253,4 +385,4 @@ async def stream_complete(prompt: str, *, model: str, max_tokens: int = 8192,
         text = "".join(b.text for b in final.content if getattr(b, "type", None) == "text")
         return text, _cost(model, final.usage)
     msgs = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": prompt}]
-    return await _chat(msgs, max_tokens=max_tokens), 0.0
+    return await _chat(msgs, max_tokens=max_tokens)

@@ -4,8 +4,8 @@ All values have safe defaults so importing the package never fails. Pick a
 backend with ``LLM_BACKEND`` / ``EMBED_BACKEND``:
 
 - ``anthropic`` + ``voyage`` — cloud (needs ANTHROPIC_API_KEY / VOYAGE_API_KEY)
-- ``openai``  — any OpenAI-compatible endpoint (Ollama, llama.cpp server, vLLM,
-  LM Studio, OpenAI itself) via OPENAI_BASE_URL
+- ``openai``  — official OpenAI Responses API or an OpenAI-compatible chat
+  endpoint (Ollama, llama.cpp server, vLLM, LM Studio)
 - ``llamacpp`` — an in-process GGUF via llama-cpp-python (LLAMACPP_MODEL)
 - ``hash`` (embeddings only) — deterministic, zero-setup, no semantics
 - ``SEARCH_ENABLED=false`` — keep evidence discovery offline and mark unsupported
@@ -37,10 +37,16 @@ class Settings(BaseSettings):
     model_extraction: str = Field("claude-sonnet-4-6", alias="MODEL_EXTRACTION")
     model_classify: str = Field("claude-haiku-4-5", alias="MODEL_CLASSIFY")
 
-    # ── LLM: OpenAI-compatible (local servers / OpenAI) ─────────────
+    # ── LLM: OpenAI / OpenAI-compatible local servers ───────────────
     openai_base_url: str = Field("http://localhost:11434/v1", alias="OPENAI_BASE_URL")
     openai_api_key: str = Field("", alias="OPENAI_API_KEY")
     llm_model: str = Field("", alias="LLM_MODEL")  # the model id for openai/llamacpp
+    openai_api_mode: str = Field(
+        "auto", alias="OPENAI_API_MODE"
+    )  # auto|responses|chat_completions
+    openai_reasoning_effort: str = Field(
+        "low", alias="OPENAI_REASONING_EFFORT"
+    )
 
     # ── LLM/embeddings: in-process llama-cpp (GGUF) ─────────────────
     llamacpp_model: str = Field("", alias="LLAMACPP_MODEL")              # path to a .gguf

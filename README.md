@@ -107,16 +107,36 @@ Copy [`.env.example`](.env.example) to `.env`. At minimum, configure an API key
 mapping, an opening or purchased credit balance, and one LLM/search setup.
 `MARKOV_API_KEYS` maps secret keys to stable owner IDs; it must be JSON.
 
-Cloud example:
+Low-cost OpenAI cloud example (recommended starting point):
 
 ```dotenv
-LLM_BACKEND=anthropic
-ANTHROPIC_API_KEY=replace-me
-VOYAGE_API_KEY=replace-me
+LLM_BACKEND=openai
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_API_MODE=responses
+OPENAI_API_KEY=replace-me
+LLM_MODEL=gpt-5.6-luna
+OPENAI_REASONING_EFFORT=low
+EMBED_BACKEND=hash
 MARKOV_API_KEYS={"local-customer-key":"local-customer"}
 MARKOV_INTERNAL_API_KEYS={"local-review-key":"reviewer-1"}
 MARKOV_OPENING_CREDITS=20
 MARKOV_WEB_SESSION_SECRET=replace-with-a-random-secret
+```
+
+This path uses OpenAI Structured Outputs for Markov's extraction and
+classification contracts. `EMBED_BACKEND=hash` avoids a second metered provider
+while the workflow is being tuned. Switch to a semantic embedding backend before
+production retrieval evaluation.
+
+Low-cost Claude alternative:
+
+```dotenv
+LLM_BACKEND=anthropic
+ANTHROPIC_API_KEY=replace-me
+MODEL_SYNTHESIS=claude-haiku-4-5
+MODEL_EXTRACTION=claude-haiku-4-5
+MODEL_CLASSIFY=claude-haiku-4-5
+EMBED_BACKEND=hash
 ```
 
 Local model example:
@@ -125,6 +145,7 @@ Local model example:
 LLM_BACKEND=openai
 EMBED_BACKEND=openai
 OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_API_MODE=auto
 LLM_MODEL=qwen2.5:7b-instruct
 OPENAI_EMBED_MODEL=nomic-embed-text
 MARKOV_API_KEYS={"local-customer-key":"local-customer"}
