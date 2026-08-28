@@ -21,10 +21,15 @@
   if (ideaDemo) {
     const route = (phrase, steps, options = {}) => ({ phrase, steps, ...options });
     const examples = {
-      article: {
-        sourceLabel: 'Article thesis',
-        startCopy: 'You started with a sentence.',
+      japan: {
+        sourceLabel: 'Japan–Treasury thesis',
+        startCopy: 'You started with a market thesis.',
         sentenceText: 'Japan’s aging population could force it to sell U.S. Treasuries.',
+        sources: [
+          ['Statistical Handbook of Japan 2025', 'Aging population', 'https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf'],
+          ['Bank of Japan Financial System Report', 'Institutional portfolio conditions', 'https://www.boj.or.jp/en/research/brp/fsr/index.htm'],
+          ['U.S. Treasury TIC holdings table', 'Observed Japanese Treasury holdings', 'https://ticdata.treasury.gov/Publish/slt_table5.html'],
+        ],
         sentence: [
           'Japan’s ',
           { route: 'aging', text: 'aging population' },
@@ -77,10 +82,15 @@
           }),
         },
       },
-      youtube: {
-        sourceLabel: 'YouTube argument',
-        startCopy: 'You started with a video.',
+      nuclear: {
+        sourceLabel: 'Nuclear timeline claim',
+        startCopy: 'You started with a climate argument.',
         sentenceText: 'Nuclear power is too slow to matter for near-term climate targets.',
+        sources: [
+          ['IEA: Nuclear Power in a Clean Energy System', 'Lead times, investment, and life extensions', 'https://www.iea.org/reports/nuclear-power-in-a-clean-energy-system'],
+          ['IAEA Power Reactor Information System', 'Reactor milestones and operating history', 'https://pris.iaea.org/pris/'],
+          ['U.S. EIA Electric Power Annual', 'Observed nuclear capacity factors', 'https://www.eia.gov/electricity/annual/table.php?t=epa_04_08_b.html'],
+        ],
         sentence: [
           'Nuclear power is ', { route: 'slow', text: 'too slow' }, ' to ',
           { route: 'matter', text: 'matter' }, ' for ',
@@ -212,10 +222,15 @@
           }),
         },
       },
-      audio: {
-        sourceLabel: 'Podcast quote',
-        startCopy: 'You started with a podcast.',
+      glp1: {
+        sourceLabel: 'GLP-1 demand claim',
+        startCopy: 'You started with a consumer claim.',
         sentenceText: 'Weight-loss drugs may reshape more than healthcare spending.',
+        sources: [
+          ['JAMA: Consumer Food Purchases After GLP-1 Initiation', 'Observed changes in supermarket baskets', 'https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2844224'],
+          ['Marketing Science: The No-Hunger Games', 'Household grocery and restaurant spending', 'https://journals.sagepub.com/doi/10.1177/00222437251412834'],
+          ['KFF Health Tracking Poll', 'Use, access, affordability, and persistence', 'https://www.kff.org/health-costs/kff-health-tracking-poll-may-2024-the-publics-use-and-views-of-glp-1-drugs/'],
+        ],
         sentence: [
           { route: 'drugs', text: 'Weight-loss drugs' }, ' may ',
           { route: 'reshape', text: 'reshape more than' }, ' ',
@@ -321,16 +336,16 @@
     const followFurther = ideaDemo.querySelector('[data-follow-further]');
     const sourceButtons = [...ideaDemo.querySelectorAll('[data-source]')];
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
-    let sourceKey = 'article';
+    let sourceKey = 'japan';
     let activeRoute = null;
     let pinnedRoute = null;
     let previewTimer = null;
     let explored = new Set();
 
     const storyFields = {
-      thread: document.querySelector('[data-story-thread]'),
       start: document.querySelector('[data-story-start]'),
       seed: document.querySelector('[data-story-seed]'),
+      sources: document.querySelector('[data-story-sources]'),
       mechanism: document.querySelector('[data-story-mechanism]'),
       comparison: document.querySelector('[data-story-comparison]'),
       angle: document.querySelector('[data-story-angle]'),
@@ -349,14 +364,25 @@
       storyFields.start.textContent = example.startCopy;
       storyFields.seed.textContent = example.sentenceText;
       storyFields.destination.textContent = example.sourceLabel;
+      storyFields.sources.replaceChildren();
+      example.sources.forEach(([title, context, url]) => {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        const name = document.createElement('strong');
+        name.textContent = title;
+        const detail = document.createElement('small');
+        detail.textContent = context;
+        link.append(name, detail);
+        storyFields.sources.append(link);
+      });
       if (!selected) {
-        storyFields.thread.textContent = 'Choose a phrase above';
         storyFields.mechanism.textContent = 'Choose an underlined phrase to expose the skipped steps.';
         storyFields.comparison.textContent = 'Support, weakness, and alternative explanations stay separate.';
         storyFields.angle.textContent = 'The conclusion cannot outrank its weakest essential connection.';
         return;
       }
-      storyFields.thread.textContent = selected.phrase;
       storyFields.mechanism.textContent = selected.mechanism;
       storyFields.comparison.textContent = selected.comparison;
       storyFields.angle.textContent = selected.angle;

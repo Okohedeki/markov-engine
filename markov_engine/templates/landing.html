@@ -16,11 +16,6 @@
 
   <main id="main-content">
     <section class="idea-hero" data-idea-demo aria-labelledby="idea-seed">
-      <div class="idea-kicker">
-        <p class="idea-intro">The research workspace between finding information and using it.</p>
-        <a class="idea-hero-cta" href="{{ workspace_url }}">{% if static_preview %}See the product demo{% else %}Open your workspace{% endif %} <span aria-hidden="true">→</span></a>
-      </div>
-
       <div class="idea-stage">
         <div class="idea-seed-column">
           <h1 class="idea-sentence" id="idea-seed" data-idea-sentence>
@@ -59,54 +54,52 @@
 
       <p class="idea-promise">Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain—explaining what matters, checking the evidence, uncovering hidden connections, and carrying the strongest insight into a brief, report, or script.</p>
 
-      <div class="source-switcher" aria-label="Try another kind of source" data-source-switcher>
-        <span>Starting point</span>
+      <div class="source-switcher" aria-label="Try another starting claim" data-source-switcher>
+        <span>Three starting stories</span>
         <div>
-          <button type="button" data-source="youtube" aria-pressed="false">YouTube</button>
-          <button type="button" data-source="tiktok" aria-pressed="false">TikTok</button>
-          <button type="button" data-source="article" aria-pressed="true">Articles</button>
-          <button type="button" data-source="pdf" aria-pressed="false">PDFs</button>
-          <button type="button" data-source="audio" aria-pressed="false">Audio</button>
-          <button type="button" data-source="question" aria-pressed="false">Questions</button>
+          <button type="button" data-source="japan" aria-pressed="true">Japan + Treasuries</button>
+          <button type="button" data-source="glp1" aria-pressed="false">GLP-1 + food demand</button>
+          <button type="button" data-source="nuclear" aria-pressed="false">Nuclear + climate</button>
         </div>
       </div>
     </section>
 
     <section class="idea-story" aria-labelledby="story-title">
       <h2 class="visually-hidden" id="story-title">How Markov follows an idea</h2>
-      <div class="story-context" aria-live="polite">
-        <span>Current thread</span>
-        <strong data-story-thread>Choose a phrase above</strong>
-      </div>
       <ol class="story-line">
         <li class="idea-story-step is-current">
-          <span>01</span>
-          <p data-story-start>You started with a sentence.</p>
-          <strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong>
+          <span class="story-number">01</span>
+          <div class="story-action"><p data-story-start>You started with a market thesis.</p><strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong></div>
+          <div class="story-what"><span>Collected sources</span><div class="story-sources" data-story-sources>
+            <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf"><strong>Statistical Handbook of Japan 2025</strong><small>Aging population</small></a>
+            <a href="https://www.boj.or.jp/en/research/brp/fsr/index.htm"><strong>Bank of Japan Financial System Report</strong><small>Institutional portfolio conditions</small></a>
+            <a href="https://ticdata.treasury.gov/Publish/slt_table5.html"><strong>U.S. Treasury TIC holdings table</strong><small>Observed Japanese Treasury holdings</small></a>
+          </div></div>
         </li>
         <li class="idea-story-step">
-          <span>02</span>
-          <p>Markov found the missing mechanism.</p>
-          <strong data-story-mechanism>Choose an underlined phrase to expose the skipped steps.</strong>
+          <span class="story-number">02</span>
+          <div class="story-action"><p>Markov found the missing mechanism.</p></div>
+          <div class="story-what"><span>What changed</span><strong data-story-mechanism>Choose an underlined phrase to expose the skipped steps.</strong></div>
         </li>
         <li class="idea-story-step">
-          <span>03</span>
-          <p>Markov compared competing paths.</p>
-          <strong data-story-comparison>Support, weakness, and alternative explanations stay separate.</strong>
+          <span class="story-number">03</span>
+          <div class="story-action"><p>Markov compared competing paths.</p></div>
+          <div class="story-what"><span>What survived</span><strong data-story-comparison>Support, weakness, and alternative explanations stay separate.</strong></div>
         </li>
         <li class="idea-story-step">
-          <span>04</span>
-          <p>Markov produced a stronger idea.</p>
-          <strong data-story-angle>The conclusion cannot outrank its weakest essential connection.</strong>
+          <span class="story-number">04</span>
+          <div class="story-action"><p>Markov produced a stronger idea.</p></div>
+          <div class="story-what"><span>What you can use</span><strong data-story-angle>The conclusion cannot outrank its weakest essential connection.</strong></div>
         </li>
       </ol>
     </section>
 
     <section class="destination-section" id="product" aria-labelledby="destination-title">
-      <p class="route-label">From research to useful work</p>
-      <h2 id="destination-title">One living chain. Every way you need to use it.</h2>
+      <span class="section-anchor" id="use-cases" aria-hidden="true"></span>
+      <p class="route-label">Made for original work</p>
+      <h2 id="destination-title">One living chain, from first source to original work.</h2>
       <div class="destination-map">
-        <div class="destination-origin"><span>Starting source</span><strong data-destination-source>Article thesis</strong></div>
+        <div class="destination-origin"><span>Starting source</span><strong data-destination-source>Japan–Treasury thesis</strong></div>
         <div class="destination-markov" aria-label="Processed by Markov"><span>MARKOV</span></div>
         <div class="destination-branches">
           <a href="{{ workspace_url }}"><strong>Understand it</strong><span>Get a concise brief with the substance, missing context, questionable claims, and threads worth following.</span></a>
@@ -114,12 +107,7 @@
           <a href="{{ workspace_url }}"><strong>Create from it</strong><span>Develop the strongest defensible angle into an original report, answer, or ready-to-record script.</span></a>
         </div>
       </div>
-    </section>
-
-    <section class="use-case-section" id="use-cases" aria-labelledby="use-case-title">
-      <p class="route-label">Made for original work</p>
-      <h2 id="use-case-title">Do not start the next piece from an empty page—or someone else’s conclusion.</h2>
-      <p class="section-lede">Markov helps people who publish, explain, and learn build a point of view from evidence instead of producing another summary of the same source.</p>
+      <p class="section-lede destination-lede">Markov helps people who publish, explain, and learn build a point of view from evidence instead of producing another summary of the same source.</p>
       <ol class="use-case-lines">
         <li><span>For creators</span><strong>Find the angle worth making.</strong><p>Turn saved TikToks, YouTube videos, podcasts, posts, and articles into original scripts for short-form video, long-form video, newsletters, and audio.</p></li>
         <li><span>For publishers and growth teams</span><strong>Create work that deserves to become the answer.</strong><p>Build source-backed explainers, AEO pages, reports, and editorial briefs with the evidence and uncertainty still attached.</p></li>
@@ -143,7 +131,7 @@
       </div>
       <p class="mobile-handoff"><strong>Find something while browsing on your phone?</strong> Send it to Markov. It syncs into your web workspace, where the full chain is researched, reviewed, stored, and turned into finished work.</p>
       <div class="product-actions">
-        <a href="{{ workspace_url }}">{% if static_preview %}See the product demo{% else %}Open your workspace{% endif %} <span aria-hidden="true">→</span></a>
+        <a href="{{ workspace_url }}">{% if static_preview %}See the product demo{% else %}Start with a source{% endif %} <span aria-hidden="true">→</span></a>
         <a href="{{ site_base }}/pricing/">View pricing</a>
         <a href="{{ site_base }}/developers/">Build with the API</a>
       </div>

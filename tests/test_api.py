@@ -258,7 +258,8 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "The research workspace between finding information and using it." in landing.text
+            assert "The research workspace between finding information and using it." not in landing.text
+            assert "Open your workspace" not in landing.text
             assert 'href="/app/login"' in landing.text
             assert ">Sign in</a>" in landing.text
             assert "Japan’s" in landing.text
@@ -272,12 +273,18 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Catch me up" in landing.text
             assert "Explore this chain" in landing.text
             assert "Turn this angle into a script" in landing.text
-            assert "You started with a sentence." in landing.text
+            assert "You started with a market thesis." in landing.text
+            assert "Current thread" not in landing.text
+            assert "Collected sources" in landing.text
+            assert "Statistical Handbook of Japan 2025" in landing.text
+            assert "Bank of Japan Financial System Report" in landing.text
+            assert "U.S. Treasury TIC holdings table" in landing.text
             assert "Markov found the missing mechanism." in landing.text
             assert "Markov compared competing paths." in landing.text
             assert "Markov produced a stronger idea." in landing.text
-            assert "One living chain. Every way you need to use it." in landing.text
-            assert "Made for original work" in landing.text
+            assert "One living chain, from first source to original work." in landing.text
+            assert landing.text.count("Made for original work") == 1
+            assert "Do not start the next piece" not in landing.text
             assert "saved TikToks, YouTube videos, podcasts, posts, and articles" in landing.text
             assert "AEO pages, reports, and editorial briefs" in landing.text
             assert "One workspace for the whole trail" in landing.text
@@ -289,8 +296,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "For agents" in landing.text
             assert "It syncs into your web workspace" in landing.text
             assert "What do you want to understand—or make?" in landing.text
-            for source_type in ("youtube", "tiktok", "article", "pdf", "audio", "question"):
-                assert f'data-source="{source_type}"' in landing.text
+            for source_story in ("japan", "glp1", "nuclear"):
+                assert f'data-source="{source_story}"' in landing.text
+            assert landing.text.count("data-source=") == 3
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             assert "dashboard screenshot" not in landing.text.lower()
@@ -335,9 +343,11 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "event.key !== 'Escape'" in javascript.text
             assert "aria-expanded" in javascript.text
             assert "markov.pendingSource" in javascript.text
-            assert "You started with a video." in javascript.text
-            assert "You started with 10 seconds." in javascript.text
+            assert "You started with a market thesis." in javascript.text
+            assert "You started with a consumer claim." in javascript.text
+            assert "You started with a climate argument." in javascript.text
             assert "storyFields.start.textContent = example.startCopy" in javascript.text
+            assert "storyFields.sources.replaceChildren()" in javascript.text
     finally:
         await store.close()
 

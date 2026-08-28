@@ -26,10 +26,10 @@ Applies to: public site, workspace intake, job progress, artifact reader, and AP
 - **Primary conversion:** experience the phrase-driven chain, then sign in and
   follow the visitor's own source into the Markov web workspace. Static previews
   route to a truthful product demonstration until hosted account access is live.
-- **Proof available now:** the working interactive trail, a documented Japan–Treasury
-  example with direct public-source links, and a working web product journey from
-  intake through stored research and finished work. No customer, revenue, or
-  outcome claims are implied.
+- **Proof available now:** three working interactive research stories—Japan and
+  Treasury demand, GLP-1s and food demand, and nuclear timelines—with three named
+  sources attached to each, plus a working web journey from intake through stored
+  research and finished work. No customer, revenue, or outcome claims are implied.
 - **Product hierarchy:** Markov is a SaaS workspace for people first. The API
   exposes the same research chains to agents and programmatic services; it is a
   second access surface, not the product's identity.
@@ -158,6 +158,11 @@ possible outcomes, and the next truthful action. The complete source trail—not
 feature grid—is the proof. Public language must sell the persistent web workspace:
 capture, parse, store, inspect, review, edit, and create. Static previews must use
 **Product demo** rather than implying that hosted account access is already live.
+
+The landing demonstration offers three complete starting stories rather than a
+format gallery. Its four-step proof alternates the action and the concrete result
+across one vertical line: collected sources, exposed mechanism, surviving path,
+and usable insight. It does not add a separate “current thread” status block.
 
 ## Application behavior
 
