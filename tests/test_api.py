@@ -250,7 +250,7 @@ async def test_web_login_and_focused_intake_page():
 
 
 @pytest.mark.asyncio
-async def test_public_site_explains_product_and_api_without_invented_proof():
+async def test_public_site_demonstrates_markov_before_asking_for_an_input():
     store = await SqliteStore.open(":memory:")
     app = create_app(store=store, settings=_settings(), process_case=_fake_process)
     transport = httpx.ASGITransport(app=app)
@@ -258,19 +258,32 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Take any source past the summary." in landing.text
-            assert "Open the workspace" in landing.text
+            assert "Start with something you found." in landing.text
+            assert "Japan’s" in landing.text
+            assert ">aging population</button>" in landing.text
+            assert ">force</button>" in landing.text
+            assert ">sell U.S. Treasuries</button>" in landing.text
+            assert landing.text.count('aria-controls="idea-route"') == 3
+            assert "Hover or focus a phrase to follow the idea." in landing.text
+            assert "The missing steps will unfold here." in landing.text
+            assert "The stronger idea appears after you inspect two paths." in landing.text
             assert "Catch me up" in landing.text
             assert "Explore where it leads" in landing.text
             assert "Turn it into a script" in landing.text
-            assert "One real source trail" in landing.text
-            assert "Starting source" in landing.text
-            assert "What is missing" in landing.text
-            assert "Finished work" in landing.text
-            assert "Plausible hypothesis" in landing.text
-            assert "No invented evidence IDs" in landing.text
+            assert "You started with a sentence." in landing.text
+            assert "Markov found the missing mechanism." in landing.text
+            assert "Markov compared competing paths." in landing.text
+            assert "Markov produced a stronger idea." in landing.text
+            assert "One trail. Three finished forms." in landing.text
+            assert "V1 is web-first." in landing.text
+            assert "Mobile capture is for sending something to Markov" in landing.text
+            assert "Start with the thing that made you curious." in landing.text
+            for source_type in ("youtube", "tiktok", "article", "pdf", "audio", "question"):
+                assert f'data-source="{source_type}"' in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
+            assert "dashboard screenshot" not in landing.text.lower()
+            assert "feature card" not in landing.text.lower()
             assert "customer logos" not in landing.text.lower()
             assert "free trial" not in landing.text.lower()
 
@@ -297,7 +310,17 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
             css = await client.get("/static/markov.css")
             assert css.status_code == 200
             assert "prefers-reduced-motion" in css.text
+            assert "@media (hover: none), (pointer: coarse)" in css.text
+            assert "#f5f4ef" in css.text
+            assert "#e9502c" in css.text
             assert ":focus-visible" in css.text
+
+            javascript = await client.get("/static/markov.js")
+            assert javascript.status_code == 200
+            assert "window.setTimeout(() => renderRoute(trigger.dataset.route), 120)" in javascript.text
+            assert "event.key !== 'Escape'" in javascript.text
+            assert "aria-expanded" in javascript.text
+            assert "markov.pendingSource" in javascript.text
     finally:
         await store.close()
 
@@ -395,12 +418,13 @@ def test_github_pages_export_is_static_and_project_relative():
     root = Path(__file__).resolve().parents[1]
     landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
     assert 'href="/markov-engine/static/markov.css"' in landing
-    assert 'href="/markov-engine/pricing/"' in landing
     assert 'href="/markov-engine/sample/"' in landing
+    assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "Run locally — free and open source" in landing
-    assert 'aria-orientation="vertical"' in landing
-    assert 'id="trail-output"' in landing
+    assert "Run locally" in landing
+    assert 'data-idea-demo' in landing
+    assert 'aria-controls="idea-route"' in landing
+    assert 'data-landing-intake' in landing
     assert landing.count("<h1") == 1
     assert (root / "docs" / "developers" / "index.html").is_file()
     assert (root / "docs" / "pricing" / "index.html").is_file()
