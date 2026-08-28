@@ -22,8 +22,8 @@
     const route = (phrase, steps, options = {}) => ({ phrase, steps, ...options });
     const examples = {
       japan: {
-        sourceLabel: 'Japan source packet',
-        startCopy: 'You started with a video and a question.',
+        sourceLabel: 'Financial Times film',
+        startCopy: 'You started with a YouTube video.',
         sentenceText: 'Why would Japanese investors sell U.S. Treasuries?',
         defaultRoute: 'sell',
         scriptOpening: 'Japan did not wake up and decide to dump America’s debt. The real story is a slower repricing of where its largest investors put their money.',
@@ -32,6 +32,7 @@
           title: 'Japan’s population crisis reaches tipping point',
           meta: 'YouTube · Financial Times film · 20 min',
           embed: 'https://www.youtube-nocookie.com/embed/nmdujC0MUKA',
+          href: 'https://www.youtube.com/watch?v=nmdujC0MUKA',
         },
         sources: [
           ['FT Film: Japan’s population crisis', 'Demographic context', 'https://www.youtube.com/watch?v=nmdujC0MUKA'],
@@ -377,6 +378,71 @@
       },
     };
 
+    const japanVariant = ({ sourceLabel, startCopy, media }) => ({
+      ...examples.japan,
+      sourceLabel,
+      startCopy,
+      media,
+    });
+
+    examples.article = japanVariant({
+      sourceLabel: 'Reuters analysis',
+      startCopy: 'You started with an article.',
+      media: {
+        kind: 'article',
+        title: 'Japan’s pension pivot puts overseas capital in play',
+        meta: 'Reuters · July 10, 2026',
+        detail: 'Japan’s finance minister proposed increasing domestic allocations at the $1.8 trillion GPIF and other retirement funds. Implementation details remain unsettled.',
+        href: 'https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/',
+      },
+    });
+    examples.tiktok = japanVariant({
+      sourceLabel: 'TikTok video',
+      startCopy: 'You started with a TikTok.',
+      media: {
+        kind: 'tiktok',
+        title: 'A personal decision to remain child-free',
+        meta: 'TikTok · Selin · 11 sec',
+        embed: 'https://www.tiktok.com/player/v1/7664551582888971542?music_info=1&description=1&autoplay=0',
+        href: 'https://www.tiktok.com/@seling459/video/7664551582888971542',
+      },
+    });
+    examples.pdf = japanVariant({
+      sourceLabel: 'NBER paper',
+      startCopy: 'You started with a paper.',
+      media: {
+        kind: 'pdf',
+        title: 'What about Japan?',
+        meta: 'NBER · Chien, Cole & Lustig · March 2026',
+        detail: 'A public-sector balance-sheet analysis of low rates, duration risk, foreign assets, and currency hedging.',
+        preview: 'static/japan-nber-cover.png',
+        href: 'https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf',
+      },
+    });
+    examples.podcast = japanVariant({
+      sourceLabel: 'Retirement podcast',
+      startCopy: 'You started with a podcast.',
+      media: {
+        kind: 'audio',
+        title: 'U.S. Debt, Japanese Yen and Your Retirement?',
+        meta: 'Apple Podcasts · 25 min',
+        detail: 'A market thesis connecting Japanese Treasury demand with U.S. rates, markets, and retirement planning.',
+        href: 'https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708',
+      },
+    });
+    examples.question = japanVariant({
+      sourceLabel: 'Research question',
+      startCopy: 'You started with a question.',
+      media: {
+        kind: 'question',
+        title: 'Why would Japanese investors sell U.S. Treasuries?',
+        meta: 'Question · entered in Markov',
+        detail: 'Separate the actors, establish whether a sale occurred, and trace the mechanism before accepting the premise.',
+      },
+    });
+    delete examples.nuclear;
+    delete examples.glp1;
+
     const sentence = ideaDemo.querySelector('[data-idea-sentence]');
     const routePanel = ideaDemo.querySelector('#idea-route');
     const placeholder = ideaDemo.querySelector('[data-route-placeholder]');
@@ -387,24 +453,18 @@
     const note = ideaDemo.querySelector('[data-route-note]');
     const evidenceLink = ideaDemo.querySelector('[data-route-evidence]');
     const selection = ideaDemo.querySelector('[data-idea-selection]');
-    const angle = ideaDemo.querySelector('[data-angle-reveal]');
-    const angleTitle = ideaDemo.querySelector('[data-angle-title]');
-    const angleCopy = ideaDemo.querySelector('[data-angle-copy]');
-    const angleActions = ideaDemo.querySelector('[data-angle-actions]');
     const followFurther = ideaDemo.querySelector('[data-follow-further]');
     const sourceButtons = [...ideaDemo.querySelectorAll('[data-source]')];
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
-    let sourceKey = 'japan';
+    let sourceKey = 'article';
     let activeRoute = null;
     let pinnedRoute = null;
     let previewTimer = null;
-    let explored = new Set();
 
     const storyFields = {
       start: document.querySelector('[data-story-start]'),
       seed: document.querySelector('[data-story-seed]'),
       sourceArtifact: document.querySelector('[data-story-source-artifact]'),
-      sourcePacket: document.querySelector('[data-story-source-packet]'),
       mechanismNodes: document.querySelector('[data-story-mechanism-nodes]'),
       mechanism: document.querySelector('[data-story-mechanism]'),
       comparisonRows: document.querySelector('[data-story-comparison-rows]'),
@@ -415,29 +475,47 @@
       destination: document.querySelector('[data-destination-source]'),
     };
 
-    const resetAngle = () => {
-      angle.classList.remove('is-ready');
-      angleTitle.textContent = 'The stronger idea appears after you inspect two paths.';
-      angleCopy.textContent = 'Markov does not jump from a provocative sentence to a polished conclusion. It makes the missing mechanism and the uncertainty visible first.';
-      angleActions.hidden = true;
-    };
-
     const renderSourceArtifact = (media) => {
       const mediaId = `${media.kind}:${media.title}`;
       if (storyFields.sourceArtifact.dataset.mediaId === mediaId) return;
       storyFields.sourceArtifact.replaceChildren();
       storyFields.sourceArtifact.dataset.mediaId = mediaId;
-      if (media.kind === 'youtube') {
+      if (media.kind === 'youtube' || media.kind === 'tiktok') {
         const frame = document.createElement('iframe');
         frame.loading = 'lazy';
         frame.src = media.embed;
         frame.title = `${media.title} — ${media.meta}`;
-        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        frame.dataset.platform = media.kind;
+        frame.allow = media.kind === 'youtube'
+          ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+          : 'fullscreen';
         frame.allowFullscreen = true;
         storyFields.sourceArtifact.append(frame);
+      } else if (media.kind === 'pdf') {
+        const preview = document.createElement('a');
+        preview.className = 'pdf-preview';
+        preview.href = media.href;
+        preview.target = '_blank';
+        preview.rel = 'noreferrer';
+        const image = document.createElement('img');
+        image.src = media.preview;
+        image.alt = `First page of ${media.title}`;
+        image.loading = 'lazy';
+        image.width = 1220;
+        image.height = 1582;
+        const open = document.createElement('span');
+        open.textContent = 'Open the full PDF ↗';
+        preview.append(image, open);
+        storyFields.sourceArtifact.append(preview);
       } else {
-        const preview = document.createElement('div');
+        const preview = document.createElement(media.href ? 'a' : 'div');
         preview.className = `source-preview is-${media.kind}`;
+        if (media.href) {
+          preview.classList.add('source-preview-link');
+          preview.href = media.href;
+          preview.target = '_blank';
+          preview.rel = 'noreferrer';
+        }
         const kind = document.createElement('span');
         kind.className = 'source-preview-kind';
         kind.textContent = media.kind;
@@ -446,6 +524,12 @@
         const detail = document.createElement('p');
         detail.textContent = media.detail;
         preview.append(kind, title, detail);
+        if (media.href) {
+          const open = document.createElement('span');
+          open.className = 'source-preview-open';
+          open.textContent = 'Open original ↗';
+          preview.append(open);
+        }
         storyFields.sourceArtifact.append(preview);
       }
       const caption = document.createElement('div');
@@ -456,23 +540,6 @@
       meta.textContent = media.meta;
       caption.append(title, meta);
       storyFields.sourceArtifact.append(caption);
-    };
-
-    const renderSourcePacket = (sources = []) => {
-      storyFields.sourcePacket.replaceChildren();
-      storyFields.sourcePacket.hidden = sources.length === 0;
-      sources.forEach(([titleText, roleText, href]) => {
-        const source = document.createElement('a');
-        source.href = href;
-        source.target = '_blank';
-        source.rel = 'noreferrer';
-        const title = document.createElement('strong');
-        title.textContent = titleText;
-        const role = document.createElement('span');
-        role.textContent = roleText;
-        source.append(title, role);
-        storyFields.sourcePacket.append(source);
-      });
     };
 
     const renderMechanismArtifact = (selected) => {
@@ -510,7 +577,6 @@
       storyFields.seed.textContent = example.sentenceText;
       storyFields.destination.textContent = example.sourceLabel;
       renderSourceArtifact(example.media);
-      renderSourcePacket(example.sources || []);
       renderMechanismArtifact(resolved);
       renderComparisonArtifact(resolved);
       storyFields.mechanism.textContent = resolved.mechanism;
@@ -518,14 +584,6 @@
       storyFields.angle.textContent = resolved.angle;
       storyFields.report.textContent = resolved.comparison;
       storyFields.script.textContent = example.scriptOpening;
-    };
-
-    const revealAngle = (selected) => {
-      if (explored.size < 2) return;
-      angle.classList.add('is-ready');
-      angleTitle.textContent = selected.angle;
-      angleCopy.textContent = 'This is a stronger interpretation because the mechanism, competing path, and weakest evidence state remain attached.';
-      angleActions.hidden = false;
     };
 
     const setExpanded = (routeName) => {
@@ -549,9 +607,7 @@
       activeRoute = routeName;
       if (pin) {
         pinnedRoute = routeName;
-        explored.add(routeName);
         updateStory(selected);
-        revealAngle(selected);
       }
       setExpanded(routeName);
       routePanel.classList.add('has-route');
@@ -647,7 +703,6 @@
       sourceKey = key;
       activeRoute = null;
       pinnedRoute = null;
-      explored = new Set();
       sentence.replaceChildren();
       example.sentence.forEach((part) => {
         if (typeof part === 'string') {
@@ -666,7 +721,6 @@
       sourceButtons.forEach((button) => {
         button.setAttribute('aria-pressed', String(button.dataset.source === key));
       });
-      resetAngle();
       updateStory(null);
       clearRoute();
       bindTriggers();
@@ -691,12 +745,9 @@
       if (!activeRoute) return;
       const selected = examples[sourceKey].routes[activeRoute];
       pinnedRoute = activeRoute;
-      explored.add(activeRoute);
-      explored.add(`${activeRoute}:further`);
       updateStory(selected);
-      revealAngle(selected);
       selection.textContent = `${selected.phrase} is now the thread carried through the page.`;
-      angle.scrollIntoView({ behavior: canHover.matches ? 'smooth' : 'auto', block: 'center' });
+      document.querySelector('.idea-story')?.scrollIntoView({ behavior: canHover.matches ? 'smooth' : 'auto', block: 'start' });
     });
 
     document.addEventListener('keydown', (event) => {

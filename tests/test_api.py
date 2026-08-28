@@ -269,21 +269,17 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert landing.text.count('aria-controls="idea-route"') == 3
             assert "Hover or focus a phrase to follow the idea." in landing.text
             assert "The missing steps will unfold here." in landing.text
-            assert "The stronger idea appears after you inspect two paths." in landing.text
-            assert "Catch me up" in landing.text
-            assert "Explore this chain" in landing.text
-            assert "Turn this angle into a script" in landing.text
-            assert "You started with a video and a question." in landing.text
+            assert "The stronger idea appears after you inspect two paths." not in landing.text
+            assert "New angle" not in landing.text
+            assert "Markov does not jump from a provocative sentence" not in landing.text
+            assert "Save any video, article, PDF, podcast, post, or question." not in landing.text
+            assert "You started with an article." in landing.text
             assert "Current thread" not in landing.text
-            assert "Source packet" in landing.text
-            assert "youtube-nocookie.com/embed/nmdujC0MUKA" in landing.text
-            assert "Japan’s population crisis reaches tipping point" in landing.text
-            assert "data-story-source-packet" in landing.text
-            assert "Child-free creator post" in landing.text
-            assert "Audience signal · not Japan-specific evidence" in landing.text
-            assert "U.S. Debt, Japanese Yen and Your Retirement?" in landing.text
-            assert "Japan’s pension pivot" in landing.text
-            assert "What about Japan?" in landing.text
+            assert "Starting artifact" in landing.text
+            assert "Japan’s pension pivot puts overseas capital in play" in landing.text
+            assert "https://www.reuters.com/world/asia-pacific/" in landing.text
+            assert "Open original ↗" in landing.text
+            assert "data-story-source-packet" not in landing.text
             assert "Markov started a chain." in landing.text
             assert "Markov found the missing mechanism." not in landing.text
             assert "Mechanism artifact" in landing.text
@@ -326,11 +322,13 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert landing.text.index('id="intake-title"') < landing.text.index(
                 'class="post-intake-section"'
             )
-            for source_story in ("japan", "tiktok", "nuclear", "pdf", "glp1", "question"):
+            for source_story in ("article", "japan", "tiktok", "pdf", "podcast", "question"):
                 assert f'data-source="{source_story}"' in landing.text
             assert landing.text.count("data-source=") == 6
-            for source_label in ("YouTube", "TikTok", "Articles", "PDFs", "Audio", "Questions"):
+            for source_label in ("Article", "YouTube", "TikTok", "PDF", "Podcast", "Question"):
                 assert f">{source_label}</button>" in landing.text
+            assert 'data-source="nuclear"' not in landing.text
+            assert 'data-source="glp1"' not in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             assert "dashboard screenshot" not in landing.text.lower()
@@ -371,21 +369,30 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "#e9502c" in css.text
             assert ":focus-visible" in css.text
 
+            pdf_preview = await client.get("/static/japan-nber-cover.png")
+            assert pdf_preview.status_code == 200
+            assert pdf_preview.headers["content-type"] == "image/png"
+
             javascript = await client.get("/static/markov.js")
             assert javascript.status_code == 200
             assert "window.setTimeout(() => renderRoute(trigger.dataset.route), 120)" in javascript.text
             assert "event.key !== 'Escape'" in javascript.text
             assert "aria-expanded" in javascript.text
             assert "markov.pendingSource" in javascript.text
-            assert "You started with a video and a question." in javascript.text
-            assert "You started with 10 seconds." in javascript.text
+            assert "You started with a YouTube video." in javascript.text
+            assert "You started with a TikTok." in javascript.text
             assert "You started with an article." in javascript.text
             assert "You started with a paper." in javascript.text
             assert "You started with a podcast." in javascript.text
             assert "You started with a question." in javascript.text
+            assert "https://www.tiktok.com/player/v1/7664551582888971542" in javascript.text
+            assert "static/japan-nber-cover.png" in javascript.text
+            assert "Japan’s pension pivot puts overseas capital in play" in javascript.text
+            assert "delete examples.nuclear" in javascript.text
+            assert "delete examples.glp1" in javascript.text
             assert "storyFields.start.textContent = example.startCopy" in javascript.text
             assert "renderSourceArtifact(example.media)" in javascript.text
-            assert "renderSourcePacket(example.sources || [])" in javascript.text
+            assert "renderSourcePacket" not in javascript.text
             assert "renderMechanismArtifact(resolved)" in javascript.text
             assert "renderComparisonArtifact(resolved)" in javascript.text
             assert "storyFields.report.textContent = resolved.comparison" in javascript.text

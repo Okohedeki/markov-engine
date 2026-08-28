@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain and helps you create a brief, report, or script.">
+  <meta name="description" content="Markov turns source material into evidence-linked research chains, briefs, reports, and scripts.">
 
   <title>Markov — Turn what you find into original work</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
@@ -51,28 +51,15 @@
         </div>
       </div>
 
-      <div class="angle-reveal" data-angle-reveal aria-live="polite">
-        <p class="route-label">New angle</p>
-        <h2 data-angle-title>The stronger idea appears after you inspect two paths.</h2>
-        <p data-angle-copy>Markov does not jump from a provocative sentence to a polished conclusion. It makes the missing mechanism and the uncertainty visible first.</p>
-        <div class="angle-actions" data-angle-actions hidden>
-          <a href="/markov-engine/sample/">Catch me up</a>
-          <a href="/markov-engine/sample/">Explore this chain</a>
-          <a href="/markov-engine/sample/">Turn this angle into a script</a>
-        </div>
-      </div>
-
-      <p class="idea-promise">Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain—explaining what matters, checking the evidence, uncovering hidden connections, and carrying the strongest insight into a brief, report, or script.</p>
-
-      <div class="source-switcher" aria-label="Try another source format" data-source-switcher>
-        <span>Start from anywhere</span>
+      <div class="source-switcher" aria-label="Choose a starting source for the Japan research chain" data-source-switcher>
+        <span>Start this Japan chain from</span>
         <div>
-          <button type="button" data-source="japan" aria-pressed="true">YouTube</button>
+          <button type="button" data-source="article" aria-pressed="true">Article</button>
+          <button type="button" data-source="japan" aria-pressed="false">YouTube</button>
           <button type="button" data-source="tiktok" aria-pressed="false">TikTok</button>
-          <button type="button" data-source="nuclear" aria-pressed="false">Articles</button>
-          <button type="button" data-source="pdf" aria-pressed="false">PDFs</button>
-          <button type="button" data-source="glp1" aria-pressed="false">Audio</button>
-          <button type="button" data-source="question" aria-pressed="false">Questions</button>
+          <button type="button" data-source="pdf" aria-pressed="false">PDF</button>
+          <button type="button" data-source="podcast" aria-pressed="false">Podcast</button>
+          <button type="button" data-source="question" aria-pressed="false">Question</button>
         </div>
       </div>
     </section>
@@ -82,16 +69,10 @@
       <ol class="story-line">
         <li class="idea-story-step is-current">
           <span class="story-number">01</span>
-          <div class="story-action"><p data-story-start>You started with a video and a question.</p><strong data-story-seed>Why would Japanese investors sell U.S. Treasuries?</strong></div>
-          <div class="story-what"><span>Source packet</span><div class="source-artifact" data-story-source-artifact data-media-id="youtube:Japan’s population crisis reaches tipping point">
-            <iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/nmdujC0MUKA" title="Japan’s population crisis reaches tipping point — YouTube · Financial Times film · 20 min" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-            <div class="source-artifact-caption"><strong>Japan’s population crisis reaches tipping point</strong><small>YouTube · Financial Times film · 20 min</small></div>
-          </div><div class="source-packet" data-story-source-packet aria-label="Collected sources">
-            <a href="https://www.youtube.com/watch?v=nmdujC0MUKA" target="_blank" rel="noreferrer"><strong>FT Film: Japan’s population crisis</strong><span>Demographic context</span></a>
-            <a href="https://www.tiktok.com/@seling459/video/7664551582888971542" target="_blank" rel="noreferrer"><strong>Child-free creator post</strong><span>Audience signal · not Japan-specific evidence</span></a>
-            <a href="https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708" target="_blank" rel="noreferrer"><strong>U.S. Debt, Japanese Yen and Your Retirement?</strong><span>Podcast thesis · commentary</span></a>
-            <a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer"><strong>Japan’s pension pivot</strong><span>Reuters · live policy catalyst</span></a>
-            <a href="https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf" target="_blank" rel="noreferrer"><strong>What about Japan?</strong><span>NBER · rates and hedging mechanism</span></a>
+          <div class="story-action"><p data-story-start>You started with an article.</p><strong data-story-seed>Why would Japanese investors sell U.S. Treasuries?</strong></div>
+          <div class="story-what"><span>Starting artifact</span><div class="source-artifact" data-story-source-artifact data-media-id="article:Japan’s pension pivot puts overseas capital in play">
+            <a class="source-preview is-article source-preview-link" href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer"><span class="source-preview-kind">article</span><strong>Japan’s pension pivot puts overseas capital in play</strong><p>Japan’s finance minister proposed increasing domestic allocations at the $1.8 trillion GPIF and other retirement funds. Implementation details remain unsettled.</p><span class="source-preview-open">Open original ↗</span></a>
+            <div class="source-artifact-caption"><strong>Japan’s pension pivot puts overseas capital in play</strong><small>Reuters · July 10, 2026</small></div>
           </div></div>
         </li>
         <li class="idea-story-step">
