@@ -258,7 +258,8 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Turn anything you find into something you can use." in landing.text
+            assert "Take any source past the summary." in landing.text
+            assert "Open the workspace" in landing.text
             assert "Catch me up" in landing.text
             assert "Explore where it leads" in landing.text
             assert "Turn it into a script" in landing.text

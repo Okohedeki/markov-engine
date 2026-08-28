@@ -1,28 +1,33 @@
 {% extends "base.html" %}
-{% block title %}Markov — Turn anything you find into something you can use{% endblock %}
+{% block title %}Markov — Take any source past the summary{% endblock %}
 {% block description %}Markov follows the ideas inside a source, validates the connections, and turns them into a useful brief, research path, or original script.{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
   <main class="public-main" id="main-content">
     <section class="trail-hero">
       <div class="trail-hero-copy">
-        <p class="plain-kicker">Start anywhere. Follow the idea.</p>
-        <h1>Turn anything you find into something you can use.</h1>
-        <p class="v2-lede">Bring a video, post, article, paper, podcast, or question. Markov checks the claims, fills in what is missing, follows the strongest connections, and helps you finish the work.</p>
+        <p class="plain-kicker">A source is the first node.</p>
+        <h1>Take any source past the summary.</h1>
+        <p class="v2-lede">Bring a video, post, article, paper, podcast, or question. Markov checks the claims, fills the gaps, and follows the strongest connections—so you leave with a brief, a research path, or a script you can fact-check.</p>
+        <div class="hero-actions">
+          <a class="button" href="{{ workspace_url }}">{% if static_preview %}Run locally — free and open source{% else %}Open the workspace{% endif %}</a>
+          <a class="hero-sample-link" href="#trail">Walk a real source trail <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="hero-boundary">{% if static_preview %}Hosted Markov is in development. Local Markov uses your hardware, models, keys, and storage.{% else %}Use your account to keep sources, evidence, and finished work in one inspectable trail.{% endif %}</p>
       </div>
 
       <div class="source-start source-start-hero" aria-label="Example Markov source input">
         <span class="source-start-marker" aria-hidden="true"></span>
-        <label for="landing-source">Paste a source or ask a question</label>
+        <span class="source-example-label">Example starting question</span>
         <div class="source-start-row">
-          <textarea id="landing-source" rows="2" readonly>How could Japan's ageing population reach the U.S. Treasury market?</textarea>
-          <a class="button" href="#trail">Follow this source</a>
+          <p class="source-example">How could Japan's ageing population reach the U.S. Treasury market?</p>
+          <a class="button button-secondary" href="#trail">See where it leads</a>
         </div>
         <div class="source-start-foot">
           <ul class="source-types" aria-label="Supported starting points">
             <li>YouTube</li><li>TikTok</li><li>Articles</li><li>PDFs</li><li>Audio</li><li>Questions</li>
           </ul>
-          <a class="local-action" href="{{ workspace_url }}">{% if static_preview %}Run locally — free and open source{% else %}Sign in to use your own source{% endif %}</a>
+          <span class="source-example-note">Documented example</span>
         </div>
       </div>
 

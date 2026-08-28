@@ -502,17 +502,42 @@ textarea { min-height: 150px; resize: vertical; }
   margin: 0 auto;
   max-width: 1120px;
   min-height: calc(100vh - 74px);
-  padding: clamp(80px, 10vh, 124px) 28px 72px;
+  padding: clamp(68px, 8vh, 96px) 28px 72px;
 }
-.trail-hero-copy { max-width: 960px; }
-.trail-hero h1 { max-width: 940px; }
+.trail-hero-copy { max-width: 940px; }
+.trail-hero h1 { max-width: 820px; }
+.hero-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem 1.25rem; }
+.hero-sample-link { color: var(--moss-dark); font-weight: 720; }
+.hero-sample-link span { display: inline-block; margin-left: .25rem; }
+.hero-boundary { color: var(--muted); font-size: .78rem; margin: .8rem 0 0; }
 .source-start-hero {
   border-radius: 2px;
   box-shadow: 0 20px 60px rgb(31 36 48 / 7%);
-  margin-top: 2rem;
+  margin-top: 2.25rem;
   max-width: 960px;
   padding: 1.25rem 1.25rem 1rem 1.7rem;
   position: relative;
+}
+.source-example-label {
+  display: block;
+  font-size: .76rem;
+  font-weight: 760;
+  letter-spacing: .04em;
+  margin-bottom: .55rem;
+  text-transform: uppercase;
+}
+.source-example {
+  align-items: center;
+  background: #fafbfc;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  display: flex;
+  font-size: .98rem;
+  line-height: 1.35;
+  margin: 0;
+  min-height: 48px;
+  min-width: 0;
+  padding: .7rem .85rem;
 }
 .source-start textarea {
   background: #fafbfc;
@@ -551,7 +576,7 @@ textarea { min-height: 150px; resize: vertical; }
 .source-start-foot .source-types { margin: 0; }
 .source-start-foot .source-types li { background: transparent; border-right: 1px solid var(--line); border-radius: 0; padding: 0 .65rem 0 0; }
 .source-start-foot .source-types li:last-child { border-right: 0; }
-.local-action { color: var(--moss-dark); font-size: .78rem; font-weight: 720; white-space: nowrap; }
+.source-example-note { color: var(--muted); font-size: .72rem; white-space: nowrap; }
 
 .hero-branches {
   border-block: 1px solid var(--line);
@@ -773,11 +798,17 @@ textarea { min-height: 150px; resize: vertical; }
   .action-bar { align-items: start; flex-direction: column; }
   .v2-hero, .v2-section, .sample-hero { padding: 64px 20px; }
   .v2-hero { min-height: 0; }
-  .trail-hero { min-height: 0; padding: 64px 20px 48px; }
-  .trail-hero h1 { font-size: clamp(3rem, 15vw, 4.1rem); }
+  .trail-hero { min-height: 0; padding: 48px 20px 44px; }
+  .trail-hero h1 { font-size: clamp(2.7rem, 12vw, 3.35rem); line-height: .97; }
+  .trail-hero .v2-lede { font-size: 1.02rem; line-height: 1.55; margin: 1.25rem 0 1.35rem; }
+  .hero-actions { align-items: stretch; flex-direction: column; gap: .75rem; }
+  .hero-actions .button { width: 100%; }
+  .hero-sample-link { align-self: flex-start; }
+  .hero-boundary { line-height: 1.5; margin-top: .7rem; }
   .source-start-row, .sample-tabs { grid-template-columns: 1fr; }
   .source-start-row .button { width: 100%; }
-  .source-start-hero { padding: 1rem 1rem .9rem 1.35rem; }
+  .source-start-hero { margin-top: 1.75rem; padding: 1rem 1rem .9rem 1.35rem; }
+  .source-example { min-height: 68px; }
   .source-start textarea { min-height: 68px; }
   .source-start-foot { align-items: start; flex-direction: column; }
   .source-start-foot .source-types { gap: .35rem .65rem; }
@@ -786,12 +817,12 @@ textarea { min-height: 150px; resize: vertical; }
   .hero-branches div { border-left: 0; border-top: 1px solid var(--line); padding-left: 1.5rem; }
   .hero-branches div::before { left: 0; top: -4px; }
   .research-trail { display: block; min-height: 0; }
-  .trail-tabs { border-bottom: 1px solid var(--line); border-right: 0; grid-template-columns: 1fr 1fr; padding: .35rem; }
+  .trail-tabs { border-bottom: 1px solid var(--line); border-right: 0; display: flex; overflow-x: auto; padding: .35rem; scroll-snap-type: x proximity; scrollbar-width: thin; }
   .trail-tabs::before { display: none; }
-  .trail-tabs button { border-bottom: 3px solid transparent; border-left: 0; font-size: .78rem; min-height: 52px; padding: .55rem; }
+  .trail-tabs button { border-bottom: 3px solid transparent; border-left: 0; flex: 0 0 150px; font-size: .78rem; min-height: 56px; padding: .55rem; scroll-snap-align: start; }
   .trail-tabs button[aria-selected="true"] { border-bottom-color: var(--moss); border-left-color: transparent; }
   .trail-tabs button span { height: 24px; width: 24px; }
-  .trail-panel { min-height: 430px; padding: 1.5rem; }
+  .trail-panel { min-height: 0; padding: 1.5rem; }
   .trail-panel h3 { font-size: 1.75rem; }
   .trail-output blockquote, .sample-output blockquote { font-size: 1.35rem; padding-left: 1rem; }
   .outcome-branches { grid-template-columns: 1fr; }
