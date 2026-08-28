@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from markov_engine.renderers import render_artifact
-from markov_engine.research import generate_case_artifact
+from markov_engine.research import persist_rendered_artifact
 from markov_engine.store.records import ArtifactRec, UserBranchDecisionRec
 from markov_engine.store.sqlite import SqliteStore
 
@@ -56,22 +56,18 @@ async def follow_connection_into_script(
     artifact_id: int | None = None,
     constraints: dict | None = None,
 ) -> tuple[UserBranchDecisionRec, ArtifactRec]:
-    """Follow one edge and create a provenance-preserving Script revision."""
+    """Follow one edge into its own provenance-preserving Script artifact."""
     connection = await store.get_connection(connection_id, owner_id=owner_id)
     if connection is None or connection.validation_status != "validated":
         raise ValueError("Validated connection not found")
     case = await store.get_research_case(connection.research_case_id, owner_id=owner_id)
     if case is None:
         raise ValueError("Research case not found")
-    followed = list(case.constraints.get("followed_connection_ids") or [])
-    if connection.id not in followed:
-        followed.append(connection.id)
     next_constraints = {
         **case.constraints,
         **(constraints or {}),
-        "followed_connection_ids": followed,
+        "followed_connection_ids": [connection.id],
     }
-    await store.update_research_case(case.id, constraints=next_constraints)
     decision = await record_connection_decision(
         store,
         connection_id=connection.id,
@@ -80,56 +76,54 @@ async def follow_connection_into_script(
         metadata={"could_lead_to": connection.could_lead_to},
     )
 
-    target = None
+    parent = None
     if artifact_id is not None:
-        target = await store.get_artifact(artifact_id, owner_id=owner_id)
-        if target is None or target.artifact_type != "script":
+        parent = await store.get_artifact(artifact_id, owner_id=owner_id)
+        if parent is None or parent.artifact_type != "script":
             raise ValueError("Script artifact not found")
     else:
         scripts = [
             item
             for item in await store.list_case_artifacts(case.id)
-            if item.artifact_type == "script"
+            if item.artifact_type == "script" and item.branch_key is None
         ]
-        target = scripts[-1] if scripts else None
+        parent = scripts[-1] if scripts else None
 
-    if target is None:
-        artifact = await generate_case_artifact(
-            store,
-            case_id=case.id,
-            artifact_type="script",
-            constraints=next_constraints,
-            force=True,
-        )
-    else:
+    branch_key = f"connection:{connection.id}"
+    artifact = next(
+        (
+            item
+            for item in await store.list_case_artifacts(case.id)
+            if item.artifact_type == "script" and item.branch_key == branch_key
+        ),
+        None,
+    )
+    if artifact is None:
         rendered = await render_artifact(
             store,
             case.id,
             "script",
             constraints=next_constraints,
         )
-        artifact = await store.update_case_artifact(
-            target.id,
-            content=rendered.content,
-            structured_content=rendered.structured_content,
+        artifact = await persist_rendered_artifact(
+            store,
+            case=case,
+            rendered=rendered,
+            review_level=(parent.review_level if parent else "instant"),
+            branch_key=branch_key,
+            parent_artifact_id=(parent.id if parent else None),
             change_kind="connection_followed",
-            changed_section="premise-check,candidate-angles,recommended-angle,narration,fact-check",
-        )
-        await store.record_usage_event(
-            owner_id=owner_id,
-            event_type="artifact_revised",
-            research_case_id=case.id,
-            artifact_id=artifact.id,
-            metadata={
-                "connection_id": connection.id,
-                "change_kind": "connection_followed",
-            },
         )
     await store.record_usage_event(
         owner_id=owner_id,
         event_type="insight_converted",
         research_case_id=case.id,
         artifact_id=artifact.id,
-        metadata={"connection_id": connection.id, "mode": "script"},
+        metadata={
+            "connection_id": connection.id,
+            "mode": "script",
+            "branch_key": branch_key,
+            "parent_artifact_id": parent.id if parent else None,
+        },
     )
     return decision, artifact

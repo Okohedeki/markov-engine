@@ -320,6 +320,9 @@ async def persist_rendered_artifact(
     case: ResearchCaseRec,
     rendered: RenderedArtifact,
     review_level: str,
+    branch_key: str | None = None,
+    parent_artifact_id: int | None = None,
+    change_kind: str = "generated",
 ) -> ArtifactRec:
     status = "awaiting_review" if review_level == "verified" else "completed"
     artifact = await store.add_case_artifact(
@@ -331,9 +334,12 @@ async def persist_rendered_artifact(
         content=rendered.content,
         structured_content=rendered.structured_content,
         word_count=rendered.word_count,
-        model_used="deterministic-v1",
+        model_used="deterministic-v2",
         generation_cost=0,
         source_ids=rendered.source_ids,
+        branch_key=branch_key,
+        parent_artifact_id=parent_artifact_id,
+        change_kind=change_kind,
     )
     if review_level == "verified":
         await store.create_review_job(artifact.id)
@@ -346,6 +352,8 @@ async def persist_rendered_artifact(
             "mode": rendered.artifact_type,
             "review_level": review_level,
             "word_count": rendered.word_count,
+            "branch_key": branch_key,
+            "parent_artifact_id": parent_artifact_id,
         },
     )
     await store.record_cost(
@@ -367,6 +375,8 @@ async def generate_case_artifact(
     review_level: str = "instant",
     constraints: dict | None = None,
     force: bool = False,
+    branch_key: str | None = None,
+    parent_artifact_id: int | None = None,
 ) -> ArtifactRec:
     if artifact_type not in {"brief", "research_report", "script"}:
         raise ValueError(f"Unsupported artifact type: {artifact_type}")
@@ -382,6 +392,7 @@ async def generate_case_artifact(
                 for artifact in await store.list_case_artifacts(case_id)
                 if artifact.artifact_type == artifact_type
                 and artifact.review_level == review_level
+                and artifact.branch_key == branch_key
             ),
             None,
         )
@@ -391,7 +402,12 @@ async def generate_case_artifact(
         store, case_id, artifact_type, constraints=constraints
     )
     artifact = await persist_rendered_artifact(
-        store, case=case, rendered=rendered, review_level=review_level
+        store,
+        case=case,
+        rendered=rendered,
+        review_level=review_level,
+        branch_key=branch_key,
+        parent_artifact_id=parent_artifact_id,
     )
     purposes = set(filter(None, case.purpose.split(",")))
     purposes.add("research" if artifact_type == "research_report" else artifact_type)
@@ -418,18 +434,44 @@ async def convert_case_artifact(
     if case is None:
         raise ValueError("Research case not found")
     artifact_type = MODE_TO_ARTIFACT[mode]
+    constraints = constraints or {}
+    try:
+        selected_insight_id = int(constraints.get("selected_insight_id"))
+    except (TypeError, ValueError):
+        selected_insight_id = None
+    branch_key = (
+        f"insight:{selected_insight_id}" if selected_insight_id is not None else None
+    )
+    if selected_insight_id is not None:
+        selected_insight = await store.get_insight_candidate(selected_insight_id)
+        if selected_insight is None or selected_insight.research_case_id != case.id:
+            raise ValueError("Selected insight does not belong to the research case")
+    artifacts = await store.list_case_artifacts(case.id)
     existing = next(
         (
             artifact
-            for artifact in await store.list_case_artifacts(case.id)
+            for artifact in artifacts
             if artifact.artifact_type == artifact_type
             and artifact.review_level == review_level
+            and artifact.branch_key == branch_key
         ),
         None,
     )
     if existing is not None:
         return existing, False
-    reference = f"conversion:{case.id}:{artifact_type}:{uuid.uuid4()}"
+    parent = next(
+        (
+            artifact
+            for artifact in reversed(artifacts)
+            if artifact.artifact_type == artifact_type
+            and artifact.review_level == review_level
+            and artifact.branch_key is None
+        ),
+        None,
+    )
+    reference = (
+        f"conversion:{case.id}:{artifact_type}:{branch_key or 'base'}:{uuid.uuid4()}"
+    )
     await reserve_job_credits(
         store,
         owner_id=owner_id,
@@ -445,6 +487,8 @@ async def convert_case_artifact(
             artifact_type=artifact_type,
             review_level=review_level,
             constraints=constraints,
+            branch_key=branch_key,
+            parent_artifact_id=parent.id if parent and branch_key else None,
         )
     except Exception:
         await refund_job_credits(
@@ -462,7 +506,7 @@ async def convert_case_artifact(
         event_type=f"converted_to_{event_mode}",
         research_case_id=case.id,
         artifact_id=artifact.id,
-        metadata={"review_level": review_level},
+        metadata={"review_level": review_level, "branch_key": branch_key},
     )
     return artifact, True
 

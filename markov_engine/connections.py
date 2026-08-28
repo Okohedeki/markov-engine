@@ -373,6 +373,9 @@ async def validate_and_persist_connection(
         evidence_level = "plausible_hypothesis"
     if supporting_count == 0:
         dimensions["evidence_strength"] = min(dimensions["evidence_strength"], 0.35)
+        rejection_reasons.append(
+            "No independent evidence passage supports the connection"
+        )
 
     total_score = score_connection(dimensions)
     if total_score < _settings.connection_min_score:
@@ -462,12 +465,28 @@ def _endpoints(connection: ConnectionRec) -> set[tuple[str, int]]:
 
 
 def validate_path_order(connections: Iterable[ConnectionRec]) -> bool:
-    """A path is ordered when every adjacent edge shares an endpoint."""
+    """A path is an acyclic directed walk: A→B followed by B→C."""
     items = list(connections)
-    return bool(items) and all(
-        _endpoints(left) & _endpoints(right)
-        for left, right in zip(items, items[1:])
-    )
+    if not items:
+        return False
+    seen = {
+        (items[0].source_node_type, items[0].source_node_id),
+        (items[0].target_node_type, items[0].target_node_id),
+    }
+    for left, right in zip(items, items[1:]):
+        if (
+            left.target_node_type,
+            left.target_node_id,
+        ) != (
+            right.source_node_type,
+            right.source_node_id,
+        ):
+            return False
+        target = (right.target_node_type, right.target_node_id)
+        if target in seen:
+            return False
+        seen.add(target)
+    return True
 
 
 def _mean(connections: list[ConnectionRec], name: str) -> float:
@@ -491,7 +510,18 @@ async def build_connection_paths(
         while extended:
             extended = False
             for candidate in list(remaining):
-                if _endpoints(path[-1]) & _endpoints(candidate):
+                last = path[-1]
+                source = (candidate.source_node_type, candidate.source_node_id)
+                target = (candidate.target_node_type, candidate.target_node_id)
+                path_nodes = {
+                    node
+                    for connection in path
+                    for node in _endpoints(connection)
+                }
+                if (
+                    source == (last.target_node_type, last.target_node_id)
+                    and target not in path_nodes
+                ):
                     path.append(candidate)
                     remaining.remove(candidate)
                     extended = True

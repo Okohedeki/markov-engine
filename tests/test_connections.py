@@ -157,8 +157,42 @@ async def test_evidence_level_is_capped_and_unsupported_candidate_is_rejected():
         assert unsupported.validation_status == "rejected"
         assert "Endpoint does not belong" in unsupported.rejection_reason
         assert "Missing substantive mechanism" in unsupported.rejection_reason
+
+        no_evidence = await validate_and_persist_connection(
+            store,
+            case_id=case.id,
+            candidate={**candidate, "connection_type": "constraint_link", "evidence": []},
+        )
+        assert no_evidence.validation_status == "rejected"
+        assert "No independent evidence passage" in no_evidence.rejection_reason
     finally:
         await store.close()
+
+
+def test_path_order_requires_direction_and_rejects_cycles():
+    from markov_engine.store.records import ConnectionRec
+
+    def edge(edge_id, source, target):
+        return ConnectionRec(
+            id=edge_id,
+            research_case_id=1,
+            source_node_type="claim",
+            source_node_id=source,
+            target_node_type="claim",
+            target_node_id=target,
+            connection_type="dependency_link",
+            statement="A substantive directed relationship exists.",
+            mechanism="The first condition changes the next condition.",
+            why_it_matters="Direction changes how the result is interpreted.",
+            supports="An inspected passage supports this direction.",
+            weakens="Magnitude remains uncertain.",
+            could_lead_to="Inspect the downstream measurement.",
+            evidence_level="evidence_backed_interpretation",
+        )
+
+    assert validate_path_order([edge(1, 1, 2), edge(2, 2, 3)])
+    assert not validate_path_order([edge(1, 1, 2), edge(2, 3, 2)])
+    assert not validate_path_order([edge(1, 1, 2), edge(2, 2, 1)])
 
 
 @pytest.mark.asyncio

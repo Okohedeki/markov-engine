@@ -91,6 +91,8 @@ class ArtifactRec:
     structured_content: dict | None = None
     word_count: int = 0
     updated_at: dt.datetime | None = None
+    branch_key: str | None = None
+    parent_artifact_id: int | None = None
 
 
 @dataclass

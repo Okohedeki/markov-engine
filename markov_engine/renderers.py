@@ -431,7 +431,7 @@ async def render_research_report(
     ]
     thesis_claim = (defensible or claims)[:1]
     thesis = (
-        thesis_claim[0].claim_text
+        thesis_claim[0].research_text
         if thesis_claim
         else "The available evidence is insufficient for a defensible thesis."
     )
@@ -670,11 +670,16 @@ async def render_script(
         for item in context["connections"]
         if item.validation_status == "validated"
     ]
-    followed_connection_ids = {
-        item.connection_id
-        for item in context["branch_decisions"]
-        if item.action in {"follow", "deepen"}
-    }
+    if "followed_connection_ids" in constraints:
+        followed_connection_ids = {
+            int(item) for item in constraints.get("followed_connection_ids") or []
+        }
+    else:
+        followed_connection_ids = {
+            item.connection_id
+            for item in context["branch_decisions"]
+            if item.action in {"follow", "deepen"}
+        }
     validated_connections.sort(
         key=lambda item: (item.id in followed_connection_ids, item.total_score),
         reverse=True,
@@ -690,7 +695,18 @@ async def render_script(
             if path_id in paths_by_id
         )
     ]
-    selected_insight = (followed_insights or context["insights"])[:1]
+    try:
+        requested_insight_id = int(constraints.get("selected_insight_id"))
+    except (TypeError, ValueError):
+        requested_insight_id = None
+    requested_insights = [
+        insight
+        for insight in context["insights"]
+        if insight.id == requested_insight_id
+    ]
+    selected_insight = (
+        requested_insights or followed_insights or context["insights"]
+    )[:1]
     selected_angle = (
         selected_insight[0].thesis
         if selected_insight

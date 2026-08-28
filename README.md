@@ -36,7 +36,7 @@ automatically merge into Chains.
 - Reproducible scoring across relevance, evidence strength, novelty,
   explanatory value, output usefulness, and risk.
 - Connection paths, insight candidates, persistent branch decisions, and
-  follow-to-revised-Script behavior.
+  follow-to-independent-Script behavior.
 - Deterministic citations, claim markers, evidence appendices, and source
   locators.
 - Authenticated asynchronous `/v2` API with idempotency, graph resources,
@@ -64,7 +64,7 @@ Web / API / CLI
   -> Connect -> typed candidates -> deterministic validation and scoring
   -> Path -> ordered Connections -> InsightCandidates
   -> Render -> Brief / Research Report / Script
-  -> Branch -> follow / save / dismiss -> revised artifact versions
+  -> Branch -> follow / save / dismiss -> independent child artifacts
   -> Deliver -> exports, usage, costs
   -> Verified only -> structured ReviewJob -> final delivery
 ```
@@ -227,10 +227,10 @@ configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_IDS`, and
 
 ## Database migrations
 
-`SqliteStore.open()` applies numbered, additive migrations automatically. V1
-adds the evidence-oriented case model. V2 adds connections, connection evidence,
-paths, insights, and branch decisions. Neither migration deletes or rewrites
-Chain-era records.
+`SqliteStore.open()` applies numbered, additive migrations automatically. The
+sequence adds the evidence-oriented case model, connection graph, focused
+research plans, entity aliases, and independently addressable artifact branches.
+No migration deletes or rewrites Chain-era records.
 
 Back up the SQLite file before deploying a new release:
 
@@ -269,7 +269,7 @@ python -m ruff check markov_engine tests
 The suite includes a full network-free V2 vertical slice covering timestamped
 YouTube extraction, claims and gaps, evidence research, three typed validated
 connections, an explicitly rejected candidate, one path and insight, all three
-outputs, a followed branch, and a revised Script version. Store, API,
+outputs, and a followed branch preserved as a separate Script. Store, API,
 entitlement, export, review, cost, and analytics contracts are also tested.
 
 ## Samples

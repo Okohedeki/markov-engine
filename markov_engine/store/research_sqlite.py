@@ -159,6 +159,8 @@ class ResearchSqliteMixin:
             structured_content=_json(row["structured_content"], None),
             word_count=int(row["word_count"] or 0),
             updated_at=_ts(row["updated_at"]),
+            branch_key=row["branch_key"],
+            parent_artifact_id=row["parent_artifact_id"],
         )
 
     @staticmethod
@@ -1257,12 +1259,15 @@ class ResearchSqliteMixin:
         model_used: str,
         generation_cost: float,
         source_ids: list[int],
+        branch_key: str | None = None,
+        parent_artifact_id: int | None = None,
+        change_kind: str = "generated",
     ) -> ArtifactRec:
         cur = await self._conn.execute(
             "INSERT INTO artifacts (chain_id, research_case_id, artifact_type, review_level, "
             "status, title, content, structured_content, word_count, model_used, "
-            "cost_usd, generation_cost, updated_at) "
-            "VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+            "cost_usd, generation_cost, updated_at, branch_key, parent_artifact_id) "
+            "VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)",
             (
                 research_case_id,
                 artifact_type,
@@ -1275,6 +1280,8 @@ class ResearchSqliteMixin:
                 model_used,
                 float(generation_cost),
                 float(generation_cost),
+                branch_key,
+                parent_artifact_id,
             ),
         )
         artifact_id = cur.lastrowid
@@ -1288,7 +1295,7 @@ class ResearchSqliteMixin:
             artifact_id=artifact_id,
             content=content,
             structured_content=structured_content,
-            change_kind="generated",
+            change_kind=change_kind,
         )
         rec = await self.get_artifact(artifact_id)
         assert rec is not None

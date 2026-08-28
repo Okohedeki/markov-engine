@@ -405,10 +405,21 @@ async def _migration_3(conn: aiosqlite.Connection) -> None:
     await conn.executescript(_RESEARCH_PLAN_SCHEMA)
 
 
+async def _migration_4(conn: aiosqlite.Connection) -> None:
+    await _ensure_column(conn, "artifacts", "branch_key", "TEXT")
+    await _ensure_column(conn, "artifacts", "parent_artifact_id", "INTEGER")
+    await conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS ux_artifacts_case_branch "
+        "ON artifacts(research_case_id, artifact_type, review_level, branch_key) "
+        "WHERE branch_key IS NOT NULL"
+    )
+
+
 _MIGRATIONS = (
     (1, "research_case_v1", _migration_1),
     (2, "connection_graph_v2", _migration_2),
     (3, "focused_research_plan_v2", _migration_3),
+    (4, "branched_artifacts_v2", _migration_4),
 )
 
 

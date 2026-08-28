@@ -1,4 +1,4 @@
-"""Following a V2 connection is durable and revises, rather than replaces, a Script."""
+"""Following a V2 connection forks a durable, independent Script direction."""
 
 from __future__ import annotations
 
@@ -6,12 +6,12 @@ import pytest
 
 from markov_engine.branching import follow_connection_into_script
 from markov_engine.renderers import render_artifact
-from markov_engine.research import persist_rendered_artifact
+from markov_engine.research import generate_case_artifact, persist_rendered_artifact
 from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
-async def test_followed_connection_becomes_the_angle_in_a_revised_script():
+async def test_followed_connection_becomes_the_angle_in_a_separate_script():
     store = await SqliteStore.open(":memory:")
     try:
         case = await store.create_research_case(
@@ -151,6 +151,12 @@ async def test_followed_connection_becomes_the_angle_in_a_revised_script():
         )
         assert original_angle == first_insight.thesis
 
+        _first_decision, first_branch = await follow_connection_into_script(
+            store,
+            connection_id=first.id,
+            owner_id="creator",
+            artifact_id=artifact.id,
+        )
         decision, revised = await follow_connection_into_script(
             store,
             connection_id=followed.id,
@@ -162,14 +168,42 @@ async def test_followed_connection_becomes_the_angle_in_a_revised_script():
             for item in revised.structured_content["sections"]
             if item["id"] == "recommended-angle"
         )
-        versions = await store.list_artifact_versions(artifact.id)
+        original = await store.get_artifact(artifact.id)
+        versions = await store.list_artifact_versions(revised.id)
 
         assert decision.action == "follow"
+        assert first_branch.branch_key == f"connection:{first.id}"
+        assert revised.id != artifact.id
+        assert revised.id != first_branch.id
+        assert revised.parent_artifact_id == artifact.id
+        assert revised.branch_key == f"connection:{followed.id}"
         assert revised_angle == followed_insight.thesis
         assert f"K{followed.id}" in revised.content
-        assert [item["change_kind"] for item in versions] == [
-            "generated",
-            "connection_followed",
-        ]
+        assert original.structured_content == artifact.structured_content
+        assert [item["change_kind"] for item in versions] == ["connection_followed"]
+        assert len(
+            [
+                item
+                for item in await store.list_case_artifacts(case.id)
+                if item.artifact_type == "script"
+            ]
+        ) == 3
+
+        insight_script = await generate_case_artifact(
+            store,
+            case_id=case.id,
+            artifact_type="script",
+            constraints={"selected_insight_id": followed_insight.id},
+            branch_key=f"insight:{followed_insight.id}",
+            parent_artifact_id=artifact.id,
+        )
+        insight_angle = next(
+            item["content"]
+            for item in insight_script.structured_content["sections"]
+            if item["id"] == "recommended-angle"
+        )
+        assert insight_script.branch_key == f"insight:{followed_insight.id}"
+        assert insight_script.parent_artifact_id == artifact.id
+        assert insight_angle == followed_insight.thesis
     finally:
         await store.close()

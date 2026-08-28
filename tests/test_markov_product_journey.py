@@ -15,7 +15,7 @@ from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
-async def test_source_becomes_inspectable_research_and_followed_script(monkeypatch):
+async def test_source_becomes_inspectable_research_without_invented_paths(monkeypatch):
     """Exercise the shipped engine, not a substituted processor or stored case."""
     monkeypatch.setattr(llm._settings, "llm_backend", "heuristic")
     monkeypatch.setattr(connections._settings, "llm_backend", "heuristic")
@@ -104,13 +104,15 @@ async def test_source_becomes_inspectable_research_and_followed_script(monkeypat
 
             assert len(case["connections"]) == 3
             assert all(
-                connection["validation_status"] == "validated"
+                connection["validation_status"] == "rejected"
                 and connection["evidence_level"] == "plausible_hypothesis"
                 and not connection["evidence"]
+                and "No independent evidence passage"
+                in connection["rejection_reason"]
                 for connection in case["connections"]
             )
-            assert case["connection_paths"]
-            assert case["insights"]
+            assert case["connection_paths"] == []
+            assert case["insights"] == []
 
             brief = case["artifacts"][0]
             research = await client.post(
@@ -135,11 +137,8 @@ async def test_source_becomes_inspectable_research_and_followed_script(monkeypat
                 headers=headers,
                 json={"artifact_id": script_id},
             )
-            assert followed.status_code == 200
-            assert followed.json()["decision"]["action"] == "follow"
-            assert f"K{followed_connection['id']}" in followed.json()["artifact"][
-                "content"
-            ]
+            assert followed.status_code == 422
+            assert "Validated connection not found" in followed.json()["detail"]
 
             final_case = (await client.get(case_url, headers=headers)).json()
             assert {item["artifact_type"] for item in final_case["artifacts"]} == {
@@ -147,6 +146,6 @@ async def test_source_becomes_inspectable_research_and_followed_script(monkeypat
                 "research_report",
                 "script",
             }
-            assert final_case["branch_decisions"][-1]["action"] == "follow"
+            assert final_case["branch_decisions"] == []
     finally:
         await store.close()
