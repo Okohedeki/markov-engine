@@ -1,16 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Pricing — Markov{% endblock %}
-{% block description %}Markov uses one credit balance across the Workspace and API. Compare Brief, Research, and Script in Instant and Verified modes.{% endblock %}
+{% block description %}Choose Markov capacity and workflow features without paying to unlock citations, accuracy checks, uncertainty labels, or source access.{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
   <main id="main-content">
     <section class="page-hero">
-      <p class="eyebrow">Pricing</p>
-      <h1>Pay for finished work.</h1>
-      <p class="lede">One credit balance works across the Workspace and API. Choose Instant for an inspectable agentic run or Verified when a trained reviewer should audit the claim-and-evidence decisions before delivery.</p>
+      <p class="plain-kicker">Pricing</p>
+      <h1>Scale capacity, not truth.</h1>
+      <p class="v2-lede">Every Markov profile includes citations, accuracy controls, uncertainty labels, and the source packet. Paid plans change throughput, retention, graph depth, exports, API access, and human review.</p>
+    </section>
+    <section class="v2-section section-rule" aria-labelledby="profiles-heading">
+      <div class="v2-section-heading"><h2 id="profiles-heading">Entitlement profiles</h2><p>Limits are deployment configuration, so operators can tune them without changing research behavior.</p></div>
+      <div class="entitlement-grid">
+        <article><h3>Community</h3><p>Self-hosted and unmetered.</p><ul><li>Workspace and API</li><li>Unlimited local retention</li><li>No artificial graph cap</li></ul></article>
+        <article><h3>Cloud Free</h3><p>Try the complete trust model.</p><ul><li>One job at a time</li><li>Smaller connection graph</li><li>Markdown and JSON</li></ul></article>
+        <article><h3>Cloud Plus</h3><p>For regular individual work.</p><ul><li>API access</li><li>Deeper graphs</li><li>Longer retention</li></ul></article>
+        <article><h3>Cloud Pro</h3><p>For teams and production use.</p><ul><li>More concurrency</li><li>Deepest cloud graphs</li><li>Human review access</li></ul></article>
+      </div>
+      <div class="note" style="margin-top:1rem"><strong>Verified add-on</strong><p>Add structured human review to an eligible cloud workflow. Review changes confidence and accountability—not access to citations.</p></div>
     </section>
     <section class="content-narrow section-rule" aria-labelledby="catalog-heading">
-      <h2 id="catalog-heading">Product credits</h2>
+      <h2 id="catalog-heading">Job credits</h2>
       <p class="lede">Credit prices shown here come from the live product catalog. Monetary pack prices are configured by the operator and appear at checkout.</p>
       <div class="price-table">
         {% for product in products %}
@@ -22,8 +32,8 @@
         {% endfor %}
       </div>
       <div class="note" style="margin-top: 2rem">
-        <strong>What a credit is not.</strong>
-        <p>Credits do not buy a guarantee that every question has a clean answer. They fund a bounded research job and the resulting artifact, evidence packet, and decision trail.</p>
+        <strong>What a credit never buys.</strong>
+        <p>A cleaner-looking answer or hidden certainty. Credits fund bounded work; every result still shows what is established, interpreted, hypothetical, or unresolved.</p>
       </div>
       <div class="button-row" style="margin-top: 2rem"><a class="button" href="{{ workspace_url }}">Open Markov</a><a class="button button-secondary" href="{{ site_base }}/developers/">Build with the API</a></div>
     </section>
