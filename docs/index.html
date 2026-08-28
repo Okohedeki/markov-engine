@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Turn a source, question, or premise into a finished Brief, Research Report, or factual Script, with every important claim linked to evidence.">
+  <meta name="description" content="Markov follows the ideas inside a source, validates the connections, and turns them into a useful brief, research path, or original script.">
 
-  <title>Markov — Research you can publish</title>
+  <title>Markov — Turn anything you find into something you can use</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
   <script defer src="/markov-engine/static/markov.js"></script>
@@ -23,190 +23,84 @@
   </nav>
 </header>
   <main class="public-main" id="main-content">
-    <section class="section hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Evidence desk for factual work</p>
-        <h1>Research you can publish.</h1>
-        <p class="lede">Markov turns a source, question, or premise into a finished Brief, Research Report, or factual Script—with every important claim linked to evidence you can inspect.</p>
-        <div class="button-row">
-          <a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Open Markov</a>
-          <a class="button button-secondary" href="/markov-engine/sample/">See a finished case</a>
+    <section class="v2-hero">
+      <div class="v2-hero-copy">
+        <p class="plain-kicker">Start anywhere. Follow the idea.</p>
+        <h1>Turn anything you find into something you can use.</h1>
+        <p class="v2-lede">Markov starts with a video, post, article, paper, or question. It checks the claims, finds the non-obvious connections, and helps you make a brief, a research path, or an original script.</p>
+        <div class="source-start" aria-label="Example Markov source input">
+          <label for="landing-source">Paste a source or ask a question</label>
+          <div class="source-start-row">
+            <input id="landing-source" value="How could Japan's ageing population reach the U.S. Treasury market?" readonly>
+            <a class="button" href="/markov-engine/sample/">Explore this sample</a>
+          </div>
+          <p>This is a static product preview. The sample below is interactive; run Markov to process your own source.</p>
         </div>
-        <p class="trust-line">Built for work where “it sounds right” is not enough. Markov keeps uncertainty visible and the source trail close.</p>
-      </div>
-
-      <div class="product-window" aria-label="Demonstration of the Markov artifact reader">
-        <div class="window-bar">
-          <span class="window-id">CASE MKV–024 / BRIEF</span>
-          <span class="status">Complete</span>
-        </div>
-        <div class="reader-demo">
-          <nav class="demo-outline" aria-label="Artifact outline">
-            <span class="active">Bottom line</span>
-            <span>Claims</span>
-            <span>Context</span>
-            <span>Sources</span>
-          </nav>
-          <article class="demo-document">
-            <p class="eyebrow">Finished brief</p>
-            <h2>What the rate change can—and cannot—tell us</h2>
-            <p>The source is on firm ground when it says the policy rate rose by two percentage points during the stated period <a class="claim-mark" href="#hero-evidence">[C1]</a>.</p>
-            <p>Its prediction that national housing prices will fall the following year is only qualified by the inspected evidence <a class="claim-mark" href="#hero-evidence">[C2]</a>.</p>
-            <p class="fine">Demonstration fixture · IDs, sources, and passages are illustrative.</p>
-          </article>
-          <aside class="evidence-rail" id="hero-evidence" aria-label="Evidence for selected claim">
-            <p class="eyebrow">Evidence rail</p>
-            <div class="evidence-card">
-              <span class="status">C1 · Supported</span>
-              <blockquote>“The published series moves from 3% to 5% over the measured period.”</blockquote>
-              <p class="evidence-meta">E1 · OFFICIAL DATA<br>RESULTS TABLE · 0:61–0:68</p>
-            </div>
-            <div class="evidence-card">
-              <span class="status status-qualified">C2 · Qualified</span>
-              <blockquote>“Rates are one input among supply, income, migration, and credit conditions.”</blockquote>
-              <p class="evidence-meta">E2 · RESEARCH PAPER<br>LIMITATIONS · P. 14</p>
-            </div>
-          </aside>
-        </div>
+        <ul class="source-types" aria-label="Supported starting points">
+          <li>YouTube</li><li>TikTok</li><li>Articles</li><li>Papers &amp; PDFs</li><li>Podcasts &amp; audio</li><li>Questions</li>
+        </ul>
       </div>
     </section>
 
-    <section class="section section-rule" aria-labelledby="dream-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">The work after the answer</p>
-          <h2 id="dream-heading">Stand behind every sentence.</h2>
-        </div>
-        <p class="lede">The value is not more generated text. It is the moment a doubtful pile of tabs becomes work you can brief, present, publish, record, or send downstream.</p>
+    <section class="v2-section" id="product" aria-labelledby="jobs-title">
+      <div class="v2-section-heading">
+        <h2 id="jobs-title">One starting point. Three useful outcomes.</h2>
+        <p>The research stays attached, so you can change the output without starting over.</p>
       </div>
-      <div class="dream-grid">
-        <div class="dream-step">
-          <p class="before">I think this is true.</p>
-          <p class="arrow" aria-hidden="true">→</p>
-          <p class="after">I can show why this holds up.</p>
-        </div>
-        <div class="dream-step">
-          <p class="before">I have material.</p>
-          <p class="arrow" aria-hidden="true">→</p>
-          <p class="after">I have something finished.</p>
-        </div>
-        <div class="dream-step">
-          <p class="before">I need to check it.</p>
-          <p class="arrow" aria-hidden="true">→</p>
-          <p class="after">I know what still needs judgment.</p>
-        </div>
+      <div class="job-cards">
+        <article><h3>Catch me up</h3><p>Get the bottom line, assumptions, omissions, weak points, and the threads worth pulling.</p></article>
+        <article><h3>Explore where it leads</h3><p>See typed connections, hidden mechanisms, competing hypotheses, and ranked research paths.</p></article>
+        <article><h3>Turn it into a script</h3><p>Choose an original angle, write the full narration, and keep fact-check and revision notes beside it.</p></article>
       </div>
     </section>
 
-    <section class="section section-rule" id="product" aria-labelledby="outcomes-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Three jobs, completed</p>
-          <h2 id="outcomes-heading">Choose the finished form.</h2>
+    <section class="v2-section demo-section" aria-labelledby="demo-title">
+      <div class="v2-section-heading">
+        <div><p class="plain-kicker">A real source-to-insight path</p><h2 id="demo-title">The first answer is not the interesting part.</h2></div>
+        <p>This example uses published data from Japan’s Statistics Bureau, the Bank of Japan, and the U.S. Treasury. The final step remains a hypothesis—and is labeled that way.</p>
+      </div>
+      <div class="sample-switcher" data-sample-switcher>
+        <div class="sample-tabs" role="tablist" aria-label="Sample research stages">
+          <button type="button" role="tab" aria-selected="true" aria-controls="sample-evidence" id="tab-evidence" data-sample-tab="evidence">1. Evidence</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="sample-connections" id="tab-connections" data-sample-tab="connections">2. Connections</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="sample-insight" id="tab-insight" data-sample-tab="insight">3. Insight</button>
         </div>
-        <p class="lede">Every format begins with the same research case. Convert it later without starting the evidence work again.</p>
+        <div class="sample-panel" id="sample-evidence" role="tabpanel" aria-labelledby="tab-evidence" data-sample-panel="evidence">
+          <span class="evidence-level established">Established</span>
+          <h3>Japan is ageing rapidly.</h3>
+          <p>Japan’s Statistical Handbook reports that people aged 65 and over were 29.3% of the population in 2024 and projects 38.7% by 2070.</p>
+          <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Inspect the Statistics Bureau source, page 28</a>
+        </div>
+        <div class="sample-panel" id="sample-connections" role="tabpanel" aria-labelledby="tab-connections" data-sample-panel="connections" hidden>
+          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
+          <h3>Ageing can change saving and cross-border asset allocation.</h3>
+          <p>A 2024 Bank of Japan research note, with explicit model caveats, finds that longer lives can raise aggregate saving and push the current account toward surplus. U.S. Treasury survey data separately show Japan held $1.024 trillion in long-term U.S. Treasuries at June 2025.</p>
+          <div class="inline-links"><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Inspect the BOJ analysis</a><a href="https://home.treasury.gov/news/press-releases/sb0482">Inspect the Treasury survey</a></div>
+        </div>
+        <div class="sample-panel" id="sample-insight" role="tabpanel" aria-labelledby="tab-insight" data-sample-panel="insight" hidden>
+          <span class="evidence-level hypothesis">Plausible hypothesis</span>
+          <h3>The market signal may show up in hedging behavior before headline Treasury holdings.</h3>
+          <p>BOJ evidence shows Japanese insurers reduced currency-hedged foreign bonds when hedging costs rose. That makes hedge ratios and FX-swap costs a useful early research branch—but the demographic-to-hedging chain is not established by these sources alone.</p>
+          <div class="sample-next"><strong>Next check</strong><span>Compare insurer hedge ratios, net Treasury purchases, and demographic saving measures over the same periods.</span></div>
+          <a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Inspect the BOJ Financial System Report, page 28</a>
+        </div>
       </div>
-      <div class="outcome-grid">
-        <article class="outcome">
-          <span class="outcome-number">01 / BRIEF</span>
-          <h3>Know the bottom line.</h3>
-          <p>Decide what is worth your attention before you consume a long source.</p>
-          <ul><li>Consumption verdict</li><li>Priority claims</li><li>Exact source navigation</li></ul>
-        </article>
-        <article class="outcome">
-          <span class="outcome-number">02 / RESEARCH</span>
-          <h3>Make the case.</h3>
-          <p>Turn an open question into a defensible report with competing evidence intact.</p>
-          <ul><li>Executive synthesis</li><li>Claim ledger</li><li>Gaps and qualifications</li></ul>
-        </article>
-        <article class="outcome">
-          <span class="outcome-number">03 / SCRIPT</span>
-          <h3>Record with confidence.</h3>
-          <p>Move from premise to factual narrative without separating research from the draft.</p>
-          <ul><li>Timed structure</li><li>Narration and visual notes</li><li>Evidence markers in context</li></ul>
-        </article>
-      </div>
+      <p class="sample-disclosure">No generated quotations. No invented evidence IDs. Every factual statement above links to the published source; the causal leap stays visible as a hypothesis.</p>
     </section>
 
-    <section class="section section-rule" aria-labelledby="method-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">How a case moves</p>
-          <h2 id="method-heading">From source to something finished.</h2>
-        </div>
-        <p class="lede">Markov does not hide the middle. Each job exposes meaningful stages and preserves what the evidence cannot settle.</p>
-      </div>
-      <div class="flow">
-        <article class="flow-step"><h3>Give it a starting point</h3><p>A public URL, source, question, or premise.</p></article>
-        <article class="flow-step"><h3>Extract the claims</h3><p>Priority statements become addressable research objects.</p></article>
-        <article class="flow-step"><h3>Test the evidence</h3><p>Supporting, qualifying, and contradicting passages stay attached.</p></article>
-        <article class="flow-step"><h3>Finish the artifact</h3><p>Read, export, convert, deepen, revise, or route for review.</p></article>
-      </div>
-    </section>
-
-    <section class="section section-rule" aria-labelledby="doors-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">One system, two doors</p>
-          <h2 id="doors-heading">A workspace for people. An API for agents.</h2>
-        </div>
-        <p class="lede">Both interfaces operate on the same case IDs, job state, evidence, costs, artifacts, and review trail.</p>
-      </div>
-      <div class="door-grid">
-        <article class="door">
-          <p class="door-kicker">MARKOV WORKSPACE</p>
-          <h3>The calm evidence desk.</h3>
-          <p>Follow the work, read the finished document with evidence beside it, and decide the next editorial move.</p>
-          <ul><li>Projects and processing timeline</li><li>Document reader and claim ledger</li><li>Export, convert, deepen, and revise</li></ul>
-          <a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Open Markov</a>
-        </article>
-        <article class="door">
-          <p class="door-kicker">MARKOV API</p>
-          <h3>Research your agents can inspect.</h3>
-          <p>Submit asynchronous jobs, consume stage events, retrieve structured claims and evidence, and receive webhooks.</p>
-          <ul><li>Idempotent job submission</li><li>Machine-readable cases and artifacts</li><li>Shared credits and owner boundaries</li></ul>
-          <a class="button button-secondary" href="/markov-engine/developers/">Read the API guide</a>
-        </article>
-      </div>
-    </section>
-
-    <section class="section section-rule" aria-labelledby="fit-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Useful boundaries</p>
-          <h2 id="fit-heading">Built for factual work with consequences.</h2>
-        </div>
-        <p class="lede">Specificity is part of the trust contract. Markov is excellent at a narrower job—not every kind of writing.</p>
-      </div>
-      <div class="fit-grid">
-        <div class="fit-list">
-          <h3>Best for</h3>
-          <ul><li>Factual creators and editorial teams</li><li>Analysts, consultants, and operators</li><li>Research-led policy, marketing, and communications</li><li>Developers building evidence-aware agents</li></ul>
-        </div>
-        <div class="fit-list not-for">
-          <h3>Not designed for</h3>
-          <ul><li>Fiction, ad concepts, or generic content volume</li><li>A chatbot answer without a source trail</li><li>Academic ghostwriting</li><li>Sources Markov cannot lawfully inspect</li></ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="closing" aria-labelledby="closing-heading">
-      <div class="closing-inner">
-        <p class="eyebrow">A finished case, not another answer</p>
-        <h2 id="closing-heading">Know what holds up, what does not, and what you can ship now.</h2>
-        <p class="lede">Start in the workspace, or inspect the product before you sign in.</p>
-        <div class="button-row"><a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Open Markov</a><a class="button button-secondary" href="/markov-engine/sample/">See a finished case</a></div>
-      </div>
+    <section class="v2-section two-doors" aria-labelledby="doors-title">
+      <div><p class="plain-kicker">For people</p><h2 id="doors-title">Work in a calm, inspectable workspace.</h2><p>Read the artifact, open a connection, follow or dismiss it, and revise without losing the source trail.</p><a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Run Markov</a></div>
+      <div><p class="plain-kicker">For software and agents</p><h2>Use the same graph through the API.</h2><p>Submit asynchronous jobs and retrieve claims, connections, paths, insights, artifacts, and branch decisions as structured data.</p><a href="/markov-engine/developers/">Read the API guide</a></div>
     </section>
   </main>
   <footer class="public-footer">
   <div class="footer-inner">
     <div>
       <a class="wordmark" href="/markov-engine/">MARKOV</a>
-      <p class="fine">Evidence-to-output infrastructure for people and agents.</p>
+      <p class="fine">Start anywhere. Follow the idea. Make something original.</p>
     </div>
     <nav class="footer-links" aria-label="Footer navigation">
-      <a href="/markov-engine/sample/">Finished case</a>
+      <a href="/markov-engine/sample/">Real sample</a>
       <a href="/markov-engine/developers/">API</a>
       <a href="https://github.com/Okohedeki/markov-engine#api-quick-start">API reference</a>
       <a href="https://github.com/Okohedeki/markov-engine">Repository</a>
