@@ -22,9 +22,17 @@
     const route = (phrase, steps, options = {}) => ({ phrase, steps, ...options });
     const examples = {
       japan: {
-        sourceLabel: 'Japan–Treasury thesis',
-        startCopy: 'You started with a market thesis.',
+        sourceLabel: 'YouTube video',
+        startCopy: 'You started with a video.',
         sentenceText: 'Japan’s aging population could force it to sell U.S. Treasuries.',
+        defaultRoute: 'force',
+        scriptOpening: 'Japan may not dump Treasuries overnight. The quieter mechanism could matter more.',
+        media: {
+          kind: 'youtube',
+          title: 'Japan’s Ageing And Shrinking Population',
+          meta: 'YouTube · Oxford research talk',
+          embed: 'https://www.youtube-nocookie.com/embed/nlBqZ74_Jbo',
+        },
         sources: [
           ['Statistical Handbook of Japan 2025', 'Aging population', 'https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf'],
           ['Bank of Japan Financial System Report', 'Institutional portfolio conditions', 'https://www.boj.or.jp/en/research/brp/fsr/index.htm'],
@@ -58,6 +66,10 @@
             ['Hidden intermediary', 'Who makes the allocation decision?', 'Insurer portfolio committees'],
             ['Consequence', 'What could happen next?', 'Reduced demand for foreign bonds', 'Stronger interpretation', 'evidence'],
           ], {
+            branches: [
+              ['Sudden forced selloff', 'Needs more evidence', ''],
+              ['Gradual portfolio repricing', 'Stronger path', 'strong'],
+            ],
             note: 'The original sentence skips four steps between demographics and Treasury selling.',
             evidence: ['Inspect the BOJ Financial System Report, page 28', 'https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf'],
             angle: 'The real risk may be gradual portfolio repricing driven by Japanese rates and currency-hedging economics.',
@@ -83,9 +95,17 @@
         },
       },
       nuclear: {
-        sourceLabel: 'Nuclear timeline claim',
-        startCopy: 'You started with a climate argument.',
+        sourceLabel: 'IEA analysis',
+        startCopy: 'You started with an article.',
         sentenceText: 'Nuclear power is too slow to matter for near-term climate targets.',
+        defaultRoute: 'targets',
+        scriptOpening: 'The nuclear argument is framed as a race. The real constraint is the order in which replacement capacity arrives.',
+        media: {
+          kind: 'article',
+          title: 'Nuclear Power in a Clean Energy System',
+          meta: 'IEA analysis · saved article',
+          detail: 'Long lead times, lifetime extensions, and near-term emissions targets',
+        },
         sources: [
           ['IEA: Nuclear Power in a Clean Energy System', 'Lead times, investment, and life extensions', 'https://www.iea.org/reports/nuclear-power-in-a-clean-energy-system'],
           ['IAEA Power Reactor Information System', 'Reactor milestones and operating history', 'https://pris.iaea.org/pris/'],
@@ -136,6 +156,14 @@
         sourceLabel: 'TikTok claim',
         startCopy: 'You started with 10 seconds.',
         sentenceText: 'Remote work is quietly hollowing out city tax bases.',
+        defaultRoute: 'hollowing',
+        scriptOpening: 'The offices emptied first. The fiscal shock may not arrive until years later.',
+        media: {
+          kind: 'tiktok',
+          title: 'Remote work is hollowing out city tax bases',
+          meta: 'TikTok · 00:10 saved clip',
+          detail: 'A fast claim with the causal steps still missing',
+        },
         sentence: [
           { route: 'remote', text: 'Remote work' }, ' is quietly ',
           { route: 'hollowing', text: 'hollowing out' }, ' ',
@@ -181,6 +209,14 @@
         sourceLabel: 'PDF finding',
         startCopy: 'You started with a paper.',
         sentenceText: 'Heat pumps can reduce household emissions even on today’s grid.',
+        defaultRoute: 'reduce',
+        scriptOpening: 'A heat pump is not automatically clean. Its value changes hour by hour with the fuel it replaces and the power it draws.',
+        media: {
+          kind: 'pdf',
+          title: 'Heat pumps and household emissions',
+          meta: 'PDF · page 18 saved',
+          detail: 'Seasonal performance, marginal power, and the displaced heating fuel',
+        },
         sentence: [
           { route: 'pumps', text: 'Heat pumps' }, ' can ',
           { route: 'reduce', text: 'reduce household emissions' }, ' even on ',
@@ -223,9 +259,17 @@
         },
       },
       glp1: {
-        sourceLabel: 'GLP-1 demand claim',
-        startCopy: 'You started with a consumer claim.',
+        sourceLabel: 'Podcast excerpt',
+        startCopy: 'You started with a podcast.',
         sentenceText: 'Weight-loss drugs may reshape more than healthcare spending.',
+        defaultRoute: 'reshape',
+        scriptOpening: 'Weight-loss drugs may be a consumer-demand shock hiding inside a healthcare story.',
+        media: {
+          kind: 'audio',
+          title: 'The second-order effects of GLP-1 drugs',
+          meta: 'Podcast · 31:42 saved moment',
+          detail: 'Food demand, adherence, access, and downstream industries',
+        },
         sources: [
           ['JAMA: Consumer Food Purchases After GLP-1 Initiation', 'Observed changes in supermarket baskets', 'https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2844224'],
           ['Marketing Science: The No-Hunger Games', 'Household grocery and restaurant spending', 'https://journals.sagepub.com/doi/10.1177/00222437251412834'],
@@ -276,6 +320,14 @@
         sourceLabel: 'Plain question',
         startCopy: 'You started with a question.',
         sentenceText: 'What happens when insurance stops pricing climate risk as temporary?',
+        defaultRoute: 'pricing',
+        scriptOpening: 'Climate risk enters the housing market before the disaster—through the price and availability of insurance.',
+        media: {
+          kind: 'question',
+          title: 'What happens when insurance stops pricing climate risk as temporary?',
+          meta: 'Question · captured in Markov',
+          detail: 'A starting point for a new research chain',
+        },
         sentence: [
           'What happens when ', { route: 'insurance', text: 'insurance' }, ' stops ',
           { route: 'pricing', text: 'pricing climate risk' }, ' as ',
@@ -345,10 +397,14 @@
     const storyFields = {
       start: document.querySelector('[data-story-start]'),
       seed: document.querySelector('[data-story-seed]'),
-      sources: document.querySelector('[data-story-sources]'),
+      sourceArtifact: document.querySelector('[data-story-source-artifact]'),
+      mechanismNodes: document.querySelector('[data-story-mechanism-nodes]'),
       mechanism: document.querySelector('[data-story-mechanism]'),
+      comparisonRows: document.querySelector('[data-story-comparison-rows]'),
       comparison: document.querySelector('[data-story-comparison]'),
       angle: document.querySelector('[data-story-angle]'),
+      report: document.querySelector('[data-story-report]'),
+      script: document.querySelector('[data-story-script]'),
       destination: document.querySelector('[data-destination-source]'),
     };
 
@@ -359,33 +415,84 @@
       angleActions.hidden = true;
     };
 
+    const renderSourceArtifact = (media) => {
+      const mediaId = `${media.kind}:${media.title}`;
+      if (storyFields.sourceArtifact.dataset.mediaId === mediaId) return;
+      storyFields.sourceArtifact.replaceChildren();
+      storyFields.sourceArtifact.dataset.mediaId = mediaId;
+      if (media.kind === 'youtube') {
+        const frame = document.createElement('iframe');
+        frame.loading = 'lazy';
+        frame.src = media.embed;
+        frame.title = `${media.title} — ${media.meta}`;
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        frame.allowFullscreen = true;
+        storyFields.sourceArtifact.append(frame);
+      } else {
+        const preview = document.createElement('div');
+        preview.className = `source-preview is-${media.kind}`;
+        const kind = document.createElement('span');
+        kind.className = 'source-preview-kind';
+        kind.textContent = media.kind;
+        const title = document.createElement('strong');
+        title.textContent = media.title;
+        const detail = document.createElement('p');
+        detail.textContent = media.detail;
+        preview.append(kind, title, detail);
+        storyFields.sourceArtifact.append(preview);
+      }
+      const caption = document.createElement('div');
+      caption.className = 'source-artifact-caption';
+      const title = document.createElement('strong');
+      title.textContent = media.title;
+      const meta = document.createElement('small');
+      meta.textContent = media.meta;
+      caption.append(title, meta);
+      storyFields.sourceArtifact.append(caption);
+    };
+
+    const renderMechanismArtifact = (selected) => {
+      storyFields.mechanismNodes.replaceChildren();
+      selected.steps.forEach((step) => {
+        const item = document.createElement('li');
+        item.textContent = step[2];
+        storyFields.mechanismNodes.append(item);
+      });
+    };
+
+    const renderComparisonArtifact = (selected) => {
+      storyFields.comparisonRows.replaceChildren();
+      const finalStep = selected.steps[selected.steps.length - 1];
+      const rows = selected.branches || [
+        [finalStep[2], finalStep[3] || 'Plausible path', 'strong'],
+        ['Alternative explanation retained', 'Still open', ''],
+      ];
+      rows.forEach((row) => {
+        const item = document.createElement('p');
+        item.classList.toggle('is-strong', row[2] === 'strong');
+        const title = document.createElement('strong');
+        title.textContent = row[0];
+        const state = document.createElement('span');
+        state.textContent = row[1];
+        item.append(title, state);
+        storyFields.comparisonRows.append(item);
+      });
+    };
+
     const updateStory = (selected) => {
       const example = examples[sourceKey];
+      const resolved = selected || example.routes[example.defaultRoute] || Object.values(example.routes)[0];
       storyFields.start.textContent = example.startCopy;
       storyFields.seed.textContent = example.sentenceText;
       storyFields.destination.textContent = example.sourceLabel;
-      storyFields.sources.replaceChildren();
-      example.sources.forEach(([title, context, url]) => {
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noreferrer';
-        const name = document.createElement('strong');
-        name.textContent = title;
-        const detail = document.createElement('small');
-        detail.textContent = context;
-        link.append(name, detail);
-        storyFields.sources.append(link);
-      });
-      if (!selected) {
-        storyFields.mechanism.textContent = 'Choose an underlined phrase to expose the skipped steps.';
-        storyFields.comparison.textContent = 'Support, weakness, and alternative explanations stay separate.';
-        storyFields.angle.textContent = 'The conclusion cannot outrank its weakest essential connection.';
-        return;
-      }
-      storyFields.mechanism.textContent = selected.mechanism;
-      storyFields.comparison.textContent = selected.comparison;
-      storyFields.angle.textContent = selected.angle;
+      renderSourceArtifact(example.media);
+      renderMechanismArtifact(resolved);
+      renderComparisonArtifact(resolved);
+      storyFields.mechanism.textContent = resolved.mechanism;
+      storyFields.comparison.textContent = resolved.comparison;
+      storyFields.angle.textContent = resolved.angle;
+      storyFields.report.textContent = resolved.comparison;
+      storyFields.script.textContent = example.scriptOpening;
     };
 
     const revealAngle = (selected) => {

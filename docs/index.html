@@ -64,12 +64,15 @@
 
       <p class="idea-promise">Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain—explaining what matters, checking the evidence, uncovering hidden connections, and carrying the strongest insight into a brief, report, or script.</p>
 
-      <div class="source-switcher" aria-label="Try another starting claim" data-source-switcher>
-        <span>Three starting stories</span>
+      <div class="source-switcher" aria-label="Try another source format" data-source-switcher>
+        <span>Start from anywhere</span>
         <div>
-          <button type="button" data-source="japan" aria-pressed="true">Japan + Treasuries</button>
-          <button type="button" data-source="glp1" aria-pressed="false">GLP-1 + food demand</button>
-          <button type="button" data-source="nuclear" aria-pressed="false">Nuclear + climate</button>
+          <button type="button" data-source="japan" aria-pressed="true">YouTube</button>
+          <button type="button" data-source="tiktok" aria-pressed="false">TikTok</button>
+          <button type="button" data-source="nuclear" aria-pressed="false">Articles</button>
+          <button type="button" data-source="pdf" aria-pressed="false">PDFs</button>
+          <button type="button" data-source="glp1" aria-pressed="false">Audio</button>
+          <button type="button" data-source="question" aria-pressed="false">Questions</button>
         </div>
       </div>
     </section>
@@ -79,27 +82,30 @@
       <ol class="story-line">
         <li class="idea-story-step is-current">
           <span class="story-number">01</span>
-          <div class="story-action"><p data-story-start>You started with a market thesis.</p><strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong></div>
-          <div class="story-what"><span>Collected sources</span><div class="story-sources" data-story-sources>
-            <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf"><strong>Statistical Handbook of Japan 2025</strong><small>Aging population</small></a>
-            <a href="https://www.boj.or.jp/en/research/brp/fsr/index.htm"><strong>Bank of Japan Financial System Report</strong><small>Institutional portfolio conditions</small></a>
-            <a href="https://ticdata.treasury.gov/Publish/slt_table5.html"><strong>U.S. Treasury TIC holdings table</strong><small>Observed Japanese Treasury holdings</small></a>
+          <div class="story-action"><p data-story-start>You started with a video.</p><strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong></div>
+          <div class="story-what"><span>Source captured</span><div class="source-artifact" data-story-source-artifact data-media-id="youtube:Japan’s Ageing And Shrinking Population">
+            <iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/nlBqZ74_Jbo" title="Japan's Ageing And Shrinking Population — Oxford research talk" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <div class="source-artifact-caption"><strong>Japan’s Ageing And Shrinking Population</strong><small>YouTube · Oxford research talk</small></div>
           </div></div>
         </li>
         <li class="idea-story-step">
           <span class="story-number">02</span>
           <div class="story-action"><p>Markov found the missing mechanism.</p></div>
-          <div class="story-what"><span>What changed</span><strong data-story-mechanism>Choose an underlined phrase to expose the skipped steps.</strong></div>
+          <div class="story-what"><span>Mechanism artifact</span><div class="mechanism-artifact"><ol data-story-mechanism-nodes><li>Higher Japanese yields</li><li>Currency-hedging costs</li><li>Insurer portfolio committees</li><li>Reduced demand for foreign bonds</li></ol><strong data-story-mechanism>The pressure runs through relative yields, hedge costs, and insurer portfolio rules—not through demography alone.</strong></div></div>
         </li>
         <li class="idea-story-step">
           <span class="story-number">03</span>
           <div class="story-action"><p>Markov compared competing paths.</p></div>
-          <div class="story-what"><span>What survived</span><strong data-story-comparison>Support, weakness, and alternative explanations stay separate.</strong></div>
+          <div class="story-what"><span>Comparison artifact</span><div class="comparison-artifact"><div data-story-comparison-rows><p><strong>Sudden forced selloff</strong><span>Needs more evidence</span></p><p class="is-strong"><strong>Gradual portfolio repricing</strong><span>Stronger path</span></p></div><small data-story-comparison>A sudden forced selloff needs more evidence; gradual repricing has the stronger mechanism.</small></div></div>
         </li>
         <li class="idea-story-step">
           <span class="story-number">04</span>
           <div class="story-action"><p>Markov produced a stronger idea.</p></div>
-          <div class="story-what"><span>What you can use</span><strong data-story-angle>The conclusion cannot outrank its weakest essential connection.</strong></div>
+          <div class="story-what"><span>Finished artifacts</span><div class="output-artifacts">
+            <article><span>Brief</span><strong>Bottom line</strong><p data-story-angle>Watch hedging demand and portfolio repricing before treating aggregate holdings as the leading signal.</p></article>
+            <article><span>Report</span><strong>Finding</strong><p data-story-report>The forced-sale story is dramatic; the gradual-demand story is more defensible and observable.</p></article>
+            <article><span>Script</span><strong>Opening</strong><p data-story-script>Japan may not dump Treasuries overnight. The quieter mechanism could matter more.</p></article>
+          </div></div>
         </li>
       </ol>
     </section>
@@ -135,16 +141,6 @@
         <li><span>03</span><strong>Review and decide</strong><p>Inspect passages, challenge weak links, and choose which branches deserve more work.</p></li>
         <li><span>04</span><strong>Edit and create</strong><p>Refine briefs, reports, scripts, and answers without losing their research trail.</p></li>
       </ol>
-      <div class="platform-bridge">
-        <div><span>For people</span><strong>A calm web app for research, review, and creation.</strong></div>
-        <div><span>For agents</span><strong>The same structured chains, evidence, and outputs through the Markov API.</strong></div>
-      </div>
-      <p class="mobile-handoff"><strong>Find something while browsing on your phone?</strong> Send it to Markov. It syncs into your web workspace, where the full chain is researched, reviewed, stored, and turned into finished work.</p>
-      <div class="product-actions">
-        <a href="/markov-engine/sample/">See the product demo <span aria-hidden="true">→</span></a>
-        <a href="/markov-engine/pricing/">View pricing</a>
-        <a href="/markov-engine/developers/">Build with the API</a>
-      </div>
     </section>
 
     <section class="late-intake" id="access" aria-labelledby="intake-title">
@@ -156,6 +152,19 @@
         <button type="submit">See the product demo</button>
       </form>
       <p>This preview demonstrates the research journey. Account access is enabled in the deployable web application.</p>
+    </section>
+
+    <section class="post-intake-section" aria-label="Markov access options">
+      <div class="platform-bridge">
+        <div><span>For people</span><strong>A calm web app for research, review, and creation.</strong></div>
+        <div><span>For agents</span><strong>The same structured chains, evidence, and outputs through the Markov API.</strong></div>
+      </div>
+      <p class="mobile-handoff"><strong>Find something while browsing on your phone?</strong> Send it to Markov. It syncs into your web workspace, where the full chain is researched, reviewed, stored, and turned into finished work.</p>
+      <div class="product-actions">
+        <a href="/markov-engine/sample/">See the product demo <span aria-hidden="true">→</span></a>
+        <a href="/markov-engine/pricing/">View pricing</a>
+        <a href="/markov-engine/developers/">Build with the API</a>
+      </div>
     </section>
   </main>
 

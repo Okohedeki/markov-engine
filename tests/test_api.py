@@ -273,15 +273,22 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Catch me up" in landing.text
             assert "Explore this chain" in landing.text
             assert "Turn this angle into a script" in landing.text
-            assert "You started with a market thesis." in landing.text
+            assert "You started with a video." in landing.text
             assert "Current thread" not in landing.text
-            assert "Collected sources" in landing.text
-            assert "Statistical Handbook of Japan 2025" in landing.text
-            assert "Bank of Japan Financial System Report" in landing.text
-            assert "U.S. Treasury TIC holdings table" in landing.text
+            assert "Source captured" in landing.text
+            assert "youtube-nocookie.com/embed/nlBqZ74_Jbo" in landing.text
+            assert "Japan’s Ageing And Shrinking Population" in landing.text
             assert "Markov found the missing mechanism." in landing.text
+            assert "Mechanism artifact" in landing.text
+            assert "data-story-mechanism-nodes" in landing.text
             assert "Markov compared competing paths." in landing.text
+            assert "Comparison artifact" in landing.text
+            assert "data-story-comparison-rows" in landing.text
             assert "Markov produced a stronger idea." in landing.text
+            assert "Finished artifacts" in landing.text
+            assert "data-story-angle" in landing.text
+            assert "data-story-report" in landing.text
+            assert "data-story-script" in landing.text
             assert "One living chain, from first source to original work." in landing.text
             assert landing.text.count("Made for original work") == 1
             assert "Do not start the next piece" not in landing.text
@@ -296,9 +303,14 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "For agents" in landing.text
             assert "It syncs into your web workspace" in landing.text
             assert "What do you want to understand—or make?" in landing.text
-            for source_story in ("japan", "glp1", "nuclear"):
+            assert landing.text.index('id="intake-title"') < landing.text.index(
+                'class="post-intake-section"'
+            )
+            for source_story in ("japan", "tiktok", "nuclear", "pdf", "glp1", "question"):
                 assert f'data-source="{source_story}"' in landing.text
-            assert landing.text.count("data-source=") == 3
+            assert landing.text.count("data-source=") == 6
+            for source_label in ("YouTube", "TikTok", "Articles", "PDFs", "Audio", "Questions"):
+                assert f">{source_label}</button>" in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             assert "dashboard screenshot" not in landing.text.lower()
@@ -343,11 +355,18 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "event.key !== 'Escape'" in javascript.text
             assert "aria-expanded" in javascript.text
             assert "markov.pendingSource" in javascript.text
-            assert "You started with a market thesis." in javascript.text
-            assert "You started with a consumer claim." in javascript.text
-            assert "You started with a climate argument." in javascript.text
+            assert "You started with a video." in javascript.text
+            assert "You started with 10 seconds." in javascript.text
+            assert "You started with an article." in javascript.text
+            assert "You started with a paper." in javascript.text
+            assert "You started with a podcast." in javascript.text
+            assert "You started with a question." in javascript.text
             assert "storyFields.start.textContent = example.startCopy" in javascript.text
-            assert "storyFields.sources.replaceChildren()" in javascript.text
+            assert "renderSourceArtifact(example.media)" in javascript.text
+            assert "renderMechanismArtifact(resolved)" in javascript.text
+            assert "renderComparisonArtifact(resolved)" in javascript.text
+            assert "storyFields.report.textContent = resolved.comparison" in javascript.text
+            assert "storyFields.sources.replaceChildren()" not in javascript.text
     finally:
         await store.close()
 
