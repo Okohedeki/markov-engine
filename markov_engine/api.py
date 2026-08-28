@@ -168,7 +168,7 @@ async def _case_payload(store: SqliteStore, case_id: int, owner_id: str) -> dict
         item = _as_json(claim)
         item["evidence"] = [_as_json(link) for link in await store.list_claim_evidence(claim.id)]
         claim_payload.append(item)
-    sources = await store.list_research_case_sources(case.id)
+    sources = [dict(row) for row in await store.list_research_case_sources(case.id)]
     for source in sources:
         source["segments"] = [
             _as_json(segment) for segment in await store.list_source_segments(source["id"])

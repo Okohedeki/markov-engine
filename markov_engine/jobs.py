@@ -118,6 +118,7 @@ async def submit_job(
             owner_id=owner_id,
             original_input=value,
             mode=mode,
+            input_type=input_type,
             constraints=constraints,
         )
         job = await store.create_job(

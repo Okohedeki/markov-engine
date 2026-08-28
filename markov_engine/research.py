@@ -14,7 +14,7 @@ from markov_engine.connections import (
 )
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
-from markov_engine.extract import classify_url, extract_content
+from markov_engine.extract import classify_url, extract_content, segment_text
 from markov_engine.renderers import RenderedArtifact, render_artifact
 from markov_engine.store.records import ArtifactRec, ResearchCaseRec
 from markov_engine.store.sqlite import SqliteStore
@@ -38,9 +38,9 @@ def classify_input(value: str) -> str:
     return "topic"
 
 
-def _initial_title(value: str) -> str:
+def _initial_title(value: str, *, input_type: str | None = None) -> str:
     clean = re.sub(r"\s+", " ", value).strip()
-    if classify_input(clean) == "topic":
+    if input_type in {"text", "topic", "question"} or classify_input(clean) == "topic":
         return clean[:200] or "Untitled research case"
     host = (urlparse(clean).hostname or "Source").removeprefix("www.")
     return f"Research from {host}"[:200]
@@ -52,16 +52,23 @@ async def create_research_case(
     owner_id: str,
     original_input: str,
     mode: str,
+    input_type: str | None = None,
     constraints: dict | None = None,
 ) -> ResearchCaseRec:
     if mode not in MODE_TO_ARTIFACT:
         raise ValueError(f"Unsupported mode: {mode}")
-    input_type = classify_input(original_input)
+    declared_type = (input_type or "").strip().lower()
+    if declared_type == "url" or not declared_type:
+        resolved_input_type = classify_input(original_input)
+    elif declared_type in {"text", "topic", "question"}:
+        resolved_input_type = declared_type
+    else:
+        raise ValueError(f"Unsupported input type: {input_type}")
     case = await store.create_research_case(
         owner_id=owner_id,
-        title=_initial_title(original_input),
+        title=_initial_title(original_input, input_type=resolved_input_type),
         original_input=original_input.strip(),
-        input_type=input_type,
+        input_type=resolved_input_type,
         purpose=mode,
         constraints=constraints or {},
     )
@@ -69,7 +76,7 @@ async def create_research_case(
         owner_id=owner_id,
         event_type="source_submitted",
         research_case_id=case.id,
-        metadata={"input_type": input_type},
+        metadata={"input_type": resolved_input_type},
     )
     await store.record_usage_event(
         owner_id=owner_id,
@@ -96,15 +103,16 @@ async def _ensure_seed_source(
         if source is not None and segments:
             return source, segments
 
-    if case.input_type == "topic":
+    if case.input_type in {"topic", "question"}:
+        section_title = "Research question"
         source = await store.add_source(
             url=None,
             title=case.title,
-            source_type="topic",
+            source_type=case.input_type,
             content_text=case.original_input,
             summary="Customer research question",
             is_note=True,
-            metadata={"input_type": "topic"},
+            metadata={"input_type": case.input_type},
         )
         segments = await store.add_source_segments(
             source_id=source.id,
@@ -112,7 +120,7 @@ async def _ensure_seed_source(
                 {
                     "ordinal": 0,
                     "text": case.original_input,
-                    "section_title": "Research question",
+                    "section_title": section_title,
                     "character_start": 0,
                     "character_end": len(case.original_input),
                 }
@@ -133,8 +141,46 @@ async def _ensure_seed_source(
         await store.record_cost(
             research_case_id=case.id,
             provider="extraction",
-            operation="topic_seed",
+            operation=f"{case.input_type}_seed",
             units=1,
+            cost=0,
+        )
+        return source, segments
+
+    if case.input_type == "text":
+        extracted_segments = segment_text(case.original_input)
+        if not extracted_segments:
+            raise RuntimeError("Text source produced no stable segments")
+        source = await store.add_source(
+            url=None,
+            title=case.title,
+            source_type="text",
+            content_text=case.original_input,
+            summary="Customer-provided source text",
+            is_note=True,
+            metadata={"input_type": "text"},
+        )
+        segments = await store.add_source_segments(
+            source_id=source.id,
+            segments=[segment.as_dict() for segment in extracted_segments],
+        )
+        await store.update_source_provenance(
+            source.id,
+            source_role="seed",
+            source_quality="customer_source",
+            source_quality_rationale=(
+                "Customer-provided source text; its claims require independent evidence."
+            ),
+        )
+        await store.add_research_case_source(
+            research_case_id=case.id, source_id=source.id, source_role="seed"
+        )
+        await store.update_research_case(case.id, status="extracting_claims")
+        await store.record_cost(
+            research_case_id=case.id,
+            provider="extraction",
+            operation="text_segments",
+            units=len(segments),
             cost=0,
         )
         return source, segments
@@ -204,7 +250,7 @@ async def _ensure_claims(
     existing = await store.list_claims(case.id)
     if existing:
         return existing
-    if case.input_type == "topic":
+    if case.input_type in {"topic", "question"}:
         claim = await store.add_claim(
             research_case_id=case.id,
             seed_source_id=seed_source.id,

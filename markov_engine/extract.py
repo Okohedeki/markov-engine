@@ -261,6 +261,82 @@ def _plain_segments(
     )
 
 
+def segment_text(text: str, *, max_chars: int = 1600) -> list[ExtractedSegment]:
+    """Split customer-provided text into stable, addressable source segments.
+
+    Paragraph boundaries are preserved whenever possible. Oversized paragraphs
+    are split on sentence boundaries, then on the configured character ceiling
+    as a last resort. Character offsets always address the original trimmed
+    input; segment text only normalizes internal whitespace for analysis.
+    """
+    if max_chars < 256:
+        raise ValueError("max_chars must be at least 256")
+    clean = (text or "").strip()
+    if not clean:
+        return []
+
+    spans: list[tuple[int, int, str | None]] = []
+    section_title: str | None = None
+    paragraphs = list(
+        re.finditer(r"\S(?:.*?\S)?(?=\r?\n[ \t]*\r?\n|\Z)", clean, re.DOTALL)
+    )
+    for paragraph in paragraphs:
+        raw = paragraph.group(0)
+        heading = re.fullmatch(r"[ \t]*#{1,6}[ \t]+(.+?)[ \t]*", raw)
+        if heading:
+            section_title = re.sub(r"\s+", " ", heading.group(1)).strip()
+            continue
+        start = paragraph.start()
+        end = paragraph.end()
+        if end - start <= max_chars:
+            spans.append((start, end, section_title))
+            continue
+
+        sentence_matches = list(
+            re.finditer(r"\S(?:.*?\S)?(?:[.!?](?=\s+|\Z)|\Z)", raw, re.DOTALL)
+        )
+        cursor = 0
+        while cursor < len(sentence_matches):
+            first = sentence_matches[cursor]
+            chunk_start = first.start()
+            chunk_end = first.end()
+            cursor += 1
+            while cursor < len(sentence_matches):
+                candidate_end = sentence_matches[cursor].end()
+                if candidate_end - chunk_start > max_chars:
+                    break
+                chunk_end = candidate_end
+                cursor += 1
+            if chunk_end - chunk_start <= max_chars:
+                spans.append((start + chunk_start, start + chunk_end, section_title))
+                continue
+            # A single sentence can exceed the ceiling. Preserve exact offsets
+            # while splitting it into bounded, whitespace-aligned slices.
+            slice_start = chunk_start
+            while slice_start < chunk_end:
+                slice_end = min(slice_start + max_chars, chunk_end)
+                if slice_end < chunk_end:
+                    boundary = raw.rfind(" ", slice_start, slice_end)
+                    if boundary > slice_start:
+                        slice_end = boundary
+                spans.append((start + slice_start, start + slice_end, section_title))
+                slice_start = slice_end
+                while slice_start < chunk_end and raw[slice_start].isspace():
+                    slice_start += 1
+
+    return [
+        ExtractedSegment(
+            ordinal=ordinal,
+            text=re.sub(r"\s+", " ", clean[start:end]).strip(),
+            section_title=title,
+            character_start=start,
+            character_end=end,
+        )
+        for ordinal, (start, end, title) in enumerate(spans)
+        if clean[start:end].strip()
+    ]
+
+
 def _parse_json3_segments(
     payload: str | dict, *, caption_source: str
 ) -> list[ExtractedSegment]:
