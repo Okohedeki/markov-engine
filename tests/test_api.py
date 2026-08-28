@@ -278,10 +278,12 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Source captured" in landing.text
             assert "youtube-nocookie.com/embed/nlBqZ74_Jbo" in landing.text
             assert "Japan’s Ageing And Shrinking Population" in landing.text
-            assert "Markov found the missing mechanism." in landing.text
+            assert "Markov started a chain." in landing.text
+            assert "Markov found the missing mechanism." not in landing.text
             assert "Mechanism artifact" in landing.text
             assert "data-story-mechanism-nodes" in landing.text
-            assert "Markov compared competing paths." in landing.text
+            assert "Markov absorbed the chains." in landing.text
+            assert "Markov compared competing paths." not in landing.text
             assert "Comparison artifact" in landing.text
             assert "data-story-comparison-rows" in landing.text
             assert "Markov produced a stronger idea." in landing.text
@@ -299,6 +301,17 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Store and connect" in landing.text
             assert "Review and decide" in landing.text
             assert "Edit and create" in landing.text
+            assert "The chain ends in work you can actually use." in landing.text
+            assert "MARKOV BRIEF" in landing.text
+            assert "MARKOV RESEARCH REPORT" in landing.text
+            assert "MARKOV SCRIPT" in landing.text
+            assert "4 PUBLISHED SOURCES" in landing.text
+            assert "What would change the conclusion" in landing.text
+            assert "READY TO RECORD" in landing.text
+            assert "Open the full evidence-linked sample" in landing.text
+            assert landing.text.index('id="artifact-proof-title"') < landing.text.index(
+                'id="intake-title"'
+            )
             assert "For people" in landing.text
             assert "For agents" in landing.text
             assert "It syncs into your web workspace" in landing.text

@@ -924,6 +924,7 @@ body.landing-page {
 .destination-section,
 .use-case-section,
 .product-section,
+.artifact-proof-section,
 .late-intake,
 .post-intake-section,
 .idea-footer {
@@ -1366,6 +1367,7 @@ body.landing-page {
 .destination-section,
 .use-case-section,
 .product-section,
+.artifact-proof-section,
 .late-intake {
   border-top: 1px solid var(--line);
   padding-bottom: clamp(100px, 14vh, 160px);
@@ -1375,6 +1377,7 @@ body.landing-page {
 .destination-section > h2,
 .use-case-section h2,
 .product-section h2,
+.artifact-proof-section h2,
 .late-intake h2 {
   font-size: clamp(2.4rem, 5vw, 5rem);
   font-weight: 570;
@@ -1472,6 +1475,65 @@ body.landing-page {
 .workspace-capabilities strong { font-size: 1rem; }
 .workspace-capabilities p { color: var(--muted); font-size: .8rem; line-height: 1.55; margin: 0; }
 
+.artifact-proof-heading {
+  align-items: end;
+  display: grid;
+  gap: 2rem clamp(40px, 8vw, 110px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, .58fr);
+}
+.artifact-proof-heading h2 { margin-top: 1.1rem; }
+.artifact-proof-heading > p { color: var(--ink-soft); font-size: .85rem; line-height: 1.65; margin: 0 0 .4rem; max-width: 480px; }
+
+.artifact-reader {
+  border-bottom: 1px solid var(--line-strong);
+  border-top: 1px solid var(--line-strong);
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  margin-top: clamp(58px, 9vh, 96px);
+}
+.artifact-proof-tabs { border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 1.2rem 0; }
+.artifact-proof-tabs button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  color: var(--muted);
+  display: grid;
+  font-size: .76rem;
+  font-weight: 680;
+  gap: .75rem;
+  grid-template-columns: 24px minmax(0, 1fr);
+  min-height: 58px;
+  padding: .8rem 1.1rem;
+  text-align: left;
+}
+.artifact-proof-tabs button:hover { background: transparent; color: var(--ink); }
+.artifact-proof-tabs button[aria-selected="true"] { border-left-color: var(--signal); color: var(--ink); }
+.artifact-proof-tabs button span { color: var(--muted); font-size: .58rem; font-weight: 740; }
+
+.artifact-proof-panel { min-height: 690px; padding: clamp(2rem, 5vw, 4.8rem); }
+.artifact-proof-meta { color: var(--muted); display: flex; flex-wrap: wrap; font-size: .6rem; font-weight: 720; gap: .65rem 1.2rem; letter-spacing: .06em; }
+.artifact-proof-panel h3 { font-size: clamp(2rem, 4.4vw, 4.2rem); font-weight: 560; letter-spacing: -.05em; line-height: 1.03; margin: 1.4rem 0 1.2rem; max-width: 850px; }
+.artifact-proof-deck { color: var(--ink-soft); font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6; margin: 0; max-width: 850px; }
+.artifact-proof-body { display: grid; gap: clamp(32px, 6vw, 80px); grid-template-columns: minmax(0, 1fr) minmax(190px, .34fr); margin-top: clamp(40px, 7vh, 72px); }
+.artifact-proof-body section { border-top: 1px solid var(--line); padding: 1.1rem 0; }
+.artifact-proof-body section > span,
+.artifact-proof-rail > span { color: var(--signal); display: block; font-size: .6rem; font-weight: 750; letter-spacing: .07em; margin-bottom: .6rem; text-transform: uppercase; }
+.artifact-proof-body section p,
+.artifact-proof-body section li { color: var(--ink-soft); font-size: .8rem; line-height: 1.6; }
+.artifact-proof-body section p { margin: 0; }
+.artifact-proof-body section p + p { margin-top: .7rem; }
+.artifact-proof-body section ul { margin: 0; padding-left: 1.1rem; }
+.artifact-proof-body section li + li { margin-top: .3rem; }
+.artifact-proof-rail { border-left: 1px solid var(--line); padding-left: clamp(20px, 3vw, 38px); }
+.artifact-proof-rail > p { border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .68rem; line-height: 1.45; margin: 0; padding: .75rem 0; }
+.artifact-proof-rail > p strong { color: var(--ink); display: block; font-size: .61rem; margin-bottom: .2rem; text-transform: uppercase; }
+.script-copy > p { border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .86rem; line-height: 1.72; margin: 0; padding: 1rem 0; }
+.script-copy > p span { color: var(--signal); display: inline-block; font-size: .58rem; font-weight: 760; letter-spacing: .06em; margin-right: .65rem; min-width: 72px; vertical-align: .1em; }
+.artifact-proof-link { border-bottom: 1px solid var(--line-strong); display: inline-block; font-size: .78rem; font-weight: 680; margin-top: 1.4rem; padding: .35rem 0; text-decoration: none; }
+.artifact-proof-link:hover { border-color: var(--signal); color: var(--moss-dark); }
+
 .platform-bridge {
   display: grid;
   gap: 0;
@@ -1545,6 +1607,7 @@ body.landing-page {
   .idea-route::before { left: -44px; width: 66px; }
   .destination-map { grid-template-columns: 135px 105px minmax(0, 1fr); }
   .destination-branches a { grid-template-columns: 1fr; }
+  .artifact-reader { grid-template-columns: 140px minmax(0, 1fr); }
 }
 
 @media (max-width: 700px) {
@@ -1556,6 +1619,7 @@ body.landing-page {
   .destination-section,
   .use-case-section,
   .product-section,
+  .artifact-proof-section,
   .late-intake,
   .post-intake-section,
   .idea-footer { padding-inline: 20px; }
@@ -1595,6 +1659,17 @@ body.landing-page {
   .use-case-lines li { grid-template-columns: 1fr; }
   .workspace-capabilities li { grid-template-columns: 36px minmax(0, 1fr); }
   .workspace-capabilities li p { grid-column: 2; }
+  .artifact-proof-heading { display: block; }
+  .artifact-proof-heading > p { margin-top: 1.4rem; }
+  .artifact-reader { display: block; margin-top: 54px; }
+  .artifact-proof-tabs { border-bottom: 1px solid var(--line); border-right: 0; display: grid; grid-template-columns: repeat(3, 1fr); padding: 0; }
+  .artifact-proof-tabs button { border-bottom: 2px solid transparent; border-left: 0; display: block; min-height: 52px; padding: .7rem .4rem; text-align: center; }
+  .artifact-proof-tabs button[aria-selected="true"] { border-bottom-color: var(--signal); border-left-color: transparent; }
+  .artifact-proof-tabs button span { display: block; margin-bottom: .2rem; }
+  .artifact-proof-panel { min-height: 0; padding: 2.2rem 0; }
+  .artifact-proof-panel h3 { font-size: clamp(2rem, 10vw, 3.4rem); }
+  .artifact-proof-body { display: block; margin-top: 38px; }
+  .artifact-proof-rail { border-left: 0; border-top: 1px solid var(--line-strong); margin-top: 2rem; padding: 1.2rem 0 0; }
   .platform-bridge { grid-template-columns: 1fr; }
   .platform-bridge > div { padding-right: 0; }
   .platform-bridge > div + div { border-left: 0; padding-left: 0; }

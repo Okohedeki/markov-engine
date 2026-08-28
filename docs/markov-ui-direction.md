@@ -30,8 +30,10 @@ Applies to: public site, workspace intake, job progress, artifact reader, and AP
   articles, PDFs, audio, and questions—feeding the same research journey. The
   initial Japan and Treasury-demand example begins with a real Oxford research
   video and visibly produces a mechanism chain, a competing-path comparison,
-  and brief, report, and script artifacts. No customer, revenue, or outcome
-  claims are implied.
+  and brief, analysis, and script artifacts. A substantial output reader near
+  the final intake shows the actual sections, fact notes, caveats, competing
+  path, and ready-to-record copy a customer receives. No customer, revenue, or
+  outcome claims are implied.
 - **Product hierarchy:** Markov is a SaaS workspace for people first. The API
   exposes the same research chains to agents and programmatic services; it is a
   second access surface, not the product's identity.
@@ -166,9 +168,25 @@ showing that each becomes the same kind of inspectable research chain. Its
 four-step proof alternates the action and concrete artifact across one vertical
 line: captured source media, exposed mechanism, compared paths, and usable brief,
 report, and script excerpts. The initial YouTube path embeds the actual Oxford
-talk used as the starting source. It does not add a separate “current thread”
-status block. The people/API access bridge follows the “Your turn” intake so the
-interactive conversion remains the page's culminating action.
+talk used as the starting source. The customer-facing sequence names the two
+middle turns “Markov started a chain” and “Markov absorbed the chains,” then
+shows the full artifact reader before the final intake. It does not add a
+separate “current thread” status block. The people/API access bridge follows the
+“Your turn” intake so the interactive conversion remains the page's culminating
+action.
+
+The first production artifact packs should cover three different reasoning jobs:
+
+1. Japan's aging population, domestic yields, institutional portfolios, and
+   U.S. Treasury demand.
+2. GLP-1 drugs, food purchasing, adherence, and second-order consumer effects.
+3. Nuclear project timelines, life extensions versus new builds, and near-term
+   climate targets.
+
+Each pack should contain one downloaded video or audio clip, one primary report
+or PDF, one structured data source, and one credible competing analysis. Supplied
+files replace representative preview media without changing the chain or output
+layout.
 
 ## Application behavior
 
