@@ -3,151 +3,151 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Markov follows the ideas inside a source, validates the connections, and turns them into a useful brief, research path, or original script.">
+  <meta name="description" content="Start with anything you watched, read, heard, or wondered about. Markov explains it, checks it, follows the hidden connections, and turns the strongest insight into something finished.">
 
-  <title>Markov — Take any source past the summary</title>
+  <title>Markov — Follow the idea</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
   <script defer src="/markov-engine/static/markov.js"></script>
 </head>
-<body class="">
+<body class="landing-page">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="public-header">
-  <a class="wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
-  <nav class="public-nav" aria-label="Primary navigation">
-    <a href="/markov-engine/#product">Product</a>
-    <a href="/markov-engine/pricing/">Pricing</a>
-    <a href="/markov-engine/developers/">Developers</a>
-    <a class="button button-small button-secondary" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally</a>
-  </nav>
-</header>
-  <main class="public-main" id="main-content">
-    <section class="trail-hero">
-      <div class="trail-hero-copy">
-        <p class="plain-kicker">A source is the first node.</p>
-        <h1>Take any source past the summary.</h1>
-        <p class="v2-lede">Bring a video, post, article, paper, podcast, or question. Markov checks the claims, fills the gaps, and follows the strongest connections—so you leave with a brief, a research path, or a script you can fact-check.</p>
-        <div class="hero-actions">
-          <a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally — free and open source</a>
-          <a class="hero-sample-link" href="#trail">Walk a real source trail <span aria-hidden="true">↓</span></a>
+  <header class="idea-header">
+    <a class="idea-wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
+    <nav aria-label="Primary navigation">
+      <a href="https://github.com/Okohedeki/markov-engine">GitHub</a>
+      <a href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section class="idea-hero" data-idea-demo aria-labelledby="idea-seed">
+      <p class="idea-intro">Start with something you found.</p>
+
+      <div class="idea-stage">
+        <div class="idea-seed-column">
+          <h1 class="idea-sentence" id="idea-seed" data-idea-sentence>
+            Japan’s <button class="idea-trigger" type="button" data-route="aging" aria-expanded="false" aria-controls="idea-route">aging population</button> could <button class="idea-trigger" type="button" data-route="force" aria-expanded="false" aria-controls="idea-route">force</button> it to <button class="idea-trigger" type="button" data-route="treasuries" aria-expanded="false" aria-controls="idea-route">sell U.S. Treasuries</button>.
+          </h1>
+          <p class="idea-instruction" data-idea-instruction><span class="desktop-instruction">Hover or focus a phrase to follow the idea.</span><span class="touch-instruction">Tap a phrase to follow the idea.</span></p>
+          <p class="idea-selection" data-idea-selection aria-live="polite">No path selected.</p>
         </div>
-        <p class="hero-boundary">Hosted Markov is in development. Local Markov uses your hardware, models, keys, and storage.</p>
+
+        <div class="idea-route" id="idea-route" aria-label="Markov idea chain" aria-live="polite">
+          <div class="route-placeholder" data-route-placeholder>
+            <span aria-hidden="true">↳</span>
+            <p>The missing steps will unfold here.</p>
+          </div>
+          <div class="route-content" data-route-content hidden>
+            <p class="route-from">Following <strong data-route-phrase></strong></p>
+            <ol class="route-list" data-route-list></ol>
+            <div class="route-branches" data-route-branches hidden></div>
+            <p class="route-note" data-route-note></p>
+            <a class="route-evidence" data-route-evidence hidden></a>
+            <button class="route-further" type="button" data-follow-further>Follow this further <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
       </div>
 
-      <div class="source-start source-start-hero" aria-label="Example Markov source input">
-        <span class="source-start-marker" aria-hidden="true"></span>
-        <span class="source-example-label">Example starting question</span>
-        <div class="source-start-row">
-          <p class="source-example">How could Japan's ageing population reach the U.S. Treasury market?</p>
-          <a class="button button-secondary" href="#trail">See where it leads</a>
-        </div>
-        <div class="source-start-foot">
-          <ul class="source-types" aria-label="Supported starting points">
-            <li>YouTube</li><li>TikTok</li><li>Articles</li><li>PDFs</li><li>Audio</li><li>Questions</li>
-          </ul>
-          <span class="source-example-note">Documented example</span>
+      <div class="angle-reveal" data-angle-reveal aria-live="polite">
+        <p class="route-label">New angle</p>
+        <h2 data-angle-title>The stronger idea appears after you inspect two paths.</h2>
+        <p data-angle-copy>Markov does not jump from a provocative sentence to a polished conclusion. It makes the missing mechanism and the uncertainty visible first.</p>
+        <div class="angle-actions" data-angle-actions hidden>
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Catch me up</a>
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Explore this chain</a>
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Turn this angle into a script</a>
         </div>
       </div>
 
-      <div class="hero-branches" aria-label="Available outcomes">
-        <span class="branch-origin">One research trail</span>
-        <div><strong>Catch me up</strong><span>Understand it</span></div>
-        <div><strong>Explore where it leads</strong><span>Discover something</span></div>
-        <div><strong>Turn it into a script</strong><span>Finish the work</span></div>
+      <p class="idea-promise">Start with anything you watched, read, heard, or wondered about. Markov explains it, checks it, follows the hidden connections, and turns the strongest insight into something finished.</p>
+
+      <div class="source-switcher" aria-label="Try another kind of source" data-source-switcher>
+        <span>Starting point</span>
+        <div>
+          <button type="button" data-source="youtube" aria-pressed="false">YouTube</button>
+          <button type="button" data-source="tiktok" aria-pressed="false">TikTok</button>
+          <button type="button" data-source="article" aria-pressed="true">Articles</button>
+          <button type="button" data-source="pdf" aria-pressed="false">PDFs</button>
+          <button type="button" data-source="audio" aria-pressed="false">Audio</button>
+          <button type="button" data-source="question" aria-pressed="false">Questions</button>
+        </div>
       </div>
     </section>
 
-    <section class="v2-section trail-section" id="trail" aria-labelledby="trail-title">
-      <div class="v2-section-heading trail-heading">
-        <div><p class="plain-kicker">One real source trail</p><h2 id="trail-title">The source is the first stop, not the answer.</h2></div>
-        <p>Walk the same research Markov used to move from a demographic fact to a testable market idea and a finished script opening.</p>
+    <section class="idea-story" aria-labelledby="story-title">
+      <h2 class="visually-hidden" id="story-title">How Markov follows an idea</h2>
+      <div class="story-context" aria-live="polite">
+        <span>Current thread</span>
+        <strong data-story-thread>Choose a phrase above</strong>
       </div>
-
-      <div class="research-trail sample-switcher" data-sample-switcher>
-        <div class="trail-tabs" role="tablist" aria-label="Source trail" aria-orientation="vertical">
-          <button type="button" role="tab" aria-selected="true" aria-controls="trail-source" id="tab-source" data-sample-tab="source"><span>01</span>Starting source</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="trail-claim" id="tab-claim" data-sample-tab="claim"><span>02</span>Important claim</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="trail-gap" id="tab-gap" data-sample-tab="gap"><span>03</span>What is missing</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="trail-connection" id="tab-connection" data-sample-tab="connection"><span>04</span>Connection</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="trail-insight" id="tab-insight" data-sample-tab="insight"><span>05</span>New angle</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="trail-output" id="tab-output" data-sample-tab="output"><span>06</span>Finished work</button>
-        </div>
-
-        <div class="trail-panels">
-          <div class="trail-panel" id="trail-source" role="tabpanel" aria-labelledby="tab-source" data-sample-panel="source">
-            <p class="trail-stage">Starting source</p>
-            <h3>How could Japan's ageing population reach the U.S. Treasury market?</h3>
-            <p>This begins as a question, not a premise Markov must defend. The research can reject the framing, narrow it, or follow a better intermediary.</p>
-            <div class="trail-next"><span>Next</span><strong>Separate the demographic fact from the market story.</strong></div>
-          </div>
-          <div class="trail-panel" id="trail-claim" role="tabpanel" aria-labelledby="tab-claim" data-sample-panel="claim" hidden>
-            <span class="evidence-level established">Established</span>
-            <h3>Japan is ageing rapidly.</h3>
-            <p>Japan’s Statistical Handbook reports that people aged 65 and over were 29.3% of the population in 2024 and projects 38.7% by 2070.</p>
-            <a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Inspect the Statistics Bureau source, page 28</a>
-          </div>
-          <div class="trail-panel" id="trail-gap" role="tabpanel" aria-labelledby="tab-gap" data-sample-panel="gap" hidden>
-            <p class="trail-stage">What the source leaves out</p>
-            <h3>A demographic shift does not tell us who saves, who invests, or which constraint controls the portfolio.</h3>
-            <p>The missing intermediary is institutional: households, insurers, pensions, banks, and official institutions translate saving into different assets under different rules.</p>
-            <div class="trail-next"><span>Research branch</span><strong>Find evidence for the saving channel and identify the actual asset holders.</strong></div>
-          </div>
-          <div class="trail-panel" id="trail-connection" role="tabpanel" aria-labelledby="tab-connection" data-sample-panel="connection" hidden>
-            <span class="evidence-level interpretation">Evidence-backed interpretation</span>
-            <h3>Ageing can change saving and cross-border asset allocation.</h3>
-            <p>A 2024 Bank of Japan analysis, with explicit model caveats, finds that longer lives can raise aggregate saving and push the current account toward surplus. U.S. Treasury data separately show Japan held $1.024 trillion in long-term U.S. Treasuries at June 2025.</p>
-            <div class="inline-links"><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Inspect the BOJ analysis</a><a href="https://home.treasury.gov/news/press-releases/sb0482">Inspect the Treasury survey</a></div>
-          </div>
-          <div class="trail-panel" id="trail-insight" role="tabpanel" aria-labelledby="tab-insight" data-sample-panel="insight" hidden>
-            <span class="evidence-level hypothesis">Plausible hypothesis</span>
-            <h3>Watch the hedge before the headline holding.</h3>
-            <p>BOJ evidence shows Japanese insurers reduced currency-hedged foreign bonds when hedging costs rose. The first observable adjustment may therefore appear in hedge ratios and FX-swap demand—not in aggregate Treasury holdings.</p>
-            <div class="trail-next"><span>Could break if</span><strong>Hedging stays stable while Treasury flows change for unrelated reasons.</strong></div>
-            <a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Inspect the BOJ Financial System Report, page 28</a>
-          </div>
-          <div class="trail-panel trail-output" id="trail-output" role="tabpanel" aria-labelledby="tab-output" data-sample-panel="output" hidden>
-            <p class="trail-stage">Script opening · followed from this connection</p>
-            <blockquote>Japan is getting older. That sounds like a story about pensions and hospitals. But one of its earliest market signals may appear somewhere less obvious: in the price Japanese institutions pay to hedge U.S. bonds.</blockquote>
-            <p>The script keeps the demographic measurement, the model caveat, the Treasury exposure, and the unproven causal step attached for fact-checking.</p>
-            <a class="button button-secondary" href="/markov-engine/sample/">Inspect the complete research path</a>
-          </div>
-        </div>
-      </div>
-      <p class="sample-disclosure">No quotations attributed to sources. No invented evidence IDs. Facts link to published sources; interpretation and hypothesis remain visibly distinct.</p>
+      <ol class="story-line">
+        <li class="idea-story-step is-current">
+          <span>01</span>
+          <p>You started with a sentence.</p>
+          <strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong>
+        </li>
+        <li class="idea-story-step">
+          <span>02</span>
+          <p>Markov found the missing mechanism.</p>
+          <strong data-story-mechanism>Choose an underlined phrase to expose the skipped steps.</strong>
+        </li>
+        <li class="idea-story-step">
+          <span>03</span>
+          <p>Markov compared competing paths.</p>
+          <strong data-story-comparison>Support, weakness, and alternative explanations stay separate.</strong>
+        </li>
+        <li class="idea-story-step">
+          <span>04</span>
+          <p>Markov produced a stronger idea.</p>
+          <strong data-story-angle>The conclusion cannot outrank its weakest essential connection.</strong>
+        </li>
+      </ol>
     </section>
 
-    <section class="v2-section outcome-section" id="product" aria-labelledby="jobs-title">
-      <div class="v2-section-heading">
-        <div><p class="plain-kicker">Choose where the trail ends</p><h2 id="jobs-title">One case. Three ways to finish.</h2></div>
-        <p>The claims, evidence, and connections stay attached, so changing the output does not mean starting the research again.</p>
-      </div>
-      <div class="outcome-branches">
-        <article><span>01 · Understand</span><h3>Catch me up</h3><p>The bottom line, assumptions, omissions, weak points, and threads worth pulling.</p></article>
-        <article><span>02 · Discover</span><h3>Explore where it leads</h3><p>Hidden mechanisms, competing hypotheses, and ranked paths for the next research pass.</p></article>
-        <article><span>03 · Create</span><h3>Turn it into a script</h3><p>An original defensible angle, full narration, and the fact-check notes needed to record it.</p></article>
+    <section class="destination-section" id="product" aria-labelledby="destination-title">
+      <p class="route-label">Now choose where the idea goes</p>
+      <h2 id="destination-title">One trail. Three finished forms.</h2>
+      <div class="destination-map">
+        <div class="destination-origin"><span>Starting source</span><strong data-destination-source>Article thesis</strong></div>
+        <div class="destination-markov" aria-label="Processed by Markov"><span>MARKOV</span></div>
+        <div class="destination-branches">
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Catch me up</strong><span>Get the substance, missing context, questionable claims, and threads worth following.</span></a>
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Explore where it leads</strong><span>Trace mechanisms, incentives, contradictions, historical parallels, and downstream effects.</span></a>
+          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Turn it into a script</strong><span>Use the strongest defensible connection to create something original and ready to record.</span></a>
+        </div>
       </div>
     </section>
 
-    <section class="v2-section two-doors" aria-labelledby="doors-title">
-      <div><p class="plain-kicker">For people</p><h2 id="doors-title">Work in a calm, inspectable workspace.</h2><p>Paste the source, choose the job, then read and revise the finished work without losing its trail.</p><a class="button" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally — free and open source</a></div>
-      <div><p class="plain-kicker">For software and agents</p><h2>Continue the same trail through the API.</h2><p>Submit asynchronous jobs and retrieve claims, connections, paths, insights, artifacts, and branch decisions as structured data.</p><a href="/markov-engine/developers/">Read the API guide</a></div>
+    <section class="local-section" aria-labelledby="local-title">
+      <p class="route-label">Local by design</p>
+      <h2 id="local-title">Keep the trail on your machine.</h2>
+      <p>Run Markov locally. Use local models or bring your own provider keys. Your sources, evidence, connections, and finished work stay under your control.</p>
+      <p class="product-boundary"><strong>V1 is web-first.</strong> The full research and creation workspace lives on the web. Mobile capture is for sending something to Markov while you browse, then continuing the synced trail on the web.</p>
+      <div>
+        <a href="https://github.com/Okohedeki/markov-engine">View on GitHub <span aria-hidden="true">↗</span></a>
+        <a href="https://github.com/Okohedeki/markov-engine#local-setup">Read local setup <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="late-intake" aria-labelledby="intake-title">
+      <p class="route-label">Your turn</p>
+      <h2 id="intake-title">Start with the thing that made you curious.</h2>
+      <form action="https://github.com/Okohedeki/markov-engine#local-setup" method="get" data-landing-intake>
+        <label class="visually-hidden" for="landing-source">Paste a link or ask a question</label>
+        <input id="landing-source" name="source" placeholder="Paste a link or ask a question" autocomplete="off" required>
+        <button type="submit">Run Markov locally</button>
+      </form>
+      <p>Hosted Markov is in development. The open-source engine and local workspace are available now.</p>
     </section>
   </main>
-  <footer class="public-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="wordmark" href="/markov-engine/">MARKOV</a>
-      <p class="fine">Start anywhere. Follow the idea. Make something original.</p>
-    </div>
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a href="/markov-engine/sample/">Real sample</a>
-      <a href="/markov-engine/developers/">API</a>
-      <a href="https://github.com/Okohedeki/markov-engine#api-quick-start">API reference</a>
-      <a href="https://github.com/Okohedeki/markov-engine">Repository</a>
-    </nav>
-  </div>
-</footer>
+
+  <footer class="idea-footer">
+    <span>MARKOV</span>
+    <p>Start anywhere. Follow the idea. Make something original.</p>
+    <nav aria-label="Footer navigation"><a href="/markov-engine/sample/">Inspect the research</a><a href="/markov-engine/developers/">API</a><a href="https://github.com/Okohedeki/markov-engine">Repository</a></nav>
+  </footer>
 
 </body>
 </html>
