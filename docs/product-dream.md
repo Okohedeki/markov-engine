@@ -1,6 +1,10 @@
 # The Markov dream
 
-Status: product and experience contract, 2026-08-26
+Status: V1 historical product direction, superseded for UI work on 2026-08-27
+
+For the current V2 product story and art direction, use
+[`markov-ui-direction.md`](markov-ui-direction.md) together with
+[`markov-v2-architecture.md`](markov-v2-architecture.md).
 
 ## The dream we sell
 
