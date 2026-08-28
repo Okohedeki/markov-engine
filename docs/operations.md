@@ -1,4 +1,4 @@
-# Markov V1 operations
+# Markov V2 operations
 
 ## Database and migrations
 
@@ -12,8 +12,9 @@ credit, and usage relationships stay intact.
 
 ## Worker model
 
-`POST /v1/jobs` writes the credit reservation, research case, job, and queued
-event before scheduling work. V1 background work runs in the FastAPI process.
+`POST /v2/jobs` writes the entitlement-aware credit reservation, research case,
+job, and queued event before scheduling work. Background work runs in the
+FastAPI process.
 Stage events are durable, but the task itself is not recovered automatically if
 the process stops. A stopped `running` job must be inspected and retried by an
 operator. Credit reservations are idempotent and failed jobs are refunded once.
@@ -88,10 +89,12 @@ Monitor:
 - credits reserved/refunded and payment failures;
 - model, search, transcription, storage, and human-review costs;
 - unverified/disputed claims and cases with no authoritative evidence;
+- rejected connections, evidence-level downgrades, followed branches, and cases
+  with no validated path;
 - artifact views, exports, deepening, revisions, conversions, and repeats;
 - reviewer queue age and review minutes.
 
-V1 stores the underlying events and ledgers but does not ship a metrics exporter.
+V2 stores the underlying events and ledgers but does not ship a metrics exporter.
 
 ## Known operational limits
 
