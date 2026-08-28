@@ -359,6 +359,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "published sources" in sample.text
             assert "Japan’s pension pivot" in sample.text
             assert "What about Japan?" in sample.text
+            assert "The Wolf Of All Streets" in sample.text
+            assert "7677675462264409357" in sample.text
+            assert "child-free creator" not in sample.text
             assert "CASE MKV" not in sample.text
 
             css = await client.get("/static/markov.css")
@@ -385,7 +388,10 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "You started with a paper." in javascript.text
             assert "You started with a podcast." in javascript.text
             assert "You started with a question." in javascript.text
-            assert "https://www.tiktok.com/player/v1/7664551582888971542" in javascript.text
+            assert "https://www.tiktok.com/player/v1/7677675462264409357" in javascript.text
+            assert "Mark Yusko: Japan showed us the playbook" in javascript.text
+            assert "The Wolf Of All Streets · 54 sec" in javascript.text
+            assert "7664551582888971542" not in javascript.text
             assert "static/japan-nber-cover.png" in javascript.text
             assert "Japan’s pension pivot puts overseas capital in play" in javascript.text
             assert "delete examples.nuclear" in javascript.text

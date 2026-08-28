@@ -36,7 +36,7 @@
         },
         sources: [
           ['FT Film: Japan’s population crisis', 'Demographic context', 'https://www.youtube.com/watch?v=nmdujC0MUKA'],
-          ['Child-free creator post', 'Audience signal · not Japan-specific evidence', 'https://www.tiktok.com/@seling459/video/7664551582888971542'],
+          ['Mark Yusko: Japan showed us the playbook', 'TikTok · macro thesis', 'https://www.tiktok.com/@scottmelkerwolf/video/7677675462264409357'],
           ['U.S. Debt, Japanese Yen and Your Retirement?', 'Podcast thesis · commentary', 'https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708'],
           ['Japan’s pension pivot', 'Reuters · live policy catalyst', 'https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/'],
           ['What about Japan?', 'NBER · rates and hedging mechanism', 'https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf'],
@@ -401,10 +401,10 @@
       startCopy: 'You started with a TikTok.',
       media: {
         kind: 'tiktok',
-        title: 'A personal decision to remain child-free',
-        meta: 'TikTok · Selin · 11 sec',
-        embed: 'https://www.tiktok.com/player/v1/7664551582888971542?music_info=1&description=1&autoplay=0',
-        href: 'https://www.tiktok.com/@seling459/video/7664551582888971542',
+        title: 'Mark Yusko: Japan showed us the playbook',
+        meta: 'TikTok · The Wolf Of All Streets · 54 sec',
+        embed: 'https://www.tiktok.com/player/v1/7677675462264409357?music_info=1&description=1&autoplay=0',
+        href: 'https://www.tiktok.com/@scottmelkerwolf/video/7677675462264409357',
       },
     });
     examples.pdf = japanVariant({
