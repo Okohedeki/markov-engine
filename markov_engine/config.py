@@ -8,6 +8,8 @@ backend with ``LLM_BACKEND`` / ``EMBED_BACKEND``:
   LM Studio, OpenAI itself) via OPENAI_BASE_URL
 - ``llamacpp`` — an in-process GGUF via llama-cpp-python (LLAMACPP_MODEL)
 - ``hash`` (embeddings only) — deterministic, zero-setup, no semantics
+- ``SEARCH_ENABLED=false`` — keep evidence discovery offline and mark unsupported
+  claims conservatively instead of calling a web search provider
 
 So the engine runs for analysis with no cloud keys: point it at a local model.
 """
@@ -67,6 +69,7 @@ class Settings(BaseSettings):
     # When False, video/social sources ingest from metadata + captions only
     # (no audio download + Whisper) — much faster, plenty for headlines/clustering.
     transcribe_media: bool = Field(True, alias="TRANSCRIBE_MEDIA")
+    search_enabled: bool = Field(True, alias="SEARCH_ENABLED")
     tmp_dir: str = Field("data/tmp", alias="TMP_DIR")
 
     # ── Commercial V1 delivery ─────────────────────────────────────

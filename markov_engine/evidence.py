@@ -295,11 +295,12 @@ async def research_claim(
                 stances.append(stance)
                 sources_added += 1
 
-    try:
-        async with asyncio.timeout(time_budget_s):
-            await run()
-    except TimeoutError:
-        timed_out = True
+    if _settings.search_enabled or searcher is not search_web:
+        try:
+            async with asyncio.timeout(time_budget_s):
+                await run()
+        except TimeoutError:
+            timed_out = True
 
     status = status_from_stances(stances)
     if claim.claim_type in {"opinion", "inference"} and not stances:
@@ -329,6 +330,7 @@ async def research_claim(
     return {
         "claim_id": claim.id,
         "status": status,
+        "query_attempts": query_attempts,
         "sources_added": sources_added,
         "evidence_passages": len(stances),
         "cost": total_cost,

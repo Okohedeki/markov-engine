@@ -98,6 +98,46 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
         await store.close()
 
 
+@pytest.mark.asyncio
+async def test_disabled_search_keeps_offline_claims_unverified(monkeypatch):
+    store = await SqliteStore.open(":memory:")
+    monkeypatch.setattr(evidence._settings, "search_enabled", False)
+    try:
+        case = await store.create_research_case(
+            owner_id="owner", title="Offline fixture", original_input="seed",
+            input_type="topic", purpose="brief",
+        )
+        seed = await store.add_source(
+            url=None, title="Question", source_type="topic",
+            content_text="Could this claim be true?", summary="",
+        )
+        segments = await store.add_source_segments(
+            source_id=seed.id,
+            segments=[{"text": "Could this claim be true?"}],
+        )
+        claim = await store.add_claim(
+            research_case_id=case.id,
+            seed_source_id=seed.id,
+            claim_text="Could this claim be true",
+            claim_type="inference",
+            importance=1,
+            speaker_certainty="research_question",
+            source_start_segment_id=segments[0].id,
+            source_end_segment_id=segments[0].id,
+        )
+
+        result = await evidence.research_claim(
+            store, case_id=case.id, claim=claim
+        )
+
+        assert result["status"] == "opinion_or_inference"
+        assert result["query_attempts"] == 0
+        assert result["sources_added"] == 0
+        assert await store.list_claim_evidence(claim.id) == []
+    finally:
+        await store.close()
+
+
 def test_claim_status_preserves_conflict_and_uncertainty():
     assert evidence.status_from_stances(["supports"]) == "supported"
     assert evidence.status_from_stances(["supports", "qualifies"]) == "qualified"

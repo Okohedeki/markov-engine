@@ -85,6 +85,24 @@ python -m venv .venv
 python -m pip install -e .
 ```
 
+On Windows, the fastest development setup is:
+
+```powershell
+.\run-local.cmd
+```
+
+This starts the landing page, SaaS workspace, and API together at
+`http://127.0.0.1:8000`. When no `.env` exists, the launcher uses safe offline
+development defaults: heuristic generation, hash embeddings, 100 test credits,
+disabled outbound web search, and a separate `data/local-markov.db` database.
+Claims without attached evidence remain visibly unsupported in this mode. Sign
+into the workspace with `local-customer-key`; the reviewer key is
+`local-review-key`.
+
+Pass `-Port 8010` to choose another port or `-NoReload` to disable automatic
+reloads. If `.env` exists, the launcher leaves it in control so you can test real
+Anthropic, OpenAI-compatible, or in-process local model backends.
+
 Copy [`.env.example`](.env.example) to `.env`. At minimum, configure an API key
 mapping, an opening or purchased credit balance, and one LLM/search setup.
 `MARKOV_API_KEYS` maps secret keys to stable owner IDs; it must be JSON.
