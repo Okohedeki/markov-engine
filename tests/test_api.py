@@ -288,11 +288,13 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Markov compared competing paths." not in landing.text
             assert "Comparison artifact" in landing.text
             assert "data-story-comparison-rows" in landing.text
-            assert "Markov produced a stronger idea." in landing.text
-            assert "Finished artifacts" in landing.text
-            assert "data-story-angle" in landing.text
-            assert "data-story-report" in landing.text
-            assert "data-story-script" in landing.text
+            assert "Markov produced a stronger idea." not in landing.text
+            assert "Finished artifacts" not in landing.text
+            assert "data-story-angle" not in landing.text
+            assert "data-story-report" not in landing.text
+            assert "data-story-script" not in landing.text
+            assert landing.text.count('class="idea-story-step') == 3
+            assert landing.text.count('class="story-number"') == 3
             assert "One living chain, from first source to original work." in landing.text
             assert landing.text.count("Made for original work") == 1
             assert "Do not start the next piece" not in landing.text
@@ -312,6 +314,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "What would change the conclusion" in landing.text
             assert "READY TO RECORD" in landing.text
             assert "Open the full evidence-linked sample" in landing.text
+            assert landing.text.index('id="artifact-proof-title"') < landing.text.index(
+                'id="destination-title"'
+            )
             assert landing.text.index('id="artifact-proof-title"') < landing.text.index(
                 'id="intake-title"'
             )
@@ -401,7 +406,7 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "renderSourcePacket" not in javascript.text
             assert "renderMechanismArtifact(resolved)" in javascript.text
             assert "renderComparisonArtifact(resolved)" in javascript.text
-            assert "storyFields.report.textContent = resolved.comparison" in javascript.text
+            assert "storyFields.report" not in javascript.text
             assert "storyFields.sources.replaceChildren()" not in javascript.text
     finally:
         await store.close()

@@ -1192,7 +1192,7 @@ body.landing-page {
 
 .idea-story {
   border-top: 1px solid var(--line);
-  padding-bottom: clamp(100px, 15vh, 180px);
+  padding-bottom: clamp(54px, 8vh, 92px);
   padding-top: clamp(88px, 13vh, 150px);
 }
 
@@ -1247,8 +1247,7 @@ body.landing-page {
 
 .source-artifact,
 .mechanism-artifact,
-.comparison-artifact,
-.output-artifacts {
+.comparison-artifact {
   margin: 0;
   max-width: 520px;
   text-align: left;
@@ -1256,8 +1255,7 @@ body.landing-page {
 
 .idea-story-step:nth-child(even) .source-artifact,
 .idea-story-step:nth-child(even) .mechanism-artifact,
-.idea-story-step:nth-child(even) .comparison-artifact,
-.idea-story-step:nth-child(even) .output-artifacts { margin-left: auto; }
+.idea-story-step:nth-child(even) .comparison-artifact { margin-left: auto; }
 
 .source-artifact { border-bottom: 1px solid var(--line-strong); border-top: 1px solid var(--line-strong); overflow: hidden; }
 .source-artifact iframe { background: var(--ink); border: 0; display: block; }
@@ -1312,12 +1310,6 @@ body.landing-page {
 .comparison-artifact p.is-strong strong,
 .comparison-artifact p.is-strong span { color: #28603f; }
 .comparison-artifact > small { color: var(--ink-soft); display: block; font-size: .72rem; line-height: 1.55; margin-top: 1rem; }
-
-.output-artifacts { border-bottom: 1px solid var(--line-strong); }
-.output-artifacts article { border-top: 1px solid var(--line-strong); display: grid; gap: .45rem 1rem; grid-template-columns: 46px minmax(86px, .32fr) minmax(0, 1fr); padding: .9rem 0; }
-.output-artifacts article > span { color: var(--signal); font-size: .59rem; font-weight: 760; letter-spacing: .07em; text-transform: uppercase; }
-.output-artifacts article > strong { font-size: .7rem; font-weight: 680; }
-.output-artifacts article p { color: var(--ink-soft); font-size: .7rem; line-height: 1.5; margin: 0; }
 
 .destination-section,
 .use-case-section,
@@ -1488,6 +1480,7 @@ body.landing-page {
 .script-copy > p span { color: var(--signal); display: inline-block; font-size: .58rem; font-weight: 760; letter-spacing: .06em; margin-right: .65rem; min-width: 72px; vertical-align: .1em; }
 .artifact-proof-link { border-bottom: 1px solid var(--line-strong); display: inline-block; font-size: .78rem; font-weight: 680; margin-top: 1.4rem; padding: .35rem 0; text-decoration: none; }
 .artifact-proof-link:hover { border-color: var(--signal); color: var(--moss-dark); }
+.idea-story + .artifact-proof-section { padding-top: clamp(72px, 10vh, 110px); }
 
 .platform-bridge {
   display: grid;

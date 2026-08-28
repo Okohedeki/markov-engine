@@ -469,9 +469,6 @@
       mechanism: document.querySelector('[data-story-mechanism]'),
       comparisonRows: document.querySelector('[data-story-comparison-rows]'),
       comparison: document.querySelector('[data-story-comparison]'),
-      angle: document.querySelector('[data-story-angle]'),
-      report: document.querySelector('[data-story-report]'),
-      script: document.querySelector('[data-story-script]'),
       destination: document.querySelector('[data-destination-source]'),
     };
 
@@ -581,9 +578,6 @@
       renderComparisonArtifact(resolved);
       storyFields.mechanism.textContent = resolved.mechanism;
       storyFields.comparison.textContent = resolved.comparison;
-      storyFields.angle.textContent = resolved.angle;
-      storyFields.report.textContent = resolved.comparison;
-      storyFields.script.textContent = example.scriptOpening;
     };
 
     const setExpanded = (routeName) => {
