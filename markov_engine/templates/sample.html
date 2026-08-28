@@ -1,45 +1,67 @@
 {% extends "base.html" %}
-{% block title %}Finished case — Markov{% endblock %}
-{% block description %}Inspect a Markov demonstration brief with its claim ledger and evidence passages.{% endblock %}
+{% block title %}A real source-to-insight example — Markov{% endblock %}
+{% block description %}Inspect how Markov separates evidence, interpretation, and hypothesis while following an idea from Japan's demographics to Treasury-market research.{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
-  <main id="main-content">
-    <div class="action-bar">
-      <div><span class="badge badge-neutral">Demonstration fixture</span> <span class="fine">Names, claims, IDs, and sources are illustrative.</span></div>
-      <div class="action-group"><a class="button button-small" href="{{ workspace_url }}">Open Markov</a></div>
-    </div>
-    <div class="artifact-layout">
-      <aside class="artifact-outline">
-        <nav aria-label="Document outline">
-          <p class="eyebrow">Outline</p>
-          <a href="#bottom-line">Bottom line</a><a href="#important-points">Important points</a><a href="#missing-context">Missing context</a><a href="#source-navigation">Source navigation</a>
-        </nav>
-      </aside>
-      <article class="artifact-document">
-        <header class="artifact-document-header">
-          <div class="artifact-meta"><span>CASE MKV–024</span><span>BRIEF · INSTANT</span><span>2 CLAIMS</span></div>
-          <h1>Fixture housing-and-rates video</h1>
-          <p class="lede">A public demonstration of the reading model: finished document in the center, audit trail beside it.</p>
-        </header>
-        <div class="artifact-copy">
-          <h2 id="bottom-line">Bottom line</h2>
-          <p>The source is on firm ground when it says the policy rate rose by two percentage points during the stated period <a class="claim-mark" href="#claim-c1">[C1]</a>. Its prediction that national housing prices will fall the following year is only qualified by the inspected evidence <a class="claim-mark" href="#claim-c2">[C2]</a>.</p>
-          <p><strong>Consumption verdict:</strong> Read the claim ledger and evidence notes; watch the original around 1:01–1:16 only if you need the presenter’s wording and tone.</p>
-          <h2 id="important-points">Important points</h2>
-          <ul><li><strong>C1 — Supported:</strong> the policy rate increased by two percentage points.</li><li><strong>C2 — Qualified:</strong> national housing prices will fall the following year.</li></ul>
-          <h2 id="missing-context">Missing context</h2>
-          <ul><li>Which non-rate factors could affect housing prices?</li><li>Did the same rate change produce similar outcomes in comparable periods?</li></ul>
-          <h2 id="source-navigation">Source navigation</h2>
-          <ul><li>C1: 1:01–1:08</li><li>C2: 1:08–1:16</li></ul>
-        </div>
-      </article>
-      <aside class="artifact-tools" aria-label="Case evidence">
-        <section class="tool-section"><h2>Claim ledger</h2>
-          <div class="claim-detail" id="claim-c1"><p><span class="claim-id">C1</span><span class="badge">Supported</span></p><p class="passage">The published series moves from 3% to 5% over the measured period.<span class="passage-meta">E1 · SUPPORTS · OFFICIAL DATA<br>Results table · 1:01–1:08</span></p></div>
-          <div class="claim-detail" id="claim-c2"><p><span class="claim-id">C2</span><span class="badge badge-warning">Qualified</span></p><p class="passage">Rate changes are one input among supply, income, migration, and credit conditions.<span class="passage-meta">E2 · QUALIFIES · RESEARCH PAPER<br>Limitations · p. 14</span></p></div>
+  <main id="main-content" class="sample-page">
+    <header class="sample-hero">
+      <p class="plain-kicker">Inspectable sample · published sources</p>
+      <h1>From Japan’s ageing population to a question about Treasury hedging.</h1>
+      <p class="v2-lede">This is not proof of one long causal chain. It is a demonstration of how Markov follows an idea while keeping each step at the evidence level it has earned.</p>
+      <div class="sample-legend" aria-label="Evidence levels"><span class="evidence-level established">Established</span><span class="evidence-level interpretation">Evidence-backed interpretation</span><span class="evidence-level hypothesis">Plausible hypothesis</span></div>
+    </header>
+
+    <section class="sample-workspace" aria-label="Source to insight path">
+      <aside class="sample-outline"><nav aria-label="Sample outline"><a href="#starting-node">Starting node</a><a href="#connection-one">Saving channel</a><a href="#connection-two">Treasury exposure</a><a href="#connection-three">Hedging pressure</a><a href="#insight">Resulting insight</a><a href="#sources">Sources</a></nav></aside>
+      <article class="sample-document">
+        <section id="starting-node">
+          <span class="evidence-level established">Established</span>
+          <h2>Starting node: Japan’s population is getting older.</h2>
+          <p>The Statistics Bureau’s 2025 handbook reports that people aged 65 and over were 29.3% of Japan’s population in 2024. Its projection reaches 38.7% in 2070.</p>
+          <p class="source-note"><strong>What this establishes:</strong> the demographic shift. It does not, by itself, establish a market outcome.</p>
         </section>
-        <section class="tool-section"><h2>Why this is different</h2><p class="fine">The locator, passage, stance, and rationale are part of the deliverable—not a decorative citation list added after writing.</p></section>
+        <section id="connection-one">
+          <span class="connection-type">Shared mechanism · longevity and saving</span>
+          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
+          <h2>Ageing can alter aggregate saving and the current account.</h2>
+          <p>A Bank of Japan Research Lab article uses overlapping-generations models and explicitly warns that results depend on assumptions. Its simulations indicate that longer expected lives can increase aggregate saving and that ageing may have pushed Japan’s current account toward surplus.</p>
+          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>Longer expected retirement changes saving behavior and capital allocation.</dd></div><div><dt>Weakens</dt><dd>The result is model-dependent; ageing does not imply a simple, permanent fall in saving.</dd></div><div><dt>Could lead to</dt><dd>Inspect which sectors hold the surplus and which domestic or foreign assets receive it.</dd></div></dl>
+        </section>
+        <section id="connection-two">
+          <span class="connection-type">Dependency link · Japanese portfolios and U.S. debt</span>
+          <span class="evidence-level established">Established exposure</span>
+          <h2>Japan is materially exposed to U.S. securities, including Treasuries.</h2>
+          <p>The U.S. Treasury’s annual survey reports $2.883 trillion in U.S. securities held from Japan at June 2025, including $1.024 trillion in long-term Treasury debt. The survey is a position measurement, not evidence that demographics caused those holdings.</p>
+          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>Japanese households do not buy every bond directly; banks, insurers, pensions, and funds transmit portfolio choices.</dd></div><div><dt>Weakens</dt><dd>Custody and survey classification limit what country totals reveal about the ultimate investor.</dd></div><div><dt>Could lead to</dt><dd>Separate insurers, pensions, banks, and official institutions before making a demand claim.</dd></div></dl>
+        </section>
+        <section id="connection-three">
+          <span class="connection-type">Second-order consequence · currency hedging</span>
+          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
+          <h2>The relevant constraint may be the hedged return, not the headline Treasury yield.</h2>
+          <p>The Bank of Japan’s October 2023 Financial System Report says life insurers reduced currency-hedged foreign bonds as foreign-currency funding and hedging costs rose, and that hedge ratios declined substantially.</p>
+          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>A yen-based institution evaluates foreign bonds after the cost of reducing currency risk.</dd></div><div><dt>Weakens</dt><dd>Insurers are only one investor class, and the cited period reflects a particular rate environment.</dd></div><div><dt>Could lead to</dt><dd>Compare hedged yields, insurer hedge ratios, and net Treasury transactions on aligned dates.</dd></div></dl>
+        </section>
+        <section id="insight" class="insight-result">
+          <span class="evidence-level hypothesis">Plausible hypothesis</span>
+          <h2>Resulting insight: watch the hedge before the headline holding.</h2>
+          <p>If demographic change alters the institutions managing Japanese savings, the first observable market adjustment may be in hedge ratios and FX-swap demand—not necessarily a clean fall or rise in aggregate Treasury holdings.</p>
+          <p><strong>Why this is useful:</strong> it turns a vague macro story into a testable research design.</p>
+          <p><strong>What would falsify it:</strong> stable hedging behavior across investor groups while Treasury flows change for unrelated reasons.</p>
+          <p><strong>Next research packet:</strong> sector-level foreign-bond holdings, hedge ratios, USD/JPY hedge costs, and TIC transactions on the same frequency.</p>
+        </section>
+      </article>
+      <aside class="sample-sources" id="sources" aria-label="Published sources">
+        <h2>Source packet</h2>
+        <ol>
+          <li><a href="https://www.stat.go.jp/english/data/handbook/pdf/2025all.pdf">Statistics Bureau of Japan, Statistical Handbook 2025</a><small>Population chapter, page 28. Demographic measurement and projection.</small></li>
+          <li><a href="https://www.boj.or.jp/en/research/wps_rev/lab/lab24e01.htm">Bank of Japan, Demographic Trends and Household Savings and Investment</a><small>Research Lab No. 24-E-1, July 2024. Model-based interpretation with caveats.</small></li>
+          <li><a href="https://home.treasury.gov/news/press-releases/sb0482">U.S. Treasury, Foreign Portfolio Holdings at End-June 2025</a><small>Table B. Country and security-type positions.</small></li>
+          <li><a href="https://www.boj.or.jp/en/research/brp/fsr/data/fsr231020a.pdf">Bank of Japan, Financial System Report, October 2023</a><small>Page 28. Foreign-bond positions and currency hedge ratios.</small></li>
+        </ol>
+        <div class="source-note"><strong>Source discipline</strong><p>All quotations are paraphrases. Dates, figures, caveats, and links are retained so the reader can inspect the original record.</p></div>
+        <a class="button" href="{{ workspace_url }}">{{ workspace_label }}</a>
       </aside>
-    </div>
+    </section>
   </main>
+  {% include "partials/public_footer.html" %}
 {% endblock %}
