@@ -258,7 +258,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Start with something you found." in landing.text
+            assert "The research workspace between finding information and using it." in landing.text
+            assert 'href="/app/login"' in landing.text
+            assert ">Sign in</a>" in landing.text
             assert "Japan’s" in landing.text
             assert ">aging population</button>" in landing.text
             assert ">force</button>" in landing.text
@@ -268,16 +270,25 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "The missing steps will unfold here." in landing.text
             assert "The stronger idea appears after you inspect two paths." in landing.text
             assert "Catch me up" in landing.text
-            assert "Explore where it leads" in landing.text
-            assert "Turn it into a script" in landing.text
+            assert "Explore this chain" in landing.text
+            assert "Turn this angle into a script" in landing.text
             assert "You started with a sentence." in landing.text
             assert "Markov found the missing mechanism." in landing.text
             assert "Markov compared competing paths." in landing.text
             assert "Markov produced a stronger idea." in landing.text
-            assert "One trail. Three finished forms." in landing.text
-            assert "V1 is web-first." in landing.text
-            assert "Mobile capture is for sending something to Markov" in landing.text
-            assert "Start with the thing that made you curious." in landing.text
+            assert "One living chain. Every way you need to use it." in landing.text
+            assert "Made for original work" in landing.text
+            assert "saved TikToks, YouTube videos, podcasts, posts, and articles" in landing.text
+            assert "AEO pages, reports, and editorial briefs" in landing.text
+            assert "One workspace for the whole trail" in landing.text
+            assert "Capture and parse" in landing.text
+            assert "Store and connect" in landing.text
+            assert "Review and decide" in landing.text
+            assert "Edit and create" in landing.text
+            assert "For people" in landing.text
+            assert "For agents" in landing.text
+            assert "It syncs into your web workspace" in landing.text
+            assert "What do you want to understand—or make?" in landing.text
             for source_type in ("youtube", "tiktok", "article", "pdf", "audio", "question"):
                 assert f'data-source="{source_type}"' in landing.text
             assert "Skip to content" in landing.text
@@ -286,6 +297,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "feature card" not in landing.text.lower()
             assert "customer logos" not in landing.text.lower()
             assert "free trial" not in landing.text.lower()
+            assert "run markov locally" not in landing.text.lower()
+            assert "open source" not in landing.text.lower()
+            assert "github" not in landing.text.lower()
 
             pricing = await client.get("/pricing")
             assert pricing.status_code == 200
@@ -321,6 +335,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "event.key !== 'Escape'" in javascript.text
             assert "aria-expanded" in javascript.text
             assert "markov.pendingSource" in javascript.text
+            assert "You started with a video." in javascript.text
+            assert "You started with 10 seconds." in javascript.text
+            assert "storyFields.start.textContent = example.startCopy" in javascript.text
     finally:
         await store.close()
 
@@ -421,7 +438,10 @@ def test_github_pages_export_is_static_and_project_relative():
     assert 'href="/markov-engine/sample/"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "Run locally" in landing
+    assert "Product demo" in landing
+    assert "Run locally" not in landing
+    assert "open-source" not in landing.lower()
+    assert "github.com" not in landing.lower()
     assert 'data-idea-demo' in landing
     assert 'aria-controls="idea-route"' in landing
     assert 'data-landing-intake' in landing

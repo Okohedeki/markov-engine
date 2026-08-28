@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Start with anything you watched, read, heard, or wondered about. Markov explains it, checks it, follows the hidden connections, and turns the strongest insight into something finished.">
+  <meta name="description" content="Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain and helps you create a brief, report, or script.">
 
-  <title>Markov — Follow the idea</title>
+  <title>Markov — Turn what you find into original work</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
   <script defer src="/markov-engine/static/markov.js"></script>
@@ -16,14 +16,20 @@
   <header class="idea-header">
     <a class="idea-wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
     <nav aria-label="Primary navigation">
-      <a href="https://github.com/Okohedeki/markov-engine">GitHub</a>
-      <a href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally</a>
+      <a class="idea-nav-optional" href="#product">Product</a>
+      <a class="idea-nav-optional" href="#use-cases">Use cases</a>
+      <a href="/markov-engine/pricing/">Pricing</a>
+      <a class="idea-nav-optional" href="/markov-engine/developers/">For agents</a>
+      <a href="/markov-engine/sample/">Product demo</a>
     </nav>
   </header>
 
   <main id="main-content">
     <section class="idea-hero" data-idea-demo aria-labelledby="idea-seed">
-      <p class="idea-intro">Start with something you found.</p>
+      <div class="idea-kicker">
+        <p class="idea-intro">The research workspace between finding information and using it.</p>
+        <a class="idea-hero-cta" href="/markov-engine/sample/">See the product demo <span aria-hidden="true">→</span></a>
+      </div>
 
       <div class="idea-stage">
         <div class="idea-seed-column">
@@ -55,13 +61,13 @@
         <h2 data-angle-title>The stronger idea appears after you inspect two paths.</h2>
         <p data-angle-copy>Markov does not jump from a provocative sentence to a polished conclusion. It makes the missing mechanism and the uncertainty visible first.</p>
         <div class="angle-actions" data-angle-actions hidden>
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Catch me up</a>
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Explore this chain</a>
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup">Turn this angle into a script</a>
+          <a href="/markov-engine/sample/">Catch me up</a>
+          <a href="/markov-engine/sample/">Explore this chain</a>
+          <a href="/markov-engine/sample/">Turn this angle into a script</a>
         </div>
       </div>
 
-      <p class="idea-promise">Start with anything you watched, read, heard, or wondered about. Markov explains it, checks it, follows the hidden connections, and turns the strongest insight into something finished.</p>
+      <p class="idea-promise">Save any video, article, PDF, podcast, post, or question. Markov turns it into a living research chain—explaining what matters, checking the evidence, uncovering hidden connections, and carrying the strongest insight into a brief, report, or script.</p>
 
       <div class="source-switcher" aria-label="Try another kind of source" data-source-switcher>
         <span>Starting point</span>
@@ -85,7 +91,7 @@
       <ol class="story-line">
         <li class="idea-story-step is-current">
           <span>01</span>
-          <p>You started with a sentence.</p>
+          <p data-story-start>You started with a sentence.</p>
           <strong data-story-seed>Japan’s aging population could force it to sell U.S. Treasuries.</strong>
         </li>
         <li class="idea-story-step">
@@ -107,46 +113,68 @@
     </section>
 
     <section class="destination-section" id="product" aria-labelledby="destination-title">
-      <p class="route-label">Now choose where the idea goes</p>
-      <h2 id="destination-title">One trail. Three finished forms.</h2>
+      <p class="route-label">From research to useful work</p>
+      <h2 id="destination-title">One living chain. Every way you need to use it.</h2>
       <div class="destination-map">
         <div class="destination-origin"><span>Starting source</span><strong data-destination-source>Article thesis</strong></div>
         <div class="destination-markov" aria-label="Processed by Markov"><span>MARKOV</span></div>
         <div class="destination-branches">
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Catch me up</strong><span>Get the substance, missing context, questionable claims, and threads worth following.</span></a>
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Explore where it leads</strong><span>Trace mechanisms, incentives, contradictions, historical parallels, and downstream effects.</span></a>
-          <a href="https://github.com/Okohedeki/markov-engine#local-setup"><strong>Turn it into a script</strong><span>Use the strongest defensible connection to create something original and ready to record.</span></a>
+          <a href="/markov-engine/sample/"><strong>Understand it</strong><span>Get a concise brief with the substance, missing context, questionable claims, and threads worth following.</span></a>
+          <a href="/markov-engine/sample/"><strong>Research it</strong><span>Trace mechanisms, incentives, contradictions, historical parallels, and downstream effects.</span></a>
+          <a href="/markov-engine/sample/"><strong>Create from it</strong><span>Develop the strongest defensible angle into an original report, answer, or ready-to-record script.</span></a>
         </div>
       </div>
     </section>
 
-    <section class="local-section" aria-labelledby="local-title">
-      <p class="route-label">Local by design</p>
-      <h2 id="local-title">Keep the trail on your machine.</h2>
-      <p>Run Markov locally. Use local models or bring your own provider keys. Your sources, evidence, connections, and finished work stay under your control.</p>
-      <p class="product-boundary"><strong>V1 is web-first.</strong> The full research and creation workspace lives on the web. Mobile capture is for sending something to Markov while you browse, then continuing the synced trail on the web.</p>
-      <div>
-        <a href="https://github.com/Okohedeki/markov-engine">View on GitHub <span aria-hidden="true">↗</span></a>
-        <a href="https://github.com/Okohedeki/markov-engine#local-setup">Read local setup <span aria-hidden="true">→</span></a>
+    <section class="use-case-section" id="use-cases" aria-labelledby="use-case-title">
+      <p class="route-label">Made for original work</p>
+      <h2 id="use-case-title">Do not start the next piece from an empty page—or someone else’s conclusion.</h2>
+      <p class="section-lede">Markov helps people who publish, explain, and learn build a point of view from evidence instead of producing another summary of the same source.</p>
+      <ol class="use-case-lines">
+        <li><span>For creators</span><strong>Find the angle worth making.</strong><p>Turn saved TikToks, YouTube videos, podcasts, posts, and articles into original scripts for short-form video, long-form video, newsletters, and audio.</p></li>
+        <li><span>For publishers and growth teams</span><strong>Create work that deserves to become the answer.</strong><p>Build source-backed explainers, AEO pages, reports, and editorial briefs with the evidence and uncertainty still attached.</p></li>
+        <li><span>For researchers and curious people</span><strong>Understand more than the source said.</strong><p>Expose missing mechanisms, compare competing explanations, save what matters, and return when a new question opens another path.</p></li>
+      </ol>
+    </section>
+
+    <section class="product-section" aria-labelledby="workspace-title">
+      <p class="route-label">One workspace for the whole trail</p>
+      <h2 id="workspace-title">The source does not disappear after the output.</h2>
+      <p class="section-lede">Markov parses what you save, stores it in your workspace, builds and checks the research chain, and keeps every brief, report, and script connected to the claims and evidence that produced it.</p>
+      <ol class="workspace-capabilities" aria-label="Markov workspace capabilities">
+        <li><span>01</span><strong>Capture and parse</strong><p>Bring in videos, articles, PDFs, podcasts, posts, or a question.</p></li>
+        <li><span>02</span><strong>Store and connect</strong><p>Keep sources, claims, evidence, and research chains organized together.</p></li>
+        <li><span>03</span><strong>Review and decide</strong><p>Inspect passages, challenge weak links, and choose which branches deserve more work.</p></li>
+        <li><span>04</span><strong>Edit and create</strong><p>Refine briefs, reports, scripts, and answers without losing their research trail.</p></li>
+      </ol>
+      <div class="platform-bridge">
+        <div><span>For people</span><strong>A calm web app for research, review, and creation.</strong></div>
+        <div><span>For agents</span><strong>The same structured chains, evidence, and outputs through the Markov API.</strong></div>
+      </div>
+      <p class="mobile-handoff"><strong>Find something while browsing on your phone?</strong> Send it to Markov. It syncs into your web workspace, where the full chain is researched, reviewed, stored, and turned into finished work.</p>
+      <div class="product-actions">
+        <a href="/markov-engine/sample/">See the product demo <span aria-hidden="true">→</span></a>
+        <a href="/markov-engine/pricing/">View pricing</a>
+        <a href="/markov-engine/developers/">Build with the API</a>
       </div>
     </section>
 
-    <section class="late-intake" aria-labelledby="intake-title">
+    <section class="late-intake" id="access" aria-labelledby="intake-title">
       <p class="route-label">Your turn</p>
-      <h2 id="intake-title">Start with the thing that made you curious.</h2>
-      <form action="https://github.com/Okohedeki/markov-engine#local-setup" method="get" data-landing-intake>
+      <h2 id="intake-title">What do you want to understand—or make?</h2>
+      <form action="/markov-engine/sample/" method="get" data-landing-intake>
         <label class="visually-hidden" for="landing-source">Paste a link or ask a question</label>
         <input id="landing-source" name="source" placeholder="Paste a link or ask a question" autocomplete="off" required>
-        <button type="submit">Run Markov locally</button>
+        <button type="submit">See the product demo</button>
       </form>
-      <p>Hosted Markov is in development. The open-source engine and local workspace are available now.</p>
+      <p>This preview demonstrates the research journey. Account access is enabled in the deployable web application.</p>
     </section>
   </main>
 
   <footer class="idea-footer">
     <span>MARKOV</span>
-    <p>Start anywhere. Follow the idea. Make something original.</p>
-    <nav aria-label="Footer navigation"><a href="/markov-engine/sample/">Inspect the research</a><a href="/markov-engine/developers/">API</a><a href="https://github.com/Okohedeki/markov-engine">Repository</a></nav>
+    <p>Find something. Understand it. Make something original.</p>
+    <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="/markov-engine/pricing/">Pricing</a><a href="/markov-engine/developers/">API</a><a href="/markov-engine/sample/">Product demo</a></nav>
   </footer>
 
 </body>

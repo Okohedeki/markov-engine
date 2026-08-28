@@ -23,6 +23,7 @@
     const examples = {
       article: {
         sourceLabel: 'Article thesis',
+        startCopy: 'You started with a sentence.',
         sentenceText: 'Japan’s aging population could force it to sell U.S. Treasuries.',
         sentence: [
           'Japan’s ',
@@ -78,6 +79,7 @@
       },
       youtube: {
         sourceLabel: 'YouTube argument',
+        startCopy: 'You started with a video.',
         sentenceText: 'Nuclear power is too slow to matter for near-term climate targets.',
         sentence: [
           'Nuclear power is ', { route: 'slow', text: 'too slow' }, ' to ',
@@ -122,6 +124,7 @@
       },
       tiktok: {
         sourceLabel: 'TikTok claim',
+        startCopy: 'You started with 10 seconds.',
         sentenceText: 'Remote work is quietly hollowing out city tax bases.',
         sentence: [
           { route: 'remote', text: 'Remote work' }, ' is quietly ',
@@ -166,6 +169,7 @@
       },
       pdf: {
         sourceLabel: 'PDF finding',
+        startCopy: 'You started with a paper.',
         sentenceText: 'Heat pumps can reduce household emissions even on today’s grid.',
         sentence: [
           { route: 'pumps', text: 'Heat pumps' }, ' can ',
@@ -210,6 +214,7 @@
       },
       audio: {
         sourceLabel: 'Podcast quote',
+        startCopy: 'You started with a podcast.',
         sentenceText: 'Weight-loss drugs may reshape more than healthcare spending.',
         sentence: [
           { route: 'drugs', text: 'Weight-loss drugs' }, ' may ',
@@ -254,6 +259,7 @@
       },
       question: {
         sourceLabel: 'Plain question',
+        startCopy: 'You started with a question.',
         sentenceText: 'What happens when insurance stops pricing climate risk as temporary?',
         sentence: [
           'What happens when ', { route: 'insurance', text: 'insurance' }, ' stops ',
@@ -323,6 +329,7 @@
 
     const storyFields = {
       thread: document.querySelector('[data-story-thread]'),
+      start: document.querySelector('[data-story-start]'),
       seed: document.querySelector('[data-story-seed]'),
       mechanism: document.querySelector('[data-story-mechanism]'),
       comparison: document.querySelector('[data-story-comparison]'),
@@ -339,6 +346,7 @@
 
     const updateStory = (selected) => {
       const example = examples[sourceKey];
+      storyFields.start.textContent = example.startCopy;
       storyFields.seed.textContent = example.sentenceText;
       storyFields.destination.textContent = example.sourceLabel;
       if (!selected) {

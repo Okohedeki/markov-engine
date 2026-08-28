@@ -23,13 +23,16 @@ Applies to: public site, workspace intake, job progress, artifact reader, and AP
 - **Positioning:** Markov helps evidence-conscious creators and analysts turn one
   source into an original, inspectable brief, research path, or script without
   losing the claims, mechanisms, uncertainty, or provenance along the way.
-- **Primary conversion:** experience the phrase-driven chain, then follow the
-  visitor's own source into the web workspace. On GitHub Pages, the truthful
-  equivalent is to run the open-source product locally.
+- **Primary conversion:** experience the phrase-driven chain, then sign in and
+  follow the visitor's own source into the Markov web workspace. Static previews
+  route to a truthful product demonstration until hosted account access is live.
 - **Proof available now:** the working interactive trail, a documented Japan–Treasury
-  example with direct public-source links, the open repository, and a
-  working local product journey. No customer, revenue, or outcome claims are
-  implied.
+  example with direct public-source links, and a working web product journey from
+  intake through stored research and finished work. No customer, revenue, or
+  outcome claims are implied.
+- **Product hierarchy:** Markov is a SaaS workspace for people first. The API
+  exposes the same research chains to agents and programmatic services; it is a
+  second access surface, not the product's identity.
 - **Brand archetype:** Sage first, Creator second. The voice is calm, exact, and
   curious. Motion reveals reasoning; it does not decorate. Avoid omniscient AI
   language, breathless transformation claims, and faux-academic costume.
@@ -152,8 +155,9 @@ Found something
 
 The first viewport must name the accepted inputs, the transformation, the three
 possible outcomes, and the next truthful action. The complete source trail—not a
-feature grid—is the proof. Local use must be labeled **Run locally — free and
-open source**. The static page must not imply that Hosted Markov is available.
+feature grid—is the proof. Public language must sell the persistent web workspace:
+capture, parse, store, inspect, review, edit, and create. Static previews must use
+**Product demo** rather than implying that hosted account access is already live.
 
 ## Application behavior
 
@@ -169,17 +173,16 @@ open source**. The static page must not imply that Hosted Markov is available.
 - Design loading, empty, failed, review, and completed states with the same
   clarity as the happy path.
 
-## Current gaps to fix
+## Current product priorities
 
-- The landing page proves evidence and insight but does not yet show the final
-  output growing from the same trail.
-- The three outcomes are presented as a familiar equal-card row instead of
-  branches from one research case.
-- The source trail is implied in copy but is not the memorable visual behavior.
-- The local, free, open-source action is less explicit than the interface skill
-  requires.
-- The workspace has the correct job language, but its generic panel grid weakens
-  the universal input and makes account metadata too prominent.
+- Keep the web application—not the API or repository—as the primary product in
+  navigation, copy, and calls to action.
+- Show the final brief, report, answer, or script growing from the same inspected
+  chain instead of presenting creation as a detached generation step.
+- Make stored trails, review, versioned editing, and reuse feel like one continuous
+  workspace rather than a collection of administrative screens.
+- Treat mobile as frictionless browsing capture that syncs to the web workspace,
+  never as a compressed version of the full product.
 
 ## Acceptance checks
 
