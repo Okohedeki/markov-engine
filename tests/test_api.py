@@ -240,10 +240,10 @@ async def test_web_login_and_focused_intake_page():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "What should Markov work with?" in signed_in.text
-            assert "Brief it" in signed_in.text
-            assert "Research it" in signed_in.text
-            assert "Script it" in signed_in.text
+            assert "What did you find?" in signed_in.text
+            assert "Catch me up" in signed_in.text
+            assert "Explore where it leads" in signed_in.text
+            assert "Turn it into a script" in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
     finally:
         await store.close()
@@ -258,11 +258,13 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Research you can publish." in landing.text
-            assert "Brief, Research Report, or factual Script" in landing.text
-            assert "A workspace for people. An API for agents." in landing.text
-            assert "See a finished case" in landing.text
-            assert "Demonstration fixture" in landing.text
+            assert "Turn anything you find into something you can use." in landing.text
+            assert "Catch me up" in landing.text
+            assert "Explore where it leads" in landing.text
+            assert "Turn it into a script" in landing.text
+            assert "A real source-to-insight path" in landing.text
+            assert "Plausible hypothesis" in landing.text
+            assert "No invented evidence IDs" in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             assert "customer logos" not in landing.text.lower()
@@ -277,14 +279,16 @@ async def test_public_site_explains_product_and_api_without_invented_proof():
             developers = await client.get("/developers")
             assert developers.status_code == 200
             assert "Idempotency-Key" in developers.text
-            assert "POST /v1/jobs" in developers.text
-            assert "claims, passages, provenance, costs" in developers.text
+            assert "POST /v2/jobs" in developers.text
+            assert "typed connections" in developers.text
 
             sample = await client.get("/sample")
             assert sample.status_code == 200
-            assert "CASE MKV–024" in sample.text
-            assert "Claim ledger" in sample.text
-            assert "illustrative" in sample.text
+            assert "From Japan’s ageing population" in sample.text
+            assert "Resulting insight" in sample.text
+            assert "U.S. Treasury" in sample.text
+            assert "published sources" in sample.text
+            assert "CASE MKV" not in sample.text
 
             css = await client.get("/static/markov.css")
             assert css.status_code == 200
@@ -324,10 +328,55 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             artifact = await client.get(artifact_match.group(1))
             assert artifact.status_code == 200
             assert "Continue this case" in artifact.text
+            assert "Connections" in artifact.text
             assert "Claim ledger" in artifact.text
             assert "Export JSON" in artifact.text
             assert "&lt;script&gt;" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_workspace_only_shows_and_serves_entitled_exports():
+    store = await SqliteStore.open(":memory:")
+    settings = _settings()
+    settings.owner_entitlement_profiles = {"owner-1": "cloud_free"}
+    app = create_app(store=store, settings=settings, process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test", follow_redirects=True
+        ) as client:
+            await client.post(
+                "/app/login",
+                content="api_key=customer-key",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            job = await client.post(
+                "/app/jobs",
+                content="mode=brief&review_level=instant&value=Test",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            artifact_match = re.search(r'href="(/app/artifacts/\d+)"', job.text)
+            assert artifact_match is not None
+            artifact_path = artifact_match.group(1)
+            artifact = await client.get(artifact_path)
+            assert "Export Markdown" in artifact.text
+            assert "Export JSON" in artifact.text
+            assert "Export HTML" not in artifact.text
+
+            blocked = await client.get(f"{artifact_path}/export?format=html")
+            assert blocked.status_code == 200
+            assert "Export is not available" in blocked.text
+            assert "cloud_free profile" in blocked.text
+
+            api_blocked = await client.get(
+                f"/v1/artifacts/{artifact_path.rsplit('/', 1)[-1]}/export?format=html",
+                headers={"X-Markov-Key": "customer-key"},
+            )
+            assert api_blocked.status_code == 403
+            assert "cloud_free profile" in api_blocked.json()["detail"]
     finally:
         await store.close()
 
