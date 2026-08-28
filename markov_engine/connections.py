@@ -209,6 +209,51 @@ async def discover_connection_candidates(
                 f"[E{link.evidence.id}] {link.evidence.passage_text} "
                 f"(claim C{claim.id}; {link.stance}; strength {link.strength:.2f})"
             )
+    if _settings.llm_backend == "heuristic" or (
+        _settings.llm_backend == "anthropic" and not _settings.anthropic_api_key
+    ):
+        # Offline mode proposes research directions, never fabricated findings.
+        # The validator keeps these at hypothesis level until evidence is linked.
+        nodes = [("claim", item.id, item.claim_text) for item in claims]
+        nodes += [("gap", item.id, item.question) for item in gaps]
+        kinds = ["shared_mechanism", "hidden_intermediary", "constraint_link"]
+        candidates = []
+        for index, (left, right) in enumerate(zip(nodes, nodes[1:])):
+            if index >= 3:
+                break
+            candidates.append(
+                {
+                    "source_node_type": left[0],
+                    "source_node_id": left[1],
+                    "target_node_type": right[0],
+                    "target_node_id": right[1],
+                    "connection_type": kinds[index % len(kinds)],
+                    "statement": (
+                        f"A useful research branch tests whether {left[2]} is linked to "
+                        f"{right[2]}."
+                    ),
+                    "mechanism": (
+                        "The proposed link would require a shared input, intermediary, "
+                        "or constraint that can be inspected independently."
+                    ),
+                    "why_it_matters": (
+                        "Resolving the link could change the source from a recap into an "
+                        "explanation, or show that the apparent connection should be rejected."
+                    ),
+                    "supports": "Both nodes are explicit, addressable parts of this case.",
+                    "weakens": "No independent passage yet establishes the proposed mechanism.",
+                    "could_lead_to": "Search for direct evidence of the proposed intermediary.",
+                    "evidence_level": "plausible_hypothesis",
+                    "relevance": 0.7,
+                    "evidence_strength": 0.25,
+                    "novelty": 0.55,
+                    "explanatory_value": 0.65,
+                    "output_usefulness": 0.7,
+                    "risk": 0.55,
+                    "evidence": [],
+                }
+            )
+        return candidates, 0.0
     prompt = _CONNECTION_PROMPT.format(
         claims="\n".join(
             f"[C{item.id}] {item.claim_text} ({item.verification_status})"
@@ -490,6 +535,9 @@ async def process_connection_graph(
 ) -> dict:
     """Discover once, validate every candidate, then derive paths and insights."""
     existing = await store.list_connections(case_id)
+    case = await store.get_research_case(case_id)
+    if case is None:
+        raise ValueError("Research case not found")
     cost = 0.0
     if not existing:
         result = await discoverer(store, case_id=case_id)
@@ -507,6 +555,30 @@ async def process_connection_graph(
             )
             existing.append(connection)
             nodes["connection"].add(connection.id)
+            await store.record_usage_event(
+                owner_id=case.owner_id,
+                event_type="connection_discovered",
+                research_case_id=case_id,
+                metadata={
+                    "connection_id": connection.id,
+                    "connection_type": connection.connection_type,
+                    "evidence_level": connection.evidence_level,
+                },
+            )
+            await store.record_usage_event(
+                owner_id=case.owner_id,
+                event_type=(
+                    "connection_validated"
+                    if connection.validation_status == "validated"
+                    else "connection_rejected"
+                ),
+                research_case_id=case_id,
+                metadata={
+                    "connection_id": connection.id,
+                    "score": connection.total_score,
+                    "reason": connection.rejection_reason,
+                },
+            )
     paths = await build_connection_paths(store, case_id=case_id)
     insights = await derive_insight_candidates(store, case_id=case_id, paths=paths)
     await store.record_cost(

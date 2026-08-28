@@ -127,14 +127,25 @@ async def test_all_renderers_preserve_claims_evidence_and_locators():
         assert "## What can be skipped" in brief.content
         assert "1:02–1:08" in brief.content
         assert "## Source navigation" in brief.content
+        assert "## Assumptions" in brief.content
+        assert "## What the source leaves out" in brief.content
+        assert "## What may be wrong" in brief.content
+        assert "## Threads worth pulling" in brief.content
 
         assert "## Direct answer" in report.content
         assert "## Counterevidence and qualifications" in report.content
         assert "## Source-quality classifications" in report.content
+        assert "## Connection map" in report.content
+        assert "## Hidden story" in report.content
+        assert "## Novel hypotheses" in report.content
+        assert "## Research paths" in report.content
 
         assert "## Complete spoken narration" in script.content
         assert "## Fact-check appendix" in script.content
         assert "## Do not repeat" in script.content
+        assert "## Premise check" in script.content
+        assert "## Candidate angles" in script.content
+        assert "## Original, defensible angle" in script.content
         assert script.structured_content["target_minutes"] == 6
         assert script.structured_content["actual_narration_word_count"] > 0
 

@@ -9,7 +9,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from markov_engine.store.records import ClaimRec, ResearchCaseRec, SourceSegmentRec
+from markov_engine.store.records import (
+    ClaimRec,
+    ConnectionRec,
+    ResearchCaseRec,
+    SourceSegmentRec,
+)
 from markov_engine.store.sqlite import SqliteStore
 
 ARTIFACT_TYPES = {"brief", "research_report", "script"}
@@ -71,6 +76,11 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
     evidence_by_claim = {
         claim.id: await store.list_claim_evidence(claim.id) for claim in claims
     }
+    connections = await store.list_connections(case_id)
+    connection_evidence = {
+        connection.id: await store.list_connection_evidence(connection.id)
+        for connection in connections
+    }
     return {
         "case": case,
         "claims": claims,
@@ -79,6 +89,11 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
         "source_ids": source_ids,
         "segments": segments_by_id,
         "evidence": evidence_by_claim,
+        "connections": connections,
+        "connection_evidence": connection_evidence,
+        "paths": await store.list_connection_paths(case_id),
+        "insights": await store.list_insight_candidates(case_id),
+        "branch_decisions": await store.list_user_branch_decisions(case_id),
     }
 
 
@@ -110,11 +125,61 @@ def _evidence_lines(context: dict, claim: ClaimRec) -> list[str]:
     return lines
 
 
+def _connection_line(connection: ConnectionRec) -> str:
+    label = connection.connection_type.replace("_", " ").title()
+    level = connection.evidence_level.replace("_", " ").title()
+    return (
+        f"**K{connection.id} — {label} · {level}**: {connection.statement}\n"
+        f"  - **Mechanism:** {connection.mechanism}\n"
+        f"  - **Why it matters:** {connection.why_it_matters}\n"
+        f"  - **Supports:** {connection.supports}\n"
+        f"  - **Weakens:** {connection.weakens or 'No weakening condition was recorded.'}\n"
+        f"  - **Could lead to:** {connection.could_lead_to}\n"
+        f"  - **Score:** {connection.total_score:.2f}; risk {connection.risk:.2f}"
+    )
+
+
+def _connection_evidence_lines(context: dict, connection: ConnectionRec) -> list[str]:
+    lines = []
+    for link in context["connection_evidence"].get(connection.id, []):
+        evidence = link.evidence
+        if evidence is None:
+            continue
+        locator = (
+            _format_seconds(evidence.start_seconds)
+            or (f"p. {evidence.page_number}" if evidence.page_number else None)
+            or evidence.section_title
+            or "passage"
+        )
+        lines.append(
+            f"  - E{evidence.id} · {link.stance} · {link.strength:.0%} · "
+            f"{locator}: {link.rationale}"
+        )
+    return lines
+
+
 def _citation_lines(context: dict) -> list[str]:
     by_source = {row["id"]: row for row in context["sources"]}
     seen: set[int] = set()
     lines = []
     for links in context["evidence"].values():
+        for link in links:
+            evidence = link.evidence
+            if evidence is None or evidence.id in seen:
+                continue
+            seen.add(evidence.id)
+            source = by_source.get(evidence.source_id)
+            title = source["title"] if source else "Source"
+            url = source["url"] if source else None
+            locator = (
+                _format_seconds(evidence.start_seconds)
+                or (f"p. {evidence.page_number}" if evidence.page_number else None)
+                or evidence.section_title
+                or "passage"
+            )
+            target = f" — {url}" if url else ""
+            lines.append(f"[^E{evidence.id}]: {title}, {locator}{target}")
+    for links in context["connection_evidence"].values():
         for link in links:
             evidence = link.evidence
             if evidence is None or evidence.id in seen:
@@ -142,6 +207,9 @@ def _structured_sections(sections: list[dict]) -> list[dict]:
             "content": section["content"],
             "claim_ids": section.get("claim_ids", []),
             "evidence_ids": section.get("evidence_ids", []),
+            "connection_ids": section.get("connection_ids", []),
+            "path_ids": section.get("path_ids", []),
+            "insight_ids": section.get("insight_ids", []),
             "statement_type": section.get("statement_type", "fact"),
         }
         for section in sections
@@ -228,6 +296,39 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
         "\n".join(f"- **{gap.gap_type.replace('_', ' ')}:** {gap.question}" for gap in context["gaps"])
         or "No explicit missing-context question was extracted."
     )
+    validated_connections = [
+        item
+        for item in context["connections"]
+        if item.validation_status == "validated"
+    ]
+    assumptions = [
+        claim
+        for claim in claims
+        if claim.claim_type in {"predictive", "opinion", "inference", "causal"}
+    ]
+    assumption_text = (
+        "\n".join(
+            f"- C{claim.id}: {claim.claim_text} — treated as "
+            f"{claim.claim_type.replace('_', ' ')}, not settled fact."
+            for claim in assumptions
+        )
+        or "No material assumption was promoted beyond its evidence status."
+    )
+    leaves_out = (
+        "\n".join(f"- {gap.question}" for gap in context["gaps"])
+        or "No specific omission was identified from the current source and evidence packet."
+    )
+    may_be_wrong = (
+        "\n".join(
+            f"- C{claim.id}: {claim.claim_text} — {claim.verification_status.replace('_', ' ')}."
+            for claim in misleading
+        )
+        or "No priority claim is currently contradicted or unresolved."
+    )
+    threads = (
+        "\n\n".join(_connection_line(item) for item in validated_connections[:5])
+        or "No connection passed validation. The source remains a starting point, not a forced story."
+    )
     sections = [
         {
             "id": "bottom-line",
@@ -252,6 +353,29 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
             "claim_ids": [claim.id for claim in factual],
         },
         {"id": "missing-context", "title": "Missing context", "content": gap_text},
+        {
+            "id": "assumptions",
+            "title": "Assumptions",
+            "content": assumption_text,
+            "claim_ids": [claim.id for claim in assumptions],
+        },
+        {
+            "id": "leaves-out",
+            "title": "What the source leaves out",
+            "content": leaves_out,
+        },
+        {
+            "id": "may-be-wrong",
+            "title": "What may be wrong",
+            "content": may_be_wrong,
+            "claim_ids": [claim.id for claim in misleading],
+        },
+        {
+            "id": "threads-worth-pulling",
+            "title": "Threads worth pulling",
+            "content": threads,
+            "connection_ids": [item.id for item in validated_connections[:5]],
+        },
         {
             "id": "misleading",
             "title": "Potentially misleading or unresolved statements",
@@ -332,6 +456,55 @@ async def render_research_report(
                 f"- **C{claim.id} / E{evidence.id} / {link.stance}:** "
                 f"{evidence.passage_text} ({evidence.section_title or _format_seconds(evidence.start_seconds) or 'passage'})"
             )
+    validated_connections = [
+        item
+        for item in context["connections"]
+        if item.validation_status == "validated"
+    ]
+    rejected_connections = [
+        item
+        for item in context["connections"]
+        if item.validation_status == "rejected"
+    ]
+    connection_map = []
+    connection_evidence_ids = []
+    for connection in validated_connections:
+        connection_map.append(_connection_line(connection))
+        connection_map.extend(_connection_evidence_lines(context, connection))
+        connection_evidence_ids.extend(
+            link.evidence_passage_id
+            for link in context["connection_evidence"].get(connection.id, [])
+        )
+    top_insight = context["insights"][:1]
+    hidden_story = (
+        f"**{top_insight[0].title}**\n\n{top_insight[0].thesis}\n\n"
+        f"**Uncertainty:** {top_insight[0].uncertainty}"
+        if top_insight
+        else "No insight candidate survived the current connection graph. The premise should not be forced."
+    )
+    hypothesis_text = (
+        "\n\n".join(
+            f"**I{item.id} — {item.evidence_level.replace('_', ' ').title()}**: "
+            f"{item.thesis}\n- Novelty: {item.novelty_basis}\n"
+            f"- Counterevidence: {item.counterevidence or 'None recorded.'}\n"
+            f"- Next step: {item.next_step}"
+            for item in context["insights"]
+        )
+        or "No novel hypothesis has enough structure to present."
+    )
+    path_text = (
+        "\n\n".join(
+            f"**P{item.id} — {item.title}** (score {item.total_score:.2f}, "
+            f"risk {item.risk:.2f})\n{item.summary}\n"
+            f"Connections: {', '.join(f'K{value}' for value in item.connection_ids)}"
+            for item in context["paths"]
+        )
+        or "No coherent path has passed validation."
+    )
+    rejected_text = "\n".join(
+        f"- K{item.id}: {item.statement} — rejected: {item.rejection_reason}"
+        for item in rejected_connections
+    )
     sections = [
         {
             "id": "direct-answer",
@@ -355,6 +528,37 @@ async def render_research_report(
             "claim_ids": [claim.id for claim in claims[:5]],
         },
         {
+            "id": "connection-map",
+            "title": "Connection map",
+            "content": "\n\n".join(connection_map)
+            or "No connection passed validation.",
+            "connection_ids": [item.id for item in validated_connections],
+            "evidence_ids": list(dict.fromkeys(connection_evidence_ids)),
+        },
+        {
+            "id": "hidden-story",
+            "title": "Hidden story",
+            "content": hidden_story,
+            "insight_ids": [item.id for item in top_insight],
+        },
+        {
+            "id": "novel-hypotheses",
+            "title": "Novel hypotheses",
+            "content": hypothesis_text,
+            "insight_ids": [item.id for item in context["insights"]],
+        },
+        {
+            "id": "research-paths",
+            "title": "Research paths",
+            "content": path_text,
+            "path_ids": [item.id for item in context["paths"]],
+            "connection_ids": [
+                connection_id
+                for item in context["paths"]
+                for connection_id in item.connection_ids
+            ],
+        },
+        {
             "id": "claim-analysis",
             "title": "Claim-based analysis",
             "content": "\n\n".join(analysis_parts),
@@ -369,7 +573,9 @@ async def render_research_report(
                 for claim in claims
                 for line in _evidence_lines(context, claim)
                 if "contradict" in line or "qualif" in line
-            ) or "No linked passage currently contradicts or qualifies a priority claim.",
+            )
+            + (("\n\n**Rejected connection candidates**\n" + rejected_text) if rejected_text else "")
+            or "No linked passage currently contradicts or qualifies a priority claim.",
         },
         {
             "id": "missing-context",
@@ -452,6 +658,59 @@ async def render_script(
         f"Before accepting the usual story about {case.title}, we need to test its strongest claim.",
         f"The evidence around {case.title} is clearer in some places—and weaker in others—than it first appears.",
     ]
+    validated_connections = [
+        item
+        for item in context["connections"]
+        if item.validation_status == "validated"
+    ]
+    followed_connection_ids = {
+        item.connection_id
+        for item in context["branch_decisions"]
+        if item.action in {"follow", "deepen"}
+    }
+    validated_connections.sort(
+        key=lambda item: (item.id in followed_connection_ids, item.total_score),
+        reverse=True,
+    )
+    paths_by_id = {item.id: item for item in context["paths"]}
+    followed_insights = [
+        insight
+        for insight in context["insights"]
+        if any(
+            followed_connection_ids
+            & set(paths_by_id[path_id].connection_ids)
+            for path_id in insight.connection_path_ids
+            if path_id in paths_by_id
+        )
+    ]
+    selected_insight = (followed_insights or context["insights"])[:1]
+    selected_angle = (
+        selected_insight[0].thesis
+        if selected_insight
+        else (
+            "The available record supports an evidence audit, but not yet a distinct "
+            "connection-led premise."
+        )
+    )
+    candidate_angles = (
+        "\n".join(
+            f"- **I{item.id} · {item.evidence_level.replace('_', ' ')}:** "
+            f"{item.thesis}\n  - Why it is new: {item.novelty_basis}\n"
+            f"  - Risk: {item.uncertainty}"
+            for item in context["insights"][:5]
+        )
+        or "- No connection-led angle passed validation; use the evidence-audit framing."
+    )
+    premise_check = (
+        "The seed premise can be developed only with the qualifications below. "
+        "The selected angle is bounded by its weakest essential connection."
+        if selected_insight
+        else (
+            "Reject the source's premise as the script thesis for now. The case can "
+            "document what was claimed, but it lacks a validated connection that makes "
+            "the premise original and defensible."
+        )
+    )
 
     narration_parts = [
         hooks[0],
@@ -466,6 +725,7 @@ async def render_script(
     ]
     narration_claim_ids = [claim.id for claim in thesis_claim]
     evidence_ids = []
+    narration_connection_ids = []
     transitions = [
         "First, consider the source's central assertion.",
         "That leads to the next piece of the argument.",
@@ -520,6 +780,7 @@ async def render_script(
                 "located evidence supports. Any broader causal story, comparison, or implied "
                 "forecast would need its own claim and its own evidence."
             )
+    narration_connection_ids.extend(item.id for item in validated_connections[:3])
     if context["gaps"]:
         narration_parts.append(
             "The research also surfaced questions that the available passages do not settle. "
@@ -558,12 +819,36 @@ async def render_script(
             f"{claim.claim_text}\n\n"
             + ("\n".join(_evidence_lines(context, claim)) or "No evidence passage obtained.")
         )
-    do_not_repeat = "\n".join(
+    for connection in validated_connections:
+        fact_check.append(
+            f"### K{connection.id} — {connection.evidence_level.replace('_', ' ').title()}\n\n"
+            f"{_connection_line(connection)}\n\n"
+            + (
+                "\n".join(_connection_evidence_lines(context, connection))
+                or "No passage is directly linked; retain the hypothesis label."
+            )
+        )
+    do_not_repeat_claims = "\n".join(
         f"- C{claim.id}: {claim.claim_text} — {claim.verification_status.replace('_', ' ')}"
         for claim in weak
-    ) or "No claim was removed from narration for evidentiary weakness."
+    )
+    do_not_repeat_connections = "\n".join(
+        f"- K{item.id}: {item.statement} — rejected: {item.rejection_reason}"
+        for item in context["connections"]
+        if item.validation_status == "rejected"
+    )
+    do_not_repeat = "\n".join(
+        item for item in (do_not_repeat_claims, do_not_repeat_connections) if item
+    ) or "No claim or connection was removed from narration for evidentiary weakness."
     sections = [
         {"id": "production-verdict", "title": "Production verdict", "content": verdict},
+        {
+            "id": "premise-check",
+            "title": "Premise check",
+            "content": premise_check,
+            "connection_ids": [item.id for item in validated_connections],
+            "insight_ids": [item.id for item in selected_insight],
+        },
         {
             "id": "recommended-thesis",
             "title": "Recommended thesis",
@@ -576,16 +861,18 @@ async def render_script(
             "content": f"Give {audience} a {tone} explanation of what is supported, what is qualified, and what common coverage misses.",
         },
         {
+            "id": "candidate-angles",
+            "title": "Candidate angles",
+            "content": candidate_angles,
+            "insight_ids": [item.id for item in context["insights"][:5]],
+        },
+        {
             "id": "recommended-angle",
-            "title": "Recommended angle",
-            "content": (
-                "Lead with the gap between the source's strongest assertion and the quality "
-                "of evidence available for it. This angle is grounded in the linked passages, "
-                "offers audience value by making uncertainty legible, and is more distinctive "
-                "than a recap. Its risk is overstating absence of evidence as disproof, so the "
-                "script keeps qualifications and unresolved gaps explicit."
-            ),
+            "title": "Original, defensible angle",
+            "content": selected_angle,
             "claim_ids": [claim.id for claim in thesis_claim],
+            "connection_ids": [item.id for item in validated_connections[:3]],
+            "insight_ids": [item.id for item in selected_insight],
         },
         {"id": "title-options", "title": "Title options", "content": "\n".join(f"- {item}" for item in title_options)},
         {"id": "hook-options", "title": "Hook options", "content": "\n".join(f"- {item}" for item in hooks)},
@@ -595,6 +882,8 @@ async def render_script(
             "content": narration,
             "claim_ids": list(dict.fromkeys(narration_claim_ids)),
             "evidence_ids": list(dict.fromkeys(evidence_ids)),
+            "connection_ids": list(dict.fromkeys(narration_connection_ids)),
+            "insight_ids": [item.id for item in selected_insight],
             "statement_type": "mixed",
         },
         {
@@ -612,9 +901,15 @@ async def render_script(
             "content": "\n\n".join(fact_check) or "No claims were available.",
             "claim_ids": [claim.id for claim in claims],
             "evidence_ids": list(dict.fromkeys(evidence_ids)),
+            "connection_ids": [item.id for item in validated_connections],
         },
         {"id": "do-not-repeat", "title": "Do not repeat", "content": do_not_repeat,
-         "claim_ids": [claim.id for claim in weak]},
+         "claim_ids": [claim.id for claim in weak],
+         "connection_ids": [
+             item.id
+             for item in context["connections"]
+             if item.validation_status == "rejected"
+         ]},
     ]
     title = f"Markov Script: {case.title}"
     citations = _citation_lines(context)

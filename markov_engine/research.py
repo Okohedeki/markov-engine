@@ -8,6 +8,10 @@ import uuid
 from urllib.parse import urlparse
 
 from markov_engine.claims import extract_claims
+from markov_engine.connections import (
+    discover_connection_candidates,
+    process_connection_graph,
+)
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
 from markov_engine.extract import classify_url, extract_content
@@ -53,7 +57,7 @@ async def create_research_case(
     if mode not in MODE_TO_ARTIFACT:
         raise ValueError(f"Unsupported mode: {mode}")
     input_type = classify_input(original_input)
-    return await store.create_research_case(
+    case = await store.create_research_case(
         owner_id=owner_id,
         title=_initial_title(original_input),
         original_input=original_input.strip(),
@@ -61,6 +65,19 @@ async def create_research_case(
         purpose=mode,
         constraints=constraints or {},
     )
+    await store.record_usage_event(
+        owner_id=owner_id,
+        event_type="source_submitted",
+        research_case_id=case.id,
+        metadata={"input_type": input_type},
+    )
+    await store.record_usage_event(
+        owner_id=owner_id,
+        event_type="mode_selected",
+        research_case_id=case.id,
+        metadata={"mode": mode},
+    )
+    return case
 
 
 async def _ensure_seed_source(
@@ -412,6 +429,7 @@ async def process_research_case(
     extractor=extract_content,
     claim_extractor=extract_claims,
     claim_researcher=research_claim,
+    connection_discoverer=discover_connection_candidates,
     searcher=None,
     max_priority_claims: int = 5,
     max_sources_per_claim: int = 3,
@@ -478,6 +496,21 @@ async def process_research_case(
             await claim_researcher(store, **kwargs)
         claims = await store.list_claims(case.id)
         await stage("comparing_sources")
+        await stage("discovering_connections")
+        graph = await process_connection_graph(
+            store,
+            case_id=case.id,
+            discoverer=connection_discoverer,
+        )
+        await stage(
+            "validating_connections",
+            {
+                "validated": len(graph["validated"]),
+                "rejected": len(graph["rejected"]),
+            },
+        )
+        await stage("building_paths", {"paths": len(graph["paths"])})
+        await stage("synthesizing_insights", {"insights": len(graph["insights"])})
         await store.update_research_case(case.id, status="rendering")
         refreshed = await store.get_research_case(case.id)
         assert refreshed is not None
@@ -519,6 +552,10 @@ async def process_research_case(
                 ),
                 "source_count": len(source_rows),
                 "evidence_passage_count": evidence_count,
+                "connection_count": len(graph["connections"]),
+                "validated_connection_count": len(graph["validated"]),
+                "connection_path_count": len(graph["paths"]),
+                "insight_count": len(graph["insights"]),
                 "artifact_word_counts": {
                     artifact.artifact_type: artifact.word_count for artifact in artifacts
                 },
