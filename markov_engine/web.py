@@ -14,7 +14,12 @@ from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
 from markov_engine.billing import public_catalog
+from markov_engine.branching import (
+    follow_connection_into_script,
+    record_connection_decision,
+)
 from markov_engine.config import Settings
+from markov_engine.entitlements import resolve_entitlements
 from markov_engine.exports import export_artifact, markdown_to_safe_html
 from markov_engine.jobs import run_job, submit_job
 from markov_engine.research import convert_case_artifact
@@ -134,9 +139,14 @@ def _unsigned(value: str | None, secret: str) -> str | None:
 
 def _job_language(job) -> tuple[str, str]:
     if job.status == "completed":
+        result_name = {
+            "brief": "brief",
+            "research": "exploration",
+            "script": "script",
+        }.get(job.mode, _humanize(job.mode).lower())
         return (
-            f"Your {_humanize(job.mode).lower()} is ready.",
-            "The finished artifact and its evidence trail are ready to inspect.",
+            f"Your {result_name} is ready.",
+            "The artifact, connections, and source trail are ready to inspect.",
         )
     if job.status == "awaiting_review":
         return (
@@ -153,6 +163,10 @@ def _job_language(job) -> tuple[str, str]:
         "extracting_sources": "Reading the source material.",
         "extracting_claims": "Finding the claims that matter.",
         "researching_claims": "Testing claims against evidence.",
+        "discovering_connections": "Looking for useful connections.",
+        "validating_connections": "Testing each connection.",
+        "building_paths": "Building paths through the idea.",
+        "synthesizing_insights": "Turning the strongest path into an insight.",
         "building_artifact": "Writing the finished artifact.",
     }
     return (
@@ -234,6 +248,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             active="overview",
             owner_id=owner_id,
             account=account,
+            entitlements=resolve_entitlements(owner_id, settings=settings),
             jobs=await store.list_jobs(owner_id=owner_id, limit=12),
             products=public_catalog(settings),
         )
@@ -318,6 +333,19 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             {"claim": claim, "evidence": await store.list_claim_evidence(claim.id)}
             for claim in claims
         ]
+        decisions = await store.list_user_branch_decisions(
+            case.id, owner_id=owner_id
+        )
+        latest_decision = {item.connection_id: item for item in decisions}
+        connections = await store.list_connections(case.id)
+        connection_rows = [
+            {
+                "connection": connection,
+                "evidence": await store.list_connection_evidence(connection.id),
+                "decision": latest_decision.get(connection.id),
+            }
+            for connection in connections
+        ]
         await store.record_usage_event(
             owner_id=owner_id,
             event_type="artifact_viewed",
@@ -331,8 +359,10 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             artifact=artifact,
             artifact_body=_markdown_body(artifact.content),
             case=case,
+            entitlements=resolve_entitlements(owner_id, settings=settings),
             sections=structured.get("sections", []),
             claim_rows=claim_rows,
+            connection_rows=connection_rows,
             gaps=await store.list_research_gaps(case.id),
             sources=[
                 _safe_source(source)
@@ -345,6 +375,17 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         artifact_id: int, request: Request, format: str = "markdown"
     ):
         owner_id = owner(request)
+        entitlements = resolve_entitlements(owner_id, settings=settings)
+        if format not in entitlements.export_formats:
+            return _render(
+                request,
+                "error.html",
+                title="Export is not available",
+                message=(
+                    f"The {entitlements.profile} profile does not include "
+                    f"{format} export."
+                ),
+            )
         try:
             content, media_type, filename = await export_artifact(
                 request.app.state.store,
@@ -399,6 +440,48 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 message=str(exc),
             )
         return RedirectResponse(f"/app/artifacts/{return_artifact}", status_code=303)
+
+    @router.post("/app/connections/{connection_id}/actions")
+    async def connection_action_page(connection_id: int, request: Request):
+        owner_id = owner(request)
+        values = await _form(request)
+        action = values.get("action", "open")
+        return_artifact = int(values.get("return_artifact") or 0)
+        try:
+            if action == "follow":
+                current = await request.app.state.store.get_artifact(
+                    return_artifact, owner_id=owner_id
+                )
+                script_id = (
+                    current.id
+                    if current is not None and current.artifact_type == "script"
+                    else None
+                )
+                _decision, artifact = await follow_connection_into_script(
+                    request.app.state.store,
+                    connection_id=connection_id,
+                    owner_id=owner_id,
+                    artifact_id=script_id,
+                )
+                return RedirectResponse(
+                    f"/app/artifacts/{artifact.id}", status_code=303
+                )
+            await record_connection_decision(
+                request.app.state.store,
+                connection_id=connection_id,
+                owner_id=owner_id,
+                action=action,
+            )
+        except ValueError as exc:
+            return _render(
+                request,
+                "error.html",
+                title="Could not update the connection",
+                message=str(exc),
+            )
+        return RedirectResponse(
+            f"/app/artifacts/{return_artifact}", status_code=303
+        )
 
     @router.post("/app/artifacts/{artifact_id}/revisions")
     async def revise_page(artifact_id: int, request: Request):
