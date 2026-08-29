@@ -51,6 +51,42 @@ Second cue.
     ]
 
 
+def test_vtt_segments_collapse_rolling_youtube_windows():
+    payload = """WEBVTT
+
+00:00:01.000 --> 00:00:03.000
+You are the best
+
+00:00:03.000 --> 00:00:05.000
+You are the best person for this
+
+00:00:05.000 --> 00:00:07.000
+person for this difficult job
+
+00:00:07.000 --> 00:00:09.000
+difficult job because you prepared
+
+00:00:09.000 --> 00:00:11.000
+because you prepared carefully yesterday
+
+00:00:11.000 --> 00:00:13.000
+carefully yesterday and checked everything.
+"""
+    segments = extract._parse_timed_text_segments(
+        payload, caption_source="youtube_auto"
+    )
+
+    assert len(segments) == 1
+    assert segments[0].text == (
+        "You are the best person for this difficult job because you prepared "
+        "carefully yesterday and checked everything."
+    )
+    assert segments[0].text.count("You are the best") == 1
+    assert segments[0].start_seconds == pytest.approx(1)
+    assert segments[0].end_seconds == pytest.approx(13)
+    assert segments[0].caption_source == "youtube_auto"
+
+
 @pytest.mark.asyncio
 async def test_media_prefers_structured_captions(monkeypatch, tmp_path):
     caption_data = json.loads(FIXTURE.read_text(encoding="utf-8"))

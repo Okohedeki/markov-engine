@@ -416,7 +416,94 @@ def _parse_timed_text_segments(
                     )
                 )
         index += 1
-    return _with_character_offsets(output)
+    return _with_character_offsets(_collapse_rolling_captions(output))
+
+
+def _caption_words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9']+", text.lower())
+
+
+def _caption_overlap(left: str, right: str) -> int:
+    """Return the largest word overlap between a prior cue and a new cue."""
+    left_words = _caption_words(left)
+    right_words = _caption_words(right)
+    for size in range(min(len(left_words), len(right_words), 80), 0, -1):
+        if left_words[-size:] == right_words[:size]:
+            return size
+    return 0
+
+
+def _caption_delta(text: str, overlap_words: int) -> str:
+    """Remove a normalized-word prefix without losing the cue's punctuation."""
+    if overlap_words <= 0:
+        return text.strip()
+    raw_words = text.split()
+    consumed = 0
+    for index, raw_word in enumerate(raw_words):
+        consumed += len(_caption_words(raw_word))
+        if consumed >= overlap_words:
+            return " ".join(raw_words[index + 1 :]).strip()
+    return ""
+
+
+def _collapse_rolling_captions(
+    segments: list[ExtractedSegment],
+    *,
+    window_seconds: float = 20,
+    max_chars: int = 600,
+) -> list[ExtractedSegment]:
+    """Collapse YouTube's rolling VTT windows into useful timestamped passages.
+
+    Ordinary VTT/SRT cue files remain untouched. Rolling captions are detected
+    only when repeated word windows occur throughout the track. The resulting
+    passages retain bounded start/end timestamps without feeding dozens of
+    near-duplicate cues into claim extraction.
+    """
+    if len(segments) < 3:
+        return segments
+    overlap_pairs = sum(
+        _caption_overlap(left.text, right.text) >= 3
+        for left, right in zip(segments, segments[1:])
+    )
+    if overlap_pairs / max(1, len(segments) - 1) < 0.2:
+        return segments
+
+    emitted_normalized: list[str] = []
+    compacted: list[ExtractedSegment] = []
+    for cue in segments:
+        normalized = _caption_words(cue.text)
+        overlap = 0
+        for size in range(min(len(emitted_normalized), len(normalized), 80), 0, -1):
+            if emitted_normalized[-size:] == normalized[:size]:
+                overlap = size
+                break
+        if overlap >= len(normalized):
+            continue
+        delta = _caption_delta(cue.text, overlap)
+        if not delta:
+            continue
+        emitted_normalized.extend(_caption_words(delta))
+        active = compacted[-1] if compacted else None
+        within_window = (
+            active is not None
+            and active.start_seconds is not None
+            and cue.end_seconds is not None
+            and cue.end_seconds - active.start_seconds <= window_seconds
+        )
+        if active is not None and within_window and len(active.text) + len(delta) + 1 <= max_chars:
+            active.text = f"{active.text} {delta}".strip()
+            active.end_seconds = cue.end_seconds
+        else:
+            compacted.append(
+                ExtractedSegment(
+                    ordinal=len(compacted),
+                    text=delta,
+                    start_seconds=cue.start_seconds,
+                    end_seconds=cue.end_seconds,
+                    caption_source=cue.caption_source,
+                )
+            )
+    return compacted or segments
 
 
 def _subtitle_payload_segments(
