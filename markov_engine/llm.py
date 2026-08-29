@@ -6,6 +6,8 @@ local model or in the cloud:
   OpenAI-compatible /chat/completions endpoint (Ollama, llama.cpp, vLLM,
   LM Studio).
 - ``llamacpp``  — an in-process GGUF via llama-cpp-python.
+- ``hybrid``    — a task router that keeps bounded reduction/classification on
+  a local OpenAI-compatible server and escalates only selected work to cloud.
 
 Public surface (``complete`` / ``complete_json`` / ``stream_complete``) is the
 same across backends. Provider SDKs are imported lazily, so you only need the
@@ -76,16 +78,53 @@ def _local_model() -> str:
     return _settings.llm_model or "local-model"
 
 
-def _openai_mode() -> str:
-    mode = _settings.openai_api_mode.strip().lower()
+def _mode_for(base_url: str, configured_mode: str) -> str:
+    mode = configured_mode.strip().lower()
     if mode not in {"auto", "responses", "chat_completions"}:
         raise ValueError(
             "OPENAI_API_MODE must be auto, responses, or chat_completions"
         )
     if mode != "auto":
         return mode
-    hostname = (urlparse(_settings.openai_base_url).hostname or "").lower()
+    hostname = (urlparse(base_url).hostname or "").lower()
     return "responses" if hostname == "api.openai.com" else "chat_completions"
+
+
+def _openai_mode() -> str:
+    return _mode_for(_settings.openai_base_url, _settings.openai_api_mode)
+
+
+def _hybrid_local_tasks() -> set[str]:
+    return {
+        item.strip().lower()
+        for item in _settings.hybrid_local_tasks.split(",")
+        if item.strip()
+    }
+
+
+def _openai_task_model(task: str) -> str:
+    """Resolve one cloud model by semantic task, with LLM_MODEL as an override."""
+    if _settings.llm_model.strip():
+        return _settings.llm_model.strip()
+    normalized = (task or "").strip().lower()
+    if normalized in {"artifact_synthesis", "connection_synthesis", "synthesis"}:
+        return _settings.openai_model_synthesis
+    if normalized in {"planning", "planning_review"}:
+        return _settings.openai_model_planning
+    if normalized in {"evidence_classification", "classification"}:
+        return _settings.openai_model_classify
+    return _settings.openai_model_extraction
+
+
+def _hybrid_prefers_local(task: str, route: str) -> bool:
+    normalized_route = route.strip().lower()
+    if normalized_route not in {"auto", "local", "cloud"}:
+        raise ValueError("route must be auto, local, or cloud")
+    if normalized_route == "local":
+        return True
+    if normalized_route == "cloud":
+        return False
+    return task.strip().lower() in _hybrid_local_tasks()
 
 
 def _strict_openai_schema(schema: dict) -> dict:
@@ -216,22 +255,31 @@ def _heuristic_text(prompt: str) -> str:
 
 # ── OpenAI-compatible chat ────────────────────────────────────────
 async def _openai_chat(
-    messages: list[dict], *, max_tokens: int, json_mode: bool
+    messages: list[dict],
+    *,
+    max_tokens: int,
+    json_mode: bool,
+    base_url: str | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
 ) -> tuple[str, float]:
-    payload = {"model": _local_model(), "messages": messages,
+    selected_base_url = base_url or _settings.openai_base_url
+    selected_api_key = _settings.openai_api_key if api_key is None else api_key
+    selected_model = model or _local_model()
+    payload = {"model": selected_model, "messages": messages,
                "max_tokens": max_tokens, "temperature": 0.3}
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
     headers = {}
-    if _settings.openai_api_key:
-        headers["Authorization"] = f"Bearer {_settings.openai_api_key}"
-    url = _settings.openai_base_url.rstrip("/") + "/chat/completions"
+    if selected_api_key:
+        headers["Authorization"] = f"Bearer {selected_api_key}"
+    url = selected_base_url.rstrip("/") + "/chat/completions"
     async with httpx.AsyncClient(timeout=300) as client:
         r = await client.post(url, json=payload, headers=headers)
         r.raise_for_status()
         data = r.json()
         text = (data["choices"][0]["message"].get("content") or "").strip()
-        return text, _openai_cost(_local_model(), data.get("usage"))
+        return text, _openai_cost(selected_model, data.get("usage"))
 
 
 def _responses_output_text(data: dict) -> str:
@@ -252,15 +300,25 @@ async def _openai_responses(
     *,
     max_tokens: int,
     schema: dict | None = None,
+    base_url: str | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
+    reasoning_effort: str | None = None,
 ) -> tuple[str, float]:
-    model = _local_model()
+    selected_base_url = base_url or _settings.openai_base_url
+    selected_api_key = _settings.openai_api_key if api_key is None else api_key
+    selected_model = model or _local_model()
     payload: dict = {
-        "model": model,
+        "model": selected_model,
         "input": messages,
         "max_output_tokens": max_tokens,
         "store": False,
     }
-    effort = _settings.openai_reasoning_effort.strip().lower()
+    effort = (
+        _settings.openai_reasoning_effort
+        if reasoning_effort is None
+        else reasoning_effort
+    ).strip().lower()
     if effort:
         payload["reasoning"] = {"effort": effort}
     if schema is not None:
@@ -273,9 +331,9 @@ async def _openai_responses(
             }
         }
     headers = {"Content-Type": "application/json"}
-    if _settings.openai_api_key:
-        headers["Authorization"] = f"Bearer {_settings.openai_api_key}"
-    url = _settings.openai_base_url.rstrip("/") + "/responses"
+    if selected_api_key:
+        headers["Authorization"] = f"Bearer {selected_api_key}"
+    url = selected_base_url.rstrip("/") + "/responses"
     async with httpx.AsyncClient(timeout=300) as client:
         response = await client.post(url, json=payload, headers=headers)
         response.raise_for_status()
@@ -283,7 +341,7 @@ async def _openai_responses(
     text = _responses_output_text(data)
     if not text:
         raise RuntimeError("OpenAI Responses API returned no output text")
-    return text, _openai_cost(model, data.get("usage"))
+    return text, _openai_cost(selected_model, data.get("usage"))
 
 
 # ── in-process llama-cpp chat ─────────────────────────────────────
@@ -316,73 +374,332 @@ async def _chat(
     raise RuntimeError(f"Unknown LLM_BACKEND: {b!r}")
 
 
-# ── public API ────────────────────────────────────────────────────
-async def complete(prompt: str, *, model: str, max_tokens: int = 4096,
-                   system: str | None = None) -> tuple[str, float]:
-    if _settings.llm_backend == "heuristic":
-        return _heuristic_text(prompt), 0.0
-    if _settings.llm_backend == "anthropic":
-        kw: dict = {"model": model, "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}]}
-        if system:
-            kw["system"] = system
-        resp = await _anthropic().messages.create(**kw)
-        text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
-        return text, _cost(model, resp.usage)
-    msgs = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": prompt}]
-    return await _chat(msgs, max_tokens=max_tokens)
+# ── cloud/local route helpers ─────────────────────────────────────
+async def _anthropic_text(
+    prompt: str, *, model: str, max_tokens: int, system: str | None
+) -> tuple[str, float]:
+    kw: dict = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if system:
+        kw["system"] = system
+    resp = await _anthropic().messages.create(**kw)
+    text = "".join(
+        block.text
+        for block in resp.content
+        if getattr(block, "type", None) == "text"
+    )
+    return text, _cost(model, resp.usage)
 
 
-async def complete_json(prompt: str, *, schema: dict, model: str,
-                        max_tokens: int = 4096, system: str | None = None) -> tuple[dict, float]:
-    """Structured output. Anthropic uses forced tool-use (guaranteed schema);
-    local backends prompt for JSON and parse leniently. Callers still coerce
-    item shapes (small models are loose)."""
-    if _settings.llm_backend == "heuristic":
-        return _heuristic_json(prompt, schema), 0.0
-    if _settings.llm_backend == "anthropic":
-        tool = {"name": "emit_result", "description": "Return the structured result.",
-                "input_schema": schema}
-        kw: dict = {"model": model, "max_tokens": max_tokens, "tools": [tool],
-                    "tool_choice": {"type": "tool", "name": "emit_result"},
-                    "messages": [{"role": "user", "content": prompt}]}
-        if system:
-            kw["system"] = system
-        resp = await _anthropic().messages.create(**kw)
-        cost = _cost(model, resp.usage)
-        for block in resp.content:
-            if getattr(block, "type", None) == "tool_use":
-                return block.input, cost
-        return {}, cost
-    if _settings.llm_backend == "openai" and _openai_mode() == "responses":
-        msgs = (
-            [{"role": "system", "content": system}] if system else []
-        ) + [{"role": "user", "content": prompt}]
-        text, cost = await _openai_responses(
-            msgs, max_tokens=max_tokens, schema=schema
+async def _anthropic_json(
+    prompt: str,
+    *,
+    schema: dict,
+    model: str,
+    max_tokens: int,
+    system: str | None,
+) -> tuple[dict, float]:
+    tool = {
+        "name": "emit_result",
+        "description": "Return the structured result.",
+        "input_schema": schema,
+    }
+    kw: dict = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "tools": [tool],
+        "tool_choice": {"type": "tool", "name": "emit_result"},
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if system:
+        kw["system"] = system
+    resp = await _anthropic().messages.create(**kw)
+    cost = _cost(model, resp.usage)
+    for block in resp.content:
+        if getattr(block, "type", None) == "tool_use":
+            return block.input, cost
+    return {}, cost
+
+
+def _json_messages(prompt: str, schema: dict, system: str | None) -> list[dict]:
+    instruction = (
+        "Respond with ONLY a single JSON object that matches this JSON schema. "
+        "No prose, no code fences.\n\nSCHEMA:\n" + json.dumps(schema)
+    )
+    system_message = f"{system}\n\n{instruction}" if system else instruction
+    return [
+        {"role": "system", "content": system_message},
+        {"role": "user", "content": prompt},
+    ]
+
+
+async def _hybrid_local_text(
+    messages: list[dict], *, max_tokens: int
+) -> tuple[str, float]:
+    if _mode_for(_settings.local_llm_base_url, _settings.local_llm_api_mode) != "chat_completions":
+        return await _openai_responses(
+            messages,
+            max_tokens=min(max_tokens, _settings.local_max_tokens),
+            base_url=_settings.local_llm_base_url,
+            api_key=_settings.local_llm_api_key,
+            model=_settings.local_llm_model,
+            reasoning_effort="",
         )
-        return parse_json_loose(text), cost
-    # local: instruct + parse
-    instr = ("Respond with ONLY a single JSON object that matches this JSON schema. "
-             "No prose, no code fences.\n\nSCHEMA:\n" + json.dumps(schema))
-    sys_msg = (system + "\n\n" + instr) if system else instr
-    msgs = [{"role": "system", "content": sys_msg}, {"role": "user", "content": prompt}]
-    text, cost = await _chat(msgs, max_tokens=max_tokens, json_mode=True)
+    return await _openai_chat(
+        messages,
+        max_tokens=min(max_tokens, _settings.local_max_tokens),
+        json_mode=False,
+        base_url=_settings.local_llm_base_url,
+        api_key=_settings.local_llm_api_key,
+        model=_settings.local_llm_model,
+    )
+
+
+async def _hybrid_local_json(
+    prompt: str,
+    *,
+    schema: dict,
+    max_tokens: int,
+    system: str | None,
+) -> tuple[dict, float]:
+    mode = _mode_for(_settings.local_llm_base_url, _settings.local_llm_api_mode)
+    if mode == "responses":
+        messages = (
+            ([{"role": "system", "content": system}] if system else [])
+            + [{"role": "user", "content": prompt}]
+        )
+        text, cost = await _openai_responses(
+            messages,
+            max_tokens=min(max_tokens, _settings.local_max_tokens),
+            schema=schema,
+            base_url=_settings.local_llm_base_url,
+            api_key=_settings.local_llm_api_key,
+            model=_settings.local_llm_model,
+            reasoning_effort="",
+        )
+    else:
+        text, cost = await _openai_chat(
+            _json_messages(prompt, schema, system),
+            max_tokens=min(max_tokens, _settings.local_max_tokens),
+            json_mode=True,
+            base_url=_settings.local_llm_base_url,
+            api_key=_settings.local_llm_api_key,
+            model=_settings.local_llm_model,
+        )
     return parse_json_loose(text), cost
 
 
-async def stream_complete(prompt: str, *, model: str, max_tokens: int = 8192,
-                          system: str | None = None) -> tuple[str, float]:
-    if _settings.llm_backend == "heuristic":
+async def _hybrid_cloud_text(
+    prompt: str,
+    *,
+    task: str,
+    model: str,
+    max_tokens: int,
+    system: str | None,
+) -> tuple[str, float]:
+    cloud = _settings.hybrid_cloud_backend.strip().lower()
+    if cloud == "anthropic":
+        return await _anthropic_text(
+            prompt, model=model, max_tokens=max_tokens, system=system
+        )
+    if cloud != "openai":
+        raise ValueError("HYBRID_CLOUD_BACKEND must be openai or anthropic")
+    messages = (
+        ([{"role": "system", "content": system}] if system else [])
+        + [{"role": "user", "content": prompt}]
+    )
+    return await _openai_responses(
+        messages,
+        max_tokens=max_tokens,
+        model=_openai_task_model(task),
+    )
+
+
+async def _hybrid_cloud_json(
+    prompt: str,
+    *,
+    task: str,
+    schema: dict,
+    model: str,
+    max_tokens: int,
+    system: str | None,
+) -> tuple[dict, float]:
+    cloud = _settings.hybrid_cloud_backend.strip().lower()
+    if cloud == "anthropic":
+        return await _anthropic_json(
+            prompt,
+            schema=schema,
+            model=model,
+            max_tokens=max_tokens,
+            system=system,
+        )
+    if cloud != "openai":
+        raise ValueError("HYBRID_CLOUD_BACKEND must be openai or anthropic")
+    messages = (
+        ([{"role": "system", "content": system}] if system else [])
+        + [{"role": "user", "content": prompt}]
+    )
+    text, cost = await _openai_responses(
+        messages,
+        max_tokens=max_tokens,
+        schema=schema,
+        model=_openai_task_model(task),
+    )
+    return parse_json_loose(text), cost
+
+
+# ── public API ────────────────────────────────────────────────────
+async def complete(
+    prompt: str,
+    *,
+    model: str,
+    max_tokens: int = 4096,
+    system: str | None = None,
+    task: str = "synthesis",
+    route: str = "auto",
+) -> tuple[str, float]:
+    backend = _settings.llm_backend.strip().lower()
+    if backend == "heuristic":
         return _heuristic_text(prompt), 0.0
-    if _settings.llm_backend == "anthropic":
-        kw: dict = {"model": model, "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}]}
+    if backend == "anthropic":
+        return await _anthropic_text(
+            prompt, model=model, max_tokens=max_tokens, system=system
+        )
+    if backend == "hybrid":
+        messages = (
+            ([{"role": "system", "content": system}] if system else [])
+            + [{"role": "user", "content": prompt}]
+        )
+        if _hybrid_prefers_local(task, route):
+            try:
+                return await _hybrid_local_text(messages, max_tokens=max_tokens)
+            except Exception:
+                if route.strip().lower() == "local" or not _settings.hybrid_fallback_to_cloud:
+                    raise
+                logger.warning(
+                    "Local model failed for %s; escalating the bounded task to cloud",
+                    task,
+                    exc_info=True,
+                )
+        return await _hybrid_cloud_text(
+            prompt,
+            task=task,
+            model=model,
+            max_tokens=max_tokens,
+            system=system,
+        )
+    messages = (
+        ([{"role": "system", "content": system}] if system else [])
+        + [{"role": "user", "content": prompt}]
+    )
+    return await _chat(messages, max_tokens=max_tokens)
+
+
+async def complete_json(
+    prompt: str,
+    *,
+    schema: dict,
+    model: str,
+    max_tokens: int = 4096,
+    system: str | None = None,
+    task: str = "extraction",
+    route: str = "auto",
+) -> tuple[dict, float]:
+    """Return structured output through an explicit task route.
+
+    In hybrid mode, local tasks stay on the configured local server. Failures
+    may escalate to the cloud, but an explicit ``route="local"`` never does.
+    """
+    backend = _settings.llm_backend.strip().lower()
+    if backend == "heuristic":
+        return _heuristic_json(prompt, schema), 0.0
+    if backend == "anthropic":
+        return await _anthropic_json(
+            prompt,
+            schema=schema,
+            model=model,
+            max_tokens=max_tokens,
+            system=system,
+        )
+    if backend == "hybrid":
+        if _hybrid_prefers_local(task, route):
+            try:
+                return await _hybrid_local_json(
+                    prompt,
+                    schema=schema,
+                    max_tokens=max_tokens,
+                    system=system,
+                )
+            except Exception:
+                if route.strip().lower() == "local" or not _settings.hybrid_fallback_to_cloud:
+                    raise
+                logger.warning(
+                    "Local model failed for %s; escalating the bounded task to cloud",
+                    task,
+                    exc_info=True,
+                )
+        return await _hybrid_cloud_json(
+            prompt,
+            task=task,
+            schema=schema,
+            model=model,
+            max_tokens=max_tokens,
+            system=system,
+        )
+    if backend == "openai" and _openai_mode() == "responses":
+        messages = (
+            ([{"role": "system", "content": system}] if system else [])
+            + [{"role": "user", "content": prompt}]
+        )
+        text, cost = await _openai_responses(
+            messages, max_tokens=max_tokens, schema=schema
+        )
+        return parse_json_loose(text), cost
+    messages = _json_messages(prompt, schema, system)
+    text, cost = await _chat(messages, max_tokens=max_tokens, json_mode=True)
+    return parse_json_loose(text), cost
+
+
+async def stream_complete(
+    prompt: str,
+    *,
+    model: str,
+    max_tokens: int = 8192,
+    system: str | None = None,
+    task: str = "artifact_synthesis",
+    route: str = "auto",
+) -> tuple[str, float]:
+    backend = _settings.llm_backend.strip().lower()
+    if backend == "heuristic":
+        return _heuristic_text(prompt), 0.0
+    if backend == "anthropic" or (
+        backend == "hybrid"
+        and not _hybrid_prefers_local(task, route)
+        and _settings.hybrid_cloud_backend.strip().lower() == "anthropic"
+    ):
+        kw: dict = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": [{"role": "user", "content": prompt}],
+        }
         if system:
             kw["system"] = system
         async with _anthropic().messages.stream(**kw) as stream:
             final = await stream.get_final_message()
-        text = "".join(b.text for b in final.content if getattr(b, "type", None) == "text")
+        text = "".join(
+            block.text
+            for block in final.content
+            if getattr(block, "type", None) == "text"
+        )
         return text, _cost(model, final.usage)
-    msgs = ([{"role": "system", "content": system}] if system else []) + [{"role": "user", "content": prompt}]
-    return await _chat(msgs, max_tokens=max_tokens)
+    return await complete(
+        prompt,
+        model=model,
+        max_tokens=max_tokens,
+        system=system,
+        task=task,
+        route=route,
+    )

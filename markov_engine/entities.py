@@ -136,6 +136,7 @@ async def extract_entities(
             schema=_SCHEMA,
             model=model or _settings.model_extraction,
             max_tokens=2048,
+            task="entity_extraction",
         )
         return {
             "summary": str(data.get("summary") or ""),

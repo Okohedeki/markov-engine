@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from urllib.parse import urlparse
 
@@ -11,6 +12,7 @@ from markov_engine.store.records import ClaimRec
 from markov_engine.store.sqlite import SqliteStore
 
 _settings = get_settings()
+logger = logging.getLogger(__name__)
 
 _PLAN_SCHEMA = {
     "type": "object",
@@ -99,6 +101,24 @@ LOCATED CLAIM LEDGER:
 {claims}
 """
 
+_PLAN_REVIEW_PROMPT = """Review a bounded candidate research plan produced by
+Markov's local reducer. The reducer inspected the complete located claim ledger;
+only its strongest candidates are sent here. Keep at most {max_core_claims}
+claims, correct clearly identifiable transcription errors, consolidate topics,
+and make every canonical claim precise and independently researchable.
+
+Do not introduce facts absent from the candidate ledger. Preserve claim IDs.
+When identity is uncertain, retain the transcript spelling and state the
+uncertainty in the rationale. The final set should contain distinct directions
+that could each become a brief, analysis, or script.
+
+CASE INPUT:
+{original_input}
+
+LOCALLY REDUCED CANDIDATE LEDGER:
+{claims}
+"""
+
 
 def _clean(value) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
@@ -122,7 +142,56 @@ def _cloud_model_available() -> bool:
     if backend == "openai":
         host = (urlparse(_settings.openai_base_url).hostname or "").lower()
         return host != "api.openai.com" or bool(_settings.openai_api_key)
+    if backend == "hybrid":
+        cloud = _settings.hybrid_cloud_backend.strip().lower()
+        cloud_ready = (
+            bool(_settings.openai_api_key)
+            if cloud == "openai"
+            else bool(_settings.anthropic_api_key)
+        )
+        return bool(_settings.local_llm_model) or cloud_ready
     return False
+
+
+def _reduced_claims(
+    claims: list[ClaimRec], local_plan: dict, limit: int
+) -> list[ClaimRec]:
+    """Bound the cloud payload while reserving coverage across the timeline."""
+    by_id = {claim.id: claim for claim in claims}
+    reserve = min(max(1, limit // 4), limit)
+    local_limit = max(0, limit - reserve)
+    selected: list[ClaimRec] = []
+    seen: set[int] = set()
+    for item in local_plan.get("selected_claims") or []:
+        if not isinstance(item, dict):
+            continue
+        try:
+            claim = by_id[int(item.get("claim_id"))]
+        except (KeyError, TypeError, ValueError):
+            continue
+        if claim.id not in seen and len(selected) < local_limit:
+            selected.append(claim)
+            seen.add(claim.id)
+    ordered = sorted(
+        claims,
+        key=lambda item: item.source_start_segment_id or item.id,
+    )
+    for bucket in range(reserve):
+        if not ordered or len(selected) >= limit:
+            break
+        position = min(
+            len(ordered) - 1,
+            ((bucket + 1) * len(ordered) // reserve) - 1,
+        )
+        claim = ordered[position]
+        if claim.id not in seen:
+            selected.append(claim)
+            seen.add(claim.id)
+    for claim in _diverse_claims(claims, limit):
+        if claim.id not in seen and len(selected) < limit:
+            selected.append(claim)
+            seen.add(claim.id)
+    return selected
 
 
 def _diverse_claims(claims: list[ClaimRec], limit: int) -> list[ClaimRec]:
@@ -200,25 +269,81 @@ async def plan_research_case(
     max_core_claims = max(1, min(int(max_core_claims), 40))
     cost = 0.0
     if _cloud_model_available():
+        ordered_claims = sorted(
+            claims,
+            key=lambda item: item.source_start_segment_id or item.id,
+        )
         ledger = "\n".join(
             f"[C{claim.id}] {claim.claim_text} "
             f"(type={claim.claim_type}; importance={claim.importance:.2f}; "
             f"segment={claim.source_start_segment_id or 'unknown'})"
-            for claim in sorted(
-                claims,
-                key=lambda item: item.source_start_segment_id or item.id,
+            for claim in ordered_claims
+        )
+        if _settings.llm_backend == "hybrid":
+            try:
+                local_plan, local_cost = await complete_json(
+                    _PLAN_PROMPT.format(
+                        max_core_claims=max_core_claims,
+                        original_input=case.original_input,
+                        claims=ledger,
+                    ),
+                    schema=_PLAN_SCHEMA,
+                    model=model or _settings.model_synthesis,
+                    max_tokens=5_000,
+                    task="planning_reduction",
+                    route="local",
+                )
+                if not isinstance(local_plan, dict):
+                    raise ValueError("Local planning reduction returned a non-object")
+                cost += float(local_cost or 0)
+            except Exception:
+                logger.warning(
+                    "Local planning reduction failed; using deterministic coverage",
+                    exc_info=True,
+                )
+                local_plan = _fallback_plan(claims, max_core_claims)
+            candidates = _reduced_claims(claims, local_plan, max_core_claims)
+            reduced_ledger = "\n".join(
+                f"[C{claim.id}] {claim.claim_text} "
+                f"(type={claim.claim_type}; importance={claim.importance:.2f}; "
+                f"segment={claim.source_start_segment_id or 'unknown'})"
+                for claim in sorted(
+                    candidates,
+                    key=lambda item: item.source_start_segment_id or item.id,
+                )
             )
-        )
-        data, cost = await complete_json(
-            _PLAN_PROMPT.format(
-                max_core_claims=max_core_claims,
-                original_input=case.original_input,
-                claims=ledger,
-            ),
-            schema=_PLAN_SCHEMA,
-            model=model or _settings.model_synthesis,
-            max_tokens=5_000,
-        )
+            try:
+                data, cloud_cost = await complete_json(
+                    _PLAN_REVIEW_PROMPT.format(
+                        max_core_claims=max_core_claims,
+                        original_input=case.original_input,
+                        claims=reduced_ledger,
+                    ),
+                    schema=_PLAN_SCHEMA,
+                    model=model or _settings.model_synthesis,
+                    max_tokens=5_000,
+                    task="planning_review",
+                    route="cloud",
+                )
+                cost += float(cloud_cost or 0)
+            except Exception:
+                logger.warning(
+                    "Cloud planning review failed; preserving the local plan",
+                    exc_info=True,
+                )
+                data = local_plan
+        else:
+            data, cost = await complete_json(
+                _PLAN_PROMPT.format(
+                    max_core_claims=max_core_claims,
+                    original_input=case.original_input,
+                    claims=ledger,
+                ),
+                schema=_PLAN_SCHEMA,
+                model=model or _settings.model_synthesis,
+                max_tokens=5_000,
+                task="planning_review",
+            )
         if not isinstance(data, dict):
             raise ValueError("Research planning returned a non-object result")
     else:

@@ -54,7 +54,8 @@ async def test_model_plan_canonicalizes_entities_and_focuses_the_full_source(mon
                 )
             )
 
-        async def fake_plan(prompt, *, schema, model, max_tokens):
+        async def fake_plan(prompt, *, schema, model, max_tokens, task):
+            assert task == "planning_review"
             assert f"[C{claims[-1].id}]" in prompt
             return {
                 "entities": [
@@ -163,5 +164,104 @@ async def test_offline_plan_samples_across_the_source_not_just_the_first_claims(
         assert len(core) == 5
         assert located_ids[0] == segments[0].id
         assert located_ids[-1] >= segments[16].id
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_hybrid_reduces_full_ledger_locally_before_cloud_review(monkeypatch):
+    store = await SqliteStore.open(":memory:")
+    monkeypatch.setattr(planning._settings, "llm_backend", "hybrid")
+    monkeypatch.setattr(planning._settings, "hybrid_cloud_backend", "openai")
+    monkeypatch.setattr(planning._settings, "local_llm_model", "llama3.1:8b")
+    monkeypatch.setattr(planning._settings, "openai_api_key", "test-key")
+    try:
+        case = await store.create_research_case(
+            owner_id="owner",
+            title="Long source",
+            original_input="https://youtube.com/watch?v=long-hybrid",
+            input_type="youtube",
+            purpose="research",
+        )
+        source = await store.add_source(
+            url=case.original_input,
+            title=case.title,
+            source_type="youtube",
+            content_text="A complete source.",
+            summary="",
+        )
+        segments = await store.add_source_segments(
+            source_id=source.id,
+            segments=[
+                {"ordinal": index, "text": f"Located segment {index}."}
+                for index in range(12)
+            ],
+        )
+        claims = []
+        for index, segment in enumerate(segments):
+            claims.append(
+                await store.add_claim(
+                    research_case_id=case.id,
+                    seed_source_id=source.id,
+                    claim_text=f"Distinct researchable claim number {index}.",
+                    claim_type="factual",
+                    importance=1 - index / 100,
+                    speaker_certainty="asserted_as_fact",
+                    source_start_segment_id=segment.id,
+                    source_end_segment_id=segment.id,
+                )
+            )
+
+        calls = []
+
+        async def fake_plan(
+            prompt, *, schema, model, max_tokens, task, route="auto"
+        ):
+            calls.append((task, route, prompt))
+            if route == "local":
+                assert all(f"[C{claim.id}]" in prompt for claim in claims)
+                selected_claims = claims[:4]
+            else:
+                candidate_ids = [
+                    claim.id for claim in claims if f"[C{claim.id}]" in prompt
+                ]
+                assert len(candidate_ids) <= 4
+                assert claims[-1].id in candidate_ids
+                selected_claims = [
+                    claim for claim in claims if claim.id in candidate_ids
+                ]
+            return {
+                "entities": [],
+                "topics": [
+                    {
+                        "title": "Bounded directions",
+                        "focus": "Review only the reduced candidate ledger.",
+                        "importance": 1,
+                        "claim_ids": [claim.id for claim in selected_claims],
+                    }
+                ],
+                "selected_claims": [
+                    {
+                        "claim_id": claim.id,
+                        "canonical_claim_text": claim.claim_text,
+                        "topic_title": "Bounded directions",
+                        "research_priority": claim.importance,
+                        "selection_reason": "Bounded candidate.",
+                    }
+                    for claim in selected_claims
+                ],
+            }, 0.002 if route == "cloud" else 0
+
+        monkeypatch.setattr(planning, "complete_json", fake_plan)
+        core = await planning.plan_research_case(
+            store, case_id=case.id, max_core_claims=4
+        )
+
+        assert [item[0:2] for item in calls] == [
+            ("planning_reduction", "local"),
+            ("planning_review", "cloud"),
+        ]
+        assert len(core) == 4
+        assert claims[-1].id in {item.id for item in core}
     finally:
         await store.close()

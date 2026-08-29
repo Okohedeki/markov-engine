@@ -27,7 +27,8 @@ async def test_claim_extraction_processes_all_chunks_and_merges_overlap(monkeypa
         )
         calls = []
 
-        async def fake_complete(prompt, *, schema, model, max_tokens):
+        async def fake_complete(prompt, *, schema, model, max_tokens, task):
+            assert task == "claim_extraction"
             segment_ids = [int(value) for value in re.findall(r"\[S(\d+)\]", prompt)]
             calls.append(segment_ids)
             return {

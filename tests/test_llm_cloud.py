@@ -141,3 +141,78 @@ def test_strict_openai_schema_requires_declared_nested_properties():
     assert item["required"] == ["name", "description"]
     assert item["additionalProperties"] is False
     assert schema["properties"]["entities"]["items"]["required"] == ["name"]
+
+
+@pytest.mark.asyncio
+async def test_hybrid_routes_extraction_to_local_ollama(monkeypatch):
+    monkeypatch.setattr(llm.httpx, "AsyncClient", _FakeClient)
+    monkeypatch.setattr(llm._settings, "llm_backend", "hybrid")
+    monkeypatch.setattr(llm._settings, "hybrid_cloud_backend", "openai")
+    monkeypatch.setattr(llm._settings, "hybrid_local_tasks", "claim_extraction")
+    monkeypatch.setattr(llm._settings, "local_llm_base_url", "http://localhost:11434/v1")
+    monkeypatch.setattr(llm._settings, "local_llm_api_mode", "chat_completions")
+    monkeypatch.setattr(llm._settings, "local_llm_model", "llama3.1:8b")
+    monkeypatch.setattr(llm._settings, "local_llm_api_key", "")
+    monkeypatch.setattr(llm._settings, "local_max_tokens", 512)
+    _FakeClient.response_data = {
+        "choices": [{"message": {"content": '{"claims":[]}'}}],
+        "usage": {"prompt_tokens": 500, "completion_tokens": 25},
+    }
+
+    result, cost = await llm.complete_json(
+        "Extract bounded claims.",
+        schema={
+            "type": "object",
+            "properties": {"claims": {"type": "array", "items": {"type": "string"}}},
+            "required": ["claims"],
+        },
+        model="ignored-for-local",
+        task="claim_extraction",
+    )
+
+    assert result == {"claims": []}
+    assert cost == 0
+    assert _FakeClient.request["url"] == "http://localhost:11434/v1/chat/completions"
+    assert _FakeClient.request["json"]["model"] == "llama3.1:8b"
+    assert "Authorization" not in _FakeClient.request["headers"]
+
+
+@pytest.mark.asyncio
+async def test_hybrid_routes_synthesis_to_task_specific_cloud_model(monkeypatch):
+    monkeypatch.setattr(llm.httpx, "AsyncClient", _FakeClient)
+    monkeypatch.setattr(llm._settings, "llm_backend", "hybrid")
+    monkeypatch.setattr(llm._settings, "hybrid_cloud_backend", "openai")
+    monkeypatch.setattr(llm._settings, "hybrid_local_tasks", "claim_extraction")
+    monkeypatch.setattr(llm._settings, "openai_base_url", "https://api.openai.com/v1")
+    monkeypatch.setattr(llm._settings, "openai_api_key", "test-key")
+    monkeypatch.setattr(llm._settings, "llm_model", "")
+    monkeypatch.setattr(llm._settings, "openai_model_synthesis", "gpt-5.6-terra")
+    monkeypatch.setattr(llm._settings, "openai_reasoning_effort", "low")
+    _FakeClient.response_data = {
+        "output": [
+            {
+                "type": "message",
+                "content": [{"type": "output_text", "text": '{"connections":[]}'}],
+            }
+        ],
+        "usage": {"input_tokens": 1_000, "output_tokens": 100},
+    }
+
+    result, cost = await llm.complete_json(
+        "Synthesize bounded connections.",
+        schema={
+            "type": "object",
+            "properties": {
+                "connections": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["connections"],
+        },
+        model="ignored-for-openai",
+        task="connection_synthesis",
+    )
+
+    assert result == {"connections": []}
+    assert cost == pytest.approx(0.0032)
+    assert _FakeClient.request["url"] == "https://api.openai.com/v1/responses"
+    assert _FakeClient.request["json"]["model"] == "gpt-5.6-terra"
+    assert _FakeClient.request["headers"]["Authorization"] == "Bearer test-key"

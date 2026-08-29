@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import re
 from urllib.parse import urlparse
 
@@ -14,6 +15,7 @@ from markov_engine.store.records import ClaimRec, SourceSegmentRec
 from markov_engine.store.sqlite import SqliteStore
 
 _settings = get_settings()
+logger = logging.getLogger(__name__)
 
 SOURCE_ROLES = {
     "primary_evidence",
@@ -158,18 +160,40 @@ async def classify_stance(
     entity_context: str = "None recorded.",
     model: str | None = None,
 ) -> tuple[str, float, str, float, float]:
+    prompt = _STANCE_PROMPT.format(
+        claim=claim_text,
+        passage=passage_text,
+        entity_context=entity_context,
+    )
     data, cost = await complete_json(
-        _STANCE_PROMPT.format(
-            claim=claim_text,
-            passage=passage_text,
-            entity_context=entity_context,
-        ),
+        prompt,
         schema=_STANCE_SCHEMA,
         model=model or _settings.model_extraction,
         max_tokens=512,
+        task="evidence_classification",
     )
     if not isinstance(data, dict):
         raise ValueError("Evidence stance returned a non-object result")
+    if _settings.llm_backend == "hybrid":
+        local_confidence = _bounded(data.get("confidence"), 0.0)
+        if local_confidence < _settings.hybrid_classification_confidence:
+            try:
+                reviewed, review_cost = await complete_json(
+                    prompt,
+                    schema=_STANCE_SCHEMA,
+                    model=model or _settings.model_extraction,
+                    max_tokens=512,
+                    task="evidence_classification",
+                    route="cloud",
+                )
+                if isinstance(reviewed, dict) and reviewed.get("rationale"):
+                    data = reviewed
+                    cost += float(review_cost or 0)
+            except Exception:
+                logger.warning(
+                    "Cloud review failed for a low-confidence local stance",
+                    exc_info=True,
+                )
     stance = str(data.get("stance") or "context_only").lower()
     if stance not in STANCES:
         stance = "context_only"

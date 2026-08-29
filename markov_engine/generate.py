@@ -85,7 +85,12 @@ async def generate_artifact(
     )
     used_model = model or _settings.model_synthesis
     try:
-        content, cost = await stream_complete(prompt, model=used_model, max_tokens=8192)
+        content, cost = await stream_complete(
+            prompt,
+            model=used_model,
+            max_tokens=8192,
+            task="artifact_synthesis",
+        )
     except Exception as e:
         logger.exception("Artifact generation failed")
         return {"success": False, "error": str(e)}

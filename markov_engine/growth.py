@@ -97,7 +97,11 @@ async def _build_queries(
     # LLM-generated queries (best-effort — never the sole source).
     try:
         data, _ = await complete_json(
-            prompt, schema=_QUERY_SCHEMA, model=model, max_tokens=512
+            prompt,
+            schema=_QUERY_SCHEMA,
+            model=model,
+            max_tokens=512,
+            task="query_generation",
         )
         raw = data.get("queries") or data.get("items") or []
         for q in raw if isinstance(raw, list) else []:

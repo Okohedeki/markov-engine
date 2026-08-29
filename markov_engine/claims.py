@@ -252,6 +252,7 @@ async def extract_claims(
             schema=_CLAIM_SCHEMA,
             model=model or _settings.model_extraction,
             max_tokens=2048,
+            task="claim_extraction",
         )
         if not isinstance(data, dict):
             raise ValueError("Claim extraction returned a non-object result")

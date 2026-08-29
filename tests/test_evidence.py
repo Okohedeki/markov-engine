@@ -69,7 +69,8 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
                 )],
             )
 
-        async def fake_stance(prompt, *, schema, model, max_tokens):
+        async def fake_stance(prompt, *, schema, model, max_tokens, task):
+            assert task == "evidence_classification"
             return {
                 "stance": "supports",
                 "strength": 0.95,
@@ -169,7 +170,8 @@ def test_weighted_status_does_not_let_a_social_lead_overrule_official_evidence()
 async def test_stance_prompt_receives_entity_alias_context(monkeypatch):
     captured = {}
 
-    async def fake_complete(prompt, *, schema, model, max_tokens):
+    async def fake_complete(prompt, *, schema, model, max_tokens, task):
+        assert task == "evidence_classification"
         captured["prompt"] = prompt
         return {
             "stance": "supports",
@@ -188,3 +190,43 @@ async def test_stance_prompt_receives_entity_alias_context(monkeypatch):
     assert result[0] == "supports"
     assert "A spelling difference is not a contradiction" in captured["prompt"]
     assert "Jason Arday: Jason Arde" in captured["prompt"]
+
+
+@pytest.mark.asyncio
+async def test_hybrid_escalates_only_low_confidence_stance_to_cloud(monkeypatch):
+    calls = []
+    monkeypatch.setattr(evidence._settings, "llm_backend", "hybrid")
+    monkeypatch.setattr(evidence._settings, "hybrid_classification_confidence", 0.72)
+
+    async def fake_complete(
+        prompt, *, schema, model, max_tokens, task, route="auto"
+    ):
+        calls.append(route)
+        if route == "cloud":
+            return {
+                "stance": "supports",
+                "strength": 0.9,
+                "rationale": "The inspected record directly confirms the claim.",
+                "confidence": 0.94,
+            }, 0.003
+        return {
+            "stance": "context_only",
+            "strength": 0.4,
+            "rationale": "The local classifier found an ambiguous match.",
+            "confidence": 0.55,
+        }, 0
+
+    monkeypatch.setattr(evidence, "complete_json", fake_complete)
+    result = await evidence.classify_stance(
+        "Jason Arday died.",
+        "The university confirmed that Jason Arday died.",
+    )
+
+    assert calls == ["auto", "cloud"]
+    assert result[:4] == (
+        "supports",
+        0.9,
+        "The inspected record directly confirms the claim.",
+        0.94,
+    )
+    assert result[4] == pytest.approx(0.003)

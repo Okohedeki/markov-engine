@@ -202,12 +202,41 @@ async def discover_connection_candidates(
     evidence_rows = []
     seen_evidence: set[int] = set()
     for claim in claims:
-        for link in await store.list_claim_evidence(claim.id):
+        links = sorted(
+            await store.list_claim_evidence(claim.id),
+            key=lambda item: item.strength,
+            reverse=True,
+        )
+        strongest_support = next(
+            (
+                item
+                for item in links
+                if item.stance in {"supports", "partially_supports"}
+            ),
+            None,
+        )
+        strongest_challenge = next(
+            (
+                item
+                for item in links
+                if item.stance in {"contradicts", "qualifies", "context_only"}
+            ),
+            None,
+        )
+        selected_links = [
+            item
+            for item in (strongest_support, strongest_challenge)
+            if item is not None
+        ]
+        if not selected_links and links:
+            selected_links = links[:1]
+        for link in selected_links:
             if link.evidence is None or link.evidence.id in seen_evidence:
                 continue
             seen_evidence.add(link.evidence.id)
+            passage = re.sub(r"\s+", " ", link.evidence.passage_text).strip()[:1200]
             evidence_rows.append(
-                f"[E{link.evidence.id}] {link.evidence.passage_text} "
+                f"[E{link.evidence.id}] {passage} "
                 f"(claim C{claim.id}; {link.stance}; strength {link.strength:.2f})"
             )
     if _settings.llm_backend == "heuristic" or (
@@ -269,6 +298,7 @@ async def discover_connection_candidates(
         schema=_CONNECTION_SCHEMA,
         model=model or _settings.model_synthesis,
         max_tokens=3072,
+        task="connection_synthesis",
     )
     if not isinstance(data, dict):
         raise ValueError("Connection discovery returned a non-object result")

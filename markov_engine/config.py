@@ -6,6 +6,9 @@ backend with ``LLM_BACKEND`` / ``EMBED_BACKEND``:
 - ``anthropic`` + ``voyage`` — cloud (needs ANTHROPIC_API_KEY / VOYAGE_API_KEY)
 - ``openai``  — official OpenAI Responses API or an OpenAI-compatible chat
   endpoint (Ollama, llama.cpp server, vLLM, LM Studio)
+- ``hybrid``  — route bounded extraction/classification to a local OpenAI-
+  compatible server and reserve the configured cloud model for planning and
+  synthesis
 - ``llamacpp`` — an in-process GGUF via llama-cpp-python (LLAMACPP_MODEL)
 - ``hash`` (embeddings only) — deterministic, zero-setup, no semantics
 - ``SEARCH_ENABLED=false`` — keep evidence discovery offline and mark unsupported
@@ -28,7 +31,7 @@ class Settings(BaseSettings):
     )
 
     # ── backend selection ───────────────────────────────────────────
-    llm_backend: str = Field("anthropic", alias="LLM_BACKEND")   # anthropic|openai|llamacpp
+    llm_backend: str = Field("anthropic", alias="LLM_BACKEND")   # anthropic|openai|llamacpp|hybrid
     embed_backend: str = Field("voyage", alias="EMBED_BACKEND")  # voyage|openai|llamacpp|hash
 
     # ── LLM: Anthropic (cloud) ──────────────────────────────────────
@@ -47,13 +50,50 @@ class Settings(BaseSettings):
     openai_reasoning_effort: str = Field(
         "low", alias="OPENAI_REASONING_EFFORT"
     )
+    openai_model_extraction: str = Field(
+        "gpt-5.6-luna", alias="OPENAI_MODEL_EXTRACTION"
+    )
+    openai_model_classify: str = Field(
+        "gpt-5.6-luna", alias="OPENAI_MODEL_CLASSIFY"
+    )
+    openai_model_planning: str = Field(
+        "gpt-5.6-luna", alias="OPENAI_MODEL_PLANNING"
+    )
+    openai_model_synthesis: str = Field(
+        "gpt-5.6-terra", alias="OPENAI_MODEL_SYNTHESIS"
+    )
+
+    # ── Hybrid routing: local reducer + cloud reasoner ─────────────
+    hybrid_cloud_backend: str = Field("openai", alias="HYBRID_CLOUD_BACKEND")
+    local_llm_base_url: str = Field(
+        "http://localhost:11434/v1", alias="LOCAL_LLM_BASE_URL"
+    )
+    local_llm_api_key: str = Field("", alias="LOCAL_LLM_API_KEY")
+    local_llm_api_mode: str = Field(
+        "chat_completions", alias="LOCAL_LLM_API_MODE"
+    )
+    local_llm_model: str = Field("llama3.1:8b", alias="LOCAL_LLM_MODEL")
+    hybrid_local_tasks: str = Field(
+        "claim_extraction,entity_extraction,evidence_classification,query_generation,planning_reduction",
+        alias="HYBRID_LOCAL_TASKS",
+        description=(
+            "Comma-separated task names that stay on the local model. Other tasks "
+            "use the cloud backend."
+        ),
+    )
+    hybrid_fallback_to_cloud: bool = Field(
+        True, alias="HYBRID_FALLBACK_TO_CLOUD"
+    )
+    hybrid_classification_confidence: float = Field(
+        0.72, alias="HYBRID_CLASSIFICATION_CONFIDENCE"
+    )
 
     # ── LLM/embeddings: in-process llama-cpp (GGUF) ─────────────────
     llamacpp_model: str = Field("", alias="LLAMACPP_MODEL")              # path to a .gguf
     llamacpp_embed_model: str = Field("", alias="LLAMACPP_EMBED_MODEL")  # defaults to llamacpp_model
     llamacpp_n_ctx: int = Field(8192, alias="LLAMACPP_N_CTX")
     llamacpp_n_gpu_layers: int = Field(-1, alias="LLAMACPP_N_GPU_LAYERS")
-    local_max_tokens: int = Field(1024, alias="LOCAL_MAX_TOKENS")
+    local_max_tokens: int = Field(4096, alias="LOCAL_MAX_TOKENS")
 
     # ── Embeddings: Voyage (cloud) / OpenAI-compatible ──────────────
     voyage_api_key: str = Field("", alias="VOYAGE_API_KEY")
