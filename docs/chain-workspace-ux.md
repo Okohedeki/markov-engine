@@ -160,3 +160,66 @@ artifact, selected topic, claims, evidence, constraints, and version history.
 - The output remains readable, exportable, and traceable.
 - Desktop and mobile renders preserve the same source → branches → sources →
   output logic without overflow.
+
+## Dashboard art-direction contract
+
+### Design thesis
+
+The dashboard is **an inbox for curiosity**. It should make starting from a
+source feel immediate, then return the user to the research already in motion.
+It is not a configuration wizard and it is not an account-usage report.
+
+### Memory hook
+
+**The source rail.** A pasted link or question crosses one deliberate line into
+three possible jobs—understand, explore, or create—while the open trails below
+show where earlier sources have already led.
+
+### Composition
+
+- Keep source capture above the fold, but collapse it into one calm work surface
+  rather than three numbered panels.
+- Put the source field first, the three plain-language intents directly beneath
+  it, and advanced direction behind one optional disclosure.
+- Make `Continue your trails` the dashboard's main body. A trail row names the
+  research case, its starting source, latest usable output, and next action.
+- Keep credits and API access as quiet workspace utilities, never as the page's
+  visual counterweight.
+- On mobile, preserve capture and recent-trail continuation. Hide desktop-only
+  account detail so the page behaves like the product's capture companion, not
+  a compressed research editor.
+
+### Typography and color
+
+- Use direct questions for display text and verbs for actions.
+- Reserve monospace for compact metadata such as source type and update time.
+- Indigo identifies the active intent and primary action. The cool neutral field
+  remains dominant; status colors stay attached to evidence or progress only.
+
+### Material language
+
+- One bordered capture surface, editorial rules, source-type labels, and a
+  continuing-work ledger.
+- A trail earns a row because it has history and a next action. Avoid floating
+  cards for navigation, plan limits, or every input option.
+- Motion may confirm an intent choice or reveal optional direction; it must not
+  delay capture.
+
+### Forbidden defaults
+
+- A giant numbered form that pushes its submit action below the first viewport.
+- A narrow `Recent trails` sidebar that makes the user's work secondary.
+- Raw owner IDs in the primary header.
+- Equal feature cards for `Brief / Research / Script`.
+- Credits, model settings, or API terminology as the dashboard's main story.
+
+### Dashboard acceptance checks
+
+- A new user can paste a source and find the submit action without scrolling on
+  a common desktop viewport.
+- A returning user can identify the latest case and open its newest artifact in
+  one click.
+- Existing research cases appear even when they were created outside a web job.
+- Mobile shows the complete capture path before account or API utilities.
+- The page still communicates that every output keeps its sources and open
+  questions attached.
