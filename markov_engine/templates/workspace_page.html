@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — Markov{% endblock %}
+{% block body_class %}app-body workspace-shell-body{% endblock %}
+{% block body %}
+  <div class="app-frame">
+    {% include "partials/app_sidebar.html" %}
+    <main class="app-main" id="main-content">
+      <header class="app-topbar workspace-topbar">
+        <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
+        <span class="breadcrumbs">{{ page_title }}</span>
+        {% if page_kind != 'search' %}<a class="topbar-action" href="/app/inbox#add-anything">Add source <span aria-hidden="true">＋</span></a>{% endif %}
+        <span class="mobile-context">{{ page_title }}</span>
+      </header>
+
+      <div class="app-content workspace-page-content">
+        <header class="workspace-page-heading">
+          <p class="eyebrow">{{ page_title }}</p>
+          <h1>{{ page_description }}</h1>
+        </header>
+
+        {% if page_kind == 'inbox' %}
+          <form class="quick-capture workspace-page-capture" id="add-anything" method="post" action="/app/jobs">
+            <label for="inbox-source">Add anything</label>
+            <div class="quick-capture-row">
+              <input id="inbox-source" name="value" type="text" placeholder="Paste a source or ask a question…" required>
+              <select name="mode" aria-label="What should Markov do first?"><option value="brief">Catch me up</option><option value="research" selected>Explore</option><option value="script">Make a script</option></select>
+              <input type="hidden" name="review_level" value="instant">
+              <button type="submit">Send to Markov →</button>
+            </div>
+            <p class="mobile-capture-note">On your phone, share a link to this Inbox. Continue the full research Chain on the web.</p>
+          </form>
+
+          <section class="workspace-library" aria-labelledby="inbox-list-title">
+            <header class="home-section-heading"><div><p class="eyebrow">Recently captured</p><h2 id="inbox-list-title">Route each source into its next useful step.</h2></div><span>{{ cases | length }}</span></header>
+            <div class="library-list">
+              {% for row in cases %}<a class="library-row" href="{{ row.destination or '/app/chains' }}"><span class="library-type">{{ row.source_label }}</span><div><h3>{{ row.case.title }}</h3><p>{{ row.case.original_input | truncate(150) }}</p></div><div><span class="plain-state">{{ 'Processing' if row.is_processing else 'In a Chain' }}</span><strong>{{ row.action_label }} →</strong></div></a>{% else %}<div class="workspace-empty"><strong>Your Inbox is empty.</strong><span>Send a source from the field above or from your phone.</span></div>{% endfor %}
+            </div>
+          </section>
+        {% elif page_kind == 'chains' %}
+          <section class="workspace-library" aria-labelledby="chain-list-title">
+            <header class="home-section-heading"><div><p class="eyebrow">All Chains</p><h2 id="chain-list-title">One place for every source, direction, and decision.</h2></div><span>{{ cases | length }}</span></header>
+            <div class="chain-library-list">
+              {% for row in cases %}<article class="chain-library-row"><div><p class="workspace-meta"><span>{{ row.source_count }} sources</span><span>{{ row.connection_count }} connections</span><span>{{ row.topic_count }} directions</span></p><h3>{{ row.case.title }}</h3><p>{{ row.finding }}</p></div><div><span>Next</span><p>{{ row.next_action }}</p>{% if row.destination %}<a href="{{ row.destination }}">{{ row.action_label }} →</a>{% endif %}</div></article>{% else %}<div class="workspace-empty"><strong>No Chains yet.</strong><span>Add a source to begin one.</span></div>{% endfor %}
+            </div>
+          </section>
+        {% elif page_kind == 'outputs' %}
+          <section class="workspace-library" aria-labelledby="output-list-title">
+            <header class="home-section-heading"><div><p class="eyebrow">All outputs</p><h2 id="output-list-title">Review, revise, and finish the deliverable.</h2></div><span>{{ outputs | length }}</span></header>
+            <div class="output-library-list">
+              {% for item in outputs %}<a href="/app/artifacts/{{ item.artifact.id }}"><span class="library-type">{{ item.artifact.artifact_type | humanize }}</span><div><h3>{{ item.artifact.title }}</h3><p>From {{ item.case.title }}</p></div><div><span class="plain-state">{{ item.artifact.status | humanize }}</span><strong>Review and finish →</strong></div></a>{% else %}<div class="workspace-empty"><strong>No outputs yet.</strong><span>Open a Chain and choose a direction to create one.</span></div>{% endfor %}
+            </div>
+          </section>
+        {% else %}
+          <form class="workspace-search" method="get" action="/app/search" role="search">
+            <label for="workspace-query">Search your research</label>
+            <div><input id="workspace-query" name="q" value="{{ query }}" placeholder="A person, claim, source, question, or output…" autofocus><button type="submit">Search</button></div>
+          </form>
+          <section class="workspace-library" aria-labelledby="search-results-title">
+            <header class="home-section-heading"><div><p class="eyebrow">Results</p><h2 id="search-results-title">{% if query %}Matches for “{{ query }}”{% else %}Search across every Chain.{% endif %}</h2></div>{% if query %}<span>{{ cases | length }}</span>{% endif %}</header>
+            <div class="library-list">
+              {% for row in cases %}<a class="library-row" href="{{ row.destination or '/app/chains' }}"><span class="library-type">Chain</span><div><h3>{{ row.case.title }}</h3><p>{{ row.finding }}</p></div><strong>Open →</strong></a>{% else %}{% if query %}<div class="workspace-empty"><strong>No match found.</strong><span>Try a source name, claim, person, or a broader phrase.</span></div>{% endif %}{% endfor %}
+            </div>
+          </section>
+        {% endif %}
+      </div>
+    </main>
+  </div>
+{% endblock %}

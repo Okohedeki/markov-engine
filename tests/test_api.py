@@ -254,23 +254,39 @@ async def test_web_login_and_focused_intake_page():
             transport=transport, base_url="http://test", follow_redirects=True
         ) as client:
             redirected = await client.get("/app")
-            assert "API key" in redirected.text
+            assert "Workspace access key" in redirected.text
+            assert "private QA build" in redirected.text
             signed_in = await client.post(
                 "/app/login",
                 content="api_key=customer-key",
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "What did you find?" in signed_in.text
+            assert "Turn what you find into knowledge" in signed_in.text
+            assert "Ready for your decision" in signed_in.text
             assert "Catch me up" in signed_in.text
             assert "Explore where it leads" in signed_in.text
             assert "Turn it into a script" in signed_in.text
-            assert "Continue your trails" in signed_in.text
+            assert "Continue a Chain" in signed_in.text
             assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
             assert f'href="/app/artifacts/{artifact.id}"' in signed_in.text
             assert "youtube.com" in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
             assert "owner-1" not in signed_in.text
+            assert 'href="/app/inbox"' in signed_in.text
+            assert 'href="/app/chains"' in signed_in.text
+            assert 'href="/app/outputs"' in signed_in.text
+            assert 'href="/app/search"' in signed_in.text
+
+            for path, heading in (
+                ("/app/inbox", "Everything you sent to Markov"),
+                ("/app/chains", "The questions, sources, directions"),
+                ("/app/outputs", "Briefs, analyses, and scripts"),
+                ("/app/search?q=Japanese", "Matches for"),
+            ):
+                page = await client.get(path)
+                assert page.status_code == 200
+                assert heading in page.text
     finally:
         await store.close()
 

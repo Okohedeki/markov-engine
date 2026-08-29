@@ -1,22 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Sign in — Markov{% endblock %}
-{% block body_class %}app-body{% endblock %}
+{% block body_class %}app-body login-body{% endblock %}
 {% block body %}
-  <main class="login-layout" id="main-content">
-    <section class="login-promise">
-      <a class="wordmark" href="/">MARKOV</a>
-      <div><p class="eyebrow">Workspace</p><h1 style="font-size:clamp(3rem,7vw,6rem)">Follow the idea. Finish the work.</h1><p class="lede" style="color:#bfc8c1;margin-top:2rem">Start with one source. Keep its claims, evidence, connections, and finished work together in one private trail.</p></div>
-      <p class="fine">Catch up · Explore · Script</p>
-    </section>
-    <section class="login-form-panel">
-      <div style="width:100%;max-width:460px">
-        <p class="eyebrow">Sign in</p><h2 style="font-size:2.8rem">Open your workspace.</h2>
-        <p class="muted" style="margin-top:1rem">Use the API key issued for your Markov account.</p>
+  <main class="login-shell" id="main-content">
+    <header class="login-header"><a class="wordmark" href="/">MARKOV</a><a href="/">Back to the public site ↗</a></header>
+    <section class="login-card">
+      <div class="login-message">
+        <p class="eyebrow">Private workspace</p>
+        <h1>Continue the work your sources started.</h1>
+        <p>Return to the Chains Markov is researching, the directions waiting for your decision, and the outputs ready to finish.</p>
+        <ol aria-label="How Markov carries a source forward"><li>Save the source</li><li>Follow the strongest direction</li><li>Finish the work with its evidence attached</li></ol>
+      </div>
+      <div class="login-access">
+        <p class="eyebrow">Sign in</p>
+        <h2>Open your workspace.</h2>
+        <p>This private QA build uses a workspace access key. Account and Google sign-in belong to the production authentication release.</p>
         {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
         <form method="post" action="/app/login">
-          <div class="field"><label for="api-key">API key</label><input id="api-key" name="api_key" type="password" autocomplete="current-password" required></div>
-          <div class="form-actions"><a href="/developers">Using the API?</a><button type="submit">Sign in</button></div>
+          <div class="field"><label for="api-key">Workspace access key</label><input id="api-key" name="api_key" type="password" autocomplete="current-password" required></div>
+          <button type="submit">Continue to Markov →</button>
         </form>
+        <a class="login-developer-link" href="/developers">Looking for developer access?</a>
       </div>
     </section>
   </main>

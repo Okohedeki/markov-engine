@@ -1,114 +1,131 @@
 {% extends "base.html" %}
-{% block title %}Workspace — Markov{% endblock %}
-{% block body_class %}app-body dashboard-body{% endblock %}
+{% block title %}Home — Markov{% endblock %}
+{% block body_class %}app-body workspace-shell-body{% endblock %}
 {% block body %}
   <div class="app-frame">
     {% include "partials/app_sidebar.html" %}
     <main class="app-main" id="main-content">
-      <header class="app-topbar">
+      <header class="app-topbar workspace-topbar">
         <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
-        <span class="breadcrumbs">Workspace</span>
-        <a class="topbar-action" href="#new-research">New trail ↓</a>
-        <span class="mobile-context">Workspace</span>
+        <span class="breadcrumbs">Home</span>
+        <a class="topbar-action" href="#add-anything">Add source <span aria-hidden="true">＋</span></a>
+        <span class="mobile-context">Home</span>
       </header>
 
-      <div class="app-content dashboard-content">
-        <header class="dashboard-intro">
+      <div class="app-content home-content">
+        <header class="home-heading">
           <div>
-            <p class="eyebrow">Start anywhere</p>
-            <h1>What did you find?</h1>
+            <p class="eyebrow">Your workspace</p>
+            <h1>Turn what you find into knowledge you can continue—and work you can publish.</h1>
           </div>
-          <p class="lede">Give Markov one source or question. It will keep the evidence, open questions, and every useful direction attached.</p>
+          <p>Save any source. Markov reads it, checks the important claims, connects it to the rest of your research, and brings back the directions worth choosing.</p>
         </header>
 
-        <form class="capture-surface" id="new-research" method="post" action="/app/jobs" data-mode-picker>
-          <div class="capture-source">
-            <label for="source-value">Paste a source or ask a question</label>
-            <textarea id="source-value" name="value" placeholder="YouTube, TikTok, article, PDF, podcast, post, or a question worth following…" required></textarea>
-            <p class="capture-source-types" aria-label="Accepted source types"><span>YouTube</span><span>TikTok</span><span>Article</span><span>PDF</span><span>Podcast</span><span>Question</span></p>
+        <form class="quick-capture" id="add-anything" method="post" action="/app/jobs">
+          <label for="quick-source">Add anything</label>
+          <div class="quick-capture-row">
+            <input id="quick-source" name="value" type="text" placeholder="Paste a video, article, PDF, podcast, post, or ask a question…" required>
+            <select name="mode" aria-label="What should Markov do first?">
+              <option value="brief">Catch me up</option>
+              <option value="research" selected>Explore where it leads</option>
+              <option value="script">Turn it into a script</option>
+            </select>
+            <input type="hidden" name="review_level" value="instant">
+            <button type="submit">Add to Markov <span aria-hidden="true">→</span></button>
           </div>
-
-          <fieldset class="capture-intents">
-            <legend>What should Markov do first?</legend>
-            <div class="capture-intent-options">
-              <div class="choice">
-                <input id="mode-brief" name="mode" type="radio" value="brief" checked>
-                <label for="mode-brief"><span class="choice-marker">01</span><strong>Catch me up</strong><span>Substance, context, and gaps</span></label>
-              </div>
-              <div class="choice">
-                <input id="mode-research" name="mode" type="radio" value="research">
-                <label for="mode-research"><span class="choice-marker">02</span><strong>Explore where it leads</strong><span>Branches, sources, and new ideas</span></label>
-              </div>
-              <div class="choice">
-                <input id="mode-script" name="mode" type="radio" value="script">
-                <label for="mode-script"><span class="choice-marker">03</span><strong>Turn it into a script</strong><span>A guided angle with its fact-check</span></label>
-              </div>
-            </div>
-          </fieldset>
-
-          <div class="capture-footer">
-            <details class="advanced-options capture-options" data-advanced-options>
-              <summary><strong>Give Markov more direction</strong><span>Optional</span></summary>
-              <div class="capture-option-fields">
-                <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — model reviewed</option><option value="verified">Verified — human reviewed</option></select></div>
-                <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claim or question that matters most"></div>
-                <div class="field" data-script-fields hidden><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
-                <div class="field" data-script-fields hidden><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
-                <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
-              </div>
-            </details>
-            <div class="capture-submit">
-              <span>Sources and uncertainty stay attached.</span>
-              <button type="submit">Start this trail <span aria-hidden="true">→</span></button>
-            </div>
-          </div>
+          <ol class="markov-process" aria-label="What Markov does next">
+            <li><span>01</span>Read the source</li>
+            <li><span>02</span>Map its claims</li>
+            <li><span>03</span>Check evidence</li>
+            <li><span>04</span>Find connections</li>
+            <li><span>05</span>Bring back directions</li>
+          </ol>
         </form>
 
-        <section class="trail-ledger" id="projects">
-          <header class="trail-ledger-heading">
-            <div><p class="eyebrow">Continue your trails</p><h2>Pick up where the idea opened.</h2></div>
-            <span class="trail-count">{{ trails | length }} active</span>
-          </header>
-
-          <div class="dashboard-lower">
-            <div class="trail-list">
-              {% for trail in trails %}
-                <article class="trail-row">
-                  {% if trail.destination %}<a href="{{ trail.destination }}" aria-label="{{ trail.action_label }}: {{ trail.case.title }}">{% else %}<div>{% endif %}
-                    <span class="trail-index">{{ "%02d" | format(loop.index) }}</span>
-                    <div class="trail-summary">
-                      <p class="trail-meta"><span>{{ trail.source_label }}</span><span>{{ trail.case.purpose | humanize }}</span></p>
-                      <h3>{{ trail.case.title }}</h3>
-                      <p class="trail-origin">{{ trail.case.original_input | truncate(118) }}</p>
-                    </div>
-                    <div class="trail-next-action">
-                      <span class="badge {{ trail.status | badge_class }}">{{ trail.status | humanize }}</span>
-                      {% if trail.latest_artifact %}<span>{{ trail.latest_artifact.artifact_type | humanize }}</span>{% endif %}
-                      {% if trail.updated_at %}<time datetime="{{ trail.updated_at.isoformat() }}">{{ trail.updated_at.strftime("%b %d") }}</time>{% endif %}
-                      <strong>{{ trail.action_label or "Waiting for its first output" }}{% if trail.destination %} <span aria-hidden="true">↗</span>{% endif %}</strong>
-                    </div>
-                  {% if trail.destination %}</a>{% else %}</div>{% endif %}
+        {% set decision_rows = ready if ready else cases[:2] %}
+        <div class="home-priority-grid">
+          <section class="decision-queue" aria-labelledby="decision-title">
+            <header class="home-section-heading">
+              <div><p class="eyebrow">Ready for your decision</p><h2 id="decision-title">Markov found the paths. You choose what matters.</h2></div>
+              <span>{{ decision_rows | length }}</span>
+            </header>
+            <div class="decision-list">
+              {% for row in decision_rows[:3] %}
+                <article class="decision-item">
+                  <div class="decision-number">{{ "%02d" | format(loop.index) }}</div>
+                  <div class="decision-main">
+                    <p class="workspace-meta"><span>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }}</span><span>{{ row.connection_count }} meaningful connection{{ '' if row.connection_count == 1 else 's' }}</span><span>{{ row.topic_count }} direction{{ '' if row.topic_count == 1 else 's' }}</span></p>
+                    <h3>{{ row.case.title }}</h3>
+                    <div class="decision-finding"><span>What Markov found</span><p>{{ row.finding }}</p></div>
+                  </div>
+                  <div class="decision-next">
+                    <span>Next</span>
+                    <p>{{ row.next_action }}</p>
+                    {% if row.destination %}<a href="{{ row.destination }}">{{ row.action_label }} <span aria-hidden="true">→</span></a>{% endif %}
+                  </div>
                 </article>
               {% else %}
-                <div class="trail-empty">
-                  <span class="trail-empty-line" aria-hidden="true"></span>
-                  <div><h3>Your first trail will begin above.</h3><p>Paste one thing. Markov will keep the source, the branches it opens, and every output together here.</p></div>
-                </div>
+                <div class="workspace-empty"><strong>No decision is waiting.</strong><span>Add a source above. Its strongest directions will return here.</span></div>
               {% endfor %}
             </div>
+          </section>
 
-            <aside class="workspace-utility" aria-label="Workspace plan and developer access">
-              <p class="eyebrow">{{ entitlements.profile | humanize }}</p>
-              {% if entitlements.metered_credits %}
-                <p class="utility-balance"><strong>{{ account.balance | number }}</strong> credits available</p>
-              {% else %}
-                <p class="utility-balance"><strong>∞</strong> unmetered workspace</p>
-              {% endif %}
-              <p>The web app and API work from the same research chains.</p>
-              <nav aria-label="Workspace utilities"><a href="/developers">Build with the API <span aria-hidden="true">↗</span></a><a href="/pricing">Usage and plan <span aria-hidden="true">↗</span></a></nav>
-            </aside>
+          <aside class="processing-queue" aria-labelledby="processing-title">
+            <header class="home-section-heading"><div><p class="eyebrow">In progress</p><h2 id="processing-title">What Markov is doing now.</h2></div><span>{{ in_progress | length }}</span></header>
+            {% for row in in_progress[:3] %}
+              <article class="processing-item">
+                <h3>{{ row.case.title }}</h3>
+                <p>{{ row.finding }}</p>
+                <ol class="job-progress">
+                  {% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}
+                </ol>
+                <a href="{{ row.destination }}">See progress →</a>
+              </article>
+            {% else %}
+              <div class="processing-empty"><span class="quiet-pulse"></span><p>Nothing is processing. New work will show its progress here without blocking the rest of your workspace.</p></div>
+            {% endfor %}
+          </aside>
+        </div>
+
+        <section class="home-ledger" aria-labelledby="chains-title">
+          <header class="home-section-heading">
+            <div><p class="eyebrow">Continue a Chain</p><h2 id="chains-title">Return to the questions that are still alive.</h2></div>
+            <a href="/app/chains">View all Chains →</a>
+          </header>
+          <div class="home-chain-list">
+            {% for row in cases[:4] %}
+              <a class="home-chain-row" href="{{ row.destination or '/app/chains' }}">
+                <span class="home-chain-index">{{ "%02d" | format(loop.index) }}</span>
+                <div><p class="workspace-meta"><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Updated {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</p><h3>{{ row.case.title }}</h3></div>
+                <p>{{ row.finding }}</p>
+                <strong>{{ row.action_label }} <span aria-hidden="true">↗</span></strong>
+              </a>
+            {% else %}<div class="workspace-empty"><strong>No Chains yet.</strong><span>Your first saved source will become a Chain.</span></div>{% endfor %}
           </div>
         </section>
+
+        <div class="home-secondary-grid">
+          <section aria-labelledby="connections-title">
+            <header class="home-section-heading"><div><p class="eyebrow">New connections</p><h2 id="connections-title">Things Markov connected to what you saved.</h2></div></header>
+            <div class="connection-feed">
+              {% for item in connections[:3] %}
+                <a href="{{ item.row.destination }}">
+                  <span>{{ item.case.title }}</span>
+                  <h3>{{ item.connection.statement }}</h3>
+                  <p>{{ item.connection.why_it_matters }}</p>
+                  <strong>Inspect the connection →</strong>
+                </a>
+              {% else %}<div class="workspace-empty"><strong>No new connection yet.</strong><span>Markov will put useful relationships here after it checks them.</span></div>{% endfor %}
+            </div>
+          </section>
+
+          <section aria-labelledby="outputs-title">
+            <header class="home-section-heading"><div><p class="eyebrow">Recent outputs</p><h2 id="outputs-title">Work waiting to be reviewed and finished.</h2></div><a href="/app/outputs">View all →</a></header>
+            <div class="recent-output-list">
+              {% for item in outputs[:4] %}<a href="/app/artifacts/{{ item.artifact.id }}"><span>{{ item.artifact.artifact_type | humanize }}</span><h3>{{ item.artifact.title }}</h3><p>{{ item.case.title }}</p><strong>Review and finish →</strong></a>{% else %}<div class="workspace-empty"><strong>No outputs yet.</strong><span>Choose a promising direction from a Chain to make one.</span></div>{% endfor %}
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   </div>

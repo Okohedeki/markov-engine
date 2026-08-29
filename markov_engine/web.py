@@ -175,6 +175,130 @@ def _job_language(job) -> tuple[str, str]:
     )
 
 
+_WORKSPACE_STAGES = (
+    ("extracting_sources", "Reading source"),
+    ("extracting_claims", "Mapping claims"),
+    ("researching_claims", "Checking evidence"),
+    ("discovering_connections", "Finding connections"),
+    ("building_artifact", "Directions ready"),
+)
+
+
+def _source_label(research_case) -> str:
+    parsed_source = urlparse(research_case.original_input)
+    if parsed_source.scheme in {"http", "https"}:
+        host = parsed_source.netloc.removeprefix("www.")
+        return f"{_humanize(research_case.input_type)} · {host}"
+    return "Question or note"
+
+
+async def _workspace_snapshot(store, *, owner_id: str, limit: int = 50) -> dict:
+    jobs = await store.list_jobs(owner_id=owner_id, limit=max(limit, 50))
+    jobs_by_case = {}
+    for job in jobs:
+        jobs_by_case.setdefault(job.research_case_id, job)
+
+    case_rows = []
+    output_rows = []
+    connection_rows = []
+    for research_case in await store.list_research_cases(
+        owner_id=owner_id, limit=limit
+    ):
+        artifacts = await store.list_case_artifacts(research_case.id)
+        sources = await store.list_research_case_sources(research_case.id)
+        topics = await store.list_research_topics(research_case.id)
+        insights = await store.list_insight_candidates(research_case.id)
+        connections = await store.list_connections(research_case.id)
+        latest_artifact = artifacts[-1] if artifacts else None
+        latest_job = jobs_by_case.get(research_case.id)
+        is_processing = bool(
+            latest_job
+            and latest_job.status not in {"completed", "failed", "awaiting_review"}
+        )
+
+        destination = None
+        action_label = "Open Chain"
+        status = research_case.status
+        updated_at = research_case.updated_at or research_case.created_at
+        if latest_artifact is not None:
+            destination = f"/app/artifacts/{latest_artifact.id}"
+            action_label = "Review and continue"
+            status = latest_artifact.status
+            updated_at = latest_artifact.updated_at or latest_artifact.created_at
+        elif latest_job is not None:
+            destination = f"/app/jobs/{latest_job.id}"
+            action_label = "See what Markov is doing"
+            status = latest_job.status
+            updated_at = latest_job.updated_at or latest_job.created_at
+
+        if is_processing:
+            finding = _job_language(latest_job)[0]
+            next_action = "Markov will ask for a decision when the directions are ready."
+        elif insights:
+            finding = insights[0].thesis or insights[0].title
+            next_action = "Choose which direction should become the next piece of work."
+        elif topics:
+            finding = f"Markov found {len(topics)} directions worth a closer look."
+            next_action = "Review the strongest direction and decide what to investigate."
+        elif connections:
+            finding = connections[0].why_it_matters or connections[0].statement
+            next_action = "Inspect the connection before carrying it into an output."
+        elif latest_artifact is not None:
+            finding = f"A {_humanize(latest_artifact.artifact_type).lower()} is ready."
+            next_action = "Review the work, its sources, and any unresolved claims."
+        else:
+            finding = "The source is saved and ready for its first research pass."
+            next_action = "Open the Chain and choose what Markov should follow."
+
+        stage_index = 0
+        if latest_job is not None:
+            stage_names = [stage for stage, _ in _WORKSPACE_STAGES]
+            if latest_job.status in {"completed", "awaiting_review"}:
+                stage_index = len(_WORKSPACE_STAGES)
+            elif latest_job.stage in stage_names:
+                stage_index = stage_names.index(latest_job.stage) + 1
+
+        row = {
+            "case": research_case,
+            "latest_artifact": latest_artifact,
+            "latest_job": latest_job,
+            "destination": destination,
+            "action_label": action_label,
+            "status": status,
+            "updated_at": updated_at,
+            "source_label": _source_label(research_case),
+            "source_count": len(sources),
+            "topic_count": len(topics),
+            "connection_count": len(connections),
+            "finding": finding,
+            "next_action": next_action,
+            "is_processing": is_processing,
+            "stage_index": stage_index,
+        }
+        case_rows.append(row)
+        for artifact in reversed(artifacts):
+            output_rows.append({"artifact": artifact, "case": research_case})
+        for connection in connections[:1]:
+            connection_rows.append(
+                {"connection": connection, "case": research_case, "row": row}
+            )
+
+    return {
+        "jobs": jobs,
+        "cases": case_rows,
+        "outputs": output_rows,
+        "connections": connection_rows,
+        "in_progress": [row for row in case_rows if row["is_processing"]],
+        "ready": [
+            row
+            for row in case_rows
+            if not row["is_processing"]
+            and (row["topic_count"] or row["connection_count"])
+        ],
+        "stages": _WORKSPACE_STAGES,
+    }
+
+
 def create_web_router(*, settings: Settings) -> APIRouter:
     router = APIRouter()
 
@@ -242,61 +366,106 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             return RedirectResponse("/app/login", status_code=303)
         store = request.app.state.store
         account = await store.get_credit_account(owner_id)
-        jobs = await store.list_jobs(owner_id=owner_id, limit=50)
-        jobs_by_case = {}
-        for job in jobs:
-            jobs_by_case.setdefault(job.research_case_id, job)
-
-        trail_rows = []
-        for research_case in await store.list_research_cases(
-            owner_id=owner_id, limit=12
-        ):
-            artifacts = await store.list_case_artifacts(research_case.id)
-            latest_artifact = artifacts[-1] if artifacts else None
-            latest_job = jobs_by_case.get(research_case.id)
-            destination = None
-            action_label = None
-            status = research_case.status
-            updated_at = research_case.updated_at or research_case.created_at
-            if latest_artifact is not None:
-                destination = f"/app/artifacts/{latest_artifact.id}"
-                action_label = f"Open {_humanize(latest_artifact.artifact_type)}"
-                status = latest_artifact.status
-                updated_at = latest_artifact.updated_at or latest_artifact.created_at
-            elif latest_job is not None:
-                destination = f"/app/jobs/{latest_job.id}"
-                action_label = "View progress"
-                status = latest_job.status
-                updated_at = latest_job.updated_at or latest_job.created_at
-
-            parsed_source = urlparse(research_case.original_input)
-            if parsed_source.scheme in {"http", "https"}:
-                host = parsed_source.netloc.removeprefix("www.")
-                source_label = f"{_humanize(research_case.input_type)} · {host}"
-            else:
-                source_label = "Question or note"
-
-            trail_rows.append(
-                {
-                    "case": research_case,
-                    "latest_artifact": latest_artifact,
-                    "destination": destination,
-                    "action_label": action_label,
-                    "status": status,
-                    "updated_at": updated_at,
-                    "source_label": source_label,
-                }
-            )
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id, limit=12)
         return _render(
             request,
             "dashboard.html",
-            active="overview",
+            active="home",
             owner_id=owner_id,
             account=account,
             entitlements=resolve_entitlements(owner_id, settings=settings),
-            jobs=jobs[:12],
-            trails=trail_rows,
-            products=public_catalog(settings),
+            **snapshot,
+        )
+
+    @router.get("/app/inbox")
+    async def inbox_page(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        store = request.app.state.store
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        return _render(
+            request,
+            "workspace_page.html",
+            active="inbox",
+            page_kind="inbox",
+            page_title="Inbox",
+            page_description="Everything you sent to Markov, ready to route into a Chain.",
+            account=await store.get_credit_account(owner_id),
+            entitlements=resolve_entitlements(owner_id, settings=settings),
+            **snapshot,
+        )
+
+    @router.get("/app/chains")
+    async def chains_page(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        store = request.app.state.store
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        return _render(
+            request,
+            "workspace_page.html",
+            active="chains",
+            page_kind="chains",
+            page_title="Chains",
+            page_description="The questions, sources, directions, and outputs that keep growing together.",
+            account=await store.get_credit_account(owner_id),
+            entitlements=resolve_entitlements(owner_id, settings=settings),
+            **snapshot,
+        )
+
+    @router.get("/app/outputs")
+    async def outputs_page(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        store = request.app.state.store
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        return _render(
+            request,
+            "workspace_page.html",
+            active="outputs",
+            page_kind="outputs",
+            page_title="Outputs",
+            page_description="Briefs, analyses, and scripts ready to review, revise, and publish.",
+            account=await store.get_credit_account(owner_id),
+            entitlements=resolve_entitlements(owner_id, settings=settings),
+            **snapshot,
+        )
+
+    @router.get("/app/search")
+    async def search_page(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        store = request.app.state.store
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        query = request.query_params.get("q", "").strip()
+        if query:
+            needle = query.casefold()
+            snapshot["cases"] = [
+                row
+                for row in snapshot["cases"]
+                if needle in row["case"].title.casefold()
+                or needle in row["case"].original_input.casefold()
+                or needle in row["finding"].casefold()
+            ]
+        return _render(
+            request,
+            "workspace_page.html",
+            active="search",
+            page_kind="search",
+            page_title="Search",
+            page_description="Find a source, question, connection, or finished output.",
+            query=query,
+            account=await store.get_credit_account(owner_id),
+            entitlements=resolve_entitlements(owner_id, settings=settings),
+            **snapshot,
         )
 
     @router.post("/app/jobs")
@@ -350,7 +519,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "job.html",
-            active="projects",
+            active="chains",
             account=await store.get_credit_account(owner_id),
             job=job,
             events=await store.list_job_events(job.id),
@@ -466,6 +635,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "artifact.html",
+            active="chains",
             artifact=artifact,
             artifact_body=_markdown_body(artifact.content),
             case=case,

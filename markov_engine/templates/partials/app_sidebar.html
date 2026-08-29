@@ -1,14 +1,14 @@
 <aside class="app-sidebar">
   <a class="wordmark" href="/app" aria-label="Markov workspace">MARKOV</a>
   <nav class="app-nav" aria-label="Workspace navigation">
-    <a href="/app" {% if active == 'overview' %}aria-current="page"{% endif %}>Overview</a>
-    <a href="/app#new-research" {% if active == 'new' %}aria-current="page"{% endif %}>New research</a>
-    <a href="/app#projects" {% if active == 'projects' %}aria-current="page"{% endif %}>Projects</a>
-    <a href="/pricing">Usage & credits</a>
-    <a href="/developers">API access</a>
+    <a href="/app" {% if active == 'home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span>Home</a>
+    <a href="/app/inbox" {% if active == 'inbox' %}aria-current="page"{% endif %}><span aria-hidden="true">↓</span>Inbox</a>
+    <a href="/app/chains" {% if active == 'chains' %}aria-current="page"{% endif %}><span aria-hidden="true">⌁</span>Chains</a>
+    <a href="/app/outputs" {% if active == 'outputs' %}aria-current="page"{% endif %}><span aria-hidden="true">□</span>Outputs</a>
+    <a href="/app/search" {% if active == 'search' %}aria-current="page"{% endif %}><span aria-hidden="true">⌕</span>Search</a>
   </nav>
   <div class="app-sidebar-foot">
-    {% if account %}<span class="credit-meter">{{ account.balance | number }} cr</span><p class="fine">Available credits</p>{% endif %}
+    <a class="fine" href="/developers">Developer access</a>
     <a class="fine" href="/">Public site ↗</a>
   </div>
 </aside>
