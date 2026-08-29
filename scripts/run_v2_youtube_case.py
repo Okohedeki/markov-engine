@@ -25,6 +25,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from markov_engine.exports import markdown_to_safe_html
+from markov_engine.evidence import research_claim
 from markov_engine.extract import (
     ExtractedContent,
     _extract_metadata,
@@ -308,18 +309,42 @@ async def run(args: argparse.Namespace) -> None:
             timestamp = dt.datetime.now(dt.timezone.utc).isoformat()
             print(f"[{timestamp}] {name}: {json.dumps(detail, default=_json_default)}", flush=True)
 
-        await process_research_case(
-            store,
-            case_id=case_id,
-            review_level="instant",
-            modes=["brief", "research", "script"],
-            extractor=extractor,
-            max_priority_claims=args.core_claims,
-            max_sources_per_claim=args.sources_per_claim,
-            max_connections=args.connections,
-            claim_time_budget_s=args.claim_time_budget,
-            stage_handler=stage,
-        )
+        if args.retry_claim:
+            for claim_id in args.retry_claim:
+                claim = await store.get_claim(claim_id)
+                if claim is None or claim.research_case_id != case_id:
+                    raise ValueError(f"Claim C{claim_id} does not belong to this case")
+                await stage("retrying_evidence", {"claim_id": claim.id})
+                await research_claim(
+                    store,
+                    case_id=case_id,
+                    claim=claim,
+                    extractor=extractor,
+                    max_sources=args.sources_per_claim,
+                    time_budget_s=args.claim_time_budget,
+                )
+            for artifact_type in ("brief", "research_report", "script"):
+                await stage("rebuilding_artifact", {"artifact_type": artifact_type})
+                await generate_case_artifact(
+                    store,
+                    case_id=case_id,
+                    artifact_type=artifact_type,
+                    review_level="instant",
+                    force=True,
+                )
+        else:
+            await process_research_case(
+                store,
+                case_id=case_id,
+                review_level="instant",
+                modes=["brief", "research", "script"],
+                extractor=extractor,
+                max_priority_claims=args.core_claims,
+                max_sources_per_claim=args.sources_per_claim,
+                max_connections=args.connections,
+                claim_time_budget_s=args.claim_time_budget,
+                stage_handler=stage,
+            )
 
         insights = await store.list_insight_candidates(case_id)
         for insight in insights[1 : args.branch_scripts]:
@@ -392,6 +417,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--connections", type=int, default=8)
     parser.add_argument("--branch-scripts", type=int, default=3)
     parser.add_argument("--claim-time-budget", type=float, default=60)
+    parser.add_argument("--retry-claim", action="append", type=int, default=[])
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 

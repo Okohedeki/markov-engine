@@ -92,13 +92,14 @@ def query_families(claim_text: str) -> list[dict]:
     """Generate distinct authority/counterevidence query families."""
     claim = re.sub(r"\s+", " ", claim_text).strip()
     claim = re.sub(
-        r"^(?:the\s+)?(?:video|interview|speaker|transcript|source)\s+"
+        r"^(?:the\s+)?(?:video|interview|speaker|transcript|source|ledger)\s+"
         r"(?:claims?|states?|says?|argues?|infers?|presents?|describes?|"
         r"characteri[sz]es?|labels?)\s+(?:that\s+)?",
         "",
         claim,
         flags=re.IGNORECASE,
     ).strip()
+    claim = claim.split(";", 1)[0].strip()
     return [
         {"family": "original_source", "query": f'"{claim}" original source'},
         {"family": "primary_evidence", "query": f"{claim} primary source document"},

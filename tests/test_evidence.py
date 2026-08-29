@@ -24,6 +24,12 @@ def test_query_families_and_source_roles_are_explicit():
         "The video claims that the measured value was 42"
     )
     assert all("video claims" not in item["query"].lower() for item in cleaned)
+    death = evidence.query_families(
+        "The ledger states that Jason Arday was found dead; this needs verification."
+    )
+    assert all("ledger states" not in item["query"].lower() for item in death)
+    assert all("needs verification" not in item["query"].lower() for item in death)
+    assert all("Jason Arday was found dead" in item["query"] for item in death)
 
 
 @pytest.mark.asyncio
