@@ -8,6 +8,17 @@ from markov_engine import planning
 from markov_engine.store.sqlite import SqliteStore
 
 
+def test_factual_research_text_removes_meta_verification_but_keeps_allegations():
+    assert planning.normalize_research_text(
+        "The ledger states that Jason Arday was found dead; this should be verified.",
+        "factual",
+    ) == "Jason Arday was found dead"
+    assert planning.normalize_research_text(
+        "The source alleges that Jason Arday plagiarized a thesis.",
+        "factual",
+    ) == "The source alleges that Jason Arday plagiarized a thesis."
+
+
 @pytest.mark.asyncio
 async def test_model_plan_canonicalizes_entities_and_focuses_the_full_source(monkeypatch):
     store = await SqliteStore.open(":memory:")

@@ -141,6 +141,38 @@ def _clean(value) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
 
 
+def normalize_research_text(text: str, claim_type: str) -> str:
+    """Turn meta-framed factual plans back into one atomic research claim.
+
+    Allegations and opinions keep their attribution; plain factual propositions
+    should be tested directly instead of testing whether a video said them.
+    """
+    clean = _clean(text)
+    if claim_type not in {
+        "factual",
+        "quantitative",
+        "causal",
+        "comparative",
+        "historical",
+        "predictive",
+    }:
+        return clean
+    clean = re.sub(
+        r"^(?:the\s+)?(?:video|interview|speaker|transcript|source|ledger)\s+"
+        r"(?:claims?|states?|says?|reports?|presents?)\s+(?:that\s+)?",
+        "",
+        clean,
+        flags=re.IGNORECASE,
+    ).strip()
+    clean = re.sub(
+        r";\s*(?:this|it)\s+(?:should|needs|requires|must)\b.*$",
+        "",
+        clean,
+        flags=re.IGNORECASE,
+    ).strip()
+    return clean
+
+
 def _bounded(value, default: float = 0.5) -> float:
     try:
         return max(0.0, min(float(value), 1.0))
@@ -371,6 +403,7 @@ async def plan_research_case(
         data = _fallback_plan(claims, max_core_claims)
 
     valid_ids = {claim.id for claim in claims}
+    claims_by_id = {claim.id: claim for claim in claims}
     selected: dict[int, dict] = {}
     for item in data.get("selected_claims") or []:
         if not isinstance(item, dict):
@@ -379,7 +412,10 @@ async def plan_research_case(
             claim_id = int(item.get("claim_id"))
         except (TypeError, ValueError):
             continue
-        canonical = _clean(item.get("canonical_claim_text"))
+        canonical = normalize_research_text(
+            item.get("canonical_claim_text"),
+            claims_by_id[claim_id].claim_type if claim_id in claims_by_id else "",
+        )
         topic_title = _clean(item.get("topic_title"))
         if claim_id not in valid_ids or len(canonical) < 8 or not topic_title:
             continue

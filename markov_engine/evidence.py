@@ -413,6 +413,7 @@ async def research_claim(
     model: str | None = None,
     max_sources: int = 3,
     time_budget_s: float = 60,
+    reclassify_existing: bool = False,
 ) -> dict:
     """Research one claim under a hard deadline using inspected source passages."""
     seed = await store.get_source(claim.seed_source_id) if claim.seed_source_id else None
@@ -421,6 +422,7 @@ async def research_claim(
     assessments: list[dict] = []
     sources_added = 0
     total_cost = 0.0
+    classification_count = 0
     timed_out = False
     query_attempts = 0
     entities = await store.list_case_entities(case_id)
@@ -429,9 +431,34 @@ async def research_claim(
         for entity in entities
     ) or "None recorded."
     research_text = claim.research_text
+    existing_links = await store.list_claim_evidence(claim.id)
+    for link in existing_links:
+        if link.evidence is None:
+            continue
+        existing_source = await store.get_source(link.evidence.source_id)
+        if existing_source and existing_source.url:
+            used_urls.add(existing_source.url.lower())
+        if not reclassify_existing:
+            continue
+        stance, strength, rationale, confidence, cost = await classify_stance(
+            research_text,
+            link.evidence.passage_text,
+            entity_context=entity_context,
+            model=model,
+        )
+        total_cost += cost
+        classification_count += 1
+        await store.update_claim_evidence(
+            claim_id=claim.id,
+            evidence_passage_id=link.evidence_passage_id,
+            stance=stance,
+            strength=strength,
+            rationale=rationale,
+            review_status="model_reclassified",
+        )
 
     async def run() -> None:
-        nonlocal query_attempts, sources_added, total_cost
+        nonlocal classification_count, query_attempts, sources_added, total_cost
         for family in query_families(research_text):
             if sources_added >= max_sources:
                 break
@@ -468,6 +495,7 @@ async def research_claim(
                     model=model,
                 )
                 total_cost += cost
+                classification_count += 1
                 if stance == "context_only":
                     continue
                 await store.add_research_case_source(
@@ -509,15 +537,26 @@ async def research_claim(
         except TimeoutError:
             timed_out = True
 
-    status = status_from_evidence(assessments)
-    if claim.claim_type in {"opinion", "inference"} and not assessments:
+    all_assessments = [
+        {
+            "stance": link.stance,
+            "strength": link.strength,
+            "confidence": link.model_confidence,
+            "source_quality": (
+                link.evidence.source_quality if link.evidence else "analysis"
+            ),
+        }
+        for link in await store.list_claim_evidence(claim.id)
+    ]
+    status = status_from_evidence(all_assessments)
+    if claim.claim_type in {"opinion", "inference"} and not all_assessments:
         status = "opinion_or_inference"
     await store.update_claim_status(claim.id, status)
     await store.record_cost(
         research_case_id=case_id,
         provider="llm",
         operation="evidence_stance",
-        units=len(assessments),
+        units=classification_count,
         cost=total_cost,
     )
     await store.record_cost(

@@ -37,6 +37,7 @@ from markov_engine.research import (
     generate_case_artifact,
     process_research_case,
 )
+from markov_engine.planning import normalize_research_text
 from markov_engine.store.sqlite import SqliteStore
 
 VIDEO_ID = "zX1q-ZOUAQY"
@@ -314,6 +315,18 @@ async def run(args: argparse.Namespace) -> None:
                 claim = await store.get_claim(claim_id)
                 if claim is None or claim.research_case_id != case_id:
                     raise ValueError(f"Claim C{claim_id} does not belong to this case")
+                normalized = normalize_research_text(
+                    claim.research_text,
+                    claim.claim_type,
+                )
+                if normalized != claim.research_text:
+                    claim = await store.update_claim_plan(
+                        claim.id,
+                        canonical_claim_text=normalized,
+                        research_topic_id=claim.research_topic_id,
+                        research_priority=claim.research_priority,
+                        disposition=claim.disposition,
+                    )
                 await stage("retrying_evidence", {"claim_id": claim.id})
                 await research_claim(
                     store,
@@ -322,6 +335,7 @@ async def run(args: argparse.Namespace) -> None:
                     extractor=extractor,
                     max_sources=args.sources_per_claim,
                     time_budget_s=args.claim_time_budget,
+                    reclassify_existing=True,
                 )
             for artifact_type in ("brief", "research_report", "script"):
                 await stage("rebuilding_artifact", {"artifact_type": artifact_type})

@@ -224,6 +224,68 @@ async def test_reported_accusation_cannot_prove_underlying_misconduct(monkeypatc
 
 
 @pytest.mark.asyncio
+async def test_retry_reclassifies_existing_links_and_recomputes_status(monkeypatch):
+    store = await SqliteStore.open(":memory:")
+    try:
+        case = await store.create_research_case(
+            owner_id="owner", title="Death", original_input="seed",
+            input_type="youtube", purpose="research",
+        )
+        source = await store.add_source(
+            url="https://news.example/death", title="Report",
+            source_type="article", content_text="Jason Arday was found dead.",
+            summary="",
+        )
+        claim = await store.add_claim(
+            research_case_id=case.id,
+            seed_source_id=None,
+            claim_text="Jason Arday was found dead.",
+            claim_type="factual",
+            importance=1,
+            speaker_certainty="asserted_as_fact",
+            source_start_segment_id=None,
+            source_end_segment_id=None,
+        )
+        passage = await store.add_evidence_passage(
+            source_id=source.id,
+            passage_text="Jason Arday was found dead at his home.",
+            source_quality="high_quality_reporting",
+        )
+        await store.link_claim_evidence(
+            claim_id=claim.id,
+            evidence_passage_id=passage.id,
+            stance="contradicts",
+            strength=0.8,
+            rationale="An earlier classifier misread a verification instruction.",
+            model_confidence=0.9,
+        )
+
+        async def fake_complete(prompt, *, schema, model, max_tokens, task):
+            return {
+                "stance": "supports",
+                "strength": 0.95,
+                "rationale": "The report directly confirms the death.",
+                "confidence": 0.98,
+            }, 0
+
+        monkeypatch.setattr(evidence, "complete_json", fake_complete)
+        result = await evidence.research_claim(
+            store,
+            case_id=case.id,
+            claim=claim,
+            max_sources=0,
+            reclassify_existing=True,
+        )
+
+        links = await store.list_claim_evidence(claim.id)
+        assert result["status"] == "supported"
+        assert links[0].stance == "supports"
+        assert links[0].review_status == "model_reclassified"
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
 async def test_disabled_search_keeps_offline_claims_unverified(monkeypatch):
     store = await SqliteStore.open(":memory:")
     monkeypatch.setattr(evidence._settings, "search_enabled", False)
