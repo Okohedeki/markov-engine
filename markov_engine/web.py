@@ -315,6 +315,14 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def landing(request: Request):
         return _render(request, "landing.html")
 
+    @router.get("/story")
+    async def narrative_landing(request: Request):
+        return _render(request, "landing_narrative.html")
+
+    @router.get("/landing-v2")
+    async def narrative_landing_alias():
+        return RedirectResponse("/story", status_code=307)
+
     @router.get("/product")
     async def product():
         return RedirectResponse("/#product", status_code=307)

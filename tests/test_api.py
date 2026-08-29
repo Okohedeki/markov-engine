@@ -300,6 +300,7 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
+            assert "data-narrative-encounter" not in landing.text
             assert "The research workspace between finding information and using it." not in landing.text
             assert "Open your workspace" not in landing.text
             assert 'href="/app/login"' in landing.text
@@ -385,6 +386,29 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "run markov locally" not in landing.text.lower()
             assert "open source" not in landing.text.lower()
             assert "github" not in landing.text.lower()
+
+            narrative = await client.get("/story")
+            assert narrative.status_code == 200
+            assert "Save anything. Follow the idea. Turn it into something original." in narrative.text
+            assert "The source is only the first node." in narrative.text
+            assert "data-narrative-encounter" in narrative.text
+            assert narrative.text.count("data-encounter-card") == 6
+            assert "First, separate what the source said from what it skipped." in narrative.text
+            assert "Then independent sources fill specific roles." in narrative.text
+            assert "Keep the competing paths." in narrative.text
+            assert "The selected path becomes work" in narrative.text
+            assert "This connects to something you saved three weeks ago." in narrative.text
+            assert "A library helps you find what you consumed." in narrative.text
+            assert "Not a passive second brain." in narrative.text
+            assert 'href="/sample/"' in narrative.text
+            assert 'href="/app/login"' in narrative.text
+            assert narrative.text.count("<h1") == 1
+            assert "700,000" not in narrative.text
+            assert "AI-powered" not in narrative.text
+
+            narrative_alias = await client.get("/landing-v2", follow_redirects=False)
+            assert narrative_alias.status_code == 307
+            assert narrative_alias.headers["location"] == "/story"
 
             pricing = await client.get("/pricing")
             assert pricing.status_code == 200
