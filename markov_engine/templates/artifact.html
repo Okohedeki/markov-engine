@@ -7,7 +7,7 @@
     <main class="app-main case-main" id="main-content">
       <header class="app-topbar case-topbar">
         <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
-        <span class="breadcrumbs"><a href="/app">Projects</a> / {{ case.title }}</span>
+        <span class="breadcrumbs"><a href="/app/chains">Chains</a> / {{ case.title }}</span>
         <div class="case-topbar-actions">
           <span class="badge {{ artifact.status | badge_class }}">{{ artifact.status | humanize }}</span>
           {% for format in entitlements.export_formats %}
@@ -19,11 +19,12 @@
       <div class="case-workspace">
         <header class="case-heading">
           <div>
-            <p class="eyebrow">One source. Several possible directions.</p>
+            <p class="eyebrow">Chain</p>
             <h1>{{ case.title }}</h1>
-            <p class="case-deck">Follow an open question, pull in another source, or shape one branch into finished work. The evidence stays attached as the idea changes.</p>
+            {% set direction_count = topic_rows | length if topic_rows else gaps | length %}
+            <p class="case-deck">{{ sources | length }} source{{ '' if sources | length == 1 else 's' }} opened {{ direction_count }} direction{{ '' if direction_count == 1 else 's' }}. Choose one to investigate, compare, or carry into finished work.</p>
           </div>
-          <button class="button-secondary case-compose-button" type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Shape an output</button>
+          <button class="button-secondary case-compose-button" type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Create from this Chain</button>
         </header>
 
         <nav class="case-view-tabs" aria-label="Case workspace views" role="tablist">
@@ -45,101 +46,58 @@
                 {% if seed_source and seed_source.safe_url %}<a href="{{ seed_source.safe_url }}" target="_blank" rel="noopener">Open source ↗</a>{% endif %}
               </article>
 
-              <div class="branch-intro">
-                <p class="eyebrow">Ideas to explore</p>
-                <h2>The source opened {{ topic_rows | length if topic_rows else gaps | length }} directions.</h2>
-                <p>These are not conclusions. They are the strongest questions, mechanisms, and disagreements Markov found worth another pass.</p>
+              <div class="branch-intro ranked-branch-intro">
+                <p class="eyebrow">Ranked directions</p>
+                <h2>{{ topic_rows | length if topic_rows else gaps | length }} possible paths. Start with the reason to care.</h2>
+                <p>Markov ranks support, originality, and consequence separately. Open one direction to inspect the claims, missing evidence, and sources behind it.</p>
               </div>
 
-              <ol class="research-branches">
+              <div class="branch-table-heading" aria-hidden="true"><span>Branch</span><span>Why it matters</span><span>Evidence</span><span>Action</span></div>
+              <ol class="ranked-branches">
                 {% for row in topic_rows %}
                   {% set primary_claim = row.claims[0].claim if row.claims else none %}
-                  <li class="research-branch" id="topic-{{ row.topic.id }}">
-                    <div class="branch-line" aria-hidden="true"><span>{{ '%02d' | format(loop.index) }}</span></div>
-                    <article class="branch-content">
-                      <header class="branch-header">
-                        <div>
-                          <p class="branch-kicker">Research direction</p>
-                          <h3>{{ row.topic.title }}</h3>
+                  <li id="topic-{{ row.topic.id }}">
+                    <details class="ranked-branch">
+                      <summary>
+                        <div class="ranked-branch-title"><span>{{ "%02d" | format(loop.index) }} · {{ row.rank_label }}</span><strong>{{ row.topic.title }}</strong></div>
+                        <p>{{ (row.insights[0].thesis if row.insights else row.topic.focus) | truncate(165) }}</p>
+                        <span class="branch-evidence-state {{ row.evidence_class }}">{{ row.evidence_label }}</span>
+                        <span class="branch-review">Review <span aria-hidden="true">↓</span></span>
+                      </summary>
+                      <div class="ranked-branch-body">
+                        <div class="ranked-branch-brief">
+                          <section><span>Current question</span><p>{{ row.topic.focus }}</p></section>
+                          {% if row.insights %}<section><span>Possible output</span><p>{{ row.insights[0].thesis }}</p></section>{% endif %}
                         </div>
-                        <span class="branch-state">{{ row.topic.status | humanize }}</span>
-                      </header>
-                      <p class="branch-focus">{{ row.topic.focus }}</p>
-
-                      {% if row.insights %}
-                        <div class="branch-insight">
-                          <span>What this could become</span>
-                          <strong>{{ row.insights[0].title }}</strong>
-                          <p>{{ row.insights[0].thesis }}</p>
+                        <div class="ranked-branch-support">
+                          <section>
+                            <h4>Claims this direction depends on</h4>
+                            <ul class="branch-claims">
+                              {% for claim_row in row.claims[:3] %}
+                                {% set state_copy = {'supported':'Independently supported','completed':'Independently supported','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Claim from the source','disputed':'Competing evidence','contradicted':'Competing evidence'}.get(claim_row.claim.verification_status, 'Needs verification') %}
+                                <li><p>{{ claim_row.claim.research_text }}</p><span class="plain-evidence-state">{{ state_copy }}</span></li>
+                              {% else %}<li class="branch-empty">No located claim is attached yet.</li>{% endfor %}
+                            </ul>
+                          </section>
+                          <section>
+                            <h4>What still needs answering</h4>
+                            <ul class="branch-gaps">
+                              {% for gap in row.gaps[:3] %}<li><span>Open question</span><p>{{ gap.question }}</p></li>{% else %}<li><span>Next question</span><p>{{ row.topic.focus }}</p></li>{% endfor %}
+                            </ul>
+                          </section>
                         </div>
-                      {% endif %}
-
-                      <div class="branch-evidence-grid">
-                        <section>
-                          <h4>What the source gives us</h4>
-                          <ul class="branch-claims">
-                            {% for claim_row in row.claims[:3] %}
-                              <li>
-                                <span class="claim-id">C{{ claim_row.claim.id }}</span>
-                                <p>{{ claim_row.claim.research_text }}</p>
-                                <span class="badge {{ claim_row.claim.verification_status | badge_class }}">{{ claim_row.claim.verification_status | humanize }}</span>
-                              </li>
-                            {% else %}
-                              <li class="branch-empty">No located claim is attached yet.</li>
-                            {% endfor %}
-                          </ul>
-                        </section>
-                        <section>
-                          <h4>Questions that open the branch</h4>
-                          <ul class="branch-gaps">
-                            {% for gap in row.gaps[:4] %}
-                              <li><span>{{ gap.gap_type | humanize }}</span><p>{{ gap.question }}</p></li>
-                            {% else %}
-                              <li><span>Next question</span><p>{{ row.topic.focus }}</p></li>
-                            {% endfor %}
-                          </ul>
-                        </section>
+                        {% if row.sources %}<div class="branch-source-strip"><span>Sources already attached</span>{% for source in row.sources[:3] %}{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Collected source' }} ↗</a>{% else %}<em>{{ source.title or 'Collected source' }}</em>{% endif %}{% endfor %}</div>{% endif %}
+                        <footer class="branch-actions">
+                          {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Investigate this direction</button></form>{% else %}<button class="button-secondary" type="button" disabled>Needs a claim to investigate</button>{% endif %}
+                          <button type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Use this direction in an output</button>
+                        </footer>
                       </div>
-
-                      {% if row.sources %}
-                        <div class="branch-source-strip">
-                          <span>Sources already attached</span>
-                          {% for source in row.sources[:3] %}
-                            {% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Collected source' }} ↗</a>{% else %}<em>{{ source.title or 'Collected source' }}</em>{% endif %}
-                          {% endfor %}
-                        </div>
-                      {% endif %}
-
-                      <footer class="branch-actions">
-                        {% if primary_claim %}
-                          <form method="post" action="/app/claims/{{ primary_claim.id }}/deepen">
-                            <input type="hidden" name="return_artifact" value="{{ artifact.id }}">
-                            <button class="button-secondary" type="submit">Research this branch</button>
-                          </form>
-                        {% else %}
-                          <button class="button-secondary" type="button" disabled>Research this branch</button>
-                        {% endif %}
-                        <button type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Shape an output</button>
-                      </footer>
-                    </article>
+                    </details>
                   </li>
                 {% else %}
                   {% for gap in gaps[:8] %}
-                    <li class="research-branch research-branch-gap">
-                      <div class="branch-line" aria-hidden="true"><span>{{ '%02d' | format(loop.index) }}</span></div>
-                      <article class="branch-content">
-                        <p class="branch-kicker">Open question</p>
-                        <h3>{{ gap.question }}</h3>
-                        <p class="branch-focus">This gap can become a research direction once Markov attaches a focused claim and supplemental source packet.</p>
-                        <footer class="branch-actions">
-                          {% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Research this question</button></form>{% endif %}
-                          <button type="button" data-open-composer data-topic-id="" data-topic-title="Open question" data-topic-focus="{{ gap.question }}">Shape an output</button>
-                        </footer>
-                      </article>
-                    </li>
-                  {% else %}
-                    <li class="explore-empty"><strong>No branches have been planned yet.</strong><span>Open the output to inspect the current work, or deepen a claim to start another research pass.</span></li>
-                  {% endfor %}
+                    <li><details class="ranked-branch"><summary><div class="ranked-branch-title"><span>{{ "%02d" | format(loop.index) }} · Needs more evidence</span><strong>{{ gap.question }}</strong></div><p>This open question can become a research direction after Markov attaches a focused claim and another source.</p><span class="branch-evidence-state is-open">Open question</span><span class="branch-review">Review ↓</span></summary><div class="ranked-branch-body"><footer class="branch-actions">{% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Investigate this question</button></form>{% endif %}<button type="button" data-open-composer data-topic-id="" data-topic-title="Open question" data-topic-focus="{{ gap.question }}">Use this in an output</button></footer></div></details></li>
+                  {% else %}<li class="explore-empty"><strong>No direction is ready yet.</strong><span>Open the current output or investigate a claim to begin another research pass.</span></li>{% endfor %}
                 {% endfor %}
               </ol>
             </div>

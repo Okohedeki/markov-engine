@@ -600,17 +600,50 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                     ],
                 }
             )
-        topic_rows = [
-            row
-            for row in planned_topic_rows
-            if row["insights"]
-            or not row["claims"]
-            or any(
+        topic_rows = planned_topic_rows
+        for index, row in enumerate(topic_rows):
+            statuses = {
                 claim_row["claim"].verification_status
-                not in {"supported", "completed"}
                 for claim_row in row["claims"]
-            )
-        ] or planned_topic_rows
+            }
+            if statuses & {"supported", "completed"}:
+                evidence_label = "Independently supported"
+                evidence_class = "is-supported"
+            elif statuses & {"partially_supported", "qualified"}:
+                evidence_label = "Mixed evidence"
+                evidence_class = "is-mixed"
+            elif statuses & {"disputed", "contradicted"}:
+                evidence_label = "Competing evidence"
+                evidence_class = "is-competing"
+            elif statuses & {"unverifiable", "not_researched"}:
+                evidence_label = "Needs verification"
+                evidence_class = "needs-evidence"
+            elif statuses & {"opinion_or_inference"}:
+                evidence_label = "Claim from the source"
+                evidence_class = "source-claim"
+            else:
+                evidence_label = "Open question"
+                evidence_class = "is-open"
+
+            if index == 0 and evidence_class == "is-supported":
+                rank_label = "Strongest supported direction"
+            elif row["insights"]:
+                rank_label = "Most original direction"
+            elif (
+                row["topic"].importance >= 0.8
+                and evidence_class in {"is-supported", "is-mixed"}
+            ):
+                rank_label = "Most consequential direction"
+            elif evidence_class in {"needs-evidence", "source-claim"}:
+                rank_label = "Needs more evidence"
+            elif evidence_class == "is-competing":
+                rank_label = "Competing explanations"
+            else:
+                rank_label = "Ready to explore"
+
+            row["evidence_label"] = evidence_label
+            row["evidence_class"] = evidence_class
+            row["rank_label"] = rank_label
         core_claim_rows = [
             row for row in claim_rows if row["claim"].disposition == "core"
         ] or claim_rows

@@ -486,8 +486,9 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             assert "Continue this case" in artifact.text
             assert "Connections" in artifact.text
             assert "Claim ledger" in artifact.text
-            assert "One source. Several possible directions." in artifact.text
-            assert "Ideas to explore" in artifact.text
+            assert "Choose one to investigate, compare" in artifact.text
+            assert "Ranked directions" in artifact.text
+            assert "Why it matters" in artifact.text
             assert "Supplemental sources" in artifact.text
             assert "Guided creation" in artifact.text
             assert "Working angle or question" in artifact.text
@@ -616,8 +617,10 @@ async def test_case_workspace_exposes_topics_gaps_and_supplemental_sources():
         assert "Which intermediary turns the premise" in response.text
         assert "Supplemental reporting that changes the question" in response.text
         assert f'data-topic-id="{topic.id}"' in response.text
-        assert "Research this branch" in response.text
-        assert "Shape an output" in response.text
+        assert "Most consequential direction" in response.text
+        assert "Mixed evidence" in response.text
+        assert "Investigate this direction" in response.text
+        assert "Use this direction in an output" in response.text
         assert "Source packet" in response.text
     finally:
         await store.close()
