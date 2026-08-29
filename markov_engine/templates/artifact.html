@@ -128,49 +128,45 @@
         </section>
 
         <section class="case-view" id="case-view-output" role="tabpanel" aria-labelledby="case-tab-output" data-case-view="output" hidden>
-          <div class="output-workspace">
-            <aside class="output-outline">
-              <p class="eyebrow">In this output</p>
-              <nav aria-label="Artifact outline">
-                {% for section in sections %}<a href="#section-{{ loop.index }}">{{ section.title }}</a>{% else %}<a href="#document">Document</a>{% endfor %}
-                <a href="#output-evidence">Evidence & gaps</a>
-              </nav>
-              <div class="output-versions">
-                <p class="eyebrow">Case outputs</p>
-                {% for item in case_artifacts %}<a href="/app/artifacts/{{ item.id }}" {% if item.id == artifact.id %}aria-current="page"{% endif %}>{{ item.artifact_type | humanize }}{% if item.branch_key %}<small>{{ item.branch_key | replace(':', ' ') | humanize }}</small>{% endif %}</a>{% endfor %}
-              </div>
+          {% set output_options = artifact.parameters or case.constraints or {} %}
+          <header class="editor-toolbar">
+            <div class="editor-toolbar-meta"><span>{{ artifact.artifact_type | humanize }}</span><span>Audience · {{ output_options.get('audience', 'General') }}</span><span>{{ artifact.word_count }} words</span><span class="editor-status">{{ 'Ready to publish' if artifact.status == 'completed' else artifact.status | humanize }}</span></div>
+            <nav aria-label="Export this output">{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}">{{ {'markdown':'Markdown','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</nav>
+            <button form="output-editor-form" name="action" value="finish" type="submit">Review and finish</button>
+          </header>
+
+          <div class="finished-workspace">
+            <aside class="document-outline">
+              <p class="eyebrow">Document outline</p>
+              <nav aria-label="Move to a document section">{% for section in sections %}<button type="button" data-editor-find="{{ section.title }}"><span>{{ "%02d" | format(loop.index) }}</span>{{ section.title }}</button>{% else %}<button type="button" data-editor-find="#"><span>01</span>Document</button>{% endfor %}</nav>
+              <div class="output-versions"><p class="eyebrow">Other outputs</p>{% for item in case_artifacts %}<a href="/app/artifacts/{{ item.id }}#output" {% if item.id == artifact.id %}aria-current="page"{% endif %}>{{ item.artifact_type | humanize }}{% if item.branch_key %}<small>{{ item.branch_key | replace(':', ' ') | humanize }}</small>{% endif %}</a>{% endfor %}</div>
             </aside>
 
-            <article class="artifact-document output-document" id="document">
-              <header class="artifact-document-header">
-                <div class="artifact-meta"><span>CASE {{ case.id }}</span><span>{{ artifact.artifact_type | humanize | upper }}</span><span>{{ artifact.review_level | upper }}</span><span>{{ artifact.word_count }} WORDS</span>{% if artifact.branch_key %}<span>{{ artifact.branch_key | upper }}</span>{% endif %}</div>
+            <form class="document-editor" id="output-editor-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit">
+              <header>
+                <span>Working document</span>
                 <h1>{{ artifact.title }}</h1>
-                <div class="artifact-mobile-exports" aria-label="Export this output">{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}">Export {{ {'markdown':'Markdown','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
+                <p>The deliverable is separate from the research behind it. Edit the work here; use the right margin to resolve what could weaken it.</p>
               </header>
-              <div class="artifact-copy">{{ artifact_body }}</div>
-              {% if artifact.artifact_type == 'script' and sections %}
-                <section class="output-revision-panel"><p class="eyebrow">Revise in place</p><h2>Replace one script section</h2><p>Existing claim and evidence markers remain attached. Unknown markers are rejected.</p><form method="post" action="/app/artifacts/{{ artifact.id }}/revisions"><div class="field"><label for="section-id">Section</label><select id="section-id" name="section_id">{% for section in sections %}<option value="{{ section.id }}">{{ section.title }}</option>{% endfor %}</select></div><div class="field"><label for="replacement">Replacement</label><textarea id="replacement" name="replacement" required></textarea></div><button type="submit">Save revision</button></form></section>
-              {% endif %}
-            </article>
+              <label class="visually-hidden" for="output-content">Edit the output in Markdown</label>
+              <textarea id="output-content" name="content" data-output-editor spellcheck="true" required>{{ artifact.content }}</textarea>
+              <footer><span>Markdown · claim markers and citations remain inspectable</span><button class="button-secondary" name="action" value="save" type="submit">Save revision</button></footer>
+            </form>
 
-            <aside class="output-evidence" id="output-evidence">
+            <aside class="evidence-margin" id="output-evidence">
+              <section class="evidence-legend"><p class="eyebrow">Review margin</p><h2>What could change the work.</h2><p><span class="marker-supported">Supported</span><span class="marker-interpretation">Interpretation</span><span class="marker-unresolved">Unresolved</span></p></section>
               <section>
-                <p class="eyebrow">Continue this case</p>
-                <h2>Take the work another way.</h2>
-                <button type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Shape another output</button>
+                <h2>Claims to review · {{ claim_rows | length }}</h2>
+                {% for row in claim_rows[:8] %}
+                  {% set review_copy = {'supported':'Independently supported','completed':'Independently supported','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Interpretation from the source','disputed':'Competing evidence exists','contradicted':'Competing evidence exists'}.get(row.claim.verification_status, 'Needs verification') %}
+                  <details class="margin-claim"><summary><span>{{ review_copy }}</span>{{ row.claim.research_text }}</summary>{% for link in row.evidence[:2] %}<blockquote>{{ link.evidence.passage_text if link.evidence else 'No source passage was retained.' }}<cite>{{ link.evidence | locator if link.evidence else 'No locator' }} · {{ link.stance | humanize }}</cite></blockquote>{% else %}<p>No independent passage is attached yet.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary button-small" type="submit">Check this claim</button></form></details>
+                {% else %}<p class="empty">No claim warning is attached.</p>{% endfor %}
               </section>
               <section>
-                <h2>Connections · {{ connection_rows | length }}</h2>
-                {% for row in connection_rows %}<details class="connection-detail"{% if loop.first %} open{% endif %}><summary><span class="claim-id">K{{ row.connection.id }}</span>{{ row.connection.statement }}</summary><p>{{ row.connection.mechanism }}</p><p class="fine"><strong>Why it matters:</strong> {{ row.connection.why_it_matters }}</p>{% if row.connection.validation_status == 'validated' %}<form method="post" action="/app/connections/{{ row.connection.id }}/actions"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary button-small" name="action" value="follow" type="submit">Follow this connection</button></form>{% endif %}</details>{% else %}<p class="empty">No connection has passed validation yet.</p>{% endfor %}
+                <h2>Open questions · {{ gaps | length }}</h2>
+                <ul>{% for gap in gaps[:6] %}<li>{{ gap.question }}<small>Unresolved</small></li>{% else %}<li>No explicit research gap remains.</li>{% endfor %}</ul>
               </section>
-              <section>
-                <h2>Claim ledger · {{ claim_rows | length }} focused claims</h2>
-                {% for row in claim_rows %}<details class="claim-detail"><summary><span class="claim-id">C{{ row.claim.id }}</span>{{ row.claim.claim_text }} <span class="badge {{ row.claim.verification_status | badge_class }}">{{ row.claim.verification_status | humanize }}</span></summary>{% for link in row.evidence %}<div class="passage">{{ link.evidence.passage_text if link.evidence else 'No passage text was retained.' }}<div class="passage-meta">{{ link.stance | upper }} · {{ (link.strength * 100) | round | int }}%<br>{{ link.evidence | locator if link.evidence else 'No locator' }}</div></div>{% else %}<p class="fine">No independent passage obtained.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary button-small" type="submit">Deepen this claim</button></form></details>{% else %}<p class="empty">No claims were extracted.</p>{% endfor %}
-              </section>
-              <section>
-                <h2>Research gaps · {{ gaps | length }}</h2>
-                <ul class="output-gap-list">{% for gap in gaps %}<li>{{ gap.question }}<small>{{ gap.gap_type | humanize }} · {{ gap.status | humanize }}</small></li>{% else %}<li>No explicit gap remains.</li>{% endfor %}</ul>
-              </section>
+              <section><button class="button-secondary" type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Create another output</button></section>
             </aside>
           </div>
         </section>

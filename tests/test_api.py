@@ -483,9 +483,10 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
 
             artifact = await client.get(artifact_match.group(1))
             assert artifact.status_code == 200
-            assert "Continue this case" in artifact.text
-            assert "Connections" in artifact.text
-            assert "Claim ledger" in artifact.text
+            assert "Working document" in artifact.text
+            assert "Review margin" in artifact.text
+            assert "Claims to review" in artifact.text
+            assert "Review and finish" in artifact.text
             assert "Choose one to investigate, compare" in artifact.text
             assert "Ranked directions" in artifact.text
             assert "Why it matters" in artifact.text
@@ -496,6 +497,19 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             assert "Export JSON" in artifact.text
             assert "&lt;script&gt;" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
+
+            artifact_id = int(artifact_match.group(1).rsplit("/", 1)[-1])
+            edited = await client.post(
+                f"/app/artifacts/{artifact_id}/edit",
+                content="content=%23+Revised+output%0A%0AA+saved+manual+revision.&action=save",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            assert edited.status_code == 200
+            assert "A saved manual revision." in edited.text
+            saved_artifact = await store.get_artifact(artifact_id, owner_id="owner-1")
+            assert saved_artifact is not None
+            assert saved_artifact.status == "draft"
+            assert saved_artifact.content == "# Revised output\n\nA saved manual revision."
     finally:
         await store.close()
 

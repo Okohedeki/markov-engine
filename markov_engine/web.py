@@ -11,7 +11,6 @@ from urllib.parse import parse_qs, urlparse
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
-from markupsafe import Markup
 
 from markov_engine.billing import public_catalog
 from markov_engine.branching import (
@@ -20,7 +19,7 @@ from markov_engine.branching import (
 )
 from markov_engine.config import Settings
 from markov_engine.entitlements import resolve_entitlements
-from markov_engine.exports import export_artifact, markdown_to_safe_html
+from markov_engine.exports import export_artifact
 from markov_engine.jobs import run_job, submit_job
 from markov_engine.research import convert_case_artifact
 from markov_engine.reviews import finalize_review, record_review_decision
@@ -98,12 +97,6 @@ def _render(request: Request, template: str, **context):
         name=template,
         context={"request": request, **_PUBLIC_CONTEXT, **context},
     )
-
-
-def _markdown_body(markdown: str) -> Markup:
-    rendered = markdown_to_safe_html(markdown)
-    body = rendered.split("<body>", 1)[-1].rsplit("</body>", 1)[0]
-    return Markup(body)
 
 
 def _safe_source(source: dict) -> dict:
@@ -670,7 +663,6 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             "artifact.html",
             active="chains",
             artifact=artifact,
-            artifact_body=_markdown_body(artifact.content),
             case=case,
             entitlements=resolve_entitlements(owner_id, settings=settings),
             sections=structured.get("sections", []),
@@ -837,6 +829,36 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 message=str(exc),
             )
         return RedirectResponse(f"/app/artifacts/{artifact_id}", status_code=303)
+
+    @router.post("/app/artifacts/{artifact_id}/edit")
+    async def edit_artifact_page(artifact_id: int, request: Request):
+        owner_id = owner(request)
+        store = request.app.state.store
+        artifact = await store.get_artifact(artifact_id, owner_id=owner_id)
+        if artifact is None or artifact.research_case_id is None:
+            raise HTTPException(status_code=404, detail="Artifact not found")
+        values = await _form(request)
+        content = values.get("content", "").strip()
+        if not content:
+            return _render(
+                request,
+                "error.html",
+                title="The document cannot be empty",
+                message="Keep at least one line in the output before saving it.",
+            )
+        await store.update_case_artifact(
+            artifact_id,
+            content=content,
+            structured_content=artifact.structured_content or {},
+            status="completed"
+            if values.get("action") == "finish"
+            else "draft",
+            change_kind="manual_edit",
+            changed_section="full_document",
+        )
+        return RedirectResponse(
+            f"/app/artifacts/{artifact_id}#output", status_code=303
+        )
 
     @router.get("/app/reviewer/login")
     async def reviewer_login_page(request: Request):

@@ -857,6 +857,18 @@
     }
   }
 
+  const outputEditor = document.querySelector('[data-output-editor]');
+  if (outputEditor) {
+    document.querySelectorAll('[data-editor-find]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        const needle = trigger.dataset.editorFind;
+        const index = outputEditor.value.toLocaleLowerCase().indexOf(needle.toLocaleLowerCase());
+        outputEditor.focus();
+        if (index >= 0) outputEditor.setSelectionRange(index, index + needle.length);
+      });
+    });
+  }
+
   const composer = document.querySelector('[data-output-composer]');
   if (composer) {
     const topicInput = composer.querySelector('[data-composer-topic]');
