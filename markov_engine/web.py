@@ -405,6 +405,23 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def convert_page(case_id: int, request: Request):
         owner_id = owner(request)
         values = await _form(request)
+        constraint_fields = (
+            "selected_topic_id",
+            "selected_insight_id",
+            "angle",
+            "focus",
+            "audience",
+            "target_minutes",
+            "tone",
+            "delivery_format",
+            "desired_takeaway",
+            "evidence_boundary",
+        )
+        constraints = {
+            field: values[field]
+            for field in constraint_fields
+            if str(values.get(field) or "").strip()
+        }
         try:
             artifact, _ = await convert_case_artifact(
                 request.app.state.store,
@@ -412,6 +429,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 owner_id=owner_id,
                 mode=values.get("mode", "brief"),
                 review_level=values.get("review_level", "instant"),
+                constraints=constraints,
                 settings=settings,
             )
         except ValueError as exc:

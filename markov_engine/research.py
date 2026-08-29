@@ -439,13 +439,34 @@ async def convert_case_artifact(
         selected_insight_id = int(constraints.get("selected_insight_id"))
     except (TypeError, ValueError):
         selected_insight_id = None
+    try:
+        selected_topic_id = int(constraints.get("selected_topic_id"))
+    except (TypeError, ValueError):
+        selected_topic_id = None
+    if selected_insight_id is not None and selected_topic_id is not None:
+        raise ValueError("Choose either an insight or a topic for one artifact branch")
     branch_key = (
-        f"insight:{selected_insight_id}" if selected_insight_id is not None else None
+        f"insight:{selected_insight_id}"
+        if selected_insight_id is not None
+        else f"topic:{selected_topic_id}"
+        if selected_topic_id is not None
+        else None
     )
     if selected_insight_id is not None:
         selected_insight = await store.get_insight_candidate(selected_insight_id)
         if selected_insight is None or selected_insight.research_case_id != case.id:
             raise ValueError("Selected insight does not belong to the research case")
+    if selected_topic_id is not None:
+        selected_topic = next(
+            (
+                topic
+                for topic in await store.list_research_topics(case.id)
+                if topic.id == selected_topic_id
+            ),
+            None,
+        )
+        if selected_topic is None:
+            raise ValueError("Selected topic does not belong to the research case")
     artifacts = await store.list_case_artifacts(case.id)
     existing = next(
         (

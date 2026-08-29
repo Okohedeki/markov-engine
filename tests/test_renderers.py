@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import pytest
 
+from markov_engine.config import Settings
 from markov_engine.extract import ExtractedContent, ExtractedSegment
 from markov_engine.renderers import render_artifact
 from markov_engine.research import (
+    convert_case_artifact,
     create_research_case,
     generate_case_artifact,
     process_research_case,
@@ -154,6 +156,67 @@ async def test_all_renderers_preserve_claims_evidence_and_locators():
             assert f"C{prediction.id}" in rendered.content
             assert f"E{passage.id}" in rendered.content
             assert "https://example.gov/revenue-report" in rendered.content
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_topic_guidance_creates_a_scoped_artifact_branch():
+    store = await SqliteStore.open(":memory:")
+    try:
+        case, factual, prediction, _passage = await _researched_case(store)
+        topic = await store.add_research_topic(
+            research_case_id=case.id,
+            title="What the measured growth changes",
+            focus="Explain the measured result without inheriting the forecast.",
+            importance=0.9,
+            claim_ids=[factual.id],
+        )
+        await store.add_research_topic(
+            research_case_id=case.id,
+            title="Whether the forecast holds",
+            focus="Test the forward-looking claim separately.",
+            importance=0.8,
+            claim_ids=[prediction.id],
+        )
+        settings = Settings(
+            MARKOV_OPENING_CREDITS=20,
+            MARKOV_PRODUCT_CREDIT_COSTS={"script_instant": 1},
+        )
+
+        script, created = await convert_case_artifact(
+            store,
+            case_id=case.id,
+            owner_id="customer-1",
+            mode="script",
+            constraints={
+                "selected_topic_id": topic.id,
+                "angle": "The result matters, but the forecast remains a separate bet.",
+                "audience": "independent video creators",
+                "target_minutes": 4,
+                "tone": "skeptical documentary",
+                "delivery_format": "YouTube essay",
+                "desired_takeaway": "Separate measured performance from prediction.",
+                "evidence_boundary": "block_on_gaps",
+            },
+            settings=settings,
+        )
+
+        assert created is True
+        assert script.branch_key == f"topic:{topic.id}"
+        assert script.structured_content["selected_topic_id"] == topic.id
+        assert script.structured_content["guidance"] == {
+            "angle": "The result matters, but the forecast remains a separate bet.",
+            "audience": "independent video creators",
+            "tone": "skeptical documentary",
+            "delivery_format": "YouTube essay",
+            "desired_takeaway": "Separate measured performance from prediction.",
+            "evidence_boundary": "block_on_gaps",
+        }
+        assert f"C{factual.id}" in script.content
+        assert f"C{prediction.id}" not in script.content
+        assert topic.title in script.title
+        assert "Stop the draft where an essential open question is unresolved." in script.content
     finally:
         await store.close()
 

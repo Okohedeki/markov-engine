@@ -72,7 +72,9 @@ def _segment_locator(segment: SourceSegmentRec | None) -> str:
     return f"segment {segment.ordinal + 1}"
 
 
-async def _context(store: SqliteStore, case_id: int) -> dict:
+async def _context(
+    store: SqliteStore, case_id: int, *, constraints: dict | None = None
+) -> dict:
     case = await store.get_research_case(case_id)
     if case is None:
         raise ValueError("Research case not found")
@@ -81,7 +83,31 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
     claims = planned_claims or [
         claim for claim in all_claims if claim.disposition != "background"
     ] or all_claims
+    topics = await store.list_research_topics(case_id)
+    constraints = constraints or {}
+    try:
+        selected_topic_id = int(constraints.get("selected_topic_id"))
+    except (TypeError, ValueError):
+        selected_topic_id = None
+    selected_topic = next(
+        (topic for topic in topics if topic.id == selected_topic_id), None
+    )
+    if selected_topic_id is not None and selected_topic is None:
+        raise ValueError("Selected topic does not belong to the research case")
+    if selected_topic is not None:
+        topic_claim_ids = set(selected_topic.claim_ids)
+        topic_claims = [claim for claim in claims if claim.id in topic_claim_ids]
+        if topic_claims:
+            claims = topic_claims
+    else:
+        topic_claim_ids = set()
     gaps = await store.list_research_gaps(case_id)
+    if selected_topic is not None:
+        gaps = [
+            gap
+            for gap in gaps
+            if gap.claim_id is None or gap.claim_id in topic_claim_ids
+        ]
     source_rows = await store.list_research_case_sources(case_id)
     source_ids = [row["id"] for row in source_rows]
     segments_by_id: dict[int, SourceSegmentRec] = {}
@@ -109,7 +135,8 @@ async def _context(store: SqliteStore, case_id: int) -> dict:
         "connection_evidence": connection_evidence,
         "paths": await store.list_connection_paths(case_id),
         "insights": await store.list_insight_candidates(case_id),
-        "topics": await store.list_research_topics(case_id),
+        "topics": topics,
+        "selected_topic": selected_topic,
         "entities": await store.list_case_entities(case_id),
         "branch_decisions": await store.list_user_branch_decisions(case_id),
     }
@@ -244,8 +271,10 @@ def _assemble(title: str, sections: list[dict], citations: list[str]) -> str:
     return "\n".join(output).strip() + "\n"
 
 
-async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
-    context = await _context(store, case_id)
+async def render_brief(
+    store: SqliteStore, case_id: int, *, constraints: dict | None = None
+) -> RenderedArtifact:
+    context = await _context(store, case_id, constraints=constraints)
     case: ResearchCaseRec = context["case"]
     claims: list[ClaimRec] = context["claims"]
     supported = [
@@ -416,7 +445,12 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
             "claim_ids": [claim.id for claim in claims],
         },
     ]
-    title = f"Markov Brief: {case.title}"
+    subject = (
+        f"{case.title} — {context['selected_topic'].title}"
+        if context["selected_topic"]
+        else case.title
+    )
+    title = f"Markov Brief: {subject}"
     citations = _citation_lines(context)
     content = _assemble(title, sections, citations)
     return RenderedArtifact(
@@ -425,6 +459,9 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
         content=content,
         structured_content={
             "artifact_type": "brief",
+            "selected_topic_id": (
+                context["selected_topic"].id if context["selected_topic"] else None
+            ),
             "sections": _structured_sections(sections),
             "citations": citations,
         },
@@ -434,9 +471,9 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
 
 
 async def render_research_report(
-    store: SqliteStore, case_id: int
+    store: SqliteStore, case_id: int, *, constraints: dict | None = None
 ) -> RenderedArtifact:
-    context = await _context(store, case_id)
+    context = await _context(store, case_id, constraints=constraints)
     case: ResearchCaseRec = context["case"]
     claims: list[ClaimRec] = context["claims"]
     defensible = [
@@ -621,7 +658,12 @@ async def render_research_report(
             "evidence_ids": all_evidence_ids,
         },
     ]
-    title = f"Markov Research: {case.title}"
+    subject = (
+        f"{case.title} — {context['selected_topic'].title}"
+        if context["selected_topic"]
+        else case.title
+    )
+    title = f"Markov Research: {subject}"
     citations = _citation_lines(context)
     content = _assemble(title, sections, citations)
     return RenderedArtifact(
@@ -630,6 +672,9 @@ async def render_research_report(
         content=content,
         structured_content={
             "artifact_type": "research_report",
+            "selected_topic_id": (
+                context["selected_topic"].id if context["selected_topic"] else None
+            ),
             "sections": _structured_sections(sections),
             "citations": citations,
         },
@@ -641,7 +686,7 @@ async def render_research_report(
 async def render_script(
     store: SqliteStore, case_id: int, *, constraints: dict | None = None
 ) -> RenderedArtifact:
-    context = await _context(store, case_id)
+    context = await _context(store, case_id, constraints=constraints)
     case: ResearchCaseRec = context["case"]
     claims: list[ClaimRec] = context["claims"]
     constraints = {**case.constraints, **(constraints or {})}
@@ -651,6 +696,14 @@ async def render_script(
     word_range = (int(target_words * 0.9), int(target_words * 1.1))
     audience = str(constraints.get("audience") or "a general audience")
     tone = str(constraints.get("tone") or "clear documentary")
+    delivery_format = str(
+        constraints.get("delivery_format") or "evidence-led explainer"
+    )
+    desired_takeaway = str(constraints.get("desired_takeaway") or "").strip()
+    evidence_boundary = str(
+        constraints.get("evidence_boundary") or "keep_gaps_visible"
+    )
+    selected_topic = context["selected_topic"]
     supported = [
         claim
         for claim in claims
@@ -710,11 +763,20 @@ async def render_script(
         if insight.id == requested_insight_id
     ]
     selected_insight = (
-        requested_insights or followed_insights or context["insights"]
+        requested_insights
+        or ([] if selected_topic else followed_insights)
+        or ([] if selected_topic else context["insights"])
     )[:1]
+    guided_angle = str(
+        constraints.get("angle") or constraints.get("focus") or ""
+    ).strip()
     selected_angle = (
         selected_insight[0].thesis
         if selected_insight
+        else guided_angle
+        if guided_angle
+        else selected_topic.focus
+        if selected_topic
         else (
             "No direction has been selected. The base artifact remains an evidence "
             "audit; choose one of the candidate angles to create a focused script."
@@ -722,13 +784,17 @@ async def render_script(
     )
     thesis = (
         selected_angle
-        if selected_insight
+        if selected_insight or selected_topic or guided_angle
         else thesis_claim[0].research_text
         if thesis_claim
         else "The premise is not yet supported by enough inspectable evidence."
     )
     direction_title = (
-        selected_insight[0].title if selected_insight else case.title
+        selected_insight[0].title
+        if selected_insight
+        else selected_topic.title
+        if selected_topic
+        else case.title
     )
     title_options = [
         direction_title,
@@ -748,6 +814,10 @@ async def render_script(
             "boundary is where the real story begins."
         ),
     ]
+    topic_angles = "\n".join(
+        f"- **T{item.id}:** {item.title}\n  - Research focus: {item.focus}"
+        for item in context["topics"][:8]
+    )
     candidate_angles = (
         "\n".join(
             f"- **I{item.id} · {item.evidence_level.replace('_', ' ')}:** "
@@ -755,12 +825,13 @@ async def render_script(
             f"  - Risk: {item.uncertainty}"
             for item in context["insights"][:5]
         )
+        or topic_angles
         or "- No connection-led angle passed validation; use the evidence-audit framing."
     )
     premise_check = (
         "The seed premise can be developed only with the qualifications below. "
         "The selected angle is bounded by its weakest essential connection."
-        if selected_insight
+        if selected_insight or selected_topic or guided_angle
         else (
             "The base artifact does not force the source into one thesis. It documents "
             "the evidence audit and exposes the candidate directions below; selecting a "
@@ -770,7 +841,11 @@ async def render_script(
 
     claim_by_id = {claim.id: claim for claim in claims}
     selected_claim_ids = (
-        selected_insight[0].supporting_claim_ids if selected_insight else []
+        selected_insight[0].supporting_claim_ids
+        if selected_insight
+        else selected_topic.claim_ids
+        if selected_topic
+        else []
     )
     narration_claims = [
         claim_by_id[claim_id]
@@ -907,6 +982,17 @@ async def render_script(
 
     production_notes = "\n".join(
         [
+            f"- Delivery format: {delivery_format}.",
+            (
+                f"- Desired audience takeaway to test: {desired_takeaway}"
+                if desired_takeaway
+                else "- No separate desired takeaway was supplied."
+            ),
+            (
+                "- Stop the draft where an essential open question is unresolved."
+                if evidence_boundary == "block_on_gaps"
+                else "- Keep unresolved gaps visible as caveats in the draft."
+            ),
             "- Open on the original source title card and a visible timestamp.",
             "- Show each evidence passage or source document when its marker first appears.",
             "- Use a simple claim-status graphic: supported, qualified, disputed, or unresolved.",
@@ -1021,7 +1107,8 @@ async def render_script(
              if item.validation_status == "rejected"
          ]},
     ]
-    title = f"Markov Script: {case.title}"
+    subject = f"{case.title} — {selected_topic.title}" if selected_topic else case.title
+    title = f"Markov Script: {subject}"
     citations = _citation_lines(context)
     content = _assemble(title, sections, citations)
     return RenderedArtifact(
@@ -1030,6 +1117,15 @@ async def render_script(
         content=content,
         structured_content={
             "artifact_type": "script",
+            "selected_topic_id": selected_topic.id if selected_topic else None,
+            "guidance": {
+                "angle": selected_angle,
+                "audience": audience,
+                "tone": tone,
+                "delivery_format": delivery_format,
+                "desired_takeaway": desired_takeaway,
+                "evidence_boundary": evidence_boundary,
+            },
             "target_minutes": target_minutes,
             "target_word_count": target_words,
             "target_word_range": list(word_range),
@@ -1051,9 +1147,9 @@ async def render_artifact(
     constraints: dict | None = None,
 ) -> RenderedArtifact:
     if artifact_type == "brief":
-        return await render_brief(store, case_id)
+        return await render_brief(store, case_id, constraints=constraints)
     if artifact_type == "research_report":
-        return await render_research_report(store, case_id)
+        return await render_research_report(store, case_id, constraints=constraints)
     if artifact_type == "script":
         return await render_script(store, case_id, constraints=constraints)
     raise ValueError(f"Unsupported artifact type: {artifact_type}")
