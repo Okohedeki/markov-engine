@@ -286,6 +286,30 @@ async def test_retry_reclassifies_existing_links_and_recomputes_status(monkeypat
 
 
 @pytest.mark.asyncio
+async def test_death_entailment_ignores_unrelated_surrounding_commentary(monkeypatch):
+    async def fake_complete(prompt, *, schema, model, max_tokens, task):
+        return {
+            "stance": "contradicts",
+            "strength": 0.8,
+            "rationale": "The passage also discusses political exploitation.",
+            "confidence": 0.9,
+        }, 0
+
+    monkeypatch.setattr(evidence, "complete_json", fake_complete)
+    result = await evidence.classify_stance(
+        "Jason Arday was found dead.",
+        (
+            "The death was exploited politically after Jason Arday resigned, but "
+            "he was found dead last week."
+        ),
+    )
+
+    assert result[0] == "supports"
+    assert result[1] >= 0.9
+    assert "explicitly reports" in result[2]
+
+
+@pytest.mark.asyncio
 async def test_disabled_search_keeps_offline_claims_unverified(monkeypatch):
     store = await SqliteStore.open(":memory:")
     monkeypatch.setattr(evidence._settings, "search_enabled", False)
@@ -409,12 +433,10 @@ async def test_hybrid_escalates_only_low_confidence_stance_to_cloud(monkeypatch)
     )
 
     assert calls == ["auto", "cloud"]
-    assert result[:4] == (
-        "supports",
-        0.9,
-        "The inspected record directly confirms the claim.",
-        0.94,
-    )
+    assert result[0] == "supports"
+    assert result[1] == 0.9
+    assert result[2].startswith("The inspected record directly confirms the claim.")
+    assert result[3] == 0.94
     assert result[4] == pytest.approx(0.003)
 
 

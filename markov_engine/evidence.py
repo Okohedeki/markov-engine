@@ -259,6 +259,42 @@ async def classify_stance(
         raise ValueError("Evidence stance omitted its rationale")
     strength = _bounded(data.get("strength"), 0.5)
     confidence = _bounded(data.get("confidence"), 0.5)
+    death_claim = re.search(
+        r"\b(?:was|were|is|are|has been|have been)?\s*(?:found dead|died)\b",
+        claim_text,
+        flags=re.IGNORECASE,
+    )
+    if death_claim:
+        identity_tokens = _tokens(claim_text) - {"found", "dead", "died", "death"}
+        shared_identity = identity_tokens & _tokens(passage_text)
+        passage_denies_death = re.search(
+            r"\b(?:not|never)\s+(?:been\s+)?(?:found dead|died)\b",
+            passage_text,
+            flags=re.IGNORECASE,
+        )
+        passage_reports_death = re.search(
+            r"\b(?:found dead|died|death of)\b",
+            passage_text,
+            flags=re.IGNORECASE,
+        )
+        if shared_identity and passage_denies_death:
+            stance = "contradicts"
+            strength = max(strength, 0.9)
+            rationale = (
+                f"{rationale} The passage explicitly denies the same person's death."
+            )
+        elif shared_identity and passage_reports_death:
+            stance = "supports"
+            strength = max(strength, 0.9)
+            rationale = (
+                f"{rationale} The passage explicitly reports the same person's death."
+            )
+        else:
+            stance = "context_only"
+            strength = min(strength, 0.2)
+            rationale = (
+                f"{rationale} The passage does not itself report or deny the death."
+            )
     alleged_misconduct = re.search(
         r"\b(plagiari\w*|fabulist|fraud\w*|fabricat\w*|criminal|lied|liar)\b",
         claim_text,
