@@ -107,14 +107,23 @@ Copy [`.env.example`](.env.example) to `.env`. At minimum, configure an API key
 mapping, an opening or purchased credit balance, and one LLM/search setup.
 `MARKOV_API_KEYS` maps secret keys to stable owner IDs; it must be JSON.
 
-Low-cost OpenAI cloud example (recommended starting point):
+Hybrid local/cloud example (recommended starting point):
 
 ```dotenv
-LLM_BACKEND=openai
+LLM_BACKEND=hybrid
+HYBRID_CLOUD_BACKEND=openai
+LOCAL_LLM_BASE_URL=http://localhost:11434/v1
+LOCAL_LLM_API_MODE=chat_completions
+LOCAL_LLM_MODEL=llama3.1:8b
+LOCAL_MAX_TOKENS=4096
+HYBRID_LOCAL_TASKS=claim_extraction,entity_extraction,evidence_classification,query_generation,planning_reduction
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_API_MODE=responses
 OPENAI_API_KEY=replace-me
-LLM_MODEL=gpt-5.6-luna
+OPENAI_MODEL_EXTRACTION=gpt-5.6-luna
+OPENAI_MODEL_CLASSIFY=gpt-5.6-luna
+OPENAI_MODEL_PLANNING=gpt-5.6-luna
+OPENAI_MODEL_SYNTHESIS=gpt-5.6-terra
 OPENAI_REASONING_EFFORT=low
 EMBED_BACKEND=hash
 MARKOV_API_KEYS={"local-customer-key":"local-customer"}
@@ -123,10 +132,18 @@ MARKOV_OPENING_CREDITS=20
 MARKOV_WEB_SESSION_SECRET=replace-with-a-random-secret
 ```
 
-This path uses OpenAI Structured Outputs for Markov's extraction and
-classification contracts. `EMBED_BACKEND=hash` avoids a second metered provider
-while the workflow is being tuned. Switch to a semantic embedding backend before
-production retrieval evaluation.
+Markov remains the orchestrator. Deterministic segmentation and validation stay
+in code; Ollama handles chunk-level extraction, query generation, and initial
+stance classification. The local planner sees the complete claim ledger, then
+sends at most the configured core-claim limit to OpenAI for canonicalization and
+topic review. Connection synthesis receives only those core claims and a bounded
+support/challenge evidence packet. A low-confidence local stance is the only
+classification automatically escalated to cloud. Cloud structured outputs use
+the Responses API; local Ollama calls use its OpenAI-compatible chat endpoint.
+
+`EMBED_BACKEND=hash` avoids a second metered provider while the workflow is being
+tuned. Switch to a semantic embedding backend before production retrieval
+evaluation.
 
 Low-cost Claude alternative:
 
@@ -145,7 +162,7 @@ Local model example:
 LLM_BACKEND=openai
 EMBED_BACKEND=openai
 OPENAI_BASE_URL=http://localhost:11434/v1
-OPENAI_API_MODE=auto
+OPENAI_API_MODE=chat_completions
 LLM_MODEL=qwen2.5:7b-instruct
 OPENAI_EMBED_MODEL=nomic-embed-text
 MARKOV_API_KEYS={"local-customer-key":"local-customer"}

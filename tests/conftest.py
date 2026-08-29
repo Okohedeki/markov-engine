@@ -10,6 +10,19 @@ from __future__ import annotations
 import asyncio
 import inspect
 
+import pytest
+
+from markov_engine.config import get_settings
+
+
+@pytest.fixture(autouse=True)
+def isolate_external_model_backends(monkeypatch):
+    """The suite must never inherit paid/networked providers from a user .env."""
+    settings = get_settings()
+    monkeypatch.setattr(settings, "llm_backend", "heuristic")
+    monkeypatch.setattr(settings, "embed_backend", "hash")
+    monkeypatch.setattr(settings, "search_enabled", False)
+
 
 def pytest_collection_modifyitems(config, items):
     # Register the `asyncio` marker so pytest doesn't warn about it.

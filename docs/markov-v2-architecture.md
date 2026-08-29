@@ -190,6 +190,29 @@ Weights and thresholds live in configuration. They rank candidates; they do not
 convert a hypothesis into a fact. Speculative leads may remain visible when
 useful, but must carry the label and a concrete validation step.
 
+## Hybrid model orchestration
+
+Markov owns the workflow and trust boundaries; a provider agent does not decide
+what evidence becomes true. The default hybrid route minimizes cloud context:
+
+```text
+deterministic extraction + stable locators
+  -> local model: chunk claims, entities, queries, initial stance
+  -> local model: reduce the complete claim ledger
+  -> cloud model: review only the bounded candidate ledger
+  -> deterministic search + passage selection
+  -> local model: classify each inspected passage
+       -> cloud only when local confidence is below the configured threshold
+  -> cloud model: synthesize connections from core claims + bounded evidence
+  -> deterministic validation, scoring, paths, insight levels, and rendering
+```
+
+This is intentionally narrower than delegating the case to a general-purpose
+agent. The Responses API and agent tooling remain useful provider capabilities,
+but Markov's persisted stages, retries, evidence IDs, budgets, and stopping
+conditions are the product contract. A model may propose; it cannot bypass the
+validator or silently promote its own outside knowledge to evidence.
+
 ## Rendering contracts
 
 All three renderers use the same case graph and emit both readable Markdown and
