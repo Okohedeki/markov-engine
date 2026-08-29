@@ -346,7 +346,7 @@ async def run(args: argparse.Namespace) -> None:
         core_claims = [claim for claim in claims if claim["disposition"] == "core"]
         evidence_count = sum(len(claim["evidence"]) for claim in claims)
         summary = {
-            "run_id": f"{VIDEO_ID}-v2",
+            "run_id": output_dir.name,
             "source_url": SOURCE_URL,
             "captured_source_directory": str(capture_dir.resolve()),
             "markov_database": str(db_path.resolve()),

@@ -226,10 +226,11 @@ async def test_hybrid_reduces_full_ledger_locally_before_cloud_review(monkeypatc
                 candidate_ids = [
                     claim.id for claim in claims if f"[C{claim.id}]" in prompt
                 ]
-                assert len(candidate_ids) <= 4
+                assert len(candidate_ids) <= 12
                 assert claims[-1].id in candidate_ids
+                selected_ids = list(dict.fromkeys(candidate_ids[:3] + [claims[-1].id]))
                 selected_claims = [
-                    claim for claim in claims if claim.id in candidate_ids
+                    claim for claim in claims if claim.id in selected_ids
                 ]
             return {
                 "entities": [],

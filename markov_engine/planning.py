@@ -37,6 +37,7 @@ _PLAN_SCHEMA = {
         },
         "topics": {
             "type": "array",
+            "maxItems": 8,
             "items": {
                 "type": "object",
                 "properties": {
@@ -296,10 +297,11 @@ async def plan_research_case(
             for claim in ordered_claims
         )
         if _settings.llm_backend == "hybrid":
+            candidate_limit = min(40, max_core_claims * 3)
             try:
                 local_plan, local_cost = await complete_json(
                     _PLAN_PROMPT.format(
-                        max_core_claims=max_core_claims,
+                        max_core_claims=candidate_limit,
                         case_title=case.title,
                         original_input=case.original_input,
                         claims=ledger,
@@ -318,8 +320,8 @@ async def plan_research_case(
                     "Local planning reduction failed; using deterministic coverage",
                     exc_info=True,
                 )
-                local_plan = _fallback_plan(claims, max_core_claims)
-            candidates = _reduced_claims(claims, local_plan, max_core_claims)
+                local_plan = _fallback_plan(claims, candidate_limit)
+            candidates = _reduced_claims(claims, local_plan, candidate_limit)
             reduced_ledger = "\n".join(
                 f"[C{claim.id}] {claim.claim_text} "
                 f"(type={claim.claim_type}; importance={claim.importance:.2f}; "
@@ -397,6 +399,37 @@ async def plan_research_case(
                 "research_priority": item["research_priority"],
             }
             for item in data["selected_claims"]
+        }
+
+    topic_rank: dict[str, float] = {}
+    for item in data.get("topics") or []:
+        if not isinstance(item, dict):
+            continue
+        title = _clean(item.get("title"))[:120]
+        if title:
+            topic_rank[title] = max(
+                topic_rank.get(title, 0),
+                _bounded(item.get("importance")),
+            )
+    for details in selected.values():
+        title = details["topic_title"]
+        topic_rank[title] = max(
+            topic_rank.get(title, 0),
+            details["research_priority"],
+        )
+    if len(topic_rank) > 8:
+        allowed_topics = {
+            title
+            for title, _importance in sorted(
+                topic_rank.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )[:8]
+        }
+        selected = {
+            claim_id: details
+            for claim_id, details in selected.items()
+            if details["topic_title"] in allowed_topics
         }
 
     for item in data.get("entities") or []:

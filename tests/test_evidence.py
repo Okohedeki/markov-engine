@@ -20,6 +20,10 @@ def test_query_families_and_source_roles_are_explicit():
     assert evidence.classify_source(
         "https://youtube.com/watch?v=x", source_type="youtube"
     )[0] == "commentary"
+    cleaned = evidence.query_families(
+        "The video claims that the measured value was 42"
+    )
+    assert all("video claims" not in item["query"].lower() for item in cleaned)
 
 
 @pytest.mark.asyncio
@@ -344,3 +348,40 @@ async def test_hybrid_escalates_only_low_confidence_stance_to_cloud(monkeypatch)
         0.94,
     )
     assert result[4] == pytest.approx(0.003)
+
+
+@pytest.mark.asyncio
+async def test_hybrid_always_reviews_sensitive_stance_in_cloud(monkeypatch):
+    calls = []
+    monkeypatch.setattr(evidence._settings, "llm_backend", "hybrid")
+
+    async def fake_complete(
+        prompt, *, schema, model, max_tokens, task, route="auto"
+    ):
+        calls.append(route)
+        if route == "cloud":
+            return {
+                "stance": "context_only",
+                "strength": 0.1,
+                "rationale": (
+                    "One identity attribute does not logically contradict the "
+                    "separate ideological label."
+                ),
+                "confidence": 0.98,
+            }, 0.002
+        return {
+            "stance": "contradicts",
+            "strength": 1,
+            "rationale": "The local model conflated two identity attributes.",
+            "confidence": 0.99,
+        }, 0
+
+    monkeypatch.setattr(evidence, "complete_json", fake_complete)
+    result = await evidence.classify_stance(
+        "The video labels Nathan Cofnas a white supremacist.",
+        "Nathan Cofnas is described as a white Jewish man.",
+    )
+
+    assert calls == ["auto", "cloud"]
+    assert result[0] == "context_only"
+    assert result[4] == pytest.approx(0.002)

@@ -58,6 +58,14 @@ Identity rules:
 - A spelling difference is not a contradiction.
 - A denial of a different allegation is not a contradiction. Use contradicts only
   when the passage directly rejects the claim or states an incompatible fact.
+- Two identity attributes are not contradictory merely because they are
+  politically or culturally associated with different groups.
+- A passage that addresses only one clause of a compound claim cannot support or
+  contradict the whole claim.
+- A source reporting that someone was accused establishes the accusation, not the
+  truth of the alleged misconduct.
+- The stance and rationale must agree. Recheck the label if the explanation says
+  the passage provides evidence for the claim but the label says contradicts.
 
 KNOWN ENTITY ALIASES:
 {entity_context}
@@ -83,6 +91,14 @@ SOURCE_QUALITY_WEIGHTS = {
 def query_families(claim_text: str) -> list[dict]:
     """Generate distinct authority/counterevidence query families."""
     claim = re.sub(r"\s+", " ", claim_text).strip()
+    claim = re.sub(
+        r"^(?:the\s+)?(?:video|interview|speaker|transcript|source)\s+"
+        r"(?:claims?|states?|says?|argues?|infers?|presents?|describes?|"
+        r"characteri[sz]es?|labels?)\s+(?:that\s+)?",
+        "",
+        claim,
+        flags=re.IGNORECASE,
+    ).strip()
     return [
         {"family": "original_source", "query": f'"{claim}" original source'},
         {"family": "primary_evidence", "query": f"{claim} primary source document"},
@@ -175,6 +191,21 @@ def _bounded(value, default: float) -> float:
         return default
 
 
+def _requires_cloud_stance_review(claim_text: str) -> bool:
+    """Use the stronger reviewer for consequential or easily conflated claims."""
+    return bool(
+        re.search(
+            r"\b("
+            r"race|racial|black|white|jewish|iq|intelligen\w*|genetic\w*|"
+            r"hereditar\w*|eugenic\w*|supremacist|extremist|nazi|"
+            r"plagiari\w*|fabulist|fraud\w*|fabricat\w*|criminal|lied|liar"
+            r")\b",
+            claim_text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 async def classify_stance(
     claim_text: str,
     passage_text: str,
@@ -198,7 +229,10 @@ async def classify_stance(
         raise ValueError("Evidence stance returned a non-object result")
     if _settings.llm_backend == "hybrid":
         local_confidence = _bounded(data.get("confidence"), 0.0)
-        if local_confidence < _settings.hybrid_classification_confidence:
+        if (
+            local_confidence < _settings.hybrid_classification_confidence
+            or _requires_cloud_stance_review(claim_text)
+        ):
             try:
                 reviewed, review_cost = await complete_json(
                     prompt,
