@@ -444,9 +444,139 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             assert "Continue this case" in artifact.text
             assert "Connections" in artifact.text
             assert "Claim ledger" in artifact.text
+            assert "One source. Several possible directions." in artifact.text
+            assert "Ideas to explore" in artifact.text
+            assert "Supplemental sources" in artifact.text
+            assert "Guided creation" in artifact.text
+            assert "Working angle or question" in artifact.text
+            assert "When an essential gap remains" in artifact.text
             assert "Export JSON" in artifact.text
             assert "&lt;script&gt;" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_case_workspace_exposes_topics_gaps_and_supplemental_sources():
+    store = await SqliteStore.open(":memory:")
+    app = create_app(store=store, settings=_settings(), process_case=_fake_process)
+    transport = httpx.ASGITransport(app=app)
+    try:
+        case = await store.create_research_case(
+            owner_id="owner-1",
+            title="A starting video with more than one story",
+            original_input="https://youtube.com/watch?v=branches",
+            input_type="youtube",
+            purpose="brief",
+        )
+        seed = await store.add_source(
+            url=case.original_input,
+            title="The original interview",
+            source_type="youtube",
+            content_text="A located claim.",
+            summary="",
+        )
+        await store.add_research_case_source(
+            research_case_id=case.id, source_id=seed.id, source_role="seed"
+        )
+        supplemental = await store.add_source(
+            url="https://example.com/news/context",
+            title="Supplemental reporting that changes the question",
+            source_type="article",
+            content_text="Additional context.",
+            summary="",
+        )
+        await store.update_source_provenance(
+            supplemental.id,
+            source_role="independent_evidence",
+            source_quality="analysis",
+            source_quality_rationale="A reported analysis with additional context.",
+            publisher="Example News",
+        )
+        await store.add_research_case_source(
+            research_case_id=case.id,
+            source_id=supplemental.id,
+            source_role="independent_evidence",
+        )
+        claim = await store.add_claim(
+            research_case_id=case.id,
+            seed_source_id=seed.id,
+            claim_text="The original claim depends on an omitted mechanism.",
+            claim_type="causal",
+            importance=0.95,
+            speaker_certainty="asserted_as_fact",
+            source_start_segment_id=None,
+            source_end_segment_id=None,
+            verification_status="partially_supported",
+        )
+        passage = await store.add_evidence_passage(
+            source_id=supplemental.id,
+            passage_text="The additional reporting identifies the omitted mechanism.",
+            section_title="Analysis",
+            source_quality="analysis",
+        )
+        await store.link_claim_evidence(
+            claim_id=claim.id,
+            evidence_passage_id=passage.id,
+            stance="partially_supports",
+            strength=0.8,
+            rationale="It establishes one step but not the entire causal path.",
+            model_confidence=0.85,
+        )
+        topic = await store.add_research_topic(
+            research_case_id=case.id,
+            title="The mechanism the interview skipped",
+            focus="Find the intermediary and test the competing explanation.",
+            importance=0.9,
+            claim_ids=[claim.id],
+        )
+        await store.update_claim_plan(
+            claim.id,
+            canonical_claim_text=claim.claim_text,
+            research_topic_id=topic.id,
+            research_priority=0.95,
+            disposition="core",
+        )
+        await store.add_research_gap(
+            research_case_id=case.id,
+            claim_id=claim.id,
+            gap_type="missing_mechanism",
+            question="Which intermediary turns the premise into the claimed outcome?",
+            importance=0.9,
+        )
+        artifact = await store.add_case_artifact(
+            research_case_id=case.id,
+            artifact_type="brief",
+            review_level="instant",
+            status="completed",
+            title="Fixture branch brief",
+            content="# Fixture branch brief\n\nThe output remains inspectable.",
+            structured_content={"sections": []},
+            word_count=8,
+            model_used="fixture",
+            generation_cost=0.0,
+            source_ids=[seed.id, supplemental.id],
+        )
+
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://test", follow_redirects=True
+        ) as client:
+            await client.post(
+                "/app/login",
+                content="api_key=customer-key",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            response = await client.get(f"/app/artifacts/{artifact.id}")
+
+        assert response.status_code == 200
+        assert topic.title in response.text
+        assert "Which intermediary turns the premise" in response.text
+        assert "Supplemental reporting that changes the question" in response.text
+        assert f'data-topic-id="{topic.id}"' in response.text
+        assert "Research this branch" in response.text
+        assert "Shape an output" in response.text
+        assert "Source packet" in response.text
     finally:
         await store.close()
 

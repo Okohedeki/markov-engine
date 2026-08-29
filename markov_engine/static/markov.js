@@ -815,4 +815,74 @@
       });
     });
   });
+
+  const caseTabs = [...document.querySelectorAll('[data-case-view-tab]')];
+  const caseViews = [...document.querySelectorAll('[data-case-view]')];
+  if (caseTabs.length && caseViews.length) {
+    const selectCaseView = (name, moveFocus = false) => {
+      caseTabs.forEach((tab) => {
+        const active = tab.dataset.caseViewTab === name;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) tab.focus();
+      });
+      caseViews.forEach((view) => {
+        view.hidden = view.dataset.caseView !== name;
+      });
+      if (history.replaceState) history.replaceState(null, '', `#${name}`);
+    };
+
+    caseTabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectCaseView(tab.dataset.caseViewTab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = caseTabs.length - 1;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % caseTabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + caseTabs.length) % caseTabs.length;
+        selectCaseView(caseTabs[nextIndex].dataset.caseViewTab, true);
+      });
+    });
+    document.querySelectorAll('[data-case-view-jump]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        selectCaseView(trigger.dataset.caseViewJump, true);
+        document.querySelector('.case-view-tabs')?.scrollIntoView({ block: 'start' });
+      });
+    });
+    const requestedView = window.location.hash.slice(1);
+    if (caseViews.some((view) => view.dataset.caseView === requestedView)) {
+      selectCaseView(requestedView);
+    }
+  }
+
+  const composer = document.querySelector('[data-output-composer]');
+  if (composer) {
+    const topicInput = composer.querySelector('[data-composer-topic]');
+    const angleInput = composer.querySelector('[data-composer-angle]');
+    const context = composer.querySelector('[data-composer-context]');
+    let composerTrigger = null;
+    document.querySelectorAll('[data-open-composer]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        composerTrigger = trigger;
+        topicInput.value = trigger.dataset.topicId || '';
+        angleInput.value = trigger.dataset.topicFocus || '';
+        context.textContent = trigger.dataset.topicId
+          ? `Working from: ${trigger.dataset.topicTitle}`
+          : 'Choose the direction before Markov writes.';
+        composer.showModal();
+        window.setTimeout(() => angleInput.focus(), 0);
+      });
+    });
+    composer.querySelector('[data-close-composer]')?.addEventListener('click', () => composer.close());
+    composer.addEventListener('close', () => composerTrigger?.focus());
+    composer.addEventListener('click', (event) => {
+      if (event.target !== composer) return;
+      const bounds = composer.getBoundingClientRect();
+      const inside = event.clientX >= bounds.left && event.clientX <= bounds.right
+        && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+      if (!inside) composer.close();
+    });
+  }
 })();

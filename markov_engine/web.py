@@ -333,6 +333,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             {"claim": claim, "evidence": await store.list_claim_evidence(claim.id)}
             for claim in claims
         ]
+        claim_rows_by_id = {row["claim"].id: row for row in claim_rows}
         decisions = await store.list_user_branch_decisions(
             case.id, owner_id=owner_id
         )
@@ -345,6 +346,69 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 "decision": latest_decision.get(connection.id),
             }
             for connection in connections
+        ]
+        gaps = await store.list_research_gaps(case.id)
+        source_rows = [
+            _safe_source(source)
+            for source in await store.list_research_case_sources(case.id)
+        ]
+        source_rows_by_id = {source["id"]: source for source in source_rows}
+        topics = await store.list_research_topics(case.id)
+        insights = await store.list_insight_candidates(case.id)
+        planned_topic_rows = []
+        for topic in topics:
+            topic_claim_rows = [
+                claim_rows_by_id[claim_id]
+                for claim_id in topic.claim_ids
+                if claim_id in claim_rows_by_id
+            ]
+            evidence_source_ids = {
+                link.evidence.source_id
+                for row in topic_claim_rows
+                for link in row["evidence"]
+                if link.evidence is not None
+            }
+            planned_topic_rows.append(
+                {
+                    "topic": topic,
+                    "claims": topic_claim_rows,
+                    "gaps": [gap for gap in gaps if gap.claim_id in topic.claim_ids],
+                    "sources": [
+                        source_rows_by_id[source_id]
+                        for source_id in evidence_source_ids
+                        if source_id in source_rows_by_id
+                    ],
+                    "insights": [
+                        insight
+                        for insight in insights
+                        if set(insight.supporting_claim_ids) & set(topic.claim_ids)
+                    ],
+                }
+            )
+        topic_rows = [
+            row
+            for row in planned_topic_rows
+            if row["insights"]
+            or not row["claims"]
+            or any(
+                claim_row["claim"].verification_status
+                not in {"supported", "completed"}
+                for claim_row in row["claims"]
+            )
+        ] or planned_topic_rows
+        core_claim_rows = [
+            row for row in claim_rows if row["claim"].disposition == "core"
+        ] or claim_rows
+        seed_source = next(
+            (
+                source
+                for source in source_rows
+                if source.get("case_source_role") == "seed"
+            ),
+            source_rows[0] if source_rows else None,
+        )
+        supplemental_sources = [
+            source for source in source_rows if source is not seed_source
         ]
         await store.record_usage_event(
             owner_id=owner_id,
@@ -361,13 +425,16 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             case=case,
             entitlements=resolve_entitlements(owner_id, settings=settings),
             sections=structured.get("sections", []),
-            claim_rows=claim_rows,
+            claim_rows=core_claim_rows,
             connection_rows=connection_rows,
-            gaps=await store.list_research_gaps(case.id),
-            sources=[
-                _safe_source(source)
-                for source in await store.list_research_case_sources(case.id)
-            ],
+            gaps=gaps,
+            topics=topics,
+            topic_rows=topic_rows,
+            insights=insights,
+            sources=source_rows,
+            seed_source=seed_source,
+            supplemental_sources=supplemental_sources,
+            case_artifacts=await store.list_case_artifacts(case.id),
         )
 
     @router.get("/app/artifacts/{artifact_id}/export")
