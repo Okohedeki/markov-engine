@@ -88,11 +88,19 @@ Rules:
 - Correct obvious transcription spelling errors in names only when the source
   context strongly identifies the person or organization. Record the original
   spelling as an alias. Never silently invent an identity.
+- Use proper names in the source title as high-confidence spelling context.
 - Rewrite each selected claim as one precise, self-contained, researchable
   canonical claim. Do not add facts that the source did not claim.
 - Create 3 to 8 topics when the material supports them. Every selected claim
   belongs to exactly one topic and each topic should have a clear research focus.
+- A topic must be one coherent direction. Never group unrelated claims merely
+  because they occur near each other or satisfy a topic-count target.
+- When a claim accuses a named person of misconduct, preserve whether the source
+  asserts, alleges, reports, or proves it. Do not rewrite an allegation as fact.
 - Research priority is 0..1 and should reflect consequence and centrality.
+
+SOURCE TITLE:
+{case_title}
 
 CASE INPUT:
 {original_input}
@@ -111,6 +119,14 @@ Do not introduce facts absent from the candidate ledger. Preserve claim IDs.
 When identity is uncertain, retain the transcript spelling and state the
 uncertainty in the rationale. The final set should contain distinct directions
 that could each become a brief, analysis, or script.
+
+Use proper names in the source title as high-confidence spelling context. Keep
+allegations, reporting about allegations, and established findings distinct.
+Every topic must be one coherent direction; never combine unrelated candidates
+to satisfy a topic-count target.
+
+SOURCE TITLE:
+{case_title}
 
 CASE INPUT:
 {original_input}
@@ -284,6 +300,7 @@ async def plan_research_case(
                 local_plan, local_cost = await complete_json(
                     _PLAN_PROMPT.format(
                         max_core_claims=max_core_claims,
+                        case_title=case.title,
                         original_input=case.original_input,
                         claims=ledger,
                     ),
@@ -316,6 +333,7 @@ async def plan_research_case(
                 data, cloud_cost = await complete_json(
                     _PLAN_REVIEW_PROMPT.format(
                         max_core_claims=max_core_claims,
+                        case_title=case.title,
                         original_input=case.original_input,
                         claims=reduced_ledger,
                     ),
@@ -336,6 +354,7 @@ async def plan_research_case(
             data, cost = await complete_json(
                 _PLAN_PROMPT.format(
                     max_core_claims=max_core_claims,
+                    case_title=case.title,
                     original_input=case.original_input,
                     claims=ledger,
                 ),

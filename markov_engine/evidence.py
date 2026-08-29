@@ -124,12 +124,34 @@ def classify_source(
 
 
 def _tokens(text: str) -> set[str]:
-    stop = {"the", "and", "that", "with", "from", "this", "have", "will", "into"}
+    stop = {
+        "the", "and", "that", "with", "from", "this", "have", "will", "into",
+        "was", "were", "been", "are", "for", "its", "their", "transcript",
+        "states", "claims", "claim", "says", "said",
+    }
     return {
         token
         for token in re.findall(r"[a-z0-9]+", (text or "").lower())
         if len(token) > 2 and token not in stop
     }
+
+
+def rank_search_results(claim_text: str, results: list[dict]) -> list[dict]:
+    """Reject obviously off-topic results before downloading their contents."""
+    claim_tokens = _tokens(claim_text)
+    ranked = []
+    for result in results:
+        preview = " ".join(
+            str(result.get(key) or "") for key in ("title", "snippet")
+        )
+        matches = claim_tokens & _tokens(preview)
+        minimum = 1 if len(claim_tokens) <= 3 else 2
+        if len(matches) < minimum:
+            continue
+        score = len(matches) / max(1, len(claim_tokens))
+        ranked.append((score, len(matches), result))
+    ranked.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    return [item[2] for item in ranked]
 
 
 def select_relevant_segments(
@@ -200,11 +222,40 @@ async def classify_stance(
     rationale = re.sub(r"\s+", " ", str(data.get("rationale") or "")).strip()
     if not rationale:
         raise ValueError("Evidence stance omitted its rationale")
+    strength = _bounded(data.get("strength"), 0.5)
+    confidence = _bounded(data.get("confidence"), 0.5)
+    alleged_misconduct = re.search(
+        r"\b(plagiari\w*|fabulist|fraud\w*|fabricat\w*|criminal|lied|liar)\b",
+        claim_text,
+        flags=re.IGNORECASE,
+    )
+    claim_is_attributed = re.search(
+        r"\b(alleg\w*|accus\w*|reported|characteri[sz]\w*|described|labeled)\b",
+        claim_text,
+        flags=re.IGNORECASE,
+    )
+    passage_only_attributes = re.search(
+        r"\b(alleg\w*|accus\w*|was reported|reportedly|media campaign|denied)\b",
+        passage_text,
+        flags=re.IGNORECASE,
+    )
+    if (
+        stance in {"supports", "partially_supports"}
+        and alleged_misconduct
+        and not claim_is_attributed
+        and passage_only_attributes
+    ):
+        stance = "context_only"
+        strength = min(strength, 0.2)
+        rationale = (
+            f"{rationale} The passage establishes that an allegation or report "
+            "existed, not that the underlying misconduct occurred."
+        )
     return (
         stance,
-        _bounded(data.get("strength"), 0.5),
+        strength,
         rationale,
-        _bounded(data.get("confidence"), 0.5),
+        confidence,
         float(cost or 0),
     )
 
@@ -314,9 +365,6 @@ async def _persist_evidence_source(
         source_quality=role,
         source_quality_rationale=rationale,
     )
-    await store.add_research_case_source(
-        research_case_id=case_id, source_id=existing.id, source_role="evidence"
-    )
     return existing, segments, role
 
 
@@ -353,8 +401,15 @@ async def research_claim(
             if sources_added >= max_sources:
                 break
             query_attempts += 1
-            results = await searcher(family["query"], max_results=4)
-            for result in results:
+            if searcher is search_web:
+                results = await searcher(
+                    family["query"],
+                    max_results=4,
+                    avenues=("web", "news"),
+                )
+            else:
+                results = await searcher(family["query"], max_results=4)
+            for result in rank_search_results(research_text, results):
                 if sources_added >= max_sources:
                     break
                 url = str(result.get("url") or "").strip()
@@ -378,6 +433,13 @@ async def research_claim(
                     model=model,
                 )
                 total_cost += cost
+                if stance == "context_only":
+                    continue
+                await store.add_research_case_source(
+                    research_case_id=case_id,
+                    source_id=source.id,
+                    source_role="evidence",
+                )
                 evidence = await store.add_evidence_passage(
                     source_id=source.id,
                     passage_text=segment.text,

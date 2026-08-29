@@ -34,6 +34,17 @@ def _words(text: str) -> int:
     return len(re.findall(r"\b\w+(?:['’-]\w+)?\b", text))
 
 
+def _excerpt(text: str, max_chars: int = 420) -> str:
+    """Bound duplicated artifact prose while the full passage remains in SQLite."""
+    clean = re.sub(r"\s+", " ", text or "").strip()
+    if len(clean) <= max_chars:
+        return clean
+    boundary = clean.rfind(" ", 0, max_chars - 1)
+    if boundary < max_chars // 2:
+        boundary = max_chars - 1
+    return clean[:boundary].rstrip(" ,;:") + "…"
+
+
 def _format_seconds(value: float | None) -> str | None:
     if value is None:
         return None
@@ -127,7 +138,8 @@ def _evidence_lines(context: dict, claim: ClaimRec) -> list[str]:
         lines.append(
             f"  - **{link.stance.replace('_', ' ')}** ({link.strength:.0%}, "
             f"{evidence.source_quality or 'unclassified'}, {locator}): "
-            f"{evidence.passage_text} [^E{evidence.id}] — {link.rationale}"
+            f"{_excerpt(evidence.passage_text)} [^E{evidence.id}] — "
+            f"{_excerpt(link.rationale, 240)}"
         )
     return lines
 
@@ -136,12 +148,12 @@ def _connection_line(connection: ConnectionRec) -> str:
     label = connection.connection_type.replace("_", " ").title()
     level = connection.evidence_level.replace("_", " ").title()
     return (
-        f"**K{connection.id} — {label} · {level}**: {connection.statement}\n"
-        f"  - **Mechanism:** {connection.mechanism}\n"
-        f"  - **Why it matters:** {connection.why_it_matters}\n"
-        f"  - **Supports:** {connection.supports}\n"
-        f"  - **Weakens:** {connection.weakens or 'No weakening condition was recorded.'}\n"
-        f"  - **Could lead to:** {connection.could_lead_to}\n"
+        f"**K{connection.id} — {label} · {level}**: {_excerpt(connection.statement)}\n"
+        f"  - **Mechanism:** {_excerpt(connection.mechanism)}\n"
+        f"  - **Why it matters:** {_excerpt(connection.why_it_matters)}\n"
+        f"  - **Supports:** {_excerpt(connection.supports)}\n"
+        f"  - **Weakens:** {_excerpt(connection.weakens or 'No weakening condition was recorded.')}\n"
+        f"  - **Could lead to:** {_excerpt(connection.could_lead_to)}\n"
         f"  - **Score:** {connection.total_score:.2f}; risk {connection.risk:.2f}"
     )
 
@@ -243,7 +255,7 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
     ]
     top = (supported or claims)[:1]
     bottom_line = (
-        top[0].claim_text
+        top[0].research_text
         if top
         else "No sufficiently located claim could be extracted from this source."
     )
@@ -261,7 +273,7 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
     evidence_ids = []
     for claim in claims:
         important.append(f"- {_claim_line(claim, context['segments'])}")
-        important.extend(_evidence_lines(context, claim))
+        important.extend(_evidence_lines(context, claim)[:1])
         evidence_ids.extend(
             link.evidence_passage_id for link in context["evidence"][claim.id]
         )
@@ -283,7 +295,7 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
     skip_text = (
         "\n".join(
             f"- {_segment_locator(segment)}: no priority claim was extracted from this segment."
-            for segment in skipped[:10]
+            for segment in skipped[:5]
         )
         or "No segment was automatically marked safe to skip."
     )
@@ -300,7 +312,10 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
         or claim.claim_type == "predictive"
     ]
     gap_text = (
-        "\n".join(f"- **{gap.gap_type.replace('_', ' ')}:** {gap.question}" for gap in context["gaps"])
+        "\n".join(
+            f"- **{gap.gap_type.replace('_', ' ')}:** {gap.question}"
+            for gap in context["gaps"][:6]
+        )
         or "No explicit missing-context question was extracted."
     )
     validated_connections = [
@@ -315,25 +330,25 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
     ]
     assumption_text = (
         "\n".join(
-            f"- C{claim.id}: {claim.claim_text} — treated as "
+            f"- C{claim.id}: {claim.research_text} — treated as "
             f"{claim.claim_type.replace('_', ' ')}, not settled fact."
             for claim in assumptions
         )
         or "No material assumption was promoted beyond its evidence status."
     )
     leaves_out = (
-        "\n".join(f"- {gap.question}" for gap in context["gaps"])
+        "\n".join(f"- {gap.question}" for gap in context["gaps"][:6])
         or "No specific omission was identified from the current source and evidence packet."
     )
     may_be_wrong = (
         "\n".join(
-            f"- C{claim.id}: {claim.claim_text} — {claim.verification_status.replace('_', ' ')}."
+            f"- C{claim.id}: {claim.research_text} — {claim.verification_status.replace('_', ' ')}."
             for claim in misleading
         )
         or "No priority claim is currently contradicted or unresolved."
     )
     threads = (
-        "\n\n".join(_connection_line(item) for item in validated_connections[:5])
+        "\n\n".join(_connection_line(item) for item in validated_connections[:3])
         or "No connection passed validation. The source remains a starting point, not a forced story."
     )
     sections = [
@@ -381,7 +396,7 @@ async def render_brief(store: SqliteStore, case_id: int) -> RenderedArtifact:
             "id": "threads-worth-pulling",
             "title": "Threads worth pulling",
             "content": threads,
-            "connection_ids": [item.id for item in validated_connections[:5]],
+            "connection_ids": [item.id for item in validated_connections[:3]],
         },
         {
             "id": "misleading",
@@ -438,7 +453,7 @@ async def render_research_report(
     analysis_parts = []
     all_evidence_ids = []
     for claim in claims:
-        analysis_parts.append(f"### C{claim.id}: {claim.claim_text}")
+        analysis_parts.append(f"### C{claim.id}: {claim.research_text}")
         analysis_parts.append(
             f"**Assessment:** {claim.verification_status.replace('_', ' ')}; "
             f"claim type: {claim.claim_type}; source certainty: {claim.speaker_certainty}."
@@ -461,7 +476,8 @@ async def render_research_report(
                 continue
             source_packet.append(
                 f"- **C{claim.id} / E{evidence.id} / {link.stance}:** "
-                f"{evidence.passage_text} ({evidence.section_title or _format_seconds(evidence.start_seconds) or 'passage'})"
+                f"{_excerpt(evidence.passage_text)} "
+                f"({evidence.section_title or _format_seconds(evidence.start_seconds) or 'passage'})"
             )
     validated_connections = [
         item
@@ -529,7 +545,8 @@ async def render_research_report(
             "id": "executive-summary",
             "title": "Executive summary",
             "content": "\n".join(
-                f"- C{claim.id}: {claim.claim_text} — **{claim.verification_status.replace('_', ' ')}**"
+                f"- C{claim.id}: {claim.research_text} — "
+                f"**{claim.verification_status.replace('_', ' ')}**"
                 for claim in claims[:5]
             ) or "No conclusions are available.",
             "claim_ids": [claim.id for claim in claims[:5]],
@@ -596,7 +613,10 @@ async def render_research_report(
         {
             "id": "source-packet",
             "title": "Source packet",
-            "content": "\n".join(source_packet) or "No evidence passages were obtained.",
+            "content": (
+                "\n".join(source_packet[:24])
+                or "No evidence passages were obtained."
+            ),
             "claim_ids": [claim.id for claim in claims],
             "evidence_ids": all_evidence_ids,
         },
@@ -643,11 +663,6 @@ async def render_script(
         in {"not_researched", "unverifiable", "disputed", "contradicted"}
     ]
     thesis_claim = (supported or claims)[:1]
-    thesis = (
-        thesis_claim[0].claim_text
-        if thesis_claim
-        else "The premise is not yet supported by enough inspectable evidence."
-    )
     verdict = (
         "Ready to produce"
         if supported and not weak
@@ -655,16 +670,6 @@ async def render_script(
         if supported
         else "Premise is weak or unsupported"
     )
-    title_options = [
-        case.title,
-        f"What the Evidence Actually Shows About {case.title}",
-        f"The Missing Context Behind {case.title}",
-    ]
-    hooks = [
-        f"The simplest version of {case.title} leaves out the part that matters most.",
-        f"Before accepting the usual story about {case.title}, we need to test its strongest claim.",
-        f"The evidence around {case.title} is clearer in some places—and weaker in others—than it first appears.",
-    ]
     validated_connections = [
         item
         for item in context["connections"]
@@ -711,10 +716,38 @@ async def render_script(
         selected_insight[0].thesis
         if selected_insight
         else (
-            "The available record supports an evidence audit, but not yet a distinct "
-            "connection-led premise."
+            "No direction has been selected. The base artifact remains an evidence "
+            "audit; choose one of the candidate angles to create a focused script."
         )
     )
+    thesis = (
+        selected_angle
+        if selected_insight
+        else thesis_claim[0].research_text
+        if thesis_claim
+        else "The premise is not yet supported by enough inspectable evidence."
+    )
+    direction_title = (
+        selected_insight[0].title if selected_insight else case.title
+    )
+    title_options = [
+        direction_title,
+        f"What the evidence actually shows: {direction_title}",
+        f"The missing mechanism: {direction_title}",
+    ]
+    hooks = [
+        (
+            f"The strongest evidence-led version of this story is narrower than "
+            f"the original claim: {selected_angle}"
+            if selected_insight
+            else f"The simplest version of {case.title} leaves out what matters most."
+        ),
+        "Before accepting this direction, we need to test its weakest essential link.",
+        (
+            "The evidence is clear in some places and unresolved in others; that "
+            "boundary is where the real story begins."
+        ),
+    ]
     candidate_angles = (
         "\n".join(
             f"- **I{item.id} · {item.evidence_level.replace('_', ' ')}:** "
@@ -729,26 +762,63 @@ async def render_script(
         "The selected angle is bounded by its weakest essential connection."
         if selected_insight
         else (
-            "Reject the source's premise as the script thesis for now. The case can "
-            "document what was claimed, but it lacks a validated connection that makes "
-            "the premise original and defensible."
+            "The base artifact does not force the source into one thesis. It documents "
+            "the evidence audit and exposes the candidate directions below; selecting a "
+            "direction creates a focused script branch."
         )
     )
+
+    claim_by_id = {claim.id: claim for claim in claims}
+    selected_claim_ids = (
+        selected_insight[0].supporting_claim_ids if selected_insight else []
+    )
+    narration_claims = [
+        claim_by_id[claim_id]
+        for claim_id in selected_claim_ids
+        if claim_id in claim_by_id
+    ] or claims
+    selected_path_ids = (
+        selected_insight[0].connection_path_ids if selected_insight else []
+    )
+    selected_connection_ids = {
+        connection_id
+        for path_id in selected_path_ids
+        if path_id in paths_by_id
+        for connection_id in paths_by_id[path_id].connection_ids
+    }
+    narration_connections = [
+        connection
+        for connection in validated_connections
+        if not selected_connection_ids or connection.id in selected_connection_ids
+    ][:3]
 
     narration_parts = [
         hooks[0],
         f"By the end, {audience} will understand the evidence for the central claim, "
         "the limits of that evidence, and the context most summaries miss.",
-        f"Our defensible thesis is this: {thesis} [C{thesis_claim[0].id}]" if thesis_claim else thesis,
+        (
+            f"Our working thesis is this: {thesis} [I{selected_insight[0].id}]"
+            if selected_insight
+            else f"Our defensible thesis is this: {thesis} [C{thesis_claim[0].id}]"
+            if thesis_claim
+            else thesis
+        ),
         (
             "To get there, we need to separate three things that are often blurred "
             "together: what the original source says, what independent passages "
             "actually establish, and what remains interpretation or prediction."
         ),
     ]
-    narration_claim_ids = [claim.id for claim in thesis_claim]
+    narration_claim_ids = []
     evidence_ids = []
-    narration_connection_ids = []
+    narration_connection_ids = [item.id for item in narration_connections]
+    for connection in narration_connections:
+        narration_parts.append(
+            f"The chain turns on this {connection.connection_type.replace('_', ' ')}: "
+            f"{_excerpt(connection.statement, 320)} [K{connection.id}] The proposed "
+            f"mechanism is {_excerpt(connection.mechanism, 320)} The connection "
+            f"weakens if {_excerpt(connection.weakens or 'its essential evidence fails', 240)}"
+        )
     transitions = [
         "First, consider the source's central assertion.",
         "That leads to the next piece of the argument.",
@@ -756,73 +826,81 @@ async def render_script(
         "A competing explanation changes how this should be interpreted.",
         "Finally, the remaining uncertainty matters for the conclusion.",
     ]
-    for index, claim in enumerate(claims[:8]):
-        narration_parts.append(transitions[index % len(transitions)])
-        narration_parts.append(
+    closing = (
+        "Taken together, this is stronger than a simple endorsement or debunking. "
+        "It shows what the source claimed, which inspected passages bear on the "
+        "important points, and where the case still runs out of evidence. The "
+        "conclusion should preserve that boundary instead of asking the audience "
+        "to inherit the source's certainty."
+    )
+    for index, claim in enumerate(narration_claims[:8]):
+        claim_parts = [transitions[index % len(transitions)]]
+        claim_parts.append(
             f"At {_segment_locator(context['segments'].get(claim.source_start_segment_id or -1))}, "
-            f"the source presents this claim: {claim.claim_text} [C{claim.id}] "
+            f"the source presents this claim: {claim.research_text} [C{claim.id}] "
             f"It is a {claim.claim_type.replace('_', ' ')} statement, presented with "
             f"{claim.speaker_certainty.replace('_', ' ')} certainty. The current "
             f"evidence assessment is {claim.verification_status.replace('_', ' ')}."
         )
-        narration_claim_ids.append(claim.id)
         links = context["evidence"][claim.id]
         for link in links[:2]:
             if link.evidence is None:
                 continue
-            narration_parts.append(
+            claim_parts.append(
                 f"Here is the strongest inspected {link.evidence.source_quality or 'source'} "
-                f"passage in the case: {link.evidence.passage_text} [E{link.evidence.id}] "
+                f"passage in the case: {_excerpt(link.evidence.passage_text)} "
+                f"[E{link.evidence.id}] "
                 f"That passage {link.stance.replace('_', ' ')} the claim. The reason is "
-                f"specific: {link.rationale} This connection is narrower than saying the "
+                f"specific: {_excerpt(link.rationale, 240)} This connection is narrower than saying the "
                 "source proves every possible version of the argument."
             )
             evidence_ids.append(link.evidence.id)
         if not links:
-            narration_parts.append(
+            claim_parts.append(
                 "No independent passage was obtained for this point. That absence is part "
                 "of the result. It means the statement should not be promoted from a source "
                 "claim into the narrator's voice as settled fact. We can explain that it was "
                 "said, but we should not make the audience inherit its certainty."
             )
         if claim.claim_type == "predictive":
-            narration_parts.append(
+            claim_parts.append(
                 "Because this is a prediction, even supportive background evidence cannot "
                 "turn it into a current fact. The honest phrasing is conditional: this is a "
                 "possible outcome whose assumptions and time horizon need to remain visible."
             )
         elif claim.claim_type in {"opinion", "inference"}:
-            narration_parts.append(
+            claim_parts.append(
                 "This point is best treated as interpretation. The evidence can make the "
                 "interpretation more or less reasonable, but it cannot make a judgment call "
                 "identical to an observed fact."
             )
         elif index % 2 == 0:
-            narration_parts.append(
+            claim_parts.append(
                 "For the finished video, the safe move is to state only the version that the "
                 "located evidence supports. Any broader causal story, comparison, or implied "
                 "forecast would need its own claim and its own evidence."
             )
-    narration_connection_ids.extend(item.id for item in validated_connections[:3])
+        projected = _words("\n\n".join(narration_parts + claim_parts + [closing]))
+        current = _words("\n\n".join(narration_parts))
+        if projected > word_range[1] and current >= word_range[0]:
+            break
+        narration_parts.extend(claim_parts)
+        narration_claim_ids.append(claim.id)
     if context["gaps"]:
-        narration_parts.append(
+        gap_intro = (
             "The research also surfaced questions that the available passages do not settle. "
             "Those gaps matter because a clean explanation should show the edge of the record, "
             "not quietly fill it with confidence."
         )
-        for gap in context["gaps"][:4]:
-            narration_parts.append(
+        gap_parts = [gap_intro]
+        for gap in context["gaps"][:2]:
+            gap_parts.append(
                 f"One open question is: {gap.question} Until that gap is resolved, its "
                 "importance should be reflected in the conclusion rather than hidden in the notes."
             )
-    narration_parts.append(
-        "Taken together, this leaves us with a stronger story than a simple endorsement or "
-        "debunking. We can show what the source claimed, where it said it, which independent "
-        "passages bear on each important point, and where the case still runs out of evidence. "
-        "The responsible conclusion is not to erase uncertainty, but to separate what the "
-        "record supports from what remains interpretation or prediction. That is also what "
-        "gives the audience something useful: a conclusion they can inspect instead of merely trust."
-    )
+        if _words("\n\n".join(narration_parts + gap_parts + [closing])) <= word_range[1]:
+            narration_parts.extend(gap_parts)
+    narration_parts.append(closing)
     narration = "\n\n".join(narration_parts)
     actual_words = _words(narration)
     estimated_minutes = actual_words / words_per_minute
@@ -839,7 +917,7 @@ async def render_script(
     for claim in claims:
         fact_check.append(
             f"### C{claim.id} — {claim.verification_status.replace('_', ' ').title()}\n\n"
-            f"{claim.claim_text}\n\n"
+            f"{claim.research_text}\n\n"
             + ("\n".join(_evidence_lines(context, claim)) or "No evidence passage obtained.")
         )
     for connection in validated_connections:
@@ -852,7 +930,8 @@ async def render_script(
             )
         )
     do_not_repeat_claims = "\n".join(
-        f"- C{claim.id}: {claim.claim_text} — {claim.verification_status.replace('_', ' ')}"
+        f"- C{claim.id}: {claim.research_text} — "
+        f"{claim.verification_status.replace('_', ' ')}"
         for claim in weak
     )
     do_not_repeat_connections = "\n".join(
@@ -876,7 +955,11 @@ async def render_script(
             "id": "recommended-thesis",
             "title": "Recommended thesis",
             "content": thesis,
-            "claim_ids": [claim.id for claim in thesis_claim],
+            "claim_ids": (
+                selected_insight[0].supporting_claim_ids
+                if selected_insight
+                else [claim.id for claim in thesis_claim]
+            ),
         },
         {
             "id": "audience-promise",
@@ -893,8 +976,12 @@ async def render_script(
             "id": "recommended-angle",
             "title": "Original, defensible angle",
             "content": selected_angle,
-            "claim_ids": [claim.id for claim in thesis_claim],
-            "connection_ids": [item.id for item in validated_connections[:3]],
+            "claim_ids": (
+                selected_insight[0].supporting_claim_ids
+                if selected_insight
+                else [claim.id for claim in thesis_claim]
+            ),
+            "connection_ids": narration_connection_ids,
             "insight_ids": [item.id for item in selected_insight],
         },
         {"id": "title-options", "title": "Title options", "content": "\n".join(f"- {item}" for item in title_options)},

@@ -54,7 +54,7 @@ DEFAULT_CONSTRAINTS = {
     ),
     "audience": "curious adults who want an evidence-led explanation",
     "tone": "clear, skeptical, humane documentary",
-    "target_minutes": 10,
+    "target_minutes": 6,
     "words_per_minute": 145,
     "max_connections": 8,
 }
@@ -126,7 +126,7 @@ def _cached_extractor(capture_dir: Path):
     async def extractor(url: str, tmp_dir: str, whisper_model: str | None = "base"):
         if VIDEO_ID in url:
             return cached
-        return await extract_content(url, tmp_dir, whisper_model)
+        return await extract_content(url, tmp_dir, None)
 
     return extractor, cached
 
@@ -322,7 +322,7 @@ async def run(args: argparse.Namespace) -> None:
         )
 
         insights = await store.list_insight_candidates(case_id)
-        for insight in insights[: args.branch_scripts]:
+        for insight in insights[1 : args.branch_scripts]:
             await generate_case_artifact(
                 store,
                 case_id=case_id,
@@ -387,7 +387,7 @@ async def run(args: argparse.Namespace) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default=f"data/runs/{VIDEO_ID}-v2")
-    parser.add_argument("--core-claims", type=int, default=12)
+    parser.add_argument("--core-claims", type=int, default=10)
     parser.add_argument("--sources-per-claim", type=int, default=3)
     parser.add_argument("--connections", type=int, default=8)
     parser.add_argument("--branch-scripts", type=int, default=3)

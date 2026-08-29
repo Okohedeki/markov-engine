@@ -149,7 +149,16 @@ async def test_followed_connection_becomes_the_angle_in_a_separate_script():
             for item in artifact.structured_content["sections"]
             if item["id"] == "recommended-angle"
         )
+        original_narration = next(
+            item
+            for item in artifact.structured_content["sections"]
+            if item["id"] == "narration"
+        )
         assert original_angle == first_insight.thesis
+        assert set(original_narration["claim_ids"]) <= {
+            claims[0].id,
+            claims[1].id,
+        }
 
         _first_decision, first_branch = await follow_connection_into_script(
             store,
@@ -168,6 +177,11 @@ async def test_followed_connection_becomes_the_angle_in_a_separate_script():
             for item in revised.structured_content["sections"]
             if item["id"] == "recommended-angle"
         )
+        revised_narration = next(
+            item
+            for item in revised.structured_content["sections"]
+            if item["id"] == "narration"
+        )
         original = await store.get_artifact(artifact.id)
         versions = await store.list_artifact_versions(revised.id)
 
@@ -178,6 +192,11 @@ async def test_followed_connection_becomes_the_angle_in_a_separate_script():
         assert revised.parent_artifact_id == artifact.id
         assert revised.branch_key == f"connection:{followed.id}"
         assert revised_angle == followed_insight.thesis
+        assert set(revised_narration["claim_ids"]) <= {
+            claims[2].id,
+            claims[3].id,
+        }
+        assert revised_narration["content"] != original_narration["content"]
         assert f"K{followed.id}" in revised.content
         assert original.structured_content == artifact.structured_content
         assert [item["change_kind"] for item in versions] == ["connection_followed"]

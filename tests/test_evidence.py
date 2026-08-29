@@ -53,7 +53,10 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
             return [{
                 "url": "https://data.gov/fixture",
                 "title": "Official measurement",
-                "snippet": "THIS SEARCH SNIPPET MUST NOT BECOME EVIDENCE",
+                "snippet": (
+                    "The measured value was 42. "
+                    "THIS SEARCH SNIPPET MUST NOT BECOME EVIDENCE"
+                ),
             }]
 
         async def fake_extract(url, tmp_dir, whisper_model):
@@ -97,6 +100,117 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
         assert links[0].evidence.section_title == "Results"
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_context_only_result_does_not_consume_evidence_budget(monkeypatch):
+    store = await SqliteStore.open(":memory:")
+    try:
+        case = await store.create_research_case(
+            owner_id="owner", title="Fixture", original_input="seed",
+            input_type="youtube", purpose="research",
+        )
+        seed = await store.add_source(
+            url="seed", title="Seed", source_type="youtube",
+            content_text="The measured value was 42.", summary="",
+        )
+        seed_segments = await store.add_source_segments(
+            source_id=seed.id,
+            segments=[{"text": "The measured value was 42."}],
+        )
+        claim = await store.add_claim(
+            research_case_id=case.id,
+            seed_source_id=seed.id,
+            claim_text="The measured value was 42.",
+            claim_type="quantitative",
+            importance=1,
+            speaker_certainty="asserted_as_fact",
+            source_start_segment_id=seed_segments[0].id,
+            source_end_segment_id=seed_segments[0].id,
+        )
+
+        async def fake_search(query, max_results=4):
+            return [
+                {
+                    "url": "https://example.com/context",
+                    "title": "Measured value discussion",
+                    "snippet": "The measured value 42 is mentioned.",
+                },
+                {
+                    "url": "https://data.gov/result",
+                    "title": "Measured value result",
+                    "snippet": "The measured value was 42 in the official table.",
+                },
+            ]
+
+        async def fake_extract(url, tmp_dir, whisper_model):
+            text = (
+                "The measured value 42 appears in the search topic, but no result is given."
+                if url.endswith("context")
+                else "The official table reports that the measured value was 42."
+            )
+            return ExtractedContent(
+                url=url,
+                source_type="article",
+                title=url,
+                content_text=text,
+                segments=[ExtractedSegment(ordinal=0, text=text)],
+            )
+
+        async def fake_stance(prompt, *, schema, model, max_tokens, task):
+            if "no result is given" in prompt:
+                return {
+                    "stance": "context_only",
+                    "strength": 0.1,
+                    "rationale": "It mentions the topic but gives no result.",
+                    "confidence": 0.95,
+                }, 0
+            return {
+                "stance": "supports",
+                "strength": 0.95,
+                "rationale": "The table directly reports the value.",
+                "confidence": 0.95,
+            }, 0
+
+        monkeypatch.setattr(evidence, "complete_json", fake_stance)
+        result = await evidence.research_claim(
+            store,
+            case_id=case.id,
+            claim=claim,
+            searcher=fake_search,
+            extractor=fake_extract,
+            max_sources=1,
+        )
+
+        links = await store.list_claim_evidence(claim.id)
+        case_sources = await store.list_research_case_sources(case.id)
+        assert result["sources_added"] == 1
+        assert len(links) == 1
+        assert links[0].evidence.passage_text.startswith("The official table")
+        assert [row["url"] for row in case_sources] == ["https://data.gov/result"]
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_reported_accusation_cannot_prove_underlying_misconduct(monkeypatch):
+    async def fake_complete(prompt, *, schema, model, max_tokens, task):
+        return {
+            "stance": "supports",
+            "strength": 0.9,
+            "rationale": "The passage uses the same label.",
+            "confidence": 0.9,
+        }, 0
+
+    monkeypatch.setattr(evidence, "complete_json", fake_complete)
+    stance = await evidence.classify_stance(
+        "Jason Arday is a serial plagiarist.",
+        "Jason Arday was widely accused of being a serial plagiarist in a media campaign.",
+    )
+
+    assert stance[0] == "context_only"
+    assert stance[1] <= 0.2
+    assert "underlying misconduct" in stance[2]
 
 
 @pytest.mark.asyncio

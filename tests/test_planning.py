@@ -57,6 +57,7 @@ async def test_model_plan_canonicalizes_entities_and_focuses_the_full_source(mon
         async def fake_plan(prompt, *, schema, model, max_tokens, task):
             assert task == "planning_review"
             assert f"[C{claims[-1].id}]" in prompt
+            assert "SOURCE TITLE:\nLong interview" in prompt
             return {
                 "entities": [
                     {
