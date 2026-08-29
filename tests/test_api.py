@@ -226,6 +226,27 @@ async def test_verified_job_enters_internal_review_and_finalizes():
 @pytest.mark.asyncio
 async def test_web_login_and_focused_intake_page():
     store = await SqliteStore.open(":memory:")
+    research_case = await store.create_research_case(
+        owner_id="owner-1",
+        title="Why would Japanese investors sell U.S. Treasuries?",
+        original_input="https://www.youtube.com/watch?v=nmdujC0MUKA",
+        input_type="url",
+        purpose="research",
+        status="completed",
+    )
+    artifact = await store.add_case_artifact(
+        research_case_id=research_case.id,
+        artifact_type="research_report",
+        review_level="instant",
+        status="completed",
+        title="Japan capital flows",
+        content="# Japan capital flows",
+        structured_content={"artifact_type": "research_report", "sections": []},
+        word_count=3,
+        model_used="fixture",
+        generation_cost=0,
+        source_ids=[],
+    )
     app = create_app(store=store, settings=_settings(), process_case=_fake_process)
     transport = httpx.ASGITransport(app=app)
     try:
@@ -244,7 +265,12 @@ async def test_web_login_and_focused_intake_page():
             assert "Catch me up" in signed_in.text
             assert "Explore where it leads" in signed_in.text
             assert "Turn it into a script" in signed_in.text
+            assert "Continue your trails" in signed_in.text
+            assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
+            assert f'href="/app/artifacts/{artifact.id}"' in signed_in.text
+            assert "youtube.com" in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
+            assert "owner-1" not in signed_in.text
     finally:
         await store.close()
 

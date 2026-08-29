@@ -242,6 +242,51 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             return RedirectResponse("/app/login", status_code=303)
         store = request.app.state.store
         account = await store.get_credit_account(owner_id)
+        jobs = await store.list_jobs(owner_id=owner_id, limit=50)
+        jobs_by_case = {}
+        for job in jobs:
+            jobs_by_case.setdefault(job.research_case_id, job)
+
+        trail_rows = []
+        for research_case in await store.list_research_cases(
+            owner_id=owner_id, limit=12
+        ):
+            artifacts = await store.list_case_artifacts(research_case.id)
+            latest_artifact = artifacts[-1] if artifacts else None
+            latest_job = jobs_by_case.get(research_case.id)
+            destination = None
+            action_label = None
+            status = research_case.status
+            updated_at = research_case.updated_at or research_case.created_at
+            if latest_artifact is not None:
+                destination = f"/app/artifacts/{latest_artifact.id}"
+                action_label = f"Open {_humanize(latest_artifact.artifact_type)}"
+                status = latest_artifact.status
+                updated_at = latest_artifact.updated_at or latest_artifact.created_at
+            elif latest_job is not None:
+                destination = f"/app/jobs/{latest_job.id}"
+                action_label = "View progress"
+                status = latest_job.status
+                updated_at = latest_job.updated_at or latest_job.created_at
+
+            parsed_source = urlparse(research_case.original_input)
+            if parsed_source.scheme in {"http", "https"}:
+                host = parsed_source.netloc.removeprefix("www.")
+                source_label = f"{_humanize(research_case.input_type)} · {host}"
+            else:
+                source_label = "Question or note"
+
+            trail_rows.append(
+                {
+                    "case": research_case,
+                    "latest_artifact": latest_artifact,
+                    "destination": destination,
+                    "action_label": action_label,
+                    "status": status,
+                    "updated_at": updated_at,
+                    "source_label": source_label,
+                }
+            )
         return _render(
             request,
             "dashboard.html",
@@ -249,7 +294,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             owner_id=owner_id,
             account=account,
             entitlements=resolve_entitlements(owner_id, settings=settings),
-            jobs=await store.list_jobs(owner_id=owner_id, limit=12),
+            jobs=jobs[:12],
+            trails=trail_rows,
             products=public_catalog(settings),
         )
 

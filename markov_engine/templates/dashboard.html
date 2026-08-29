@@ -1,63 +1,114 @@
 {% extends "base.html" %}
 {% block title %}Workspace — Markov{% endblock %}
-{% block body_class %}app-body{% endblock %}
+{% block body_class %}app-body dashboard-body{% endblock %}
 {% block body %}
   <div class="app-frame">
     {% include "partials/app_sidebar.html" %}
     <main class="app-main" id="main-content">
-      <header class="app-topbar"><a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a><span class="breadcrumbs">Workspace / New trail</span><span class="mobile-context">New trail</span><span class="fine">{{ owner_id }}</span></header>
-      <div class="app-content workspace-content">
-        <div class="app-title workspace-title"><div><p class="eyebrow">Start anywhere</p><h1>What did you find?</h1></div><p class="lede">Give Markov one source or question. The evidence and connections stay attached to everything you make from it.</p></div>
+      <header class="app-topbar">
+        <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
+        <span class="breadcrumbs">Workspace</span>
+        <a class="topbar-action" href="#new-research">New trail ↓</a>
+        <span class="mobile-context">Workspace</span>
+      </header>
 
-        <div class="workspace-grid">
-          <form class="intake-flow" id="new-research" method="post" action="/app/jobs" data-mode-picker>
-            <section class="intake-step">
-              <div class="intake-step-number">01</div>
-              <div class="intake-step-body">
-                <label for="source-value">Source or question</label>
-                <textarea id="source-value" name="value" placeholder="Paste a YouTube, TikTok, article, paper, podcast, or ask the question you want to follow." required></textarea>
-                <span class="field-hint">The source is the first node—not an answer Markov has to defend.</span>
+      <div class="app-content dashboard-content">
+        <header class="dashboard-intro">
+          <div>
+            <p class="eyebrow">Start anywhere</p>
+            <h1>What did you find?</h1>
+          </div>
+          <p class="lede">Give Markov one source or question. It will keep the evidence, open questions, and every useful direction attached.</p>
+        </header>
+
+        <form class="capture-surface" id="new-research" method="post" action="/app/jobs" data-mode-picker>
+          <div class="capture-source">
+            <label for="source-value">Paste a source or ask a question</label>
+            <textarea id="source-value" name="value" placeholder="YouTube, TikTok, article, PDF, podcast, post, or a question worth following…" required></textarea>
+            <p class="capture-source-types" aria-label="Accepted source types"><span>YouTube</span><span>TikTok</span><span>Article</span><span>PDF</span><span>Podcast</span><span>Question</span></p>
+          </div>
+
+          <fieldset class="capture-intents">
+            <legend>What should Markov do first?</legend>
+            <div class="capture-intent-options">
+              <div class="choice">
+                <input id="mode-brief" name="mode" type="radio" value="brief" checked>
+                <label for="mode-brief"><span class="choice-marker">01</span><strong>Catch me up</strong><span>Substance, context, and gaps</span></label>
               </div>
-            </section>
+              <div class="choice">
+                <input id="mode-research" name="mode" type="radio" value="research">
+                <label for="mode-research"><span class="choice-marker">02</span><strong>Explore where it leads</strong><span>Branches, sources, and new ideas</span></label>
+              </div>
+              <div class="choice">
+                <input id="mode-script" name="mode" type="radio" value="script">
+                <label for="mode-script"><span class="choice-marker">03</span><strong>Turn it into a script</strong><span>A guided angle with its fact-check</span></label>
+              </div>
+            </div>
+          </fieldset>
 
-            <section class="intake-step">
-              <div class="intake-step-number">02</div>
-              <div class="intake-step-body">
-                <span class="field-label">Where should this trail take you?</span>
-                <div class="mode-picker">
-                  <div class="choice"><input id="mode-brief" name="mode" type="radio" value="brief" checked><label for="mode-brief"><span class="choice-number">A</span><strong>Catch me up</strong><span>Bottom line, gaps, and threads worth pulling</span></label></div>
-                  <div class="choice"><input id="mode-research" name="mode" type="radio" value="research"><label for="mode-research"><span class="choice-number">B</span><strong>Explore where it leads</strong><span>Connections, paths, and testable insights</span></label></div>
-                  <div class="choice"><input id="mode-script" name="mode" type="radio" value="script"><label for="mode-script"><span class="choice-number">C</span><strong>Turn it into a script</strong><span>An original angle with its fact-check attached</span></label></div>
+          <div class="capture-footer">
+            <details class="advanced-options capture-options" data-advanced-options>
+              <summary><strong>Give Markov more direction</strong><span>Optional</span></summary>
+              <div class="capture-option-fields">
+                <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — model reviewed</option><option value="verified">Verified — human reviewed</option></select></div>
+                <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claim or question that matters most"></div>
+                <div class="field" data-script-fields hidden><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
+                <div class="field" data-script-fields hidden><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
+                <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
+              </div>
+            </details>
+            <div class="capture-submit">
+              <span>Sources and uncertainty stay attached.</span>
+              <button type="submit">Start this trail <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+        </form>
+
+        <section class="trail-ledger" id="projects">
+          <header class="trail-ledger-heading">
+            <div><p class="eyebrow">Continue your trails</p><h2>Pick up where the idea opened.</h2></div>
+            <span class="trail-count">{{ trails | length }} active</span>
+          </header>
+
+          <div class="dashboard-lower">
+            <div class="trail-list">
+              {% for trail in trails %}
+                <article class="trail-row">
+                  {% if trail.destination %}<a href="{{ trail.destination }}" aria-label="{{ trail.action_label }}: {{ trail.case.title }}">{% else %}<div>{% endif %}
+                    <span class="trail-index">{{ "%02d" | format(loop.index) }}</span>
+                    <div class="trail-summary">
+                      <p class="trail-meta"><span>{{ trail.source_label }}</span><span>{{ trail.case.purpose | humanize }}</span></p>
+                      <h3>{{ trail.case.title }}</h3>
+                      <p class="trail-origin">{{ trail.case.original_input | truncate(118) }}</p>
+                    </div>
+                    <div class="trail-next-action">
+                      <span class="badge {{ trail.status | badge_class }}">{{ trail.status | humanize }}</span>
+                      {% if trail.latest_artifact %}<span>{{ trail.latest_artifact.artifact_type | humanize }}</span>{% endif %}
+                      {% if trail.updated_at %}<time datetime="{{ trail.updated_at.isoformat() }}">{{ trail.updated_at.strftime("%b %d") }}</time>{% endif %}
+                      <strong>{{ trail.action_label or "Waiting for its first output" }}{% if trail.destination %} <span aria-hidden="true">↗</span>{% endif %}</strong>
+                    </div>
+                  {% if trail.destination %}</a>{% else %}</div>{% endif %}
+                </article>
+              {% else %}
+                <div class="trail-empty">
+                  <span class="trail-empty-line" aria-hidden="true"></span>
+                  <div><h3>Your first trail will begin above.</h3><p>Paste one thing. Markov will keep the source, the branches it opens, and every output together here.</p></div>
                 </div>
-              </div>
-            </section>
+              {% endfor %}
+            </div>
 
-            <section class="intake-step intake-step-options">
-              <div class="intake-step-number">03</div>
-              <div class="intake-step-body">
-                <details class="advanced-options" data-advanced-options>
-                  <summary><strong>Set quality, focus, or script details</strong><span>Optional</span></summary>
-                  <div class="field-grid">
-                    <div class="field"><label for="review-level">Quality</label><select id="review-level" name="review_level"><option value="instant">Instant — model reviewed</option><option value="verified">Verified — human reviewed</option></select></div>
-                    <div class="field"><label for="focus">Focus</label><input id="focus" name="focus" placeholder="The claim or question that matters most"></div>
-                  </div>
-                  <div class="field-grid" data-script-fields hidden>
-                    <div class="field"><label for="target-minutes">Target minutes</label><input id="target-minutes" name="target_minutes" type="number" min="1" max="120" value="8"></div>
-                    <div class="field"><label for="audience">Audience</label><input id="audience" name="audience" value="general"></div>
-                  </div>
-                  <div class="field" data-script-fields hidden><label for="tone">Tone</label><input id="tone" name="tone" value="clear documentary"></div>
-                </details>
-              </div>
-            </section>
-
-            <div class="form-actions intake-actions"><span>Accuracy controls, citations, uncertainty labels, and the source packet are included on every plan.</span><button type="submit">Start this trail</button></div>
-          </form>
-
-          <aside class="workspace-aside">
-            <section class="workspace-account"><p class="eyebrow">{{ entitlements.profile | humanize }}</p>{% if entitlements.metered_credits %}<p class="account-value">{{ account.balance | number }} <span>credits</span></p><p class="muted">Shared by the Workspace and API.</p><details><summary>See product costs</summary><ul>{% for product in products %}<li>{{ product.variant | humanize }} <span>{{ product.credit_cost | credits }}</span></li>{% endfor %}</ul></details>{% else %}<p class="account-value">Unmetered</p><p class="muted">Community mode does not debit artificial credits.</p>{% endif %}</section>
-            <section class="workspace-projects" id="projects"><div class="workspace-section-heading"><p class="eyebrow">Recent trails</p><span>{{ jobs | length }}</span></div><ul class="project-list">{% for job in jobs %}<li class="project-item"><a href="/app/jobs/{{ job.id }}"><span><strong>{{ {'brief':'Catch up','research':'Explore','script':'Script'}[job.mode] if job.mode in ['brief','research','script'] else job.mode | humanize }}</strong><span class="fine mono">{{ job.id }}</span></span><span class="badge {{ job.status | badge_class }}">{{ job.status | humanize }}</span></a></li>{% else %}<li class="empty"><strong>No trails yet.</strong><span>Your first source will appear here with its status and next action.</span></li>{% endfor %}</ul></section>
-          </aside>
-        </div>
+            <aside class="workspace-utility" aria-label="Workspace plan and developer access">
+              <p class="eyebrow">{{ entitlements.profile | humanize }}</p>
+              {% if entitlements.metered_credits %}
+                <p class="utility-balance"><strong>{{ account.balance | number }}</strong> credits available</p>
+              {% else %}
+                <p class="utility-balance"><strong>∞</strong> unmetered workspace</p>
+              {% endif %}
+              <p>The web app and API work from the same research chains.</p>
+              <nav aria-label="Workspace utilities"><a href="/developers">Build with the API <span aria-hidden="true">↗</span></a><a href="/pricing">Usage and plan <span aria-hidden="true">↗</span></a></nav>
+            </aside>
+          </div>
+        </section>
       </div>
     </main>
   </div>
