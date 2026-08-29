@@ -6,6 +6,8 @@ claims. It writes the database, complete case bundle, portable SQL dump, all
 artifact formats, branch-specific scripts, and a quantitative run summary.
 """
 
+# ruff: noqa: E402 -- direct execution needs the repository root on sys.path.
+
 from __future__ import annotations
 
 import argparse
@@ -15,7 +17,12 @@ import datetime as dt
 import json
 import re
 import sqlite3
+import sys
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from markov_engine.exports import markdown_to_safe_html
 from markov_engine.extract import (
@@ -260,7 +267,7 @@ def _database_snapshot(db_path: Path, output_dir: Path) -> dict[str, int]:
 
 
 async def run(args: argparse.Namespace) -> None:
-    repo = Path(__file__).resolve().parents[1]
+    repo = REPO_ROOT
     capture_dir = (repo.parent / "media-intake" / "downloads" / "Youtube" / VIDEO_ID)
     output_dir = (repo / args.output).resolve()
     db_path = output_dir / "markov.db"
