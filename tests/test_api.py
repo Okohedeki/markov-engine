@@ -308,17 +308,17 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Don’t stop at" in landing.text
-            assert "Bring a video, article, paper, podcast, post, or question" in landing.text
-            assert "Catch me up" in landing.text
-            assert "Explore where it leads" in landing.text
-            assert "Turn it into a script" in landing.text
+            assert "A source is where" in landing.text
+            assert "Give Markov a video, article, paper, podcast, post, or question" in landing.text
+            assert "The useful part is often what the source leaves out" in landing.text
+            assert "A question can lead somewhere. Or just make more noise." in landing.text
+            assert "The research changes shape" in landing.text
             assert landing.text.count("Open the workspace") == 2
-            assert "Research-led creators and editorial teams" in landing.text
-            assert "Analysts, strategists, and consultants" in landing.text
-            assert "Work where the source trail is optional" in landing.text
-            assert "New demand can weaken before holdings are sold" in landing.text
-            assert "Compare directions before you commit to one" in landing.text
+            assert "Research-led creators, analysts, strategists, and consultants" in landing.text
+            assert "High-volume filler, unconstrained fiction, or passive read-later archives" in landing.text
+            assert "The source trail is part of the product" in landing.text
+            assert "Demand can weaken before holdings are sold" in landing.text
+            assert "Compare the mechanism, the evidence, and the weak point" in landing.text
             assert landing.text.count("data-source-choice=") == 5
             assert landing.text.count("data-route-choice=") == 3
             assert landing.text.count("data-output-choice=") == 3
@@ -327,9 +327,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Japan’s pension pivot puts overseas capital in play" in landing.text
             assert "buyer who never arrives" in landing.text
             assert "High information gain" in landing.text
-            assert "Every route says what it explains" in landing.text
-            assert "The evidence does not disappear when the format changes" in landing.text
-            assert "The final judgment remains yours" in landing.text
+            assert "A slower buyer can change financing conditions" in landing.text
+            assert "The evidence stays attached" in landing.text
+            assert "Markov does not replace the human decision to publish" in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             for disallowed in ("ai-powered", "open source", "github", "free trial", "customer logos"):
@@ -368,9 +368,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             css = await client.get("/static/markov.css")
             assert css.status_code == 200
             assert "prefers-reduced-motion" in css.text
-            assert "--thread" in css.text
-            assert "--discovery" in css.text
-            assert "--support" in css.text
+            assert "--fog" in css.text
+            assert "--cobalt" in css.text
+            assert "--ember" in css.text
             assert ".mk-thread-story" in css.text
             assert ".mk-app-nav" in css.text
 
@@ -634,8 +634,8 @@ def test_github_pages_export_is_static_and_project_relative():
     assert 'href="/markov-engine/sample/"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "Product demo" in landing
-    assert "Don’t stop at" in landing
+    assert "A source is where" in landing
+    assert "The useful part is often what the source leaves out" in landing
     assert landing.count("Open the workspace") == 2
     assert landing.count("data-output-choice=") == 3
     assert "Run locally" not in landing
