@@ -267,6 +267,38 @@ async def _workspace_snapshot(store, *, owner_id: str, limit: int = 50) -> dict:
             "next_action": next_action,
             "is_processing": is_processing,
             "stage_index": stage_index,
+            "first_connection": connections[0] if connections else None,
+            "information_gain": (
+                round(max(item.novelty for item in connections) * 100)
+                if connections and max(item.novelty for item in connections) > 0
+                else None
+            ),
+            "audience_relevance": (
+                round(max(item.relevance for item in connections) * 100)
+                if connections and max(item.relevance for item in connections) > 0
+                else None
+            ),
+            "opportunity_thesis": (
+                insights[0].thesis
+                if insights
+                else topics[0].focus
+                if topics
+                else finding
+            ),
+            "opportunity_basis": (
+                insights[0].novelty_basis
+                if insights and insights[0].novelty_basis
+                else connections[0].why_it_matters
+                if connections
+                else "A landscape scan is still needed before Markov can explain what appears underdeveloped."
+            ),
+            "opportunity_weakness": (
+                insights[0].uncertainty
+                if insights and insights[0].uncertainty
+                else connections[0].weakens
+                if connections and connections[0].weakens
+                else "No explicit weakness has been recorded yet."
+            ),
         }
         case_rows.append(row)
         for artifact in reversed(artifacts):
@@ -317,11 +349,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.get("/story")
     async def narrative_landing(request: Request):
-        return _render(request, "landing_narrative.html")
+        return RedirectResponse("/", status_code=307)
 
     @router.get("/landing-v2")
     async def narrative_landing_alias():
-        return RedirectResponse("/story", status_code=307)
+        return RedirectResponse("/", status_code=307)
 
     @router.get("/product")
     async def product():
@@ -378,8 +410,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             **snapshot,
         )
 
-    @router.get("/app/inbox")
-    async def inbox_page(request: Request):
+    @router.get("/app/signals")
+    async def signals_page(request: Request):
         try:
             owner_id = owner(request)
         except HTTPException:
@@ -389,17 +421,45 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "workspace_page.html",
-            active="inbox",
-            page_kind="inbox",
-            page_title="Inbox",
-            page_description="Everything you sent to Markov, ready to route into a Chain.",
+            active="signals",
+            page_kind="signals",
+            page_title="Signals",
+            page_description="Raw material that may change what your audience needs next.",
+            account=await store.get_credit_account(owner_id),
+            entitlements=resolve_entitlements(owner_id, settings=settings),
+            **snapshot,
+        )
+
+    @router.get("/app/inbox")
+    async def inbox_page_alias():
+        return RedirectResponse("/app/signals", status_code=307)
+
+    @router.get("/app/ideas")
+    async def ideas_page(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        store = request.app.state.store
+        snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        return _render(
+            request,
+            "workspace_page.html",
+            active="ideas",
+            page_kind="ideas",
+            page_title="Ideas",
+            page_description="Opportunities Markov can explain, you can challenge, and your audience may value.",
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
             **snapshot,
         )
 
     @router.get("/app/chains")
-    async def chains_page(request: Request):
+    async def chains_page_alias():
+        return RedirectResponse("/app/ideas", status_code=307)
+
+    @router.get("/app/plans")
+    async def plans_page(request: Request):
         try:
             owner_id = owner(request)
         except HTTPException:
@@ -409,17 +469,21 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "workspace_page.html",
-            active="chains",
-            page_kind="chains",
-            page_title="Chains",
-            page_description="The questions, sources, directions, and outputs that keep growing together.",
+            active="plans",
+            page_kind="plans",
+            page_title="Campaign Plans",
+            page_description="Development briefs and channel treatments that preserve the idea's distinctive core.",
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
             **snapshot,
         )
 
     @router.get("/app/outputs")
-    async def outputs_page(request: Request):
+    async def outputs_page_alias():
+        return RedirectResponse("/app/plans", status_code=307)
+
+    @router.get("/app/published")
+    async def published_page(request: Request):
         try:
             owner_id = owner(request)
         except HTTPException:
@@ -429,14 +493,22 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "workspace_page.html",
-            active="outputs",
-            page_kind="outputs",
-            page_title="Outputs",
-            page_description="Briefs, analyses, and scripts ready to review, revise, and publish.",
+            active="published",
+            page_kind="published",
+            page_title="Published",
+            page_description="Connect finished work to the idea that produced it and learn from the response.",
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
             **snapshot,
         )
+
+    @router.get("/app/onboarding")
+    async def onboarding_page(request: Request):
+        try:
+            owner(request)
+        except HTTPException:
+            return RedirectResponse("/app/login", status_code=303)
+        return _render(request, "onboarding.html", active="onboarding")
 
     @router.get("/app/search")
     async def search_page(request: Request):
@@ -462,7 +534,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             active="search",
             page_kind="search",
             page_title="Search",
-            page_description="Find a source, question, connection, or finished output.",
+            page_description="Search signals, ideas, audience questions, coverage, and campaign plans.",
             query=query,
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
@@ -520,7 +592,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "job.html",
-            active="chains",
+            active="ideas",
             account=await store.get_credit_account(owner_id),
             job=job,
             events=await store.list_job_events(job.id),
@@ -669,7 +741,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(
             request,
             "artifact.html",
-            active="chains",
+            active="ideas",
             artifact=artifact,
             case=case,
             entitlements=resolve_entitlements(owner_id, settings=settings),
@@ -684,6 +756,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             seed_source=seed_source,
             supplemental_sources=supplemental_sources,
             case_artifacts=await store.list_case_artifacts(case.id),
+            artifact_versions=await store.list_artifact_versions(artifact.id),
         )
 
     @router.get("/app/artifacts/{artifact_id}/export")
@@ -781,6 +854,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         values = await _form(request)
         action = values.get("action", "open")
         return_artifact = int(values.get("return_artifact") or 0)
+        return_to = values.get("return_to", "")
         try:
             if action == "follow":
                 current = await request.app.state.store.get_artifact(
@@ -805,6 +879,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 connection_id=connection_id,
                 owner_id=owner_id,
                 action=action,
+                metadata={"reason": values["reason"]} if values.get("reason") else None,
             )
         except ValueError as exc:
             return _render(
@@ -813,9 +888,12 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 title="Could not update the connection",
                 message=str(exc),
             )
-        return RedirectResponse(
-            f"/app/artifacts/{return_artifact}", status_code=303
+        destination = (
+            return_to
+            if return_to.startswith("/app")
+            else f"/app/artifacts/{return_artifact}"
         )
+        return RedirectResponse(destination, status_code=303)
 
     @router.post("/app/artifacts/{artifact_id}/revisions")
     async def revise_page(artifact_id: int, request: Request):
@@ -847,6 +925,35 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             raise HTTPException(status_code=404, detail="Artifact not found")
         values = await _form(request)
         content = values.get("content", "").strip()
+        structured_content = dict(artifact.structured_content or {})
+        section_keys = sorted(
+            (key for key in values if key.startswith("section_") and key[8:].isdigit()),
+            key=lambda key: int(key[8:]),
+        )
+        if section_keys:
+            updated_sections = []
+            markdown_sections = []
+            existing_sections = list(structured_content.get("sections", []))
+            for key in section_keys:
+                index = int(key[8:])
+                existing = (
+                    dict(existing_sections[index])
+                    if index < len(existing_sections)
+                    else {}
+                )
+                title = values.get(f"section_title_{index}", "").strip() or str(
+                    existing.get("title") or f"Section {index + 1}"
+                )
+                section_content = values[key].strip()
+                existing.update({"title": title, "content": section_content})
+                updated_sections.append(existing)
+                markdown_sections.append(f"## {title}\n\n{section_content}")
+            structured_content["sections"] = updated_sections
+            content = "\n\n".join(markdown_sections).strip()
+        elif content:
+            structured_content["sections"] = [
+                {"title": "Working brief", "content": content}
+            ]
         if not content:
             return _render(
                 request,
@@ -857,7 +964,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         await store.update_case_artifact(
             artifact_id,
             content=content,
-            structured_content=artifact.structured_content or {},
+            structured_content=structured_content,
             status="completed"
             if values.get("action") == "finish"
             else "draft",
@@ -865,7 +972,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             changed_section="full_document",
         )
         return RedirectResponse(
-            f"/app/artifacts/{artifact_id}#output", status_code=303
+            f"/app/artifacts/{artifact_id}#brief", status_code=303
         )
 
     @router.get("/app/reviewer/login")
