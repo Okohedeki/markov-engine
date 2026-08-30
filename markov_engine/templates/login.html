@@ -1,25 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Sign in — Markov{% endblock %}
-{% block body_class %}app-body v3-login-body v4-login-body{% endblock %}
+{% block body_class %}mk-auth-page{% endblock %}
 {% block body %}
-  <main class="v3-login v4-login" id="main-content">
-    <header><a class="v3-app-wordmark" href="/"><span aria-hidden="true"></span>MARKOV</a><a href="/">Public site ↗</a></header>
-    <div class="v4-login-layout">
-      <section class="v4-login-story">
-        <div><p class="v3-app-kicker">Your editorial opportunity desk</p><h1>Find the next idea worth developing.</h1><p>Compare the answers already in market, reveal the connection they miss, and build a plan around a contribution only you can make.</p></div>
-        <div class="v4-login-map" aria-label="Signal becomes an audience-relevant idea opportunity">
-          <section><span>Signal</span><p>Japan’s pension pivot</p></section>
-          <section><span>Missing connection</span><p>New Treasury buying can weaken before old holdings are sold.</p></section>
-          <section><span>Idea opportunity</span><strong>Follow the missing buyer.</strong><small>Audience relevance · strong</small></section>
-        </div>
-      </section>
-      <section class="v3-login-access v4-login-access">
-        <div><p class="v3-app-kicker">QA access</p><h2>Open your workspace.</h2><p>Use the access key for this preview. Production email and Google sign-in are coming next.</p></div>
-        {% if error %}<p class="v3-form-error" role="alert">{{ error }}</p>{% endif %}
-        <form method="post" action="/app/login"><label for="api-key">Workspace access key</label><div><input id="api-key" name="api_key" type="password" autocomplete="current-password" required><button type="submit">Continue <span aria-hidden="true">→</span></button></div></form>
-        <p class="v3-login-privacy">The key opens this QA workspace and is never displayed inside the product.</p>
-        <a href="/developers">Looking for API access?</a>
-      </section>
-    </div>
+  <main class="mk-auth-shell" id="main-content">
+    <section class="mk-auth-story">
+      <a class="mk-wordmark" href="/"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
+      <div><p class="mk-kicker">Return to your research trail</p><h1>Find the next useful turn.</h1><p>Your sources, open questions, evidence, and finished work are waiting in the same workspace.</p></div>
+      <ol aria-label="Markov research path"><li><span></span>Start with a source</li><li><span></span>Follow what it opens</li><li><span></span>Finish something defensible</li></ol>
+    </section>
+    <section class="mk-auth-form" aria-labelledby="signin-title">
+      <div><p class="mk-kicker">Workspace access</p><h2 id="signin-title">Sign in to Markov</h2><p>This build uses an access key. Email and social sign-in are not enabled.</p></div>
+      {% if error %}<p class="mk-alert is-error" role="alert">{{ error }}</p>{% endif %}
+      <form method="post" action="/app/login"><label for="api-key">Workspace access key</label><div><input id="api-key" name="api_key" type="password" autocomplete="current-password" required autofocus><button type="submit">Continue <span aria-hidden="true">→</span></button></div></form>
+      <p class="mk-auth-help"><strong>Local development?</strong> Use the key configured in <code>MARKOV_API_KEYS</code>.</p>
+      <a href="/">← Back to the public site</a>
+    </section>
   </main>
 {% endblock %}
