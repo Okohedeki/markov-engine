@@ -1,6 +1,4 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} — Markov{% endblock %}
-{% block body_class %}app-body{% endblock %}
-{% block body %}
-  <main class="content-narrow" id="main-content"><a class="wordmark" href="/app">MARKOV</a><div style="margin-top:5rem"><p class="eyebrow">Could not continue</p><h1 style="font-size:4rem">{{ title }}</h1><p class="error" role="alert">{{ message }}</p><a class="button button-secondary" href="/app">Return to workspace</a></div></main>
-{% endblock %}
+{% block body_class %}mk-auth-page{% endblock %}
+{% block body %}<main class="mk-error-shell" id="main-content"><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><div><span aria-hidden="true">↳</span><p class="mk-kicker">The trail stopped here</p><h1>{{ title }}</h1><p class="mk-alert is-error" role="alert">{{ message }}</p><a class="mk-button mk-button-primary" href="/app">Return to the workspace <span aria-hidden="true">→</span></a></div></main>{% endblock %}
