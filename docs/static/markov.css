@@ -830,6 +830,34 @@ textarea { min-height: 150px; resize: vertical; }
   .outcome-branches article:first-child { border-top: 0; }
   .outcome-branches article::before { left: 0; }
   .outcome-branches h3 { margin: 2.2rem 0 .7rem; }
+  .dashboard-content { padding-inline: 20px; padding-top: 2rem; }
+  .dashboard-intro { gap: 1rem; margin-bottom: 1.35rem; }
+  .dashboard-intro h1 { font-size: clamp(2.65rem, 12vw, 3.25rem); }
+  .dashboard-intro .lede { font-size: .96rem; line-height: 1.5; }
+  .capture-source { padding: 1.1rem 1.25rem; }
+  .capture-source textarea { min-height: 80px; }
+  .capture-source-types { display: none; }
+  .capture-intents { padding: 1.1rem 1.25rem 0; }
+  .capture-intent-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .capture-intent-options .choice label, .capture-intent-options .choice:first-child label { border-left: 1px solid var(--line); border-top: 0; min-height: 92px; padding: .65rem .45rem; }
+  .capture-intent-options .choice:first-child label { border-left: 0; }
+  .capture-intent-options .choice label strong { font-size: .72rem; line-height: 1.25; }
+  .capture-intent-options .choice label > span:last-child { display: none; }
+  .capture-intent-options .choice input:checked + label { box-shadow: inset 0 -3px var(--moss); }
+  .capture-footer { grid-template-columns: 1fr; padding: 1.1rem 1.25rem 1.25rem; }
+  .capture-option-fields { grid-template-columns: 1fr; }
+  .capture-submit { align-items: stretch; flex-direction: column; }
+  .capture-submit > span { max-width: none; }
+  .capture-submit button { width: 100%; }
+  .trail-ledger { margin-top: 4rem; }
+  .trail-ledger-heading { align-items: start; flex-direction: column; gap: .7rem; }
+  .trail-ledger-heading h2 { font-size: 2rem; }
+  .trail-row > a, .trail-row > div { align-items: start; grid-template-columns: 28px minmax(0, 1fr); padding: 1.35rem 0; }
+  .trail-row > a:hover { padding-inline: .5rem; }
+  .trail-next-action { align-items: center; display: flex; flex-wrap: wrap; grid-column: 2; justify-content: flex-start; }
+  .trail-next-action strong { flex-basis: 100%; }
+  .trail-origin { white-space: normal; }
+  .workspace-utility { display: block; }
   .intake-step { grid-template-columns: 1fr; }
   .intake-step-number { border-bottom: 1px solid var(--line); padding-bottom: .6rem; }
   .intake-actions { align-items: stretch; flex-direction: column; gap: 1rem; }
