@@ -1,16 +1,26 @@
-<aside class="v3-app-sidebar">
-  <a class="v3-app-wordmark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
-  <div class="v3-workspace-name"><span>Personal workspace</span><strong>Research desk</strong></div>
-  <nav class="v3-app-nav" aria-label="Workspace navigation">
-    <a href="/app" {% if active == 'home' %}aria-current="page"{% endif %}><span aria-hidden="true">01</span>Home</a>
-    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">02</span>Inbox</a>
-    <a href="/app/ideas" {% if active == 'ideas' %}aria-current="page"{% endif %}><span aria-hidden="true">03</span>Chains</a>
-    <a href="/app/plans" {% if active == 'plans' %}aria-current="page"{% endif %}><span aria-hidden="true">04</span>Outputs</a>
-    <a href="/app/search" {% if active == 'search' %}aria-current="page"{% endif %}><span aria-hidden="true">/</span>Search</a>
-  </nav>
-  <div class="v3-app-sidebar-foot">
-    <a href="/app/onboarding">Audience profile</a>
-    <a href="/developers">API access</a>
-    <a href="/">Public site ↗</a>
+<aside class="mk-app-sidebar" id="mk-app-sidebar" data-app-sidebar>
+  <div class="mk-app-brand-row">
+    <a class="mk-wordmark" href="/app" aria-label="Markov workspace">
+      <span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span>
+    </a>
+    <button type="button" aria-label="Close workspace navigation" data-app-nav-close>×</button>
   </div>
+  <p class="mk-workspace-label">Research workspace</p>
+  <nav class="mk-app-nav" aria-label="Workspace navigation">
+    <a href="/app" {% if active == 'home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span><strong>Home</strong></a>
+    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">↘</span><strong>Inbox</strong></a>
+    <a href="/app/ideas" {% if active == 'ideas' %}aria-current="page"{% endif %}><span aria-hidden="true">⑂</span><strong>Chains</strong></a>
+    <a href="/app/plans" {% if active == 'plans' %}aria-current="page"{% endif %}><span aria-hidden="true">□</span><strong>Outputs</strong></a>
+    <a href="/app/search" {% if active == 'search' %}aria-current="page"{% endif %}><span aria-hidden="true">⌕</span><strong>Search</strong></a>
+  </nav>
+  <div class="mk-sidebar-note">
+    <span>Keep following the useful turn.</span>
+    <p>Every source, decision, and output stays attached to its Chain.</p>
+  </div>
+  <nav class="mk-app-secondary" aria-label="Workspace settings">
+    <a href="/app/onboarding">Audience profile</a>
+    <a href="/developers">API guide</a>
+    <a href="/">Public site <span aria-hidden="true">↗</span></a>
+  </nav>
 </aside>
+<div class="mk-app-scrim" data-app-scrim hidden></div>
