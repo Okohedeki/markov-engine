@@ -1,75 +1,30 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title }} — Markov{% endblock %}
-{% block body_class %}app-body v3-app-body{% endblock %}
+{% block body_class %}mk-app-page{% endblock %}
 {% block body %}
-  <div class="v3-app-frame">
+  <div class="mk-app-frame">
     {% include "partials/app_sidebar.html" %}
-    <main class="v3-app-main" id="main-content">
-      <header class="v3-app-topbar">
-        <a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
-        <span>{{ page_title | upper }}</span>
-        {% if page_kind != 'search' %}<a href="/app/signals#add-signal">Add a signal <span aria-hidden="true">＋</span></a>{% else %}<a href="/app">Opportunity feed <span aria-hidden="true">→</span></a>{% endif %}
-      </header>
-
-      <div class="v3-app-content v3-library-page">
-        <header class="v3-library-heading"><p class="v3-app-kicker">{{ page_title }}</p><h1>{{ page_description }}</h1></header>
+    <main class="mk-app-main" id="main-content">
+      <header class="mk-mobile-appbar"><button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><a href="/app">Home</a></header>
+      <div class="mk-library-shell">
+        <header class="mk-library-head"><div><p class="mk-kicker">Research workspace</p><h1>{{ page_title }}</h1><p>{{ page_description }}</p></div>{% if page_kind != 'search' %}<a class="mk-button mk-button-primary" href="/app#new-chain">Add something <span aria-hidden="true">＋</span></a>{% endif %}</header>
 
         {% if page_kind == 'signals' %}
-          <form class="v3-signal-capture is-library" id="add-signal" method="post" action="/app/jobs">
-            <div class="v3-capture-label"><label for="library-signal-input">Add a signal</label><span>Anything that might change the conversation</span></div>
-            <div class="v3-signal-types" role="group" aria-label="Signal type"><button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste an article, video, podcast, or document URL…">URL</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Write an observation…">Observation</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Ask an audience question…">Question</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Name a topic to scan…">Topic</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Paste an existing brief…">Existing brief</button><button type="button" disabled title="Direct file upload is not enabled in this QA build">Upload <small>soon</small></button></div>
-            <div class="v3-capture-row"><input id="library-signal-input" name="value" type="text" data-signal-input placeholder="Paste an article, video, podcast, or document URL…" required><input type="hidden" name="mode" value="research"><input type="hidden" name="review_level" value="instant"><button type="submit">Analyze signal <span aria-hidden="true">→</span></button></div>
+          <form class="mk-library-capture" id="add-signal" method="post" action="/app/jobs">
+            <div><label for="library-signal-input">Add to the Inbox</label><p>A source or question can begin a new Chain.</p></div>
+            <div class="mk-capture-types" role="group" aria-label="Signal type"><button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste an article, video, podcast, or document URL…">Link</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Write an observation…">Note</button><button type="button" aria-pressed="false" data-signal-type data-placeholder="Ask a question…">Question</button><button type="button" disabled>Upload</button></div>
+            <div class="mk-capture-field"><input id="library-signal-input" name="value" type="text" data-signal-input placeholder="Paste an article, video, podcast, or document URL…" required><input type="hidden" name="mode" value="research"><input type="hidden" name="review_level" value="instant"><button type="submit">Start a Chain <span aria-hidden="true">→</span></button></div>
           </form>
-
-          <section class="v3-signal-library" aria-labelledby="signal-list-title">
-            <header class="v3-app-section-head"><div><p class="v3-app-kicker">All signals</p><h2 id="signal-list-title">Raw material and what it produced.</h2></div><span>{{ cases | length }}</span></header>
-            <div class="v3-signal-table" role="list">
-              {% for row in cases %}<a role="listitem" href="{{ row.destination or '/app/ideas' }}"><span class="v3-signal-kind">{{ row.source_label }}</span><div><h3>{{ row.case.title }}</h3><p>{{ row.case.original_input | truncate(150) }}</p></div><div class="v3-signal-result"><span>{{ 'Scanning landscape' if row.is_processing else row.connection_count ~ ' connections' }}</span><strong>{% if row.topic_count %}{{ row.topic_count }} idea opportunit{{ 'y' if row.topic_count == 1 else 'ies' }}{% else %}No opportunity yet{% endif %}</strong></div><span class="v3-row-action">{{ row.action_label }} →</span></a>{% else %}<div class="v3-app-empty"><span>NO SIGNALS</span><h3>Your first useful input can be small.</h3><p>Add a question, observation, source, topic, or existing brief above.</p></div>{% endfor %}
-            </div>
-          </section>
-
+          <section class="mk-library-list" aria-labelledby="signals-title"><header class="mk-list-head"><div><p class="mk-kicker">Raw material</p><h2 id="signals-title">Everything that started a trail</h2></div><span>{{ cases | length }}</span></header><div class="mk-list-rows">{% for row in cases %}<a href="{{ row.destination or '/app/ideas' }}"><span class="mk-list-kind">{{ row.case.input_type | humanize }}</span><div><strong title="{{ row.case.title }}">{{ row.case.title | truncate(100) }}</strong><p>{{ row.finding | truncate(150) }}</p><small>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }} · {{ row.status | humanize }}</small></div><b aria-hidden="true">→</b></a>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>Your Inbox is empty.</h3><p>Add a source, note, or question. Markov will keep the trail visible from here.</p></div></div>{% endfor %}</div></section>
         {% elif page_kind == 'ideas' %}
-          <section class="v3-idea-library" aria-labelledby="idea-list-title">
-            <header class="v3-app-section-head"><div><p class="v3-app-kicker">Idea opportunities</p><h2 id="idea-list-title">Ranked on two dimensions—not one opaque score.</h2></div><span>{{ cases | length }}</span></header>
-            <div class="v3-idea-list">
-              {% for row in cases %}
-                <article class="v3-idea-row" data-opportunity>
-                  <div class="v3-idea-index">{{ "%02d" | format(loop.index) }}</div>
-                  <div class="v3-idea-main">
-                    <span>{{ row.source_count }} signals · {{ row.connection_count }} connections · {{ row.topic_count }} paths</span>
-                    <h3>{{ row.opportunity_thesis }}</h3>
-                    <p><strong>Why it appears underdeveloped</strong>{{ row.opportunity_basis }}</p>
-                    <details><summary>What everyone says, what the audience needs, and what could weaken this</summary><dl><div><dt>Existing landscape</dt><dd>{{ row.finding }}</dd></div><div><dt>Audience need</dt><dd>{% if row.audience_relevance is not none %}The current audience relevance is {{ row.audience_relevance }}/100. Review it against the audience profile before developing.{% else %}Audience relevance has not been assessed. Add or update the audience profile before treating demand as established.{% endif %}</dd></div><div><dt>What could weaken it</dt><dd>{{ row.opportunity_weakness }}</dd></div></dl></details>
-                  </div>
-                  <div class="v3-score-pair is-row"><div><span>Information gain</span><strong>{{ row.information_gain if row.information_gain is not none else '—' }}</strong><small>{{ 'Connection novelty' if row.information_gain is not none else 'Pending scan' }}</small></div><div><span>Audience relevance</span><strong>{{ row.audience_relevance if row.audience_relevance is not none else '—' }}</strong><small>{{ 'Demand fit' if row.audience_relevance is not none else 'Profile needed' }}</small></div></div>
-                  <footer>
-                    {% if row.destination %}<a class="v3-app-primary" href="{{ row.destination }}">Develop this idea →</a>{% endif %}
-                    {% if row.first_connection %}<form method="post" action="/app/connections/{{ row.first_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_to" value="/app/ideas"><button class="v3-app-quiet" type="submit">Save</button></form><button class="v3-app-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
-                  </footer>
-                  {% if row.first_connection %}<form class="v3-rejection-reason" method="post" action="/app/connections/{{ row.first_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_to" value="/app/ideas"><label for="idea-reason-{{ row.case.id }}">Why does this miss?</label><div><input id="idea-reason-{{ row.case.id }}" name="reason" placeholder="Too familiar, wrong audience, weak mechanism…"><button type="submit">Dismiss and teach Markov</button></div></form>{% endif %}
-                </article>
-              {% else %}<div class="v3-app-empty"><span>NO IDEA OPPORTUNITIES</span><h3>Markov needs a signal before it can map a gap.</h3><p>Start with a source, question, observation, or emerging development.</p><a href="/app/signals#add-signal">Add a signal →</a></div>{% endfor %}
-            </div>
-          </section>
-
+          <section class="mk-library-list" aria-labelledby="chains-title"><header class="mk-list-head"><div><p class="mk-kicker">Research Chains</p><h2 id="chains-title">Continue from the strongest next move</h2></div><span>{{ cases | length }}</span></header><div class="mk-chain-library">{% for row in cases %}<article><div class="mk-row-meta"><span>{{ row.source_label }}</span><span>{{ row.status | humanize }}</span></div><h3 title="{{ row.case.title }}">{{ row.case.title | truncate(110) }}</h3><blockquote><span>Current finding</span><p>{{ row.opportunity_thesis | truncate(220) }}</p></blockquote><dl><div><dt>Sources</dt><dd>{{ row.source_count }}</dd></div><div><dt>Routes</dt><dd>{{ row.topic_count }}</dd></div><div><dt>Connections</dt><dd>{{ row.connection_count }}</dd></div></dl><footer>{% if row.destination %}<a class="mk-button mk-button-primary" href="{{ row.destination }}">{{ row.action_label }} <span aria-hidden="true">→</span></a>{% endif %}{% if row.first_connection %}<form method="post" action="/app/connections/{{ row.first_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_to" value="/app/ideas"><button class="mk-button mk-button-quiet" type="submit">Save</button></form>{% endif %}</footer></article>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No Chain is ready.</h3><p>Add a source to begin mapping claims, context, and possible routes.</p><a href="/app#new-chain">Start a Chain <span aria-hidden="true">→</span></a></div></div>{% endfor %}</div></section>
         {% elif page_kind == 'plans' %}
-          <section class="v3-plan-library" aria-labelledby="plan-list-title">
-            <header class="v3-app-section-head"><div><p class="v3-app-kicker">Development and distribution</p><h2 id="plan-list-title">Plans that keep the distinctive idea intact.</h2></div><span>{{ outputs | length }}</span></header>
-            <div class="v3-plan-table">
-              {% for item in outputs %}<a href="/app/artifacts/{{ item.artifact.id }}#brief"><span class="v3-plan-type">{{ 'Development brief' if item.artifact.artifact_type == 'brief' else 'Campaign treatment' }}</span><div><h3>{{ item.artifact.title }}</h3><p>From {{ item.case.title }}</p></div><div><span>State</span><strong>{{ 'Ready for review' if item.artifact.status == 'completed' else item.artifact.status | humanize }}</strong></div><div><span>Next</span><strong>Review structure →</strong></div></a>{% else %}<div class="v3-app-empty"><span>NO CAMPAIGN PLANS</span><h3>Develop an opportunity before choosing channels.</h3><p>Markov will preserve the thesis, audience promise, open questions, and provenance in the plan.</p><a href="/app/ideas">Review idea opportunities →</a></div>{% endfor %}
-            </div>
-          </section>
-
+          <section class="mk-library-list" aria-labelledby="outputs-title"><header class="mk-list-head"><div><p class="mk-kicker">Finished work</p><h2 id="outputs-title">Outputs that keep their trail attached</h2></div><span>{{ outputs | length }}</span></header><div class="mk-output-library">{% for item in outputs %}<a href="/app/artifacts/{{ item.artifact.id }}"><span>{{ item.artifact.artifact_type | humanize }}</span><div><strong>{{ item.artifact.title }}</strong><p>From {{ item.case.title | truncate(100) }}</p><small>{{ item.artifact.word_count }} words · {{ item.artifact.status | humanize }}</small></div><b aria-hidden="true">→</b></a>{% else %}<div class="mk-empty-state"><span aria-hidden="true">□</span><div><h3>No finished output yet.</h3><p>Open a Chain, choose a route, and shape it into a brief, report, or script.</p><a href="/app/ideas">Open Chains <span aria-hidden="true">→</span></a></div></div>{% endfor %}</div></section>
         {% elif page_kind == 'published' %}
-          <section class="v3-published-empty" aria-labelledby="published-title">
-            <div><p class="v3-app-kicker">Published results and learning</p><h2 id="published-title">Close the loop after the work goes live.</h2><p>Connect a published piece to its original idea, then record reach, audience questions, search or answer visibility, and the connections worth following next.</p><a class="v3-app-primary" href="/app/plans">Choose a campaign plan →</a></div>
-            <ol aria-label="Published-result feedback loop"><li><span>01</span><strong>Attach the published URL</strong><p>Channel, publication date, and the idea it came from.</p></li><li><span>02</span><strong>Record what resonated</strong><p>Reach, engagement, audience responses, and useful disagreement.</p></li><li><span>03</span><strong>Improve the next ranking</strong><p>Use what your audience actually did to refine future relevance.</p></li></ol>
-            <aside><strong>No published result is connected yet.</strong><p>Completed artifacts are not automatically treated as published. Markov waits for you to associate the real URL and outcome.</p></aside>
-          </section>
-
-        {% else %}
-          <form class="v3-workspace-search" method="get" action="/app/search" role="search"><label for="workspace-query">Search your editorial landscape</label><div><input id="workspace-query" name="q" value="{{ query }}" placeholder="A signal, idea, audience question, source, or plan…" autofocus><button type="submit">Search</button></div><p>Search spans source inputs and the current opportunity rationale. Broader coverage indexing belongs to the next engine iteration.</p></form>
-          <section class="v3-search-results" aria-labelledby="search-results-title"><header class="v3-app-section-head"><div><p class="v3-app-kicker">Results</p><h2 id="search-results-title">{% if query %}Matches for “{{ query }}”{% else %}Search across the publishing trail.{% endif %}</h2></div>{% if query %}<span>{{ cases | length }}</span>{% endif %}</header><div class="v3-signal-table">{% for row in cases %}<a href="{{ row.destination or '/app/ideas' }}"><span class="v3-signal-kind">Idea</span><div><h3>{{ row.case.title }}</h3><p>{{ row.opportunity_thesis }}</p></div><span class="v3-row-action">Open →</span></a>{% else %}{% if query %}<div class="v3-app-empty"><span>NO MATCH</span><h3>Try a broader subject or source name.</h3><p>Search currently covers the signals and opportunities retained in this workspace.</p></div>{% endif %}{% endfor %}</div></section>
+          <section class="mk-published-empty"><p class="mk-kicker">Close the loop</p><h2>Published work will reconnect here.</h2><p>Attach a live piece to the Chain that produced it, then record the questions, disagreement, and new sources worth following. Publishing analytics are not enabled in this build.</p><a class="mk-button mk-button-primary" href="/app/plans">Review finished outputs <span aria-hidden="true">→</span></a></section>
+        {% elif page_kind == 'search' %}
+          <form class="mk-search-form" method="get" action="/app/search" role="search"><label for="workspace-query">Search your research trail</label><div><input id="workspace-query" name="q" value="{{ query }}" placeholder="A source, Chain, question, or output…" autofocus><button type="submit">Search</button></div><p>Search currently covers saved inputs and the current finding for each Chain.</p></form>
+          <section class="mk-library-list" aria-labelledby="search-results-title"><header class="mk-list-head"><div><p class="mk-kicker">Results</p><h2 id="search-results-title">{% if query %}Matches for “{{ query }}”{% else %}Search across your workspace{% endif %}</h2></div>{% if query %}<span>{{ cases | length }}</span>{% endif %}</header><div class="mk-list-rows">{% for row in cases %}<a href="{{ row.destination or '/app/ideas' }}"><span class="mk-list-kind">Chain</span><div><strong>{{ row.case.title }}</strong><p>{{ row.opportunity_thesis | truncate(160) }}</p><small>{{ row.source_count }} sources · {{ row.topic_count }} routes</small></div><b aria-hidden="true">→</b></a>{% else %}{% if query %}<div class="mk-empty-state"><span aria-hidden="true">⌕</span><div><h3>No match for that phrase.</h3><p>Try a broader subject, source name, or question.</p></div></div>{% endif %}{% endfor %}</div></section>
         {% endif %}
       </div>
     </main>
