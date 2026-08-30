@@ -3,18 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="{% block description %}Markov compares what you are exploring with what already exists to uncover underdeveloped ideas for your audience.{% endblock %}">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f3f6f8">
+  <meta name="description" content="{% block description %}Markov turns a source or question into an evidence-linked research path and finished factual work.{% endblock %}">
   {% block meta %}{% endblock %}
   <title>{% block title %}Markov{% endblock %}</title>
   <link rel="icon" href="{{ site_base }}/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="{{ site_base }}/static/markov.css">
-  <link rel="stylesheet" href="{{ site_base }}/static/markov-v3.css">
-  {% block styles %}{% endblock %}
   <script defer src="{{ site_base }}/static/markov.js"></script>
-  <script defer src="{{ site_base }}/static/markov-v3.js"></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
-  <a class="skip-link" href="#main-content">Skip to content</a>
+  <a class="mk-skip" href="#main-content">Skip to content</a>
   {% block body %}{% endblock %}
 </body>
 </html>
