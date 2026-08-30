@@ -1,6 +1,6 @@
 # Markov V8 — clean-slate interface contract
 
-Status: active UI/UX direction, 2026-08-30  
+Status: active UI/UX direction, 2026-08-30
 Scope: public site, workspace, case reader, supporting product pages, and internal review surfaces
 
 This contract replaces every earlier visual implementation. The engine, routes,
