@@ -15,42 +15,84 @@
     });
   }
 
-  const opportunityExplorer = document.querySelector('[data-opportunity-explorer]');
-  if (opportunityExplorer) {
-    const tabs = [...opportunityExplorer.querySelectorAll('[data-explorer-tab]')];
-    const panels = [...opportunityExplorer.querySelectorAll('[data-explorer-panel]')];
-    const status = opportunityExplorer.querySelector('[data-explorer-status]');
-    const labels = {
-      search: 'Search results',
-      ai: 'AI answers',
-      coverage: 'Competitor coverage',
-      history: 'Previous work',
+  const v6Hero = document.querySelector('[data-v6-hero]');
+  if (v6Hero) {
+    const demo = v6Hero.querySelector('[data-v6-demo]');
+    const opportunity = v6Hero.querySelector('.v6-opportunity');
+    const sourceButtons = [...v6Hero.querySelectorAll('[data-v6-source]')];
+    const noticed = v6Hero.querySelector('[data-v6-noticed]');
+    const opportunityTitle = v6Hero.querySelector('[data-v6-opportunity]');
+    const detail = v6Hero.querySelector('[data-v6-detail]');
+    const strength = v6Hero.querySelector('[data-v6-strength]');
+    const states = {
+      article: {
+        noticed: 'Coverage moves from demographic pressure directly to a Treasury selloff.',
+        opportunity: 'Follow the missing buyer—not the dramatic seller.',
+        detail: 'The first useful signal may be weaker new demand, before any visible sale.',
+        strength: 'High information gain',
+      },
+      answer: {
+        noticed: 'Portfolio research shows that institutions adjust through mandates, liabilities, and currency costs—not one national decision.',
+        opportunity: 'Name the institutional turn between yields and demand.',
+        detail: 'Test which mandates and hedging conditions could change the marginal allocation.',
+        strength: 'Primary-source mechanism',
+      },
+      audience: {
+        noticed: 'The open question identifies the part current coverage leaves unresolved: who absorbs gradually weaker demand.',
+        opportunity: 'Turn the selloff question into a replacement-buyer map.',
+        detail: 'Follow the financing consequence while preserving uncertainty about the size and timing of the shift.',
+        strength: 'Open research thread',
+      },
     };
-    const select = (name, moveFocus = false) => {
-      tabs.forEach((tab) => {
-        const active = tab.dataset.explorerTab === name;
-        tab.setAttribute('aria-selected', String(active));
-        tab.tabIndex = active ? 0 : -1;
-        if (active && moveFocus) tab.focus();
+    const selectSource = (name, moveFocus = false) => {
+      const state = states[name];
+      if (!state) return;
+      sourceButtons.forEach((button) => {
+        const active = button.dataset.v6Source === name;
+        button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) button.focus();
       });
-      panels.forEach((panel) => {
-        panel.hidden = panel.dataset.explorerPanel !== name;
-      });
-      if (status) status.textContent = `Viewing ${labels[name] || name}`;
+      noticed.textContent = state.noticed;
+      opportunityTitle.textContent = state.opportunity;
+      detail.textContent = state.detail;
+      strength.textContent = state.strength;
+      opportunity.classList.remove('is-changing');
+      void opportunity.offsetWidth;
+      opportunity.classList.add('is-changing');
     };
-    tabs.forEach((tab, index) => {
-      tab.addEventListener('click', () => select(tab.dataset.explorerTab));
-      tab.addEventListener('keydown', (event) => {
-        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    sourceButtons.forEach((button, index) => {
+      button.addEventListener('click', () => selectSource(button.dataset.v6Source));
+      button.addEventListener('keydown', (event) => {
+        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
         let next = index;
-        if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
-        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+        if (['ArrowUp', 'ArrowLeft'].includes(event.key)) next = (index - 1 + sourceButtons.length) % sourceButtons.length;
+        if (['ArrowDown', 'ArrowRight'].includes(event.key)) next = (index + 1) % sourceButtons.length;
         if (event.key === 'Home') next = 0;
-        if (event.key === 'End') next = tabs.length - 1;
-        select(tabs[next].dataset.explorerTab, true);
+        if (event.key === 'End') next = sourceButtons.length - 1;
+        selectSource(sourceButtons[next].dataset.v6Source, true);
       });
     });
+
+    const canTilt = window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (demo && canTilt) {
+      let frame;
+      demo.addEventListener('pointermove', (event) => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const bounds = demo.getBoundingClientRect();
+          const x = (event.clientX - bounds.left) / bounds.width - .5;
+          const y = (event.clientY - bounds.top) / bounds.height - .5;
+          demo.style.setProperty('--v6-tilt-x', `${(-y * 2.4).toFixed(2)}deg`);
+          demo.style.setProperty('--v6-tilt-y', `${(x * 3.2).toFixed(2)}deg`);
+        });
+      });
+      demo.addEventListener('pointerleave', () => {
+        demo.style.setProperty('--v6-tilt-x', '0deg');
+        demo.style.setProperty('--v6-tilt-y', '0deg');
+      });
+    }
   }
 
   const opportunityStory = document.querySelector('[data-opportunity-story]');
