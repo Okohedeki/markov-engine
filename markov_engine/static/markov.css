@@ -46,59 +46,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   outline-offset: 3px;
 }
 
-.skip-link {
-  background: var(--ink);
-  color: white;
-  left: 1rem;
-  padding: .7rem 1rem;
-  position: fixed;
-  top: -5rem;
-  z-index: 100;
-}
-
-.skip-link:focus { top: 1rem; }
-
-.public-header {
-  align-items: center;
-  border-bottom: 1px solid rgb(21 32 29 / 12%);
-  display: flex;
-  height: 74px;
-  justify-content: space-between;
-  margin: 0 auto;
-  max-width: var(--content);
-  padding: 0 28px;
-}
-
-.wordmark {
-  align-items: center;
-  display: inline-flex;
-  font-size: 1rem;
-  font-weight: 850;
-  letter-spacing: .16em;
-  text-decoration: none;
-}
-
-.wordmark::before {
-  background: var(--signal);
-  content: "";
-  height: 10px;
-  margin-right: 10px;
-  transform: rotate(45deg);
-  width: 10px;
-}
-
-.public-nav { align-items: center; display: flex; gap: 1.5rem; }
-.public-nav a { font-size: .9rem; font-weight: 650; text-decoration: none; }
-
-.button,
-button {
-  align-items: center;
-  background: var(--moss);
-  border: 1px solid var(--moss);
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-  display: inline-flex;
 }
 
 @media (prefers-reduced-motion: reduce) {
