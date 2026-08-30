@@ -1,27 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Sign in — Markov{% endblock %}
-{% block body_class %}app-body login-body{% endblock %}
+{% block body_class %}app-body v3-login-body{% endblock %}
 {% block body %}
-  <main class="login-shell" id="main-content">
-    <header class="login-header"><a class="wordmark" href="/">MARKOV</a><a href="/">Back to the public site ↗</a></header>
-    <section class="login-card">
-      <div class="login-message">
-        <p class="eyebrow">Private workspace</p>
-        <h1>Continue the work your sources started.</h1>
-        <p>Return to the Chains Markov is researching, the directions waiting for your decision, and the outputs ready to finish.</p>
-        <ol aria-label="How Markov carries a source forward"><li>Save the source</li><li>Follow the strongest direction</li><li>Finish the work with its evidence attached</li></ol>
-      </div>
-      <div class="login-access">
-        <p class="eyebrow">Sign in</p>
-        <h2>Open your workspace.</h2>
-        <p>This private QA build uses a workspace access key. Account and Google sign-in belong to the production authentication release.</p>
-        {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-        <form method="post" action="/app/login">
-          <div class="field"><label for="api-key">Workspace access key</label><input id="api-key" name="api_key" type="password" autocomplete="current-password" required></div>
-          <button type="submit">Continue to Markov →</button>
-        </form>
-        <a class="login-developer-link" href="/developers">Looking for developer access?</a>
-      </div>
-    </section>
+  <main class="v3-login" id="main-content">
+    <header><a class="v3-app-wordmark" href="/"><span aria-hidden="true"></span>MARKOV</a><a href="/">Public site ↗</a></header>
+    <div class="v3-login-layout">
+      <section class="v3-login-story">
+        <p class="v3-app-kicker">Your editorial opportunity desk</p>
+        <h1>Return to the ideas your signals uncovered.</h1>
+        <p>Review the landscape, challenge Markov’s interpretation, develop the strongest opportunity, and plan how each channel should carry it.</p>
+        <ol aria-label="Markov publishing progression"><li><span>01</span>Signal</li><li><span>02</span>Landscape</li><li><span>03</span>Idea opportunity</li><li><span>04</span>Campaign plan</li></ol>
+      </section>
+      <section class="v3-login-access">
+        <div><p class="v3-app-kicker">QA access</p><h2>Open your workspace.</h2><p>This build uses a workspace access key while production email and Google authentication are being built.</p></div>
+        {% if error %}<p class="v3-form-error" role="alert">{{ error }}</p>{% endif %}
+        <form method="post" action="/app/login"><label for="api-key">Workspace access key</label><div><input id="api-key" name="api_key" type="password" autocomplete="current-password" required><button type="submit">Continue <span aria-hidden="true">→</span></button></div></form>
+        <p class="v3-login-privacy">The key is used only to open this QA workspace. It is not displayed inside the application.</p>
+        <a href="/developers">Looking for API access?</a>
+      </section>
+    </div>
   </main>
 {% endblock %}
