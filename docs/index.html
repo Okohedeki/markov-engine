@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Markov compares your signals with existing coverage to uncover underdeveloped ideas for your audience, then helps you develop and distribute them without writing in your place.">
+  <meta name="description" content="Markov compares search results, AI answers, competitor coverage, previous work, and audience context to reveal underdeveloped ideas worth publishing.">
 
   <title>Markov — Find what should be published next</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
@@ -12,7 +12,7 @@
   <script defer src="/markov-engine/static/markov.js"></script>
   <script defer src="/markov-engine/static/markov-v3.js"></script>
 </head>
-<body class="v3-public v3-landing">
+<body class="v3-public v4-landing">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
   <header class="v3-site-header" data-site-header>
@@ -28,152 +28,73 @@
 </header>
 
   <main id="main-content">
-    <section class="v3-hero" aria-labelledby="v3-hero-title">
-      <div class="v3-hero-copy">
-        <p class="v3-kicker">Original-idea discovery for people who publish</p>
-        <h1 id="v3-hero-title">Find what should be published next.</h1>
-        <p class="v3-hero-deck">Markov compares what you are exploring with what already exists to uncover underdeveloped ideas for your audience—then helps you develop and distribute them without writing in your place.</p>
-        <div class="v3-action-row">
-          <a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a>
-          <a class="v3-text-link" href="#japan-example">See the Japan example <span aria-hidden="true">↓</span></a>
-        </div>
-        <p class="v3-authorship-note"><span aria-hidden="true">✎</span> Research, reasoning, structure, and distribution—not finished prose.</p>
+    <section class="v4-hero" aria-labelledby="v4-hero-title">
+      <div class="v4-hero-copy">
+        <p class="v3-kicker">Idea opportunity discovery for professional publishers</p>
+        <h1 id="v4-hero-title">Find what should be published next.</h1>
+        <p class="v4-hero-deck">Give Markov a source, question, or trend. It compares current search results, AI answers, competitor coverage, and your previous work to reveal underdeveloped angles—then builds the development and distribution plan. You write the final piece.</p>
+        <div class="v3-action-row"><a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a><a class="v3-text-link" href="#how-it-works">See how the gap appears <span aria-hidden="true">↓</span></a></div>
+        <p class="v4-hero-boundary"><strong>For content leads, founders, and research-led creators.</strong> Not a read-later app, fact checker, or one-click AI writer.</p>
       </div>
 
-      <div class="v3-hero-instrument" aria-label="Example of Markov finding a missing connection">
-        <div class="v3-instrument-head"><span>IDEA LANDSCAPE / LIVE EXAMPLE</span><span>Coverage checked Jul 18, 2026</span></div>
-        <div class="v3-instrument-signal">
-          <span class="v3-object-label">Signal</span>
-          <strong>Japan’s demographic decline</strong>
-          <small>Widely covered on its own</small>
+      <div class="v4-answer-map" aria-label="Example comparison revealing an underdeveloped idea">
+        <header><span>LIVE IDEA COMPARISON</span><strong>Japan / capital flows</strong></header>
+        <div class="v4-answer-sources">
+          <section><span>Search results</span><p>Aging population, fiscal pressure, slower growth</p></section>
+          <section><span>AI answers</span><p>Demographic decline raises debt and pension strain</p></section>
+          <section><span>Competitor coverage</span><p>Possible Treasury selling and yen volatility</p></section>
+          <section><span>Previous work</span><p>No buyer-side mechanism has been developed</p></section>
         </div>
-        <div class="v3-instrument-field">
-          <div class="v3-coverage-column">
-            <span>Existing coverage repeats</span>
-            <p>Aging population</p><p>Slower growth</p><p>Fiscal pressure</p>
-          </div>
-          <div class="v3-missing-column">
-            <span>Missing connection</span>
-            <div class="v3-gap-mark" aria-hidden="true"><i></i><b>?</b><i></i></div>
-            <p>What happens when domestic yields and hedging costs change where Japanese institutions allocate capital?</p>
-          </div>
-        </div>
-        <div class="v3-instrument-opportunity">
-          <span class="v3-object-label">Idea opportunity</span>
-          <strong>The Treasury story may begin with fewer new purchases—not a dramatic selloff.</strong>
-          <div><span><b>High</b> Information gain</span><span><b>Strong</b> Audience relevance</span></div>
-        </div>
+        <div class="v4-answer-gap"><span>Missing connection</span><p>Domestic yields and currency hedging can change new Treasury demand before a visible sale.</p></div>
+        <div class="v4-answer-opportunity"><div><span>Idea opportunity</span><strong>Follow the missing buyer—not the dramatic seller.</strong></div><dl><div><dt>Information gain</dt><dd>High</dd></div><div><dt>Audience relevance</dt><dd>Strong</dd></div></dl></div>
+        <footer><span>AEO BEFORE OPTIMIZATION</span><p>Publish the useful connection future answers are currently missing.</p></footer>
       </div>
     </section>
 
-    <section class="v3-fit" id="who-its-for" aria-labelledby="v3-fit-title">
-      <header class="v3-section-intro">
-        <p class="v3-kicker">Who Markov is for</p>
-        <h2 id="v3-fit-title">For the person who cannot publish the same answer as everyone else.</h2>
-      </header>
-      <div class="v3-fit-ledger">
-        <article><span>01</span><div><h3>Lean company content teams</h3><p>Founders, content leads, and marketers building distinctive company blogs, newsletters, podcasts, and thought leadership.</p></div><strong>Primary</strong></article>
-        <article><span>02</span><div><h3>Research-led creators</h3><p>Video essayists, educators, newsletter writers, and podcasters who need original angles that fit their audience.</p></div><strong>Creator</strong></article>
-        <article><span>03</span><div><h3>Editorial studios and agencies</h3><p>Teams planning repeatable campaigns across clients without flattening each client’s perspective.</p></div><strong>Studio</strong></article>
+    <section class="v4-landscape" id="how-it-works" aria-labelledby="v4-landscape-title">
+      <header><p class="v3-kicker">Inside the product</p><h2 id="v4-landscape-title">See the gap before you write into it.</h2><p>Markov does not hand you another topic list. It makes the repeated answer, the missing connection, your possible contribution, and the audience reason visible in one decision surface.</p></header>
+      <div class="v4-landscape-board">
+        <section class="v4-repeated-answer"><span>What everyone already says</span><h3>Japan is aging, public debt is high, and investors may sell overseas assets.</h3><ol><li>Demographic pressure</li><li>Fiscal sustainability</li><li>Possible repatriation</li></ol></section>
+        <section class="v4-missing-answer"><span>What has not been connected</span><h3>New buying can weaken before old holdings are sold.</h3><p>Relative yields, institutional mandates, and USD/JPY hedging sit between a demographic trend and a Treasury flow.</p><div><b>Missing mechanism</b><b>Different market consequence</b></div></section>
+        <section class="v4-audience-answer"><span>What the audience still needs</span><h3>Which buyer replaces marginal Japanese demand—and what signal would show the change first?</h3><p><strong>Why now:</strong> domestic allocation proposals and repriced yields make the old assumption newly useful to revisit.</p></section>
+        <aside class="v4-board-action"><div><span>Proposed contribution</span><strong>A buyer-side model of Treasury demand with the competing selloff story kept visible.</strong></div><a href="/markov-engine/sample/">Develop this idea →</a></aside>
       </div>
-      <aside class="v3-boundary"><strong>Not a personal knowledge base.</strong><p>Markov begins with the need to find something worth saying—not something you want to remember.</p></aside>
     </section>
 
-    <section class="v3-finds" id="how-it-works" aria-labelledby="v3-finds-title">
-      <div class="v3-section-intro">
-        <p class="v3-kicker">What Markov finds</p>
-        <h2 id="v3-finds-title">The opportunity is usually between the things everyone covered separately.</h2>
-        <p>Markov maps the information landscape before it recommends a direction. It shows why an angle appears underexplored instead of calling it “original.”</p>
-      </div>
-      <ol class="v3-find-index">
-        <li><span>01</span><strong>Repetitive answers</strong><p>Questions where articles, search results, and AI answers keep returning the same explanation.</p></li>
-        <li><span>02</span><strong>Missing connections</strong><p>Important subjects covered separately but never combined into a useful mechanism.</p></li>
-        <li><span>03</span><strong>Ignored audiences</strong><p>Questions your audience asks that broad, general coverage does not resolve.</p></li>
-        <li><span>04</span><strong>New consequences</strong><p>Recent developments that make an old assumption newly important—or newly wrong.</p></li>
+    <section class="v4-fit" id="who-its-for" aria-labelledby="v4-fit-title">
+      <div><p class="v3-kicker">Who it is for</p><h2 id="v4-fit-title">For people accountable for a publishing point of view.</h2></div>
+      <ol><li><span>01</span><strong>Lean company content teams</strong><p>Build distinctive blogs, newsletters, podcasts, and thought leadership from the conversation your market is already having.</p></li><li><span>02</span><strong>Research-led creators</strong><p>Find a supportable angle that fits what your audience knows, questions, and values.</p></li><li><span>03</span><strong>Editorial studios and agencies</strong><p>Develop repeatable campaigns without flattening every client into the same generic answer.</p></li></ol>
+    </section>
+
+    <section class="v4-workflow" id="japan-example" aria-labelledby="v4-workflow-title">
+      <header><div><p class="v3-kicker">One source-to-idea workflow</p><h2 id="v4-workflow-title">A demographic signal becomes a capital-markets direction.</h2></div><p>This real Japan example shows the progression without turning transparency into the product’s main story.</p></header>
+      <ol class="v4-workflow-steps">
+        <li class="is-signal"><span>01 / Signal</span><h3>Japan’s pension pivot puts overseas capital in play.</h3><p>A new domestic-allocation proposal changes what is timely.</p><a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer">Reuters, Jul 10, 2026 ↗</a></li>
+        <li class="is-landscape"><span>02 / Existing answers</span><h3>Most coverage jumps from aging to a Treasury selloff.</h3><p>The institutional and portfolio decisions between them stay thin.</p></li>
+        <li class="is-connection"><span>03 / Missing connection</span><h3>Higher domestic yields and hedging costs change the buyer decision.</h3><p>The useful mechanism appears before any instrument-level sale.</p></li>
+        <li class="is-opportunity"><span>04 / Idea opportunity</span><h3>Japan need not dump Treasuries to change the financing story.</h3><p>The new question is who replaces gradually weaker demand.</p></li>
       </ol>
+      <footer><p><strong>Markov’s interpretation, not a settled fact.</strong> Final allocation guidance and aligned flow data could strengthen or weaken this direction.</p><a href="/markov-engine/sample/">Inspect the complete example →</a></footer>
     </section>
 
-    <section class="v3-example" id="japan-example" aria-labelledby="v3-example-title">
-      <header class="v3-example-heading">
-        <div><p class="v3-kicker">One complete transformation</p><h2 id="v3-example-title">A demographic story becomes a capital-markets idea.</h2></div>
-        <p>This example uses a real Japan source packet. It separates observed information from Markov’s interpretation and keeps the missing evidence visible.</p>
-      </header>
-      <ol class="v3-thread" aria-label="Signal to idea opportunity">
-        <li>
-          <span class="v3-thread-index">01</span>
-          <div class="v3-thread-copy"><small>Signal</small><h3>Japan’s pension pivot puts overseas capital in play.</h3><p>A policy proposal suggests more domestic allocation. It does not demonstrate a Treasury sale.</p></div>
-          <div class="v3-source-slip"><span>REUTERS / JUL 10, 2026</span><strong>Policy catalyst</strong><a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer">Read source ↗</a></div>
-        </li>
-        <li>
-          <span class="v3-thread-index">02</span>
-          <div class="v3-thread-copy"><small>Existing landscape</small><h3>Most coverage stops at “aging creates pressure.”</h3><p>It repeats demographics, debt, and a possible selloff without naming the institutions or portfolio mechanics between them.</p></div>
-          <div class="v3-landscape-bars" aria-label="Relative content saturation"><p><span>Demographics</span><i style="--bar:92%"></i><b>High</b></p><p><span>Fiscal pressure</span><i style="--bar:78%"></i><b>High</b></p><p><span>Institutional flows</span><i style="--bar:34%"></i><b>Low</b></p></div>
-        </li>
-        <li class="is-connection">
-          <span class="v3-thread-index">03</span>
-          <div class="v3-thread-copy"><small>Unexpected connection</small><h3>Domestic yields and currency hedging can change the buyer decision before any sale.</h3><p>NBER research supplies the missing mechanism: mandates, duration, relative yields, and USD/JPY hedging sit between a demographic trend and an asset flow.</p></div>
-          <div class="v3-mechanism"><span>Higher JGB appeal</span><b>→</b><span>Weaker hedged returns</span><b>→</b><span>Less new foreign demand</span></div>
-        </li>
-        <li class="is-opportunity">
-          <span class="v3-thread-index">04</span>
-          <div class="v3-thread-copy"><small>Idea opportunity</small><h3>Japan does not need to dump Treasuries to change the U.S. financing story.</h3><p>The underdeveloped angle is marginal demand: who replaces Japanese buying if gradual reallocation makes overseas bonds less attractive?</p></div>
-          <div class="v3-opportunity-scores"><p><span>Information gain</span><strong>High</strong><small>Connection rarely developed</small></p><p><span>Audience relevance</span><strong>Strong</strong><small>Timely for policy audiences</small></p></div>
-        </li>
-      </ol>
-      <div class="v3-example-action"><p><strong>Limits stay visible.</strong> A formal allocation change and aligned flow data could strengthen—or weaken—this interpretation.</p><a class="v3-text-link" href="/markov-engine/sample/">Inspect the source packet <span aria-hidden="true">→</span></a></div>
-    </section>
-
-    <section class="v3-campaign" aria-labelledby="v3-campaign-title" data-campaign-demo>
-      <div class="v3-campaign-copy">
-        <p class="v3-kicker">One idea, developed by channel</p>
-        <h2 id="v3-campaign-title">A campaign is not the same post cut five ways.</h2>
-        <p>Markov recommends what each channel can contribute to the idea, in what sequence, and which audience response should guide the next move.</p>
-        <div class="v3-campaign-tabs" role="tablist" aria-label="Campaign channel treatments">
-          <button type="button" role="tab" aria-selected="true" data-campaign-tab="flagship">Flagship</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="newsletter">Newsletter</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="video">Video</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="social">Social</button>
-        </div>
+    <section class="v4-campaign" aria-labelledby="v4-campaign-title" data-campaign-demo>
+      <div class="v4-campaign-copy">
+        <p class="v3-kicker">Idea-to-campaign workflow</p>
+        <h2 id="v4-campaign-title">A campaign is not the same post cut five ways.</h2>
+        <p>Each channel should add something to the idea, reach a different audience moment, and return a useful signal for what comes next.</p>
+        <div class="v3-campaign-tabs" role="tablist" aria-label="Campaign channel treatments"><button type="button" role="tab" aria-selected="true" data-campaign-tab="flagship">Flagship</button><button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="newsletter">Newsletter</button><button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="video">Video</button><button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="social">Social</button></div>
       </div>
-      <article class="v3-treatment" aria-live="polite">
+      <article class="v3-treatment v4-treatment" aria-live="polite">
         <header><span data-campaign-label>CANONICAL ARTICLE / WEEK 1</span><small>Own the full argument</small></header>
         <h3 data-campaign-title>Follow the missing buyer, not the dramatic seller.</h3>
-        <div data-campaign-body>
-          <section><span>Job</span><p>Establish the mechanism, compare the competing selloff story, and name the data that would change the conclusion.</p></section>
-          <section><span>Distinct contribution</span><p>A referenceable model of marginal Treasury demand with every source role attached.</p></section>
-          <section><span>Monitor next</span><p>Allocation guidance, sector-level flows, and audience questions about replacement buyers.</p></section>
-        </div>
+        <div data-campaign-body><section><span>Job</span><p>Establish the mechanism, compare the selloff story, and name the signal that would change the conclusion.</p></section><section><span>Distinct contribution</span><p>A referenceable model of marginal Treasury demand that broad coverage does not supply.</p></section><section><span>Monitor next</span><p>Allocation guidance, sector-level flows, and audience questions about replacement buyers.</p></section></div>
       </article>
     </section>
 
-    <section class="v3-authorship" aria-labelledby="v3-authorship-title">
-      <div><p class="v3-kicker">Why Markov does not write in your place</p><h2 id="v3-authorship-title">Your point of view is the product.</h2></div>
-      <div class="v3-authorship-contrast">
-        <section><span>Markov contributes</span><ul><li>Landscape and saturation analysis</li><li>Unexpected, typed connections</li><li>Structured argument and story beats</li><li>Counterarguments and open questions</li><li>Channel-native treatments and sequence</li></ul></section>
-        <section><span>You contribute</span><ul><li>The final thesis you stand behind</li><li>Judgment about your audience</li><li>Your examples, experience, and voice</li><li>The language that earns trust</li><li>The decision to publish</li></ul></section>
-      </div>
-    </section>
-
-    <section class="v3-aeo" aria-labelledby="v3-aeo-title">
-      <div class="v3-aeo-statement"><p class="v3-kicker">AEO starts before optimization</p><h2 id="v3-aeo-title">Publish what deserves to become part of the answer.</h2></div>
-      <div class="v3-aeo-compare">
-        <p><span>Conventional AEO asks</span>How do we make our existing content appear in AI-generated answers?</p>
-        <p><span>Markov asks</span>What should we publish that gives future answers something useful they are currently missing?</p>
-      </div>
-      <p class="v3-aeo-note">Markov does not claim to search all human knowledge. It explains which coverage it checked, what repeats, and where a useful connection appears underdeveloped.</p>
-    </section>
-
-    <section class="v3-product-preview" aria-labelledby="v3-preview-title">
-      <header class="v3-section-intro"><p class="v3-kicker">Inside the product</p><h2 id="v3-preview-title">A working surface for editorial decisions.</h2><p>Signals, landscapes, opportunities, briefs, and plans stay connected so the reason behind an idea does not disappear during production.</p></header>
-      <div class="v3-preview-canvas">
-        <aside><strong>MARKOV</strong><span>Home</span><span>Signals</span><span class="is-active">Ideas</span><span>Campaign plans</span><span>Published</span></aside>
-        <div class="v3-preview-workspace"><header><span>IDEA / JAPAN CAPITAL FLOWS</span><button type="button" disabled>Develop this idea</button></header><div class="v3-preview-thesis"><small>Proposed thesis</small><h3>Japan does not need to dump Treasuries to change the U.S. financing story.</h3><p><span>Observed</span> Domestic yields and hedging costs have repriced.</p><p><span>Interpretation</span> Marginal foreign-bond demand could weaken before a visible selloff.</p></div><div class="v3-preview-rails"><section><small>Information gain</small><strong>High</strong><p>Missing buyer connection</p></section><section><small>Audience relevance</small><strong>Strong</strong><p>Timely policy question</p></section><section><small>Coverage freshness</small><strong>Jul 18</strong><p>Example source packet</p></section></div></div>
-      </div>
-    </section>
-
-    <section class="v3-final-cta" aria-labelledby="v3-final-title">
-      <div><p class="v3-kicker">The next useful idea is rarely another summary.</p><h2 id="v3-final-title">Find the connection worth developing.</h2></div>
-      <div><a class="v3-button is-light" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a><p>Bring a source, question, observation, topic, or existing brief.</p></div>
+    <section class="v4-boundary" aria-labelledby="v4-boundary-title">
+      <div class="v4-aeo"><p class="v3-kicker">AEO begins with information gain</p><h2 id="v4-boundary-title">Give future answers something worth including.</h2><p>Ordinary AEO asks how existing content can appear in an AI answer. Markov asks what useful contribution search results and AI answers do not yet contain.</p></div>
+      <div class="v4-authorship"><p class="v3-kicker">The authorship boundary</p><h3>Markov plans. You publish.</h3><dl><div><dt>Markov contributes</dt><dd>Landscape, missing connection, development brief, counterargument, and channel strategy.</dd></div><div><dt>You contribute</dt><dd>Judgment, experience, examples, voice, final thesis, and the decision to publish.</dd></div></dl></div>
+      <div class="v4-final-action"><div><span>Bring a source, question, observation, trend, or existing brief.</span><strong>Find the contribution your audience cannot get from another summary.</strong></div><a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a></div>
     </section>
   </main>
 
