@@ -15,6 +15,113 @@
     });
   }
 
+  const opportunityExplorer = document.querySelector('[data-opportunity-explorer]');
+  if (opportunityExplorer) {
+    const tabs = [...opportunityExplorer.querySelectorAll('[data-explorer-tab]')];
+    const panels = [...opportunityExplorer.querySelectorAll('[data-explorer-panel]')];
+    const status = opportunityExplorer.querySelector('[data-explorer-status]');
+    const labels = {
+      search: 'Search results',
+      ai: 'AI answers',
+      coverage: 'Competitor coverage',
+      history: 'Previous work',
+    };
+    const select = (name, moveFocus = false) => {
+      tabs.forEach((tab) => {
+        const active = tab.dataset.explorerTab === name;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) tab.focus();
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.explorerPanel !== name;
+      });
+      if (status) status.textContent = `Viewing ${labels[name] || name}`;
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => select(tab.dataset.explorerTab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = tabs.length - 1;
+        select(tabs[next].dataset.explorerTab, true);
+      });
+    });
+  }
+
+  const opportunityStory = document.querySelector('[data-opportunity-story]');
+  if (opportunityStory) {
+    const tabs = [...opportunityStory.querySelectorAll('[data-story-tab]')];
+    const panels = [...opportunityStory.querySelectorAll('[data-story-panel]')];
+    const markers = [...opportunityStory.querySelectorAll('[data-story-marker]')];
+    const counter = opportunityStory.querySelector('[data-story-counter]');
+    const select = (name, moveFocus = false) => {
+      const selectedIndex = tabs.findIndex((tab) => tab.dataset.storyTab === name);
+      if (selectedIndex < 0) return;
+      tabs.forEach((tab, index) => {
+        const active = index === selectedIndex;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) tab.focus();
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.storyPanel !== name;
+      });
+      if (counter) counter.textContent = `${String(selectedIndex + 1).padStart(2, '0')} / ${String(tabs.length).padStart(2, '0')}`;
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => select(tab.dataset.storyTab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (['ArrowUp', 'ArrowLeft'].includes(event.key)) next = (index - 1 + tabs.length) % tabs.length;
+        if (['ArrowDown', 'ArrowRight'].includes(event.key)) next = (index + 1) % tabs.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = tabs.length - 1;
+        select(tabs[next].dataset.storyTab, true);
+      });
+    });
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktopStoryQuery = window.matchMedia('(min-width: 761px)');
+    let storyObserver;
+    const syncStoryObserver = () => {
+      storyObserver?.disconnect();
+      storyObserver = undefined;
+      if (!('IntersectionObserver' in window) || reducedMotionQuery.matches || !desktopStoryQuery.matches) return;
+      storyObserver = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) select(visible.target.dataset.storyMarker);
+      }, { rootMargin: '-32% 0px -48% 0px', threshold: [0, 0.2, 0.6] });
+      markers.forEach((marker) => storyObserver.observe(marker));
+    };
+    syncStoryObserver();
+    reducedMotionQuery.addEventListener('change', syncStoryObserver);
+    desktopStoryQuery.addEventListener('change', syncStoryObserver);
+
+    const directionButtons = [...opportunityStory.querySelectorAll('[data-direction]')];
+    const directionTitle = opportunityStory.querySelector('[data-direction-title]');
+    const directionAudience = opportunityStory.querySelector('[data-direction-audience]');
+    const directionWhy = opportunityStory.querySelector('[data-direction-why]');
+    const directionWeakness = opportunityStory.querySelector('[data-direction-weakness]');
+    directionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        directionButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        if (directionTitle) directionTitle.textContent = button.dataset.title;
+        if (directionAudience) directionAudience.textContent = button.dataset.audience;
+        if (directionWhy) directionWhy.textContent = button.dataset.why;
+        if (directionWeakness) directionWeakness.textContent = button.dataset.weakness;
+      });
+    });
+  }
+
   const campaign = document.querySelector('[data-campaign-demo]');
   if (campaign) {
     const treatments = {
