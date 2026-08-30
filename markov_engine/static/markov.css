@@ -419,6 +419,621 @@ code, kbd, pre { font-family: var(--mono); }
 
 /* Workspace libraries */
 
+.mk-claim-margin h2 {
+  margin-top: 6px;
+  font-size: 23px;
+}
+
+.mk-claim-margin details {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mk-claim-margin summary {
+  list-style: none;
+  font-family: var(--serif);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.mk-claim-margin summary span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--green);
+  font: 8px var(--sans);
+  font-weight: 700;
+}
+
+.mk-claim-margin blockquote,
+.mk-claim-margin details > p {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mk-claim-margin cite {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+}
+
+.mk-claim-margin form button {
+  margin-top: 12px;
+  padding: 0;
+  background: transparent;
+  color: var(--cobalt);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.mk-source-table {
+  margin-top: 30px;
+}
+
+.mk-source-table-head,
+.mk-source-table article {
+  display: grid;
+  grid-template-columns: 140px minmax(260px, 1fr) 120px 120px 50px;
+  gap: 18px;
+  align-items: center;
+}
+
+.mk-source-table-head {
+  padding: 12px 0;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.mk-source-table article {
+  min-height: 82px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.mk-source-table article strong,
+.mk-source-table article small {
+  display: block;
+}
+
+.mk-source-table article strong {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mk-source-table article small {
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mk-source-table article a {
+  color: var(--cobalt);
+  font-size: 16px;
+}
+
+/* Output composer */
+
+.mk-composer {
+  width: min(760px, calc(100vw - 34px));
+  max-height: calc(100vh - 34px);
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 34px 8px 34px 34px;
+  background: var(--paper);
+  box-shadow: var(--shadow-float);
+}
+
+.mk-composer::backdrop {
+  background: rgba(7, 14, 27, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.mk-composer > form > header,
+.mk-composer > form > footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 34px;
+}
+
+.mk-composer > form > header {
+  border-bottom: 1px solid var(--line);
+}
+
+.mk-composer > form > footer {
+  align-items: center;
+  border-top: 1px solid var(--line);
+}
+
+.mk-composer header h2 {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 31px;
+  font-weight: 500;
+}
+
+.mk-composer header p:last-child {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.mk-composer header > button {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  background: var(--fog);
+  font-size: 20px;
+}
+
+.mk-composer-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 32px 34px 38px;
+}
+
+.mk-composer-fields > label,
+.mk-composer-fields fieldset {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mk-composer-fields .is-wide {
+  grid-column: 1 / -1;
+}
+
+.mk-composer-fields label > span,
+.mk-composer-fields legend {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mk-composer-fields input,
+.mk-composer-fields textarea,
+.mk-composer-fields select {
+  width: 100%;
+  min-height: 47px;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--white);
+  font-size: 13px;
+}
+
+.mk-composer-fields fieldset.is-wide {
+  grid-template-columns: 1fr 1fr;
+}
+
+.mk-composer-fields fieldset legend {
+  grid-column: 1 / -1;
+}
+
+.mk-composer-fields fieldset label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.mk-composer-fields fieldset input {
+  width: auto;
+  min-height: auto;
+}
+
+.mk-composer-fields fieldset strong {
+  display: block;
+  font-size: 12px;
+}
+
+.mk-composer-fields label > small,
+.mk-composer-fields fieldset label span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* Authentication, onboarding, and review */
+
+.mk-auth-page {
+  background: linear-gradient(135deg, #e6edf8 0%, #f5f2ed 58%, #ffe5dd 100%);
+}
+
+.mk-auth-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 1.12fr) minmax(400px, 0.88fr);
+}
+
+.mk-auth-story {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px clamp(35px, 7vw, 105px) 62px;
+}
+
+.mk-auth-story > div {
+  max-width: 690px;
+  margin-block: 100px;
+}
+
+.mk-auth-story h1 {
+  margin-top: 16px;
+  font-family: var(--display);
+  font-size: clamp(62px, 7vw, 106px);
+  font-stretch: condensed;
+  font-weight: 760;
+  letter-spacing: -0.075em;
+  line-height: 0.86;
+}
+
+.mk-auth-story > div > p:last-child {
+  max-width: 550px;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.mk-auth-story ol {
+  display: flex;
+  gap: 14px 30px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 11px;
+  list-style: none;
+}
+
+.mk-auth-story ol li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mk-auth-story ol span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cobalt);
+}
+
+.mk-auth-form {
+  display: grid;
+  align-content: center;
+  padding: clamp(38px, 7vw, 105px);
+  background: rgba(255, 254, 250, 0.78);
+  backdrop-filter: blur(16px);
+}
+
+.mk-auth-form h2 {
+  margin-top: 9px;
+  font-family: var(--serif);
+  font-size: 43px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.mk-auth-form > div > p:last-child {
+  max-width: 440px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.mk-auth-form form {
+  margin-top: 40px;
+}
+
+.mk-auth-form form > label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mk-auth-form form > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 7px 7px 7px 18px;
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.mk-auth-form form input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.mk-auth-help {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mk-auth-help strong {
+  color: var(--ink);
+}
+
+.mk-auth-form > a {
+  margin-top: 40px;
+  color: var(--cobalt);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mk-onboarding-shell,
+.mk-review-shell,
+.mk-review-login,
+.mk-error-shell {
+  width: min(1180px, calc(100vw - 56px));
+  margin: 0 auto;
+  padding: 45px 0 100px;
+}
+
+.mk-onboarding-shell > header,
+.mk-review-shell > header,
+.mk-review-login > header,
+.mk-error-shell > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mk-onboarding-shell > header > a:last-child,
+.mk-review-shell > header > a:last-child {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.mk-onboarding-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(500px, 1.28fr);
+  gap: clamp(55px, 10vw, 150px);
+  margin-top: 90px;
+}
+
+.mk-onboarding-grid > aside {
+  position: sticky;
+  top: 50px;
+  align-self: start;
+}
+
+.mk-onboarding-grid h1 {
+  margin-top: 14px;
+  font-family: var(--display);
+  font-size: clamp(48px, 6vw, 82px);
+  font-stretch: condensed;
+  font-weight: 760;
+  letter-spacing: -0.07em;
+  line-height: 0.92;
+}
+
+.mk-onboarding-grid aside > p:last-of-type {
+  margin-top: 25px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.mk-onboarding-grid aside ol {
+  margin-top: 45px;
+  color: var(--muted);
+  font-size: 11px;
+  list-style-position: inside;
+}
+
+.mk-onboarding-grid aside li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mk-onboarding-grid aside li.is-current {
+  color: var(--cobalt);
+  font-weight: 700;
+}
+
+.mk-onboarding-grid > form > fieldset,
+.mk-onboarding-grid > form > .mk-form-pair {
+  padding: 42px 0;
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.mk-onboarding-grid legend {
+  font-family: var(--serif);
+  font-size: 27px;
+}
+
+.mk-onboarding-grid fieldset > p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.mk-choice-grid,
+.mk-channel-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.mk-choice-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mk-channel-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mk-choice-grid label,
+.mk-channel-grid label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+}
+
+.mk-choice-grid strong {
+  display: block;
+  font-size: 12px;
+}
+
+.mk-choice-grid span,
+.mk-channel-grid span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mk-form-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.mk-form-pair label {
+  display: grid;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mk-form-pair textarea,
+.mk-onboarding-grid input,
+.mk-onboarding-grid select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--paper);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.mk-onboarding-grid form > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 30px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.mk-onboarding-grid form > footer p {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.mk-review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(270px, 0.55fr);
+  gap: 70px;
+  margin-top: 70px;
+}
+
+.mk-review-document,
+.mk-review-finalize,
+.mk-review-list,
+.mk-review-login > form,
+.mk-error-shell > section {
+  padding: 36px;
+  border-radius: 28px 8px 28px 28px;
+  background: var(--paper);
+  box-shadow: var(--shadow-soft);
+}
+
+.mk-review-document {
+  font-family: var(--serif);
+  line-height: 1.7;
+}
+
+.mk-review-decisions {
+  margin-top: 30px;
+}
+
+.mk-review-decisions label,
+.mk-review-finalize label,
+.mk-review-login label {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.mk-review-decisions input,
+.mk-review-decisions textarea,
+.mk-review-finalize input,
+.mk-review-finalize textarea,
+.mk-review-login input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.mk-review-login,
+.mk-error-shell {
+  max-width: 700px;
+}
+
+.mk-review-login > div,
+.mk-error-shell > section {
+  margin-top: 100px;
+}
+
+.mk-review-login h1,
+.mk-error-shell h1 {
+  margin-top: 14px;
+  font-family: var(--display);
+  font-size: clamp(52px, 7vw, 86px);
+  font-stretch: condensed;
+  font-weight: 760;
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+}
+
+.mk-review-list {
+  margin-top: 60px;
+}
+
+.mk-review-list > a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 15px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mk-error-shell > section p {
+  margin-top: 20px;
+  color: var(--muted);
+}
+
+.mk-error-shell .mk-button {
+  margin-top: 25px;
+}
+
+/* Responsive composition */
+
 @media (max-width: 1180px) {
   :root {
     --page: min(calc(100% - 44px), 1040px);
