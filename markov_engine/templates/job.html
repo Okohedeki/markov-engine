@@ -1,27 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Landscape scan — Markov{% endblock %}
-{% block body_class %}app-body v3-app-body{% endblock %}
+{% block title %}Research in progress — Markov{% endblock %}
+{% block body_class %}mk-app-page{% endblock %}
 {% block meta %}{% if refresh %}<meta http-equiv="refresh" content="{{ refresh }}">{% endif %}{% endblock %}
 {% block body %}
-  <div class="v3-app-frame">
+  <div class="mk-app-frame">
     {% include "partials/app_sidebar.html" %}
-    <main class="v3-app-main" id="main-content">
-      <header class="v3-app-topbar"><a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a><span><a href="/app/signals">SIGNALS</a> / LANDSCAPE SCAN</span><strong>{{ job.status | humanize }}</strong></header>
-      <div class="v3-app-content v3-job-page">
-        <header class="v3-job-heading"><p class="v3-app-kicker">Signal accepted · Case {{ job.research_case_id }}</p><h1>{{ stage_title }}</h1><p>{{ stage_description }}</p></header>
-        {% if job.error %}<p class="v3-form-error" role="alert">{{ job.error }}</p>{% endif %}
-        <div class="v3-job-layout">
-          <section class="v3-job-progress" aria-live="polite">
-            <header><span>What Markov is doing</span>{% if refresh %}<i aria-label="Scan in progress"></i>{% endif %}</header>
-            <ol>{% for event in events %}<li><span>{{ "%02d" | format(loop.index) }}</span><div><strong>{{ event.stage | humanize }}</strong><p>{{ event.detail }}</p></div><small>Complete</small></li>{% else %}<li class="is-current"><span>01</span><div><strong>Reading the signal</strong><p>The job is queued. Its first recorded step will appear here.</p></div><small>Current</small></li>{% endfor %}</ol>
-          </section>
-          <aside class="v3-job-delivery">
-            <span>Next decision</span>
-            {% if job.status == 'awaiting_review' %}<h2>Evidence review is in progress.</h2><p>The structured case is ready. Delivery waits for the configured review boundary.</p>
-            {% elif artifacts %}<h2>Your idea landscape is ready.</h2><p>Review what already exists, inspect the proposed connection, and decide whether to develop it.</p>{% for item in artifacts %}<a href="/app/artifacts/{{ item.id }}">Review idea opportunities →</a>{% endfor %}
-            {% elif job.status == 'failed' %}<h2>The scan stopped safely.</h2><p>No opportunity was promoted. Review the recorded error before adding the signal again.</p><a href="/app/signals">Return to Signals →</a>
-            {% else %}<h2>Markov will return with opportunities, not a finished answer.</h2><p>You can leave this page. The current state remains visible from Home.</p><a href="/app">Return to opportunity feed →</a>{% endif %}
-          </aside>
+    <main class="mk-app-main" id="main-content">
+      <header class="mk-mobile-appbar"><button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><a href="/app">Home</a></header>
+      <div class="mk-job-shell">
+        <header class="mk-job-head"><p class="mk-kicker">Chain {{ job.research_case_id }} · {{ job.mode | humanize }}</p><h1>{{ stage_title }}</h1><p>{{ stage_description }}</p>{% if refresh %}<span class="mk-state mk-state-running" role="status"><i aria-hidden="true"></i>Research is active</span>{% else %}<span class="mk-state {% if job.status == 'failed' %}mk-state-error{% else %}mk-state-ready{% endif %}"><i aria-hidden="true"></i>{{ job.status | humanize }}</span>{% endif %}</header>
+        {% if job.error %}<p class="mk-alert is-error" role="alert"><strong>Markov stopped safely.</strong>{{ job.error }}</p>{% endif %}
+        <div class="mk-job-grid">
+          <section class="mk-job-progress" aria-live="polite"><header><p class="mk-kicker">The trail so far</p><h2>What Markov is doing</h2></header><ol>{% for event in events %}<li class="is-complete"><span>{{ "%02d" | format(loop.index) }}</span><i aria-hidden="true"></i><div><strong>{{ event.stage | humanize }}</strong><p>{{ event.detail }}</p></div><small>Done</small></li>{% else %}<li class="is-current"><span>01</span><i aria-hidden="true"></i><div><strong>Reading the source</strong><p>The first recorded step will appear here.</p></div><small>Now</small></li>{% endfor %}{% if refresh and events %}<li class="is-current"><span>{{ "%02d" | format(events | length + 1) }}</span><i aria-hidden="true"></i><div><strong>Continuing the Chain</strong><p>The next source, claim, or connection is still being processed.</p></div><small>Now</small></li>{% endif %}</ol></section>
+          <aside class="mk-job-next"><p class="mk-kicker">What happens next</p>{% if job.status == 'awaiting_review' %}<h2>A reviewer is checking the evidence.</h2><p>The structured case is complete. Delivery waits for the Verified review decision.</p>{% elif artifacts %}<h2>Your next decision is ready.</h2><p>Read the strongest routes, inspect what supports them, and choose what should become finished work.</p>{% for item in artifacts %}<a class="mk-button mk-button-primary" href="/app/artifacts/{{ item.id }}">Open the Chain <span aria-hidden="true">→</span></a>{% endfor %}{% elif job.status == 'failed' %}<h2>The Chain paused here.</h2><p>Nothing was promoted after the failure. Return to the Inbox and try a more direct source or question.</p><a class="mk-button mk-button-primary" href="/app/signals">Return to Inbox <span aria-hidden="true">→</span></a>{% else %}<h2>You can leave this page.</h2><p>Markov keeps the current state in Home. Return when a route is ready for your judgment.</p><a class="mk-button mk-button-quiet" href="/app">Back to Home</a>{% endif %}</aside>
         </div>
       </div>
     </main>
