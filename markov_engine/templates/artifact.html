@@ -13,7 +13,7 @@
 
       <div class="v3-case-shell">
         <header class="v3-case-heading">
-          <div><p class="v3-app-kicker">Idea workspace · Coverage checked {% if case.updated_at %}{{ case.updated_at.strftime("%b %d, %Y") }}{% else %}when this case was created{% endif %}</p><h1>{{ case.title }}</h1></div>
+          <div><p class="v3-app-kicker">Idea workspace · Landscape refreshed {% if case.updated_at %}{{ case.updated_at.strftime("%b %d, %Y") }}{% else %}when this case was created{% endif %}</p><h1>{{ case.title }}</h1></div>
           <p>Move from what already exists to the connection worth developing. Observations, interpretations, and unresolved work remain visibly separate.</p>
         </header>
 
@@ -69,11 +69,11 @@
                   <div><dt>What appears missing</dt><dd>{{ row.gaps[0].question if row.gaps else 'No explicit missing step has been recorded.' }}</dd></div>
                   <div><dt>Why this audience should care</dt><dd>{{ primary_connection.why_it_matters if primary_connection else 'Audience relevance needs a configured audience profile.' }}</dd></div>
                   <div><dt>Why now</dt><dd>{% if case.updated_at %}The source packet was last updated {{ case.updated_at.strftime("%b %d, %Y") }}. Freshness beyond that date has not been implied.{% else %}Freshness has not been recorded.{% endif %}</dd></div>
-                  <div><dt>Possible weakness</dt><dd>{{ row.insights[0].uncertainty if row.insights and row.insights[0].uncertainty else primary_connection.weakens if primary_connection and primary_connection.weakens else 'No weakness is recorded; review before developing.' }}</dd></div>
+                  <div><dt>What could weaken it</dt><dd>{{ row.insights[0].uncertainty if row.insights and row.insights[0].uncertainty else primary_connection.weakens if primary_connection and primary_connection.weakens else 'No weakness is recorded; review before developing.' }}</dd></div>
                 </dl>
                 <footer>
                   <button type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea →</button>
-                  {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="v3-app-quiet" type="submit">Investigate gap</button></form>{% endif %}
+                  {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="v3-app-quiet" type="submit">Develop the gap</button></form>{% endif %}
                   {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="v3-app-quiet" type="submit">Save</button></form><button class="v3-app-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
                 </footer>
                 {% if primary_connection %}<form class="v3-rejection-reason" method="post" action="/app/connections/{{ primary_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><label for="opportunity-reason-{{ row.topic.id }}">Why does this miss?</label><div><input id="opportunity-reason-{{ row.topic.id }}" name="reason" placeholder="Wrong audience, familiar thesis, weak mechanism…"><button type="submit">Dismiss and teach Markov</button></div></form>{% endif %}

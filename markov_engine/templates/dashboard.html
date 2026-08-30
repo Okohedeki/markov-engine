@@ -43,14 +43,14 @@
             <div class="v3-opportunity-list">
               {% for row in opportunity_rows[:3] %}
                 <article class="v3-opportunity-card" data-opportunity>
-                  <header><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Coverage checked {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</header>
+                  <header><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Landscape refreshed {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</header>
                   <div class="v3-opportunity-body">
                     <p class="v3-app-kicker">Proposed thesis</p>
                     <h3>{{ row.opportunity_thesis }}</h3>
                     <p>{{ row.opportunity_basis }}</p>
                     <dl class="v3-opportunity-context">
                       <div><dt>Signals analyzed</dt><dd>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }} · {{ row.connection_count }} connection{{ '' if row.connection_count == 1 else 's' }}</dd></div>
-                      <div><dt>Possible weakness</dt><dd>{{ row.opportunity_weakness | truncate(160) }}</dd></div>
+                      <div><dt>What could weaken it</dt><dd>{{ row.opportunity_weakness | truncate(160) }}</dd></div>
                     </dl>
                   </div>
                   <div class="v3-score-pair" aria-label="Separate opportunity assessments">
