@@ -1,218 +1,144 @@
 {% extends "base.html" %}
 {% block title %}{{ case.title }} — Markov{% endblock %}
-{% block body_class %}app-body case-workspace-body{% endblock %}
+{% block body_class %}app-body v3-app-body v3-idea-workspace-body{% endblock %}
 {% block body %}
-  <div class="app-frame case-app-frame">
+  <div class="v3-app-frame">
     {% include "partials/app_sidebar.html" %}
-    <main class="app-main case-main" id="main-content">
-      <header class="app-topbar case-topbar">
-        <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
-        <span class="breadcrumbs"><a href="/app/chains">Chains</a> / {{ case.title }}</span>
-        <div class="case-topbar-actions">
-          <span class="badge {{ artifact.status | badge_class }}">{{ artifact.status | humanize }}</span>
-          {% for format in entitlements.export_formats %}
-            <a class="case-export-link" href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}">Export {{ {'markdown':'Markdown','html':'HTML','json':'JSON'}[format] }}</a>
-          {% endfor %}
-        </div>
+    <main class="v3-app-main" id="main-content">
+      <header class="v3-app-topbar">
+        <a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
+        <span><a href="/app/ideas">IDEAS</a> / {{ case.title | truncate(56) }}</span>
+        <div class="v3-topbar-actions"><span>{{ 'Ready for review' if artifact.status == 'completed' else artifact.status | humanize }}</span>{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}">Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
       </header>
 
-      <div class="case-workspace">
-        <header class="case-heading">
-          <div>
-            <p class="eyebrow">Chain</p>
-            <h1>{{ case.title }}</h1>
-            {% set direction_count = topic_rows | length if topic_rows else gaps | length %}
-            <p class="case-deck">{{ sources | length }} source{{ '' if sources | length == 1 else 's' }} opened {{ direction_count }} direction{{ '' if direction_count == 1 else 's' }}. Choose one to investigate, compare, or carry into finished work.</p>
-          </div>
-          <button class="button-secondary case-compose-button" type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Create from this Chain</button>
+      <div class="v3-case-shell">
+        <header class="v3-case-heading">
+          <div><p class="v3-app-kicker">Idea workspace · Coverage checked {% if case.updated_at %}{{ case.updated_at.strftime("%b %d, %Y") }}{% else %}when this case was created{% endif %}</p><h1>{{ case.title }}</h1></div>
+          <p>Move from what already exists to the connection worth developing. Observations, interpretations, and unresolved work remain visibly separate.</p>
         </header>
 
-        <nav class="case-view-tabs" aria-label="Case workspace views" role="tablist">
-          <button id="case-tab-explore" type="button" role="tab" aria-selected="true" aria-controls="case-view-explore" data-case-view-tab="explore"><span>01</span>Explore</button>
-          <button id="case-tab-output" type="button" role="tab" aria-selected="false" aria-controls="case-view-output" data-case-view-tab="output"><span>02</span>Output</button>
-          <button id="case-tab-sources" type="button" role="tab" aria-selected="false" aria-controls="case-view-sources" data-case-view-tab="sources"><span>03</span>Sources <small>{{ sources | length }}</small></button>
+        <nav class="case-view-tabs v3-case-tabs" role="tablist" aria-label="Idea workspace views">
+          <button id="case-tab-landscape" type="button" role="tab" aria-selected="true" aria-controls="case-view-landscape" data-case-view-tab="landscape"><span>01</span>Landscape</button>
+          <button id="case-tab-opportunity" type="button" role="tab" aria-selected="false" aria-controls="case-view-opportunity" data-case-view-tab="opportunity" tabindex="-1"><span>02</span>Opportunity</button>
+          <button id="case-tab-brief" type="button" role="tab" aria-selected="false" aria-controls="case-view-brief" data-case-view-tab="brief" tabindex="-1"><span>03</span>Development brief</button>
+          <button id="case-tab-distribution" type="button" role="tab" aria-selected="false" aria-controls="case-view-distribution" data-case-view-tab="distribution" tabindex="-1"><span>04</span>Distribution plan</button>
+          <button id="case-tab-sources" type="button" role="tab" aria-selected="false" aria-controls="case-view-sources" data-case-view-tab="sources" tabindex="-1"><span>05</span>Sources</button>
         </nav>
 
-        <section class="case-view" id="case-view-explore" role="tabpanel" aria-labelledby="case-tab-explore" data-case-view="explore">
-          <div class="explore-layout">
-            <div class="branch-canvas">
-              <article class="origin-node">
-                <div class="origin-marker" aria-hidden="true"></div>
-                <div class="origin-copy">
-                  <span>Starting source · {{ case.input_type | humanize }}</span>
-                  <h2>{{ seed_source.title if seed_source and seed_source.title else case.title }}</h2>
-                  <p>{{ case.original_input }}</p>
-                </div>
-                {% if seed_source and seed_source.safe_url %}<a href="{{ seed_source.safe_url }}" target="_blank" rel="noopener">Open source ↗</a>{% endif %}
+        <section class="v3-case-view" id="case-view-landscape" role="tabpanel" aria-labelledby="case-tab-landscape" data-case-view="landscape">
+          <header class="v3-view-intro"><div><p class="v3-app-kicker">Existing landscape</p><h2>Separate the subject from the new angle.</h2></div><p>Markov shows the material it analyzed, what the starting source says, and which connections remain interpretation. It does not determine the final truth.</p></header>
+          <div class="v3-landscape-grid">
+            <article class="v3-landscape-seed">
+              <span>STARTING SIGNAL / {{ case.input_type | humanize }}</span>
+              <h3>{{ seed_source.title if seed_source and seed_source.title else case.title }}</h3>
+              <p>{{ case.original_input }}</p>
+              {% if seed_source and seed_source.safe_url %}<a href="{{ seed_source.safe_url }}" target="_blank" rel="noopener">Read source ↗</a>{% endif %}
+            </article>
+            <section class="v3-landscape-existing">
+              <header><span>Observed in the current source packet</span><small>{{ claim_rows | length }} important claims</small></header>
+              <ol>{% for row in claim_rows[:5] %}<li><span>{{ "%02d" | format(loop.index) }}</span><p>{{ row.claim.research_text }}</p><strong>{{ {'supported':'Supported','completed':'Supported','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Source interpretation','disputed':'Disputed','contradicted':'Contradicted'}.get(row.claim.verification_status, 'Needs verification') }}</strong></li>{% else %}<li><p>No important claim has been extracted yet.</p></li>{% endfor %}</ol>
+            </section>
+            <section class="v3-landscape-questions">
+              <header><span>Audience and research questions</span><small>{{ gaps | length }} open</small></header>
+              <ol>{% for gap in gaps[:5] %}<li><span>?</span><p>{{ gap.question }}</p><small>{{ gap.status | humanize }}</small></li>{% else %}<li><span>?</span><p>No explicit audience question has been recorded. Add one before treating demand as understood.</p><small>Input needed</small></li>{% endfor %}</ol>
+            </section>
+            <section class="v3-landscape-gap">
+              <header><span>Missing connections</span><small>{{ connection_rows | length }} candidate{{ '' if connection_rows | length == 1 else 's' }}</small></header>
+              {% for row in connection_rows[:4] %}<article><div><span>{{ row.connection.connection_type | humanize }}</span><strong>{{ row.connection.validation_status | humanize }}</strong></div><h3>{{ row.connection.statement }}</h3><p><b>Mechanism</b>{{ row.connection.mechanism or 'The mechanism has not been made explicit.' }}</p><p><b>Why it may matter</b>{{ row.connection.why_it_matters }}</p><footer><span>{{ row.connection.evidence_level | humanize }}</span><span>{{ row.evidence | length }} evidence passage{{ '' if row.evidence | length == 1 else 's' }}</span></footer></article>{% else %}<div class="v3-app-empty is-compact"><h3>No missing connection is ready.</h3><p>Deepen an important claim or add another signal to widen the landscape.</p></div>{% endfor %}
+            </section>
+            <aside class="v3-saturation-note"><span>Content saturation</span><strong>Not measured in this case</strong><p>Markov has not retained a complete enough coverage sample to score saturation. That absence is shown instead of replaced with an invented number.</p></aside>
+          </div>
+          <div class="v3-view-next"><p><strong>The landscape is context, not the destination.</strong> Review the proposed opportunities and decide which connection deserves development.</p><button type="button" data-case-view-jump="opportunity">Review idea opportunities →</button></div>
+        </section>
+
+        <section class="v3-case-view" id="case-view-opportunity" role="tabpanel" aria-labelledby="case-tab-opportunity" data-case-view="opportunity" hidden>
+          {% set opportunity_count = topic_rows | length if topic_rows else gaps | length %}
+          <header class="v3-view-intro"><div><p class="v3-app-kicker">Idea opportunities</p><h2>{{ opportunity_count }} direction{{ '' if opportunity_count == 1 else 's' }}, with the reasoning exposed.</h2></div><p>Information gain and audience relevance remain separate. A high score is a prompt to inspect the rationale—not a verdict.</p></header>
+          <div class="v3-detailed-opportunities">
+            {% for row in topic_rows %}
+              {% set primary_claim = row.claims[0].claim if row.claims else none %}
+              {% set primary_connection = connection_rows[loop.index0].connection if loop.index0 < connection_rows | length else connection_rows[0].connection if connection_rows else none %}
+              <article class="v3-detailed-opportunity" data-opportunity>
+                <header><span>{{ "%02d" | format(loop.index) }} / {{ row.rank_label }}</span><strong>{{ row.evidence_label }}</strong></header>
+                <div class="v3-detailed-thesis"><p class="v3-app-kicker">Proposed thesis</p><h3>{{ row.insights[0].thesis if row.insights else row.topic.focus }}</h3><p>{{ row.insights[0].novelty_basis if row.insights and row.insights[0].novelty_basis else primary_connection.why_it_matters if primary_connection else 'This direction still needs a clearly stated information-gain rationale.' }}</p></div>
+                <div class="v3-score-pair is-detail"><div><span>Information gain</span>{% if primary_connection and primary_connection.novelty > 0 %}<strong>{{ (primary_connection.novelty * 100) | round | int }}</strong><small>Typed-connection novelty</small>{% else %}<strong>—</strong><small>Not assessed</small>{% endif %}</div><div><span>Audience relevance</span>{% if primary_connection and primary_connection.relevance > 0 %}<strong>{{ (primary_connection.relevance * 100) | round | int }}</strong><small>Current relevance signal</small>{% else %}<strong>—</strong><small>Audience profile needed</small>{% endif %}</div></div>
+                <dl class="v3-opportunity-evidence">
+                  <div><dt>Signals that produced it</dt><dd>{% for source in row.sources[:3] %}{{ source.title or source.source_type | humanize }}{% if not loop.last %} · {% endif %}{% else %}Starting signal and {{ row.claims | length }} linked claim{{ '' if row.claims | length == 1 else 's' }}{% endfor %}</dd></div>
+                  <div><dt>Unexpected connection</dt><dd>{{ primary_connection.statement if primary_connection else row.topic.focus }}</dd></div>
+                  <div><dt>What existing coverage says</dt><dd>{{ row.claims[0].claim.research_text if row.claims else 'No dominant explanation is attached yet.' }}</dd></div>
+                  <div><dt>What appears missing</dt><dd>{{ row.gaps[0].question if row.gaps else 'No explicit missing step has been recorded.' }}</dd></div>
+                  <div><dt>Why this audience should care</dt><dd>{{ primary_connection.why_it_matters if primary_connection else 'Audience relevance needs a configured audience profile.' }}</dd></div>
+                  <div><dt>Why now</dt><dd>{% if case.updated_at %}The source packet was last updated {{ case.updated_at.strftime("%b %d, %Y") }}. Freshness beyond that date has not been implied.{% else %}Freshness has not been recorded.{% endif %}</dd></div>
+                  <div><dt>Possible weakness</dt><dd>{{ row.insights[0].uncertainty if row.insights and row.insights[0].uncertainty else primary_connection.weakens if primary_connection and primary_connection.weakens else 'No weakness is recorded; review before developing.' }}</dd></div>
+                </dl>
+                <footer>
+                  <button type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea →</button>
+                  {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="v3-app-quiet" type="submit">Investigate gap</button></form>{% endif %}
+                  {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="v3-app-quiet" type="submit">Save</button></form><button class="v3-app-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
+                </footer>
+                {% if primary_connection %}<form class="v3-rejection-reason" method="post" action="/app/connections/{{ primary_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><label for="opportunity-reason-{{ row.topic.id }}">Why does this miss?</label><div><input id="opportunity-reason-{{ row.topic.id }}" name="reason" placeholder="Wrong audience, familiar thesis, weak mechanism…"><button type="submit">Dismiss and teach Markov</button></div></form>{% endif %}
               </article>
-
-              <div class="branch-intro ranked-branch-intro">
-                <p class="eyebrow">Ranked directions</p>
-                <h2>{{ topic_rows | length if topic_rows else gaps | length }} possible paths. Start with the reason to care.</h2>
-                <p>Markov ranks support, originality, and consequence separately. Open one direction to inspect the claims, missing evidence, and sources behind it.</p>
-              </div>
-
-              <div class="branch-table-heading" aria-hidden="true"><span>Branch</span><span>Why it matters</span><span>Evidence</span><span>Action</span></div>
-              <ol class="ranked-branches">
-                {% for row in topic_rows %}
-                  {% set primary_claim = row.claims[0].claim if row.claims else none %}
-                  <li id="topic-{{ row.topic.id }}">
-                    <details class="ranked-branch">
-                      <summary>
-                        <div class="ranked-branch-title"><span>{{ "%02d" | format(loop.index) }} · {{ row.rank_label }}</span><strong>{{ row.topic.title }}</strong></div>
-                        <p>{{ (row.insights[0].thesis if row.insights else row.topic.focus) | truncate(165) }}</p>
-                        <span class="branch-evidence-state {{ row.evidence_class }}">{{ row.evidence_label }}</span>
-                        <span class="branch-review">Review <span aria-hidden="true">↓</span></span>
-                      </summary>
-                      <div class="ranked-branch-body">
-                        <div class="ranked-branch-brief">
-                          <section><span>Current question</span><p>{{ row.topic.focus }}</p></section>
-                          {% if row.insights %}<section><span>Possible output</span><p>{{ row.insights[0].thesis }}</p></section>{% endif %}
-                        </div>
-                        <div class="ranked-branch-support">
-                          <section>
-                            <h4>Claims this direction depends on</h4>
-                            <ul class="branch-claims">
-                              {% for claim_row in row.claims[:3] %}
-                                {% set state_copy = {'supported':'Independently supported','completed':'Independently supported','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Claim from the source','disputed':'Competing evidence','contradicted':'Competing evidence'}.get(claim_row.claim.verification_status, 'Needs verification') %}
-                                <li><p>{{ claim_row.claim.research_text }}</p><span class="plain-evidence-state">{{ state_copy }}</span></li>
-                              {% else %}<li class="branch-empty">No located claim is attached yet.</li>{% endfor %}
-                            </ul>
-                          </section>
-                          <section>
-                            <h4>What still needs answering</h4>
-                            <ul class="branch-gaps">
-                              {% for gap in row.gaps[:3] %}<li><span>Open question</span><p>{{ gap.question }}</p></li>{% else %}<li><span>Next question</span><p>{{ row.topic.focus }}</p></li>{% endfor %}
-                            </ul>
-                          </section>
-                        </div>
-                        {% if row.sources %}<div class="branch-source-strip"><span>Sources already attached</span>{% for source in row.sources[:3] %}{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Collected source' }} ↗</a>{% else %}<em>{{ source.title or 'Collected source' }}</em>{% endif %}{% endfor %}</div>{% endif %}
-                        <footer class="branch-actions">
-                          {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Investigate this direction</button></form>{% else %}<button class="button-secondary" type="button" disabled>Needs a claim to investigate</button>{% endif %}
-                          <button type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Use this direction in an output</button>
-                        </footer>
-                      </div>
-                    </details>
-                  </li>
-                {% else %}
-                  {% for gap in gaps[:8] %}
-                    <li><details class="ranked-branch"><summary><div class="ranked-branch-title"><span>{{ "%02d" | format(loop.index) }} · Needs more evidence</span><strong>{{ gap.question }}</strong></div><p>This open question can become a research direction after Markov attaches a focused claim and another source.</p><span class="branch-evidence-state is-open">Open question</span><span class="branch-review">Review ↓</span></summary><div class="ranked-branch-body"><footer class="branch-actions">{% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary" type="submit">Investigate this question</button></form>{% endif %}<button type="button" data-open-composer data-topic-id="" data-topic-title="Open question" data-topic-focus="{{ gap.question }}">Use this in an output</button></footer></div></details></li>
-                  {% else %}<li class="explore-empty"><strong>No direction is ready yet.</strong><span>Open the current output or investigate a claim to begin another research pass.</span></li>{% endfor %}
-                {% endfor %}
-              </ol>
-            </div>
-
-            <aside class="source-shelf" aria-labelledby="supplemental-source-title">
-              <div class="source-shelf-heading">
-                <p class="eyebrow">Collected along the way</p>
-                <h2 id="supplemental-source-title">Supplemental sources</h2>
-                <p>Reporting, papers, and primary material Markov found after the starting source.</p>
-              </div>
-              <ol>
-                {% for source in supplemental_sources %}
-                  <li>
-                    <div class="source-index">{{ '%02d' | format(loop.index) }}</div>
-                    <div>
-                      <span>{{ source.source_type | humanize }} · {{ source.case_source_role | humanize }}</span>
-                      {% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Untitled source' }}</a>{% else %}<strong>{{ source.title or 'Untitled source' }}</strong>{% endif %}
-                      <p>{{ source.publisher or source.source_quality_rationale or 'Source role retained in this case.' }}</p>
-                    </div>
-                  </li>
-                {% else %}
-                  <li class="source-shelf-empty">No supplemental source has been attached yet. Researching a branch will add the useful results here.</li>
-                {% endfor %}
-              </ol>
-              <button class="source-shelf-link" type="button" data-case-view-jump="sources">Review the full source packet</button>
-            </aside>
+            {% else %}
+              {% for gap in gaps[:5] %}<article class="v3-detailed-opportunity is-open"><header><span>{{ "%02d" | format(loop.index) }} / Open question</span><strong>Needs evidence</strong></header><div class="v3-detailed-thesis"><p class="v3-app-kicker">Possible direction</p><h3>{{ gap.question }}</h3><p>Markov has not yet attached enough independent material to call this an opportunity.</p></div><footer>{% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button type="submit">Investigate this question →</button></form>{% endif %}</footer></article>{% else %}<div class="v3-app-empty"><span>NO RANKED OPPORTUNITY</span><h3>The current material does not support a distinct direction yet.</h3><p>Add another signal or deepen an important claim.</p><a href="/app/signals">Add a signal →</a></div>{% endfor %}
+            {% endfor %}
           </div>
         </section>
 
-        <section class="case-view" id="case-view-output" role="tabpanel" aria-labelledby="case-tab-output" data-case-view="output" hidden>
-          {% set output_options = artifact.parameters or case.constraints or {} %}
-          <header class="editor-toolbar">
-            <div class="editor-toolbar-meta"><span>{{ artifact.artifact_type | humanize }}</span><span>Audience · {{ output_options.get('audience', 'General') }}</span><span>{{ artifact.word_count }} words</span><span class="editor-status">{{ 'Ready to publish' if artifact.status == 'completed' else artifact.status | humanize }}</span></div>
-            <nav aria-label="Export this output">{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}">{{ {'markdown':'Markdown','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</nav>
-            <button form="output-editor-form" name="action" value="finish" type="submit">Review and finish</button>
-          </header>
-
-          <div class="finished-workspace">
-            <aside class="document-outline">
-              <p class="eyebrow">Document outline</p>
-              <nav aria-label="Move to a document section">{% for section in sections %}<button type="button" data-editor-find="{{ section.title }}"><span>{{ "%02d" | format(loop.index) }}</span>{{ section.title }}</button>{% else %}<button type="button" data-editor-find="#"><span>01</span>Document</button>{% endfor %}</nav>
-              <div class="output-versions"><p class="eyebrow">Other outputs</p>{% for item in case_artifacts %}<a href="/app/artifacts/{{ item.id }}#output" {% if item.id == artifact.id %}aria-current="page"{% endif %}>{{ item.artifact_type | humanize }}{% if item.branch_key %}<small>{{ item.branch_key | replace(':', ' ') | humanize }}</small>{% endif %}</a>{% endfor %}</div>
-            </aside>
-
-            <form class="document-editor" id="output-editor-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit">
-              <header>
-                <span>Working document</span>
-                <h1>{{ artifact.title }}</h1>
-                <p>The deliverable is separate from the research behind it. Edit the work here; use the right margin to resolve what could weaken it.</p>
-              </header>
-              <label class="visually-hidden" for="output-content">Edit the output in Markdown</label>
-              <textarea id="output-content" name="content" data-output-editor spellcheck="true" required>{{ artifact.content }}</textarea>
-              <footer><span>Markdown · claim markers and citations remain inspectable</span><button class="button-secondary" name="action" value="save" type="submit">Save revision</button></footer>
+        <section class="v3-case-view" id="case-view-brief" role="tabpanel" aria-labelledby="case-tab-brief" data-case-view="brief" hidden>
+          <header class="v3-brief-toolbar"><div><span>{{ 'Development brief' if artifact.artifact_type == 'brief' else artifact.artifact_type | humanize }}</span><span>{{ artifact.word_count }} words</span><span>{{ 'Ready for review' if artifact.status == 'completed' else artifact.status | humanize }}</span></div><button form="v3-brief-form" name="action" value="finish" type="submit">Mark brief reviewed</button></header>
+          <div class="v3-brief-workspace">
+            <aside class="v3-brief-outline"><p class="v3-app-kicker">Brief structure</p><nav aria-label="Development brief sections">{% for section in sections %}<a href="#brief-section-{{ loop.index0 }}"><span>{{ "%02d" | format(loop.index) }}</span>{{ section.title }}</a>{% else %}<a href="#brief-section-0"><span>01</span>Working brief</a>{% endfor %}</nav><div class="v3-version-list"><span>Version history</span>{% for version in artifact_versions | reverse %}<p><strong>V{{ version.version }}</strong>{{ version.change_kind | humanize }}{% if version.created_at %}<small>{{ version.created_at }}</small>{% endif %}</p>{% else %}<p><strong>V1</strong>Initial artifact</p>{% endfor %}</div></aside>
+            <form class="v3-structured-brief" id="v3-brief-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit">
+              <header><p class="v3-app-kicker">Editable creative scaffolding</p><h2>{{ artifact.title }}</h2><p>Shape the reasoning and structure here. Markov keeps the final language in your hands.</p></header>
+              {% for section in sections %}<section id="brief-section-{{ loop.index0 }}"><div><label for="section-{{ loop.index0 }}">{{ section.title }}</label><span>Structured section</span></div><input type="hidden" name="section_title_{{ loop.index0 }}" value="{{ section.title }}"><textarea id="section-{{ loop.index0 }}" name="section_{{ loop.index0 }}" rows="{{ 8 if section.content | length > 500 else 5 }}" required>{{ section.content }}</textarea></section>{% else %}<section id="brief-section-0"><div><label for="brief-content">Working brief</label><span>Structured section</span></div><textarea id="brief-content" name="content" rows="18" required>{{ artifact.content }}</textarea></section>{% endfor %}
+              <footer><span>Saving creates a new version. Sources and decisions remain attached.</span><button class="v3-app-primary" name="action" value="save" type="submit">Save revision</button></footer>
             </form>
-
-            <aside class="evidence-margin" id="output-evidence">
-              <section class="evidence-legend"><p class="eyebrow">Review margin</p><h2>What could change the work.</h2><p><span class="marker-supported">Supported</span><span class="marker-interpretation">Interpretation</span><span class="marker-unresolved">Unresolved</span></p></section>
-              <section>
-                <h2>Claims to review · {{ claim_rows | length }}</h2>
-                {% for row in claim_rows[:8] %}
-                  {% set review_copy = {'supported':'Independently supported','completed':'Independently supported','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Interpretation from the source','disputed':'Competing evidence exists','contradicted':'Competing evidence exists'}.get(row.claim.verification_status, 'Needs verification') %}
-                  <details class="margin-claim"><summary><span>{{ review_copy }}</span>{{ row.claim.research_text }}</summary>{% for link in row.evidence[:2] %}<blockquote>{{ link.evidence.passage_text if link.evidence else 'No source passage was retained.' }}<cite>{{ link.evidence | locator if link.evidence else 'No locator' }} · {{ link.stance | humanize }}</cite></blockquote>{% else %}<p>No independent passage is attached yet.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="button-secondary button-small" type="submit">Check this claim</button></form></details>
-                {% else %}<p class="empty">No claim warning is attached.</p>{% endfor %}
-              </section>
-              <section>
-                <h2>Open questions · {{ gaps | length }}</h2>
-                <ul>{% for gap in gaps[:6] %}<li>{{ gap.question }}<small>Unresolved</small></li>{% else %}<li>No explicit research gap remains.</li>{% endfor %}</ul>
-              </section>
-              <section><button class="button-secondary" type="button" data-open-composer data-topic-id="" data-topic-title="New direction" data-topic-focus="">Create another output</button></section>
+            <aside class="v3-brief-review">
+              <header><p class="v3-app-kicker">Review margin</p><h2>Keep the idea distinctive.</h2><p><span class="is-observed">Observed</span><span class="is-interpreted">Interpretation</span><span class="is-open">Open</span></p></header>
+              <section><h3>Claims to check · {{ claim_rows | length }}</h3>{% for row in claim_rows[:5] %}<details><summary><span>{{ {'supported':'Observed support','completed':'Observed support','partially_supported':'Mixed evidence','qualified':'Mixed evidence','opinion_or_inference':'Interpretation','disputed':'Disputed','contradicted':'Contradicted'}.get(row.claim.verification_status, 'Open') }}</span>{{ row.claim.research_text }}</summary>{% for link in row.evidence[:2] %}<blockquote>{{ link.evidence.passage_text if link.evidence else 'No source passage retained.' }}<cite>{{ link.evidence | locator if link.evidence else 'No locator' }}</cite></blockquote>{% else %}<p>No independent passage is attached.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button type="submit">Investigate claim</button></form></details>{% else %}<p>No claim review is attached.</p>{% endfor %}</section>
+              <section><h3>Questions requiring work · {{ gaps | length }}</h3><ul>{% for gap in gaps[:5] %}<li><span>Open</span>{{ gap.question }}</li>{% else %}<li>No explicit research gap remains.</li>{% endfor %}</ul></section>
+              <section class="v3-generic-warning"><h3>What would make this generic?</h3><p>Removing the mechanism, audience-specific consequence, competing explanation, or evidence boundary would collapse the idea back into common coverage.</p></section>
             </aside>
           </div>
         </section>
 
-        <section class="case-view" id="case-view-sources" role="tabpanel" aria-labelledby="case-tab-sources" data-case-view="sources" hidden>
-          <header class="source-library-heading">
-            <div><p class="eyebrow">Source packet</p><h2>Everything collected for this case.</h2></div>
-            <p>The starting source stays separate from the reporting, data, papers, and commentary Markov collected to test or extend it.</p>
-          </header>
-          <div class="source-library">
-            {% for source in sources %}
-              <article class="source-library-item{% if source is sameas seed_source %} is-seed{% endif %}">
-                <div class="source-library-index">{{ '%02d' | format(loop.index) }}</div>
-                <div class="source-library-copy">
-                  <span>{{ 'Starting source' if source is sameas seed_source else source.case_source_role | humanize }} · {{ source.source_type | humanize }}</span>
-                  <h3>{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Untitled source' }} ↗</a>{% else %}{{ source.title or 'Untitled source' }}{% endif %}</h3>
-                  <p>{{ source.publisher or source.author or source.source_quality_rationale or 'No publisher metadata retained.' }}</p>
-                </div>
-                <div class="source-library-quality"><span class="badge badge-neutral">{{ source.source_quality or 'unclassified' | humanize }}</span></div>
-              </article>
-            {% else %}<p class="empty">No source packet is available.</p>{% endfor %}
+        <section class="v3-case-view" id="case-view-distribution" role="tabpanel" aria-labelledby="case-tab-distribution" data-case-view="distribution" hidden>
+          <header class="v3-view-intro"><div><p class="v3-app-kicker">Distribution plan</p><h2>Let each channel add something to the idea.</h2></div><p>These are strategic treatments and sequence recommendations—not finished posts or scripts.</p></header>
+          {% set plan_thesis = insights[0].thesis if insights else topics[0].focus if topics else case.title %}
+          <div class="v3-distribution-grid">
+            <section class="v3-flagship-plan"><header><span>01 / Canonical piece</span><strong>Flagship</strong></header><p class="v3-app-kicker">Core thesis</p><h3>{{ plan_thesis }}</h3><dl><div><dt>Job</dt><dd>Own the full argument, mechanism, counterargument, and evidence boundary.</dd></div><div><dt>Must remain distinctive</dt><dd>The unexpected connection and the audience-specific consequence.</dd></div><div><dt>Referenceability</dt><dd>Use explicit definitions, primary-source links, and a clear statement of what would change the conclusion.</dd></div></dl></section>
+            <ol class="v3-channel-treatments">
+              <li><span>02</span><div><small>Newsletter</small><h3>Invite the informed reader into the unresolved question.</h3><p>Add a concise editor’s note, one useful chart or comparison, and a reply prompt that can improve the next iteration.</p></div><strong>Week 1</strong></li>
+              <li><span>03</span><div><small>Podcast</small><h3>Use disagreement to test the mechanism.</h3><p>Structure the conversation around the strongest competing explanation and the evidence each side would accept.</p></div><strong>Week 2</strong></li>
+              <li><span>04</span><div><small>YouTube / video essay</small><h3>Make the missing connection visible.</h3><p>Use a mechanism sequence, source roles, and a closing research question rather than a finished-script handoff.</p></div><strong>Week 2</strong></li>
+              <li><span>05</span><div><small>Short video</small><h3>Open one distinction without flattening the thesis.</h3><p>Contrast the repeated answer with the overlooked buyer, actor, or consequence, then point to the canonical piece.</p></div><strong>Week 3</strong></li>
+              <li><span>06</span><div><small>LinkedIn / social</small><h3>Turn the audience’s response into new signal.</h3><p>Ask a precise question that reveals missing examples, useful disagreement, or language the audience actually uses.</p></div><strong>Week 3</strong></li>
+            </ol>
+            <aside class="v3-distribution-notes"><section><span>Recommended sequence</span><p>Flagship → newsletter → long-form discussion → short-form distinctions → audience-response follow-up.</p></section><section><span>AEO and information gain</span><p>Publish the missing mechanism clearly enough to cite. Do not optimize a vague restatement of the same saturated answer.</p></section><section><span>Feedback to monitor</span><p>Qualified disagreement, new audience questions, reference links, search visibility, and whether AI answers begin to include the missing connection.</p></section></aside>
           </div>
+        </section>
+
+        <section class="v3-case-view" id="case-view-sources" role="tabpanel" aria-labelledby="case-tab-sources" data-case-view="sources" hidden>
+          <header class="v3-view-intro"><div><p class="v3-app-kicker">Sources and provenance</p><h2>Everything Markov analyzed for this idea.</h2></div><p>Starting material remains separate from reporting, papers, primary data, and commentary collected to test or extend it.</p></header>
+          <div class="v3-source-table">{% for source in sources %}<article class="{% if source is sameas seed_source %}is-seed{% endif %}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ 'Starting signal' if source is sameas seed_source else source.case_source_role | humanize }} / {{ source.source_type | humanize }}</small><h3>{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener">{{ source.title or 'Untitled source' }} ↗</a>{% else %}{{ source.title or 'Untitled source' }}{% endif %}</h3><p>{{ source.publisher or source.author or source.source_quality_rationale or 'No publisher metadata retained.' }}</p></div><strong>{{ source.source_quality or 'Unclassified' | humanize }}</strong></article>{% else %}<div class="v3-app-empty"><h3>No source packet is available.</h3><p>Add a signal or deepen a claim.</p></div>{% endfor %}</div>
         </section>
       </div>
     </main>
   </div>
 
-  <dialog class="output-composer" data-output-composer aria-labelledby="composer-title">
+  <dialog class="v3-idea-composer" data-output-composer aria-labelledby="composer-title">
     <form method="post" action="/app/cases/{{ case.id }}/convert">
-      <div class="composer-header">
-        <div><p class="eyebrow">Guided creation</p><h2 id="composer-title">Shape this branch into finished work.</h2><p data-composer-context>Choose the direction before Markov writes.</p></div>
-        <button class="composer-close" type="button" data-close-composer aria-label="Close guided creation">×</button>
+      <header><div><p class="v3-app-kicker">Develop this idea</p><h2 id="composer-title">Turn the direction into creative scaffolding.</h2><p data-composer-context>Choose the direction before Markov builds the brief.</p></div><button type="button" data-close-composer aria-label="Close idea development">×</button></header>
+      <input type="hidden" name="selected_topic_id" value="" data-composer-topic><input type="hidden" name="review_level" value="instant">
+      <div class="v3-composer-fields">
+        <label><span>Development mode</span><select name="mode"><option value="brief">Development brief</option><option value="research">Deeper landscape report</option></select></label>
+        <label class="is-wide"><span>Working thesis or question</span><textarea name="angle" rows="3" required data-composer-angle placeholder="What should this direction test or explain?"></textarea><small>Markov treats this as a direction to test, not a conclusion.</small></label>
+        <label><span>Audience</span><input name="audience" value="the audience defined in this workspace"></label>
+        <label><span>Flagship format</span><select name="delivery_format"><option>Company article</option><option>Newsletter essay</option><option>Podcast episode</option><option>YouTube essay</option><option>AEO reference page</option></select></label>
+        <label class="is-wide"><span>Audience promise</span><input name="desired_takeaway" placeholder="What useful understanding should the audience leave with?"></label>
+        <fieldset class="is-wide"><legend>When an essential gap remains</legend><label><input type="radio" name="evidence_boundary" value="keep_gaps_visible" checked><span><strong>Keep it visible</strong>Preserve the unresolved question in the brief.</span></label><label><input type="radio" name="evidence_boundary" value="block_on_gaps"><span><strong>Stop at the gap</strong>Do not build structure past an unsupported link.</span></label></fieldset>
       </div>
-      <input type="hidden" name="selected_topic_id" value="" data-composer-topic>
-      <input type="hidden" name="review_level" value="instant">
-      <div class="composer-fields">
-        <div class="field"><label for="composer-mode">Output</label><select id="composer-mode" name="mode"><option value="script">Script</option><option value="research">Research report</option><option value="brief">Brief</option></select></div>
-        <div class="field composer-field-wide"><label for="composer-angle">Working angle or question</label><textarea id="composer-angle" name="angle" rows="3" required data-composer-angle placeholder="What should this branch test or explain?"></textarea><span class="field-hint">Markov will test this direction against the case. It will not treat it as a conclusion.</span></div>
-        <div class="field"><label for="composer-audience">Audience</label><input id="composer-audience" name="audience" value="curious adults who want an evidence-led explanation"></div>
-        <div class="field"><label for="composer-minutes">Target minutes</label><input id="composer-minutes" name="target_minutes" type="number" min="1" max="60" value="8"></div>
-        <div class="field"><label for="composer-format">Delivery format</label><select id="composer-format" name="delivery_format"><option>YouTube essay</option><option>Short documentary</option><option>Podcast segment</option><option>Written analysis</option><option>AEO answer</option></select></div>
-        <div class="field"><label for="composer-tone">Tone</label><input id="composer-tone" name="tone" value="clear, skeptical, and humane"></div>
-        <div class="field composer-field-wide"><label for="composer-takeaway">Desired takeaway to test</label><input id="composer-takeaway" name="desired_takeaway" placeholder="What should the audience understand by the end?"></div>
-        <fieldset class="composer-boundary composer-field-wide"><legend>When an essential gap remains</legend><label><input type="radio" name="evidence_boundary" value="keep_gaps_visible" checked><span><strong>Draft with caveats</strong>Keep the unresolved step visible in the script.</span></label><label><input type="radio" name="evidence_boundary" value="block_on_gaps"><span><strong>Stop before the gap</strong>Do not draft past an unsupported essential link.</span></label></fieldset>
-      </div>
-      <footer class="composer-actions"><span>The new output remains inside this case as its own topic branch.</span><button type="submit">Build this direction</button></footer>
+      <footer><p>You own the final thesis and language. Markov supplies structure, evidence roles, and questions.</p><button type="submit">Build the structured brief →</button></footer>
     </form>
   </dialog>
 {% endblock %}
