@@ -1,9 +1,11 @@
-<header class="public-header">
-  <a class="wordmark" href="{{ site_base }}/" aria-label="Markov home">MARKOV</a>
-  <nav class="public-nav" aria-label="Primary navigation">
-    <a href="{{ site_base }}/#product">Product</a>
+<header class="v3-site-header" data-site-header>
+  <a class="v3-wordmark" href="{{ site_base }}/" aria-label="Markov home"><span aria-hidden="true"></span>MARKOV</a>
+  <button class="v3-nav-toggle" type="button" aria-expanded="false" aria-controls="v3-primary-nav" data-nav-toggle><span>Menu</span><i aria-hidden="true"></i></button>
+  <nav class="v3-site-nav" id="v3-primary-nav" aria-label="Primary navigation" data-site-nav>
+    <a href="{{ site_base }}/#how-it-works">How it works</a>
+    <a href="{{ site_base }}/#who-its-for">Who it’s for</a>
     <a href="{{ site_base }}/pricing/">Pricing</a>
-    <a href="{{ site_base }}/developers/">Developers</a>
-    <a class="button button-small button-secondary" href="{{ workspace_url }}">{{ workspace_label }}</a>
+    <a href="{{ site_base }}/developers/">API</a>
+    <a class="v3-nav-signin" href="{{ workspace_url }}">{{ workspace_label }}</a>
   </nav>
 </header>
