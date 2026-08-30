@@ -1,12 +1,18 @@
 (() => {
-  const modes = document.querySelectorAll('[data-mode-picker] input[name="mode"]');
-  const scriptFields = document.querySelectorAll('[data-script-fields]');
-  if (modes.length && scriptFields.length) {
-    const advancedOptions = document.querySelector('[data-advanced-options]');
-    const syncMode = () => {
-      const selected = document.querySelector('[data-mode-picker] input[name="mode"]:checked');
-      scriptFields.forEach((field) => {
-        field.hidden = !selected || selected.value !== 'script';
+  "use strict";
+
+  const on = (element, event, handler) => element?.addEventListener(event, handler);
+  const all = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+  const activateTab = (tabs, selected, panelSelector, value) => {
+    tabs.forEach((tab) => {
+      const active = tab === selected;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    if (panelSelector) {
+      all(panelSelector).forEach((panel) => {
+        panel.hidden = panel.dataset.caseView !== value;
       });
     }
   };
