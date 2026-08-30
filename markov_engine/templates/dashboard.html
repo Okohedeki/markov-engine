@@ -1,102 +1,117 @@
 {% extends "base.html" %}
-{% block title %}Idea opportunities — Markov{% endblock %}
-{% block body_class %}app-body v3-app-body{% endblock %}
+{% block title %}Research desk — Markov{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/markov-dashboard.css">{% endblock %}
+{% block body_class %}app-body v3-app-body v4-dashboard-body{% endblock %}
 {% block body %}
+  {% set focus = ready[0] if ready else none %}
   <div class="v3-app-frame">
     {% include "partials/app_sidebar.html" %}
     <main class="v3-app-main" id="main-content">
-      <header class="v3-app-topbar">
+      <header class="v3-app-topbar v4-dashboard-topbar">
         <a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
-        <span>HOME / OPPORTUNITY FEED</span>
-        <a href="#add-signal">Add a signal <span aria-hidden="true">＋</span></a>
+        <span>HOME / RESEARCH DESK</span>
+        <a href="#add-signal">New signal <span aria-hidden="true">＋</span></a>
       </header>
 
-      <div class="v3-app-content v3-home">
-        <header class="v3-home-intro">
-          <div><p class="v3-app-kicker">Editorial opportunity desk</p><h1>Find what should be published next.</h1></div>
-          <p>Add a source, question, observation, or emerging development. Markov compares it with existing coverage, your previous work, and your audience to find underdeveloped ideas.</p>
+      <div class="v4-dashboard">
+        <header class="v4-dashboard-heading">
+          <div>
+            <p class="v3-app-kicker">Research command center</p>
+            <h1>Decide what to research next.</h1>
+            <p>Capture a source or question. Markov ranks the strongest supported direction and keeps its evidence attached.</p>
+          </div>
+          <dl class="v4-workspace-totals" aria-label="Workspace totals">
+            <div><dt>Chains</dt><dd>{{ cases | length }}</dd></div>
+            <div><dt>Sources</dt><dd>{{ cases | sum(attribute='source_count') }}</dd></div>
+            <div><dt>Directions</dt><dd>{{ cases | sum(attribute='topic_count') }}</dd></div>
+            <div><dt>Outputs</dt><dd>{{ outputs | length }}</dd></div>
+          </dl>
         </header>
 
-        <form class="v3-signal-capture" id="add-signal" method="post" action="/app/jobs">
-          <div class="v3-capture-label"><label for="signal-input">Add a signal</label><span>Raw material, not saved knowledge</span></div>
+        <form class="v4-quick-capture" id="add-signal" method="post" action="/app/jobs">
+          <div class="v4-capture-prompt">
+            <span aria-hidden="true">＋</span>
+            <div><label for="signal-input">Add a signal</label><small>A source, question, observation, or topic</small></div>
+          </div>
           <div class="v3-signal-types" role="group" aria-label="Signal type">
             <button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste an article, video, podcast, or document URL…">URL</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Write the observation you do not want to lose…">Observation</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="What question keeps returning in your audience?">Question</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Write the observation you do not want to lose…">Note</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="What question keeps returning?">Question</button>
             <button type="button" aria-pressed="false" data-signal-type data-placeholder="Name a topic Markov should scan…">Topic</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Paste an existing draft or content brief…">Existing brief</button>
-            <button type="button" disabled title="Direct file upload is not enabled in this QA build">Upload <small>soon</small></button>
           </div>
-          <div class="v3-capture-row">
+          <div class="v4-capture-input">
             <input id="signal-input" name="value" type="text" data-signal-input placeholder="Paste an article, video, podcast, or document URL…" required>
             <input type="hidden" name="mode" value="research">
             <input type="hidden" name="review_level" value="instant">
-            <button type="submit">Find idea opportunities <span aria-hidden="true">→</span></button>
+            <button type="submit" aria-label="Analyze signal">Analyze <span aria-hidden="true">→</span></button>
           </div>
-          <p class="v3-capture-scope"><span>Markov will compare</span> the signal, current coverage, existing ideas, and your audience profile. You choose what gets developed.</p>
         </form>
 
-        {% set opportunity_rows = ready if ready else cases %}
-        <div class="v3-home-grid">
-          <section class="v3-opportunity-feed" aria-labelledby="opportunity-feed-title">
-            <header class="v3-app-section-head"><div><p class="v3-app-kicker">New opportunities for your audience</p><h2 id="opportunity-feed-title">Worth a decision now.</h2></div><span>{{ opportunity_rows | length }}</span></header>
-            <div class="v3-opportunity-list">
-              {% for row in opportunity_rows[:3] %}
-                <article class="v3-opportunity-card" data-opportunity>
-                  <header><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Landscape refreshed {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</header>
-                  <div class="v3-opportunity-body">
-                    <p class="v3-app-kicker">Proposed thesis</p>
-                    <h3>{{ row.opportunity_thesis }}</h3>
-                    <p>{{ row.opportunity_basis }}</p>
-                    <dl class="v3-opportunity-context">
-                      <div><dt>Signals analyzed</dt><dd>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }} · {{ row.connection_count }} connection{{ '' if row.connection_count == 1 else 's' }}</dd></div>
-                      <div><dt>What could weaken it</dt><dd>{{ row.opportunity_weakness | truncate(160) }}</dd></div>
-                    </dl>
-                  </div>
-                  <div class="v3-score-pair" aria-label="Separate opportunity assessments">
-                    <div><span>Information gain</span>{% if row.information_gain is not none %}<strong>{{ row.information_gain }}</strong><small>Connection novelty</small>{% else %}<strong>—</strong><small>Landscape scan pending</small>{% endif %}</div>
-                    <div><span>Audience relevance</span>{% if row.audience_relevance is not none %}<strong>{{ row.audience_relevance }}</strong><small>Demand fit</small>{% else %}<strong>—</strong><small>Audience profile needed</small>{% endif %}</div>
-                  </div>
-                  <footer>
-                    {% if row.destination %}<a class="v3-app-primary" href="{{ row.destination }}">Develop this idea <span aria-hidden="true">→</span></a>{% endif %}
-                    {% if row.first_connection %}
-                      <form method="post" action="/app/connections/{{ row.first_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_to" value="/app"><button class="v3-app-quiet" type="submit">Save</button></form>
-                      <button class="v3-app-quiet" type="button" data-reject-opportunity>Not relevant</button>
-                    {% endif %}
-                  </footer>
-                  {% if row.first_connection %}<form class="v3-rejection-reason" method="post" action="/app/connections/{{ row.first_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_to" value="/app"><label for="reason-{{ row.case.id }}">Why does this miss?</label><div><input id="reason-{{ row.case.id }}" name="reason" placeholder="Wrong audience, familiar idea, weak connection…"><button type="submit">Dismiss and teach Markov</button></div></form>{% endif %}
-                </article>
-              {% else %}
-                <div class="v3-app-empty"><span>NO OPPORTUNITIES YET</span><h3>Start with one signal.</h3><p>Markov will map what already exists before it recommends a direction.</p><a href="#add-signal">Add your first signal →</a></div>
-              {% endfor %}
-            </div>
-          </section>
+        <div class="v4-dashboard-grid">
+          <section class="v4-priority" aria-labelledby="priority-title">
+            <header class="v4-section-heading">
+              <div><p class="v3-app-kicker">Priority direction</p><h2 id="priority-title">The next decision</h2></div>
+              <a href="/app/ideas">View all Chains <span aria-hidden="true">→</span></a>
+            </header>
 
-          <aside class="v3-progress-rail" aria-labelledby="progress-title">
-            <header><p class="v3-app-kicker">Ideas emerging from recent signals</p><h2 id="progress-title">Current scans</h2></header>
-            {% for row in in_progress[:3] %}
-              <article>
-                <span class="v3-processing-dot" aria-hidden="true"></span>
-                <h3>{{ row.case.title }}</h3>
-                <p>{{ row.finding }}</p>
-                <ol>{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}</ol>
-                <a href="{{ row.destination }}">See scan progress →</a>
+            {% if focus %}
+              <article class="v4-priority-card">
+                <div class="v4-priority-copy">
+                  <div class="v4-priority-meta">
+                    <span>{{ focus.source_label }}</span>
+                    {% if focus.updated_at %}<time datetime="{{ focus.updated_at.isoformat() }}">Updated {{ focus.updated_at.strftime("%b %d") }}</time>{% endif %}
+                  </div>
+                  <p class="v4-card-label"><span aria-hidden="true"></span> Strongest supported direction</p>
+                  <h3>{{ focus.opportunity_thesis }}</h3>
+                  <p class="v4-priority-basis">{{ focus.opportunity_basis }}</p>
+                  <dl class="v4-priority-evidence">
+                    <div><dt>Research packet</dt><dd>{{ focus.source_count }} source{{ '' if focus.source_count == 1 else 's' }} · {{ focus.connection_count }} connection{{ '' if focus.connection_count == 1 else 's' }}</dd></div>
+                    <div><dt>What could weaken it</dt><dd>{{ focus.opportunity_weakness | truncate(180) }}</dd></div>
+                  </dl>
+                  <footer>
+                    {% if focus.destination %}<a class="v4-primary-action" href="{{ focus.destination }}">Open this direction <span aria-hidden="true">→</span></a>{% endif %}
+                    <span>Evidence remains attached through development.</span>
+                  </footer>
+                </div>
+                <aside class="v4-priority-scores" aria-label="Opportunity assessments">
+                  <div><span>Information gain</span><strong>{{ focus.information_gain if focus.information_gain is not none else '—' }}</strong><small>{{ 'Connection novelty' if focus.information_gain is not none else 'Pending scan' }}</small></div>
+                  <div><span>Audience relevance</span><strong>{{ focus.audience_relevance if focus.audience_relevance is not none else '—' }}</strong><small>{{ 'Demand fit' if focus.audience_relevance is not none else 'Profile needed' }}</small></div>
+                </aside>
               </article>
             {% else %}
-              <div class="v3-rail-empty"><span aria-hidden="true"></span><p>No landscape scan is running. Add a signal when something changes.</p></div>
-            {% endfor %}
-            <div class="v3-coverage-note"><span>How recommendations work</span><p>Markov separates observed coverage from interpretation and never treats an unexplained score as a conclusion.</p><a href="/app/onboarding">Review audience profile →</a></div>
+              <div class="v4-empty-priority">
+                <span aria-hidden="true"></span>
+                <div><h3>No supported direction is ready yet.</h3><p>Add a signal or revisit a Chain that needs attention. Markov will reserve this space for a direction with an inspectable research basis.</p><a href="#add-signal">Add a signal <span aria-hidden="true">→</span></a></div>
+              </div>
+            {% endif %}
+          </section>
+
+          <aside class="v4-research-rail" aria-label="Research activity">
+            <section class="v4-scan-queue" aria-labelledby="scan-queue-title">
+              <header><div><p class="v3-app-kicker">Live research</p><h2 id="scan-queue-title">Scan queue</h2></div><span>{{ in_progress | length }}</span></header>
+              {% for row in in_progress[:2] %}
+                <article>
+                  <div class="v4-live-state"><span aria-hidden="true"></span>In progress</div>
+                  <h3>{{ row.case.title }}</h3>
+                  <p>{{ row.finding }}</p>
+                  <ol>{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}</ol>
+                  <a href="{{ row.destination }}">Open progress <span aria-hidden="true">→</span></a>
+                </article>
+              {% else %}
+                <div class="v4-queue-clear"><span aria-hidden="true"></span><strong>Queue clear</strong><p>No research job is running. Your saved Chains are ready to continue.</p></div>
+              {% endfor %}
+            </section>
+
+            <section class="v4-recent-chains" aria-labelledby="recent-chains-title">
+              <header><p class="v3-app-kicker">Continue</p><h2 id="recent-chains-title">Recent Chains</h2></header>
+              <div>
+                {% for row in cases[:3] %}
+                  <a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ row.source_count }} sources · {{ row.topic_count }} directions</small><h3>{{ row.case.title }}</h3></div><strong aria-hidden="true">→</strong></a>
+                {% else %}<p class="v4-no-chains">Saved research will appear here.</p>{% endfor %}
+              </div>
+            </section>
           </aside>
         </div>
-
-        <section class="v3-home-ledger" aria-labelledby="continue-title">
-          <header class="v3-app-section-head"><div><p class="v3-app-kicker">Continue developing</p><h2 id="continue-title">Ideas already in motion.</h2></div><a href="/app/ideas">View all ideas →</a></header>
-          <div>
-            {% for row in cases[:4] %}
-              <a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ row.source_count }} signals · {{ row.topic_count }} opportunities</small><h3>{{ row.case.title }}</h3></div><p>{{ row.next_action }}</p><strong>{{ row.action_label }} →</strong></a>
-            {% else %}<div class="v3-app-empty is-compact"><h3>No idea is in development.</h3><p>Saved opportunities will appear here.</p></div>{% endfor %}
-          </div>
-        </section>
       </div>
     </main>
   </div>
