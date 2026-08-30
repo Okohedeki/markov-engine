@@ -676,7 +676,7 @@ textarea { min-height: 150px; resize: vertical; }
 .outcome-branches p { color: var(--ink-soft); }
 .sample-output { background: #fafafe; }
 
-/* Workspace intake as one guided trail */
+/* Dashboard: a capture rail above the user's living research trails */
 .app-body { background: var(--paper); }
 .dashboard-content { max-width: 1320px; padding-top: clamp(2.5rem, 4vw, 3rem); }
 .topbar-action { color: var(--ink-soft); font-size: .78rem; margin-left: auto; text-decoration: none; }
