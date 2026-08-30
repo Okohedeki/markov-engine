@@ -1,34 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Pricing — Markov{% endblock %}
-{% block description %}Choose a hosted Markov workspace for finding, developing, and distributing original ideas. Every plan keeps sources, uncertainty, and reasoning visible.{% endblock %}
-{% block body_class %}v3-public v3-support-body{% endblock %}
+{% block description %}Choose Markov capacity for the amount of factual research and finished work you produce. Evidence and uncertainty are never premium features.{% endblock %}
+{% block body_class %}mk-public-page mk-support-page{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
-  <main class="v3-support-main" id="main-content">
-    <section class="v3-support-hero">
-      <div><p class="v3-kicker">Pricing</p><h1>Scale the editorial work.<br>Keep the reasoning intact.</h1></div>
-      <div><p>Every hosted workspace includes source access, citations, uncertainty labels, and an inspectable idea trail. Plans change capacity, retention, collaboration, exports, API access, and review—not the truthfulness of the result.</p><a class="v3-button" href="{{ workspace_url }}">Find my next idea <span aria-hidden="true">→</span></a></div>
-    </section>
+  <main class="mk-support-main" id="main-content">
+    <header class="mk-support-hero"><p class="mk-kicker">Hosted workspace pricing</p><h1>Pay for how much you follow—not for whether the evidence stays attached.</h1><div><p>Every plan keeps sources, qualifications, and uncertainty visible. Capacity, collaboration, exports, and review change by plan; the truthfulness floor does not.</p><a class="mk-button mk-button-primary" href="{{ workspace_url }}">{{ workspace_label }} <span aria-hidden="true">↗</span></a></div></header>
 
-    <section class="v3-support-section" aria-labelledby="profiles-heading">
-      <header><p class="v3-kicker">Hosted workspaces</p><h2 id="profiles-heading">Choose for publishing cadence, not feature anxiety.</h2><p>Start with the workflow you need now. Your signals, decisions, and evidence trail stay portable across workspace profiles.</p></header>
-      <div class="v3-plan-grid">
-        <article><span>01 / Explore</span><h3>Cloud Free</h3><p>For proving the workflow on a focused editorial question.</p><ul><li>One active scan at a time</li><li>Focused idea landscapes</li><li>Markdown and JSON exports</li><li>Sources and uncertainty visible</li></ul><a href="{{ workspace_url }}">Start finding ideas →</a></article>
-        <article class="is-primary"><span>02 / Publish consistently</span><h3>Cloud Plus</h3><p>For creators and lean teams developing ideas every week.</p><ul><li>Deeper connection searches</li><li>Longer idea-trail retention</li><li>API access for agent workflows</li><li>Development and distribution plans</li></ul><a href="{{ workspace_url }}">Open the workspace →</a></article>
-        <article><span>03 / Operate as a team</span><h3>Cloud Pro</h3><p>For editorial studios and company content operations.</p><ul><li>More concurrent research</li><li>Deepest hosted landscapes</li><li>Team production workflows</li><li>Structured human review access</li></ul><a href="{{ workspace_url }}">Evaluate Markov →</a></article>
-      </div>
-      <p class="v3-support-note"><strong>Production checkout is not represented in this QA build.</strong> Monetary pack pricing is configured by the operator and appears at checkout; this page shows the live entitlement model and job-credit catalog without inventing a price.</p>
-    </section>
+    <section class="mk-plan-ledger" aria-labelledby="plans-title"><header class="mk-section-intro is-compact"><p class="mk-kicker">Choose your working rhythm</p><h2 id="plans-title">A workspace that grows with the research.</h2></header><div>
+      <article><span>For trying the workflow</span><h3>Free</h3><p>Small monthly capacity for an individual exploring the source-to-output loop.</p><ul><li>Personal workspace</li><li>Brief, research, and script outputs</li><li>Inspectable sources and open questions</li><li>Markdown and JSON export</li></ul><a href="{{ workspace_url }}">Open the workspace <span aria-hidden="true">→</span></a></article>
+      <article class="is-featured"><span>For a steady publishing rhythm</span><h3>Plus</h3><p>More active Chains, longer retention, and enough capacity for recurring factual work.</p><ul><li>Everything in Free</li><li>More concurrent and retained work</li><li>Additional export formats</li><li>Credit packs for heavier months</li></ul><a href="{{ workspace_url }}">Continue to Markov <span aria-hidden="true">→</span></a></article>
+      <article><span>For teams and production systems</span><h3>Pro</h3><p>Shared operating capacity, API access, and higher limits for repeatable workflows.</p><ul><li>Everything in Plus</li><li>Team and programmatic access</li><li>Webhooks and structured job state</li><li>Verified review add-on</li></ul><a href="{{ site_base }}/developers/">Read the API guide <span aria-hidden="true">→</span></a></article>
+    </div></section>
 
-    <section class="v3-support-section v3-credit-section" aria-labelledby="catalog-heading">
-      <header><p class="v3-kicker">Usage</p><h2 id="catalog-heading">Job credits</h2><p>Credit costs below come from the live product catalog. Each job remains explicit about sources, evidence boundaries, and unresolved questions.</p></header>
-      <div class="v3-credit-ledger">
-        {% for product in products %}
-          <div><span>{{ "%02d" | format(loop.index) }}</span><strong>{{ product.variant | humanize }}</strong><p>{% if product.variant.endswith('_verified') %}Structured human review before final delivery.{% else %}Agentic delivery with evidence and uncertainty visible.{% endif %}</p><b>{{ product.credit_cost | credits }}</b></div>
-        {% endfor %}
-      </div>
-      <div class="v3-support-boundary"><span>What a credit never buys</span><p>A cleaner-looking certainty signal or hidden evidence gap. Credits fund bounded research and development work; they do not change what Markov can honestly support.</p><a href="{{ site_base }}/developers/">Build with the API →</a></div>
-    </section>
+    <section class="mk-credit-ledger" aria-labelledby="credits-title"><header><div><p class="mk-kicker">Usage</p><h2 id="credits-title">Job credits from the live catalog</h2></div><p>Instant work returns a transparent agent-produced artifact. Verified work runs the same case through a structured human review.</p></header><div role="table" aria-label="Markov job credit costs"><div role="row"><span role="columnheader">Job</span><span role="columnheader">Mode</span><span role="columnheader">Cost</span></div>{% for product in products %}<div role="row"><strong role="cell">{{ product.variant.rsplit('_', 1)[0] | humanize }}</strong><span role="cell">{{ product.variant.rsplit('_', 1)[1] | humanize }}</span><span role="cell">{{ product.credit_cost | credits }}</span></div>{% endfor %}</div></section>
+
+    <section class="mk-boundary-note"><p class="mk-kicker">What never moves behind a paywall</p><h2>Sources, exact locators, uncertainty, and evidence status stay visible.</h2><p>Plans may change volume, retention, collaboration, review, or export formats. They do not remove the information needed to judge whether a result holds up.</p></section>
   </main>
   {% include "partials/public_footer.html" %}
 {% endblock %}
