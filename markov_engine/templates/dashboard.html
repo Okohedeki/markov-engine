@@ -1,115 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Research desk — Markov{% endblock %}
+{% block title %}Workspace — Markov{% endblock %}
 {% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/markov-dashboard.css">{% endblock %}
-{% block body_class %}app-body v3-app-body v4-dashboard-body{% endblock %}
+{% block body_class %}app-body v3-app-body v7-dashboard-body{% endblock %}
 {% block body %}
   {% set focus = ready[0] if ready else none %}
-  <div class="v3-app-frame">
+  <div class="v3-app-frame v7-app-frame">
     {% include "partials/app_sidebar.html" %}
-    <main class="v3-app-main" id="main-content">
-      <header class="v3-app-topbar v4-dashboard-topbar">
+    <main class="v3-app-main v7-app-main" id="main-content">
+      <header class="v3-app-topbar v7-dashboard-topbar">
         <a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
-        <span>HOME / RESEARCH DESK</span>
-        <a href="#add-signal">New signal <span aria-hidden="true">＋</span></a>
+        <span>WORKSPACE</span>
+        <a href="#new-chain">New Chain <span aria-hidden="true">＋</span></a>
       </header>
 
-      <div class="v4-dashboard">
-        <header class="v4-dashboard-heading">
-          <div>
-            <p class="v3-app-kicker">Research command center</p>
-            <h1>Decide what to research next.</h1>
-            <p>Capture a source or question. Markov ranks the strongest supported direction and keeps its evidence attached.</p>
+      <div class="v7-dashboard">
+        <header class="v7-dashboard-head">
+          <div><p>Research workspace</p><h1>Workspace</h1></div>
+          <div class="v7-workspace-status" aria-label="Workspace status">
+            <span><i aria-hidden="true"></i>{{ in_progress | length }} running</span>
+            <span>{{ ready | length }} ready for a decision</span>
+            <a href="/app/search">Search <b aria-hidden="true">/</b></a>
           </div>
-          <dl class="v4-workspace-totals" aria-label="Workspace totals">
-            <div><dt>Chains</dt><dd>{{ cases | length }}</dd></div>
-            <div><dt>Sources</dt><dd>{{ cases | sum(attribute='source_count') }}</dd></div>
-            <div><dt>Directions</dt><dd>{{ cases | sum(attribute='topic_count') }}</dd></div>
-            <div><dt>Outputs</dt><dd>{{ outputs | length }}</dd></div>
-          </dl>
         </header>
 
-        <form class="v4-quick-capture" id="add-signal" method="post" action="/app/jobs">
-          <div class="v4-capture-prompt">
-            <span aria-hidden="true">＋</span>
-            <div><label for="signal-input">Add a signal</label><small>A source, question, observation, or topic</small></div>
-          </div>
-          <div class="v3-signal-types" role="group" aria-label="Signal type">
-            <button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste an article, video, podcast, or document URL…">URL</button>
+        <form class="v7-capture-command" id="new-chain" method="post" action="/app/jobs">
+          <div class="v7-capture-label"><span aria-hidden="true">＋</span><div><label for="signal-input">Start a new Chain</label><small>Add the thing you want Markov to develop.</small></div></div>
+          <div class="v7-capture-types" role="group" aria-label="Starting material type">
+            <button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste a video, article, PDF, podcast, or post URL…">Link</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Ask the question you want Markov to investigate…">Question</button>
             <button type="button" aria-pressed="false" data-signal-type data-placeholder="Write the observation you do not want to lose…">Note</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="What question keeps returning?">Question</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Name a topic Markov should scan…">Topic</button>
+            <button type="button" disabled title="Direct upload is not enabled in this build">Upload</button>
           </div>
-          <div class="v4-capture-input">
-            <input id="signal-input" name="value" type="text" data-signal-input placeholder="Paste an article, video, podcast, or document URL…" required>
+          <div class="v7-capture-input">
+            <input id="signal-input" name="value" type="text" data-signal-input placeholder="Paste a video, article, PDF, podcast, or post URL…" required>
             <input type="hidden" name="mode" value="research">
             <input type="hidden" name="review_level" value="instant">
-            <button type="submit" aria-label="Analyze signal">Analyze <span aria-hidden="true">→</span></button>
+            <button type="submit">Start Chain <span aria-hidden="true">→</span></button>
           </div>
         </form>
 
-        <div class="v4-dashboard-grid">
-          <section class="v4-priority" aria-labelledby="priority-title">
-            <header class="v4-section-heading">
-              <div><p class="v3-app-kicker">Priority direction</p><h2 id="priority-title">The next decision</h2></div>
-              <a href="/app/ideas">View all Chains <span aria-hidden="true">→</span></a>
-            </header>
+        <section class="v7-attention" aria-labelledby="attention-title">
+          <header class="v7-panel-head">
+            <div><h2 id="attention-title">Needs your attention</h2><span>{{ ready | length }}</span></div>
+            <p>Supported directions waiting for your judgment.</p>
+            <a href="/app/ideas">All Chains <span aria-hidden="true">→</span></a>
+          </header>
 
-            {% if focus %}
-              <article class="v4-priority-card">
-                <div class="v4-priority-copy">
-                  <div class="v4-priority-meta">
-                    <span>{{ focus.source_label }}</span>
-                    {% if focus.updated_at %}<time datetime="{{ focus.updated_at.isoformat() }}">Updated {{ focus.updated_at.strftime("%b %d") }}</time>{% endif %}
-                  </div>
-                  <p class="v4-card-label"><span aria-hidden="true"></span> Strongest supported direction</p>
-                  <h3>{{ focus.opportunity_thesis }}</h3>
-                  <p class="v4-priority-basis">{{ focus.opportunity_basis }}</p>
-                  <dl class="v4-priority-evidence">
-                    <div><dt>Research packet</dt><dd>{{ focus.source_count }} source{{ '' if focus.source_count == 1 else 's' }} · {{ focus.connection_count }} connection{{ '' if focus.connection_count == 1 else 's' }}</dd></div>
-                    <div><dt>What could weaken it</dt><dd>{{ focus.opportunity_weakness | truncate(180) }}</dd></div>
-                  </dl>
-                  <footer>
-                    {% if focus.destination %}<a class="v4-primary-action" href="{{ focus.destination }}">Open this direction <span aria-hidden="true">→</span></a>{% endif %}
-                    <span>Evidence remains attached through development.</span>
-                  </footer>
-                </div>
-                <aside class="v4-priority-scores" aria-label="Opportunity assessments">
-                  <div><span>Information gain</span><strong>{{ focus.information_gain if focus.information_gain is not none else '—' }}</strong><small>{{ 'Connection novelty' if focus.information_gain is not none else 'Pending scan' }}</small></div>
-                  <div><span>Audience relevance</span><strong>{{ focus.audience_relevance if focus.audience_relevance is not none else '—' }}</strong><small>{{ 'Demand fit' if focus.audience_relevance is not none else 'Profile needed' }}</small></div>
-                </aside>
+          {% if focus %}
+            <article class="v7-attention-primary">
+              <div class="v7-attention-state"><i aria-hidden="true"></i><span>READY</span></div>
+              <div class="v7-attention-main">
+                <div class="v7-attention-meta"><span>{{ focus.source_label }}</span>{% if focus.updated_at %}<time datetime="{{ focus.updated_at.isoformat() }}">Updated {{ focus.updated_at.strftime("%b %d") }}</time>{% endif %}</div>
+                <p class="v7-attention-label">Strongest supported direction</p>
+                <h3>{{ focus.opportunity_thesis }}</h3>
+                <p>{{ focus.opportunity_basis }}</p>
+                <ul aria-label="Research packet summary"><li>{{ focus.source_count }} source{{ '' if focus.source_count == 1 else 's' }}</li><li>{{ focus.connection_count }} connection{{ '' if focus.connection_count == 1 else 's' }}</li><li>{{ focus.topic_count }} direction{{ '' if focus.topic_count == 1 else 's' }}</li></ul>
+              </div>
+              <dl class="v7-attention-review">
+                <div><dt>Information gain</dt><dd>{{ focus.information_gain if focus.information_gain is not none else 'Pending' }}</dd></div>
+                <div><dt>Audience relevance</dt><dd>{{ focus.audience_relevance if focus.audience_relevance is not none else 'Not scored' }}</dd></div>
+                <div><dt>What could weaken it</dt><dd>{{ focus.opportunity_weakness | truncate(170) }}</dd></div>
+              </dl>
+              <div class="v7-attention-action"><span>Evidence stays attached</span>{% if focus.destination %}<a href="{{ focus.destination }}">Review direction <b aria-hidden="true">→</b></a>{% endif %}</div>
+            </article>
+
+            {% for row in ready[1:4] %}
+              <a class="v7-attention-row" href="{{ row.destination or '/app/ideas' }}">
+                <span>{{ "%02d" | format(loop.index + 1) }}</span>
+                <div><small>{{ row.source_label }} · {{ row.source_count }} sources</small><strong>{{ row.opportunity_thesis }}</strong></div>
+                <em>{{ row.action_label }}</em><b aria-hidden="true">→</b>
+              </a>
+            {% endfor %}
+          {% else %}
+            <div class="v7-attention-empty"><span aria-hidden="true"></span><div><h3>No direction is waiting.</h3><p>Start a Chain or continue active research. Markov will put the strongest supported direction here when it needs your decision.</p><a href="#new-chain">Start a new Chain <span aria-hidden="true">→</span></a></div></div>
+          {% endif %}
+        </section>
+
+        <div class="v7-dashboard-lower">
+          <section class="v7-activity" aria-labelledby="activity-title">
+            <header class="v7-panel-head is-compact"><div><h2 id="activity-title">Research activity</h2><span>{{ in_progress | length }}</span></div><a href="/app/signals">Open Inbox <span aria-hidden="true">→</span></a></header>
+            {% for row in in_progress[:3] %}
+              <article class="v7-active-job">
+                <div class="v7-job-heading"><div><span><i aria-hidden="true"></i>Researching now</span><h3>{{ row.case.title }}</h3><p>{{ row.finding }}</p></div><a href="{{ row.destination }}">Open <span aria-hidden="true">→</span></a></div>
+                <ol aria-label="Research progress">{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span><small>{{ label }}</small></li>{% endfor %}</ol>
               </article>
             {% else %}
-              <div class="v4-empty-priority">
-                <span aria-hidden="true"></span>
-                <div><h3>No supported direction is ready yet.</h3><p>Add a signal or revisit a Chain that needs attention. Markov will reserve this space for a direction with an inspectable research basis.</p><a href="#add-signal">Add a signal <span aria-hidden="true">→</span></a></div>
-              </div>
-            {% endif %}
+              <div class="v7-activity-empty"><span aria-hidden="true">✓</span><div><strong>Research queue clear</strong><p>No job is running. Your saved Chains are ready to continue.</p></div></div>
+            {% endfor %}
           </section>
 
-          <aside class="v4-research-rail" aria-label="Research activity">
-            <section class="v4-scan-queue" aria-labelledby="scan-queue-title">
-              <header><div><p class="v3-app-kicker">Live research</p><h2 id="scan-queue-title">Scan queue</h2></div><span>{{ in_progress | length }}</span></header>
-              {% for row in in_progress[:2] %}
-                <article>
-                  <div class="v4-live-state"><span aria-hidden="true"></span>In progress</div>
-                  <h3>{{ row.case.title }}</h3>
-                  <p>{{ row.finding }}</p>
-                  <ol>{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}</ol>
-                  <a href="{{ row.destination }}">Open progress <span aria-hidden="true">→</span></a>
-                </article>
-              {% else %}
-                <div class="v4-queue-clear"><span aria-hidden="true"></span><strong>Queue clear</strong><p>No research job is running. Your saved Chains are ready to continue.</p></div>
-              {% endfor %}
-            </section>
-
-            <section class="v4-recent-chains" aria-labelledby="recent-chains-title">
-              <header><p class="v3-app-kicker">Continue</p><h2 id="recent-chains-title">Recent Chains</h2></header>
-              <div>
-                {% for row in cases[:3] %}
-                  <a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ row.source_count }} sources · {{ row.topic_count }} directions</small><h3>{{ row.case.title }}</h3></div><strong aria-hidden="true">→</strong></a>
-                {% else %}<p class="v4-no-chains">Saved research will appear here.</p>{% endfor %}
-              </div>
-            </section>
+          <aside class="v7-recent" aria-labelledby="recent-title">
+            <header class="v7-panel-head is-compact"><div><h2 id="recent-title">Recent Chains</h2><span>{{ cases | length }}</span></div></header>
+            <div>
+              {% for row in cases[:5] %}
+                <a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ row.source_count }} sources · {{ row.topic_count }} directions</small><strong>{{ row.case.title }}</strong></div><b aria-hidden="true">→</b></a>
+              {% else %}<p class="v7-recent-empty">Saved research will appear here.</p>{% endfor %}
+            </div>
+            <footer><dl><div><dt>Chains</dt><dd>{{ cases | length }}</dd></div><div><dt>Sources</dt><dd>{{ cases | sum(attribute='source_count') }}</dd></div><div><dt>Outputs</dt><dd>{{ outputs | length }}</dd></div></dl></footer>
           </aside>
         </div>
       </div>
