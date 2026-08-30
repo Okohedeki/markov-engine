@@ -64,7 +64,15 @@ def build() -> None:
             rendered,
             encoding="utf-8",
         )
-    shutil.copytree(STATIC, OUTPUT / "static", dirs_exist_ok=True)
+    published_static = OUTPUT / "static"
+    published_static.mkdir(parents=True, exist_ok=True)
+    source_files = {
+        path.relative_to(STATIC) for path in STATIC.rglob("*") if path.is_file()
+    }
+    for path in published_static.rglob("*"):
+        if path.is_file() and path.relative_to(published_static) not in source_files:
+            path.unlink()
+    shutil.copytree(STATIC, published_static, dirs_exist_ok=True)
 
 
 if __name__ == "__main__":
