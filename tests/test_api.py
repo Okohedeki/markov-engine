@@ -256,7 +256,7 @@ async def test_web_login_and_focused_intake_page():
             redirected = await client.get("/app")
             assert "Workspace access key" in redirected.text
             assert "QA access" in redirected.text
-            assert "production email and Google authentication are being built" in redirected.text
+            assert "Production email and Google sign-in are coming next" in redirected.text
             signed_in = await client.post(
                 "/app/login",
                 content="api_key=customer-key",
@@ -312,26 +312,27 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             landing = await client.get("/")
             assert landing.status_code == 200
             assert "Find what should be published next." in landing.text
-            assert "Original-idea discovery for people who publish" in landing.text
+            assert "current search results, AI answers, competitor coverage" in landing.text
+            assert "You write the final piece" in landing.text
             assert landing.text.count("Find my next idea") == 2
             assert "Lean company content teams" in landing.text
             assert "Research-led creators" in landing.text
             assert "Editorial studios and agencies" in landing.text
-            assert "The opportunity is usually between the things everyone covered separately" in landing.text
-            for stage in ("Signal", "Existing landscape", "Unexpected connection", "Idea opportunity"):
-                assert f"<small>{stage}</small>" in landing.text
+            assert "What everyone already says" in landing.text
+            assert "What has not been connected" in landing.text
+            assert "What the audience still needs" in landing.text
+            for stage in ("01 / Signal", "02 / Existing answers", "03 / Missing connection", "04 / Idea opportunity"):
+                assert stage in landing.text
             assert "Japan’s pension pivot puts overseas capital in play" in landing.text
             assert "https://www.reuters.com/world/asia-pacific/" in landing.text
-            assert "Japan does not need to dump Treasuries" in landing.text
+            assert "Japan need not dump Treasuries" in landing.text
             assert "Information gain" in landing.text
             assert "Audience relevance" in landing.text
             assert "A campaign is not the same post cut five ways" in landing.text
             assert landing.text.count("data-campaign-tab=") == 4
-            assert "Your point of view is the product" in landing.text
-            assert "Research, reasoning, structure, and distribution—not finished prose" in landing.text
-            assert "Publish what deserves to become part of the answer" in landing.text
-            assert "A working surface for editorial decisions" in landing.text
-            assert "Not a personal knowledge base" in landing.text
+            assert "Markov plans. You publish." in landing.text
+            assert "Give future answers something worth including" in landing.text
+            assert "Not a read-later app, fact checker, or one-click AI writer" in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             for disallowed in ("ai-powered", "open source", "github", "free trial", "customer logos"):
@@ -375,6 +376,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "prefers-reduced-motion" in css.text
             assert "--v3-paper" in css.text
             assert "--v3-accent" in css.text
+            assert "--v3-connection" in css.text
+            assert "--v3-audience" in css.text
+            assert ".v4-answer-map" in css.text
             assert ".v3-app-nav" in css.text
 
             pdf_preview = await client.get("/static/japan-nber-cover.png")
