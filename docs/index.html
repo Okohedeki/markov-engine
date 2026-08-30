@@ -3,236 +3,194 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Markov turns source material into evidence-linked research chains, briefs, reports, and scripts.">
+  <meta name="description" content="Markov compares your signals with existing coverage to uncover underdeveloped ideas for your audience, then helps you develop and distribute them without writing in your place.">
 
-  <title>Markov — Turn what you find into original work</title>
+  <title>Markov — Find what should be published next</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
+  <link rel="stylesheet" href="/markov-engine/static/markov-v3.css">
   <script defer src="/markov-engine/static/markov.js"></script>
+  <script defer src="/markov-engine/static/markov-v3.js"></script>
 </head>
-<body class="landing-page">
+<body class="v3-public v3-landing">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="idea-header">
-    <a class="idea-wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
-    <nav aria-label="Primary navigation">
-      <a class="idea-nav-optional" href="#product">Product</a>
-      <a class="idea-nav-optional" href="#use-cases">Use cases</a>
-      <a href="/markov-engine/pricing/">Pricing</a>
-      <a class="idea-nav-optional" href="/markov-engine/developers/">For agents</a>
-      <a href="/markov-engine/sample/">Product demo</a>
-    </nav>
-  </header>
+  <header class="v3-site-header" data-site-header>
+  <a class="v3-wordmark" href="/markov-engine/" aria-label="Markov home"><span aria-hidden="true"></span>MARKOV</a>
+  <button class="v3-nav-toggle" type="button" aria-expanded="false" aria-controls="v3-primary-nav" data-nav-toggle><span>Menu</span><i aria-hidden="true"></i></button>
+  <nav class="v3-site-nav" id="v3-primary-nav" aria-label="Primary navigation" data-site-nav>
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/#who-its-for">Who it’s for</a>
+    <a href="/markov-engine/pricing/">Pricing</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a class="v3-nav-signin" href="/markov-engine/sample/">Product demo</a>
+  </nav>
+</header>
 
   <main id="main-content">
-    <section class="idea-hero" data-idea-demo aria-labelledby="idea-seed">
-      <div class="idea-stage">
-        <div class="idea-seed-column">
-          <h1 class="idea-sentence" id="idea-seed" data-idea-sentence>
-            Why would <button class="idea-trigger" type="button" data-route="investors" aria-expanded="false" aria-controls="idea-route">Japanese investors</button> <button class="idea-trigger" type="button" data-route="sell" aria-expanded="false" aria-controls="idea-route">sell</button> <button class="idea-trigger" type="button" data-route="treasuries" aria-expanded="false" aria-controls="idea-route">U.S. Treasuries</button>?
-          </h1>
-          <p class="idea-instruction" data-idea-instruction><span class="desktop-instruction">Hover or focus a phrase to follow the idea.</span><span class="touch-instruction">Tap a phrase to follow the idea.</span></p>
-          <p class="idea-selection" data-idea-selection aria-live="polite">No path selected.</p>
+    <section class="v3-hero" aria-labelledby="v3-hero-title">
+      <div class="v3-hero-copy">
+        <p class="v3-kicker">Original-idea discovery for people who publish</p>
+        <h1 id="v3-hero-title">Find what should be published next.</h1>
+        <p class="v3-hero-deck">Markov compares what you are exploring with what already exists to uncover underdeveloped ideas for your audience—then helps you develop and distribute them without writing in your place.</p>
+        <div class="v3-action-row">
+          <a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a>
+          <a class="v3-text-link" href="#japan-example">See the Japan example <span aria-hidden="true">↓</span></a>
         </div>
+        <p class="v3-authorship-note"><span aria-hidden="true">✎</span> Research, reasoning, structure, and distribution—not finished prose.</p>
+      </div>
 
-        <div class="idea-route" id="idea-route" aria-label="Markov idea chain" aria-live="polite">
-          <div class="route-placeholder" data-route-placeholder>
-            <span aria-hidden="true">↳</span>
-            <p>The missing steps will unfold here.</p>
+      <div class="v3-hero-instrument" aria-label="Example of Markov finding a missing connection">
+        <div class="v3-instrument-head"><span>IDEA LANDSCAPE / LIVE EXAMPLE</span><span>Coverage checked Jul 18, 2026</span></div>
+        <div class="v3-instrument-signal">
+          <span class="v3-object-label">Signal</span>
+          <strong>Japan’s demographic decline</strong>
+          <small>Widely covered on its own</small>
+        </div>
+        <div class="v3-instrument-field">
+          <div class="v3-coverage-column">
+            <span>Existing coverage repeats</span>
+            <p>Aging population</p><p>Slower growth</p><p>Fiscal pressure</p>
           </div>
-          <div class="route-content" data-route-content hidden>
-            <p class="route-from">Following <strong data-route-phrase></strong></p>
-            <ol class="route-list" data-route-list></ol>
-            <div class="route-branches" data-route-branches hidden></div>
-            <p class="route-note" data-route-note></p>
-            <a class="route-evidence" data-route-evidence hidden></a>
-            <button class="route-further" type="button" data-follow-further>Follow this further <span aria-hidden="true">→</span></button>
+          <div class="v3-missing-column">
+            <span>Missing connection</span>
+            <div class="v3-gap-mark" aria-hidden="true"><i></i><b>?</b><i></i></div>
+            <p>What happens when domestic yields and hedging costs change where Japanese institutions allocate capital?</p>
           </div>
         </div>
-      </div>
-
-      <div class="source-switcher" aria-label="Choose a starting source for the Japan research chain" data-source-switcher>
-        <span>Start this Japan chain from</span>
-        <div>
-          <button type="button" data-source="article" aria-pressed="true">Article</button>
-          <button type="button" data-source="japan" aria-pressed="false">YouTube</button>
-          <button type="button" data-source="tiktok" aria-pressed="false">TikTok</button>
-          <button type="button" data-source="pdf" aria-pressed="false">PDF</button>
-          <button type="button" data-source="podcast" aria-pressed="false">Podcast</button>
-          <button type="button" data-source="question" aria-pressed="false">Question</button>
+        <div class="v3-instrument-opportunity">
+          <span class="v3-object-label">Idea opportunity</span>
+          <strong>The Treasury story may begin with fewer new purchases—not a dramatic selloff.</strong>
+          <div><span><b>High</b> Information gain</span><span><b>Strong</b> Audience relevance</span></div>
         </div>
       </div>
     </section>
 
-    <section class="idea-story" aria-labelledby="story-title">
-      <h2 class="visually-hidden" id="story-title">How Markov follows an idea</h2>
-      <ol class="story-line">
-        <li class="idea-story-step is-current">
-          <span class="story-number">01</span>
-          <div class="story-action"><p data-story-start>You started with an article.</p><strong data-story-seed>Why would Japanese investors sell U.S. Treasuries?</strong></div>
-          <div class="story-what"><span>Starting artifact</span><div class="source-artifact" data-story-source-artifact data-media-id="article:Japan’s pension pivot puts overseas capital in play">
-            <a class="source-preview is-article source-preview-link" href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer"><span class="source-preview-kind">article</span><strong>Japan’s pension pivot puts overseas capital in play</strong><p>Japan’s finance minister proposed increasing domestic allocations at the $1.8 trillion GPIF and other retirement funds. Implementation details remain unsettled.</p><span class="source-preview-open">Open original ↗</span></a>
-            <div class="source-artifact-caption"><strong>Japan’s pension pivot puts overseas capital in play</strong><small>Reuters · July 10, 2026</small></div>
-          </div></div>
-        </li>
-        <li class="idea-story-step">
-          <span class="story-number">02</span>
-          <div class="story-action"><p>Markov started a chain.</p></div>
-          <div class="story-what"><span>Mechanism artifact</span><div class="mechanism-artifact"><ol data-story-mechanism-nodes><li>A proposal to steer pension capital home</li><li>Higher Japanese government-bond yields</li><li>Costly USD/JPY currency hedging</li><li>Buy fewer foreign bonds or rebalance gradually</li></ol><strong data-story-mechanism>Policy direction, higher JGB yields, and FX-hedging costs can make repatriation rational for specific portfolios.</strong></div></div>
-        </li>
-        <li class="idea-story-step">
-          <span class="story-number">03</span>
-          <div class="story-action"><p>Markov absorbed the chains.</p></div>
-          <div class="story-what"><span>Comparison artifact</span><div class="comparison-artifact"><div data-story-comparison-rows><p><strong>A sudden Treasury dump</strong><span>Not demonstrated</span></p><p class="is-strong"><strong>Gradual capital repatriation</strong><span>Stronger path</span></p></div><small data-story-comparison>Gradual capital repatriation has a visible mechanism; a sudden Treasury dump does not yet have confirming flow data.</small></div></div>
-        </li>
+    <section class="v3-fit" id="who-its-for" aria-labelledby="v3-fit-title">
+      <header class="v3-section-intro">
+        <p class="v3-kicker">Who Markov is for</p>
+        <h2 id="v3-fit-title">For the person who cannot publish the same answer as everyone else.</h2>
+      </header>
+      <div class="v3-fit-ledger">
+        <article><span>01</span><div><h3>Lean company content teams</h3><p>Founders, content leads, and marketers building distinctive company blogs, newsletters, podcasts, and thought leadership.</p></div><strong>Primary</strong></article>
+        <article><span>02</span><div><h3>Research-led creators</h3><p>Video essayists, educators, newsletter writers, and podcasters who need original angles that fit their audience.</p></div><strong>Creator</strong></article>
+        <article><span>03</span><div><h3>Editorial studios and agencies</h3><p>Teams planning repeatable campaigns across clients without flattening each client’s perspective.</p></div><strong>Studio</strong></article>
+      </div>
+      <aside class="v3-boundary"><strong>Not a personal knowledge base.</strong><p>Markov begins with the need to find something worth saying—not something you want to remember.</p></aside>
+    </section>
+
+    <section class="v3-finds" id="how-it-works" aria-labelledby="v3-finds-title">
+      <div class="v3-section-intro">
+        <p class="v3-kicker">What Markov finds</p>
+        <h2 id="v3-finds-title">The opportunity is usually between the things everyone covered separately.</h2>
+        <p>Markov maps the information landscape before it recommends a direction. It shows why an angle appears underexplored instead of calling it “original.”</p>
+      </div>
+      <ol class="v3-find-index">
+        <li><span>01</span><strong>Repetitive answers</strong><p>Questions where articles, search results, and AI answers keep returning the same explanation.</p></li>
+        <li><span>02</span><strong>Missing connections</strong><p>Important subjects covered separately but never combined into a useful mechanism.</p></li>
+        <li><span>03</span><strong>Ignored audiences</strong><p>Questions your audience asks that broad, general coverage does not resolve.</p></li>
+        <li><span>04</span><strong>New consequences</strong><p>Recent developments that make an old assumption newly important—or newly wrong.</p></li>
       </ol>
     </section>
 
-    <section class="artifact-proof-section" aria-labelledby="artifact-proof-title" data-sample-switcher>
-      <div class="artifact-proof-heading">
-        <div>
-          <p class="route-label">Real output · published sources</p>
-          <h2 id="artifact-proof-title">The chain ends in work you can actually use.</h2>
-        </div>
-        <p>This is the five-source Japan chain above rendered three ways. The source roles, caveats, competing explanation, and next research step stay attached when the format changes.</p>
-      </div>
-
-      <div class="artifact-reader">
-        <div class="artifact-proof-tabs" role="tablist" aria-label="Example Markov artifacts">
-          <button id="artifact-tab-brief" type="button" role="tab" aria-selected="true" aria-controls="artifact-panel-brief" data-sample-tab="brief"><span>01</span>Brief</button>
-          <button id="artifact-tab-analysis" type="button" role="tab" aria-selected="false" aria-controls="artifact-panel-analysis" data-sample-tab="analysis" tabindex="-1"><span>02</span>Analysis</button>
-          <button id="artifact-tab-script" type="button" role="tab" aria-selected="false" aria-controls="artifact-panel-script" data-sample-tab="script" tabindex="-1"><span>03</span>Script</button>
-        </div>
-
-        <div class="artifact-proof-panels">
-          <article class="artifact-proof-panel" id="artifact-panel-brief" role="tabpanel" aria-labelledby="artifact-tab-brief" data-sample-panel="brief">
-            <div class="artifact-proof-meta"><span>MARKOV BRIEF</span><span>5 COLLECTED SOURCES</span><span>SOURCE ROLES ATTACHED</span></div>
-            <h3>Why would Japanese investors sell U.S. Treasuries?</h3>
-            <p class="artifact-proof-deck">Japan did not act as one seller. The live catalyst is a proposal to steer public pension capital toward domestic assets; the mechanism is that higher Japanese yields and costly currency hedging can make overseas bonds less attractive to specific institutions.</p>
-            <div class="artifact-proof-body">
-              <div>
-                <section><span>Bottom line</span><p>A gradual reduction in foreign-bond demand is plausible. A coordinated Treasury dump is not established, and the policy proposal does not yet specify the size, timing, or assets involved.</p></section>
-                <section><span>What matters</span><ul><li>In July 2026, Japan’s finance minister proposed increasing domestic allocations at the $1.8 trillion GPIF and other retirement funds.</li><li>Reuters reported that higher JGB yields had become comparable to—or better than—Treasuries after currency hedging.</li><li>The NBER paper shows why policy rates, duration, and USD/JPY hedging costs sit between a demographic story and an asset sale.</li></ul></section>
-                <section><span>What the question leaves out</span><p>“Japan” includes a central bank, pension funds, insurers, banks, households, and private funds. They hold different foreign assets and do not rebalance as one actor.</p></section>
-              </div>
-              <aside class="artifact-proof-rail" aria-label="Brief evidence status">
-                <span>Claim status</span>
-                <p><strong>Established</strong>A domestic-allocation proposal was floated.</p>
-                <p><strong>Established</strong>Japanese and hedged U.S. yields have repriced.</p>
-                <p><strong>Interpretation</strong>Some portfolios may repatriate capital.</p>
-                <p><strong>Unresolved</strong>Whether Treasuries are sold, by whom, and how much.</p>
-              </aside>
-            </div>
-          </article>
-
-          <article class="artifact-proof-panel" id="artifact-panel-analysis" role="tabpanel" aria-labelledby="artifact-tab-analysis" data-sample-panel="analysis" hidden>
-            <div class="artifact-proof-meta"><span>MARKOV RESEARCH REPORT</span><span>2 PATHS COMPARED</span><span>EVIDENCE ATTACHED</span></div>
-            <h3>The policy signal came before the sale.</h3>
-            <p class="artifact-proof-deck">The dramatic interpretation turns a proposal into a completed Treasury liquidation. The stronger path predicts slower, institution-specific repatriation that may first appear in allocation targets, hedging choices, and marginal foreign-bond demand.</p>
-            <div class="artifact-proof-body">
-              <div>
-                <section><span>Stronger path</span><p><strong>Domestic-allocation proposal → higher JGB appeal → weaker hedged foreign returns → gradual portfolio rebalancing.</strong></p><p>The Reuters report supplies the live catalyst. The NBER paper supplies the rates, duration, and currency-hedging mechanism. Neither alone proves a Treasury sale.</p></section>
-                <section><span>Competing path</span><p><strong>Aging → fiscal pressure → forced national liquidation.</strong></p><p>The FT film supports the demographic context, but this path skips the institutions that own assets and the mandates governing what they can sell.</p></section>
-                <section><span>What would change the conclusion</span><p>A formal GPIF allocation change followed by aligned sector-level outflows and Treasury transaction data would move the claim from plausible mechanism to observed event.</p></section>
-              </div>
-              <aside class="artifact-proof-rail" aria-label="Analysis research plan">
-                <span>Next research packet</span>
-                <p><strong>01</strong>Final GPIF allocation guidance</p>
-                <p><strong>02</strong>Sector-level foreign-asset flows</p>
-                <p><strong>03</strong>USD/JPY hedge costs and ratios</p>
-                <p><strong>04</strong>TIC Treasury transactions on aligned dates</p>
-              </aside>
-            </div>
-          </article>
-
-          <article class="artifact-proof-panel" id="artifact-panel-script" role="tabpanel" aria-labelledby="artifact-tab-script" data-sample-panel="script" hidden>
-            <div class="artifact-proof-meta"><span>MARKOV SCRIPT</span><span>READY TO RECORD</span><span>FACT NOTES ATTACHED</span></div>
-            <h3>Japan did not decide to dump America’s debt.</h3>
-            <p class="artifact-proof-deck">A documentary opening built from the same five-source chain, with the strongest mechanism and its limits still attached.</p>
-            <div class="artifact-proof-body">
-              <div class="script-copy">
-                <p><span>OPEN</span>Japan did not wake up and decide to dump America’s debt. In July 2026, its finance minister floated something narrower—and potentially more important: steering the world’s largest pension fund toward more Japanese assets.</p>
-                <p><span>TURN</span>That does not prove a Treasury sale. But it changes the question. If Japanese government bonds now compete with U.S. bonds after currency hedging, why should every overseas allocation stay where it is?</p>
-                <p><span>MECHANISM</span>A pension fund or insurer compares liabilities, domestic yields, and the cost of turning dollars back into yen. Higher JGB yields plus an expensive hedge can make foreign bonds less attractive, leading to gradual rebalancing or simply fewer new purchases.</p>
-                <p><span>CLOSE</span>The evidence supports a mechanism and a catalyst—not a dump. The next signal is not a dramatic headline. It is a formal allocation change followed by the flow data that shows which assets actually moved.</p>
-              </div>
-              <aside class="artifact-proof-rail" aria-label="Script fact notes">
-                <span>Fact notes</span>
-                <p><strong>C1 · Established</strong>July 2026 pension-allocation proposal.</p>
-                <p><strong>C2 · Established</strong>JGB and hedged-UST repricing.</p>
-                <p><strong>K1 · Mechanism</strong>Rates, mandates, and hedging costs.</p>
-                <p><strong>I1 · Unresolved</strong>Actual instrument-level sales.</p>
-              </aside>
-            </div>
-          </article>
-        </div>
-      </div>
-      <a class="artifact-proof-link" href="/markov-engine/sample/">Open the full evidence-linked sample <span aria-hidden="true">→</span></a>
-    </section>
-
-    <section class="destination-section" id="product" aria-labelledby="destination-title">
-      <span class="section-anchor" id="use-cases" aria-hidden="true"></span>
-      <p class="route-label">Made for original work</p>
-      <h2 id="destination-title">One living chain, from first source to original work.</h2>
-      <div class="destination-map">
-        <div class="destination-origin"><span>Starting source</span><strong data-destination-source>Japan source packet</strong></div>
-        <div class="destination-markov" aria-label="Processed by Markov"><span>MARKOV</span></div>
-        <div class="destination-branches">
-          <a href="/markov-engine/sample/"><strong>Understand it</strong><span>Get a concise brief with the substance, missing context, questionable claims, and threads worth following.</span></a>
-          <a href="/markov-engine/sample/"><strong>Research it</strong><span>Trace mechanisms, incentives, contradictions, historical parallels, and downstream effects.</span></a>
-          <a href="/markov-engine/sample/"><strong>Create from it</strong><span>Develop the strongest defensible angle into an original report, answer, or ready-to-record script.</span></a>
-        </div>
-      </div>
-      <p class="section-lede destination-lede">Markov helps people who publish, explain, and learn build a point of view from evidence instead of producing another summary of the same source.</p>
-      <ol class="use-case-lines">
-        <li><span>For creators</span><strong>Find the angle worth making.</strong><p>Turn saved TikToks, YouTube videos, podcasts, posts, and articles into original scripts for short-form video, long-form video, newsletters, and audio.</p></li>
-        <li><span>For publishers and growth teams</span><strong>Create work that deserves to become the answer.</strong><p>Build source-backed explainers, AEO pages, reports, and editorial briefs with the evidence and uncertainty still attached.</p></li>
-        <li><span>For researchers and curious people</span><strong>Understand more than the source said.</strong><p>Expose missing mechanisms, compare competing explanations, save what matters, and return when a new question opens another path.</p></li>
+    <section class="v3-example" id="japan-example" aria-labelledby="v3-example-title">
+      <header class="v3-example-heading">
+        <div><p class="v3-kicker">One complete transformation</p><h2 id="v3-example-title">A demographic story becomes a capital-markets idea.</h2></div>
+        <p>This example uses a real Japan source packet. It separates observed information from Markov’s interpretation and keeps the missing evidence visible.</p>
+      </header>
+      <ol class="v3-thread" aria-label="Signal to idea opportunity">
+        <li>
+          <span class="v3-thread-index">01</span>
+          <div class="v3-thread-copy"><small>Signal</small><h3>Japan’s pension pivot puts overseas capital in play.</h3><p>A policy proposal suggests more domestic allocation. It does not demonstrate a Treasury sale.</p></div>
+          <div class="v3-source-slip"><span>REUTERS / JUL 10, 2026</span><strong>Policy catalyst</strong><a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/" target="_blank" rel="noreferrer">Read source ↗</a></div>
+        </li>
+        <li>
+          <span class="v3-thread-index">02</span>
+          <div class="v3-thread-copy"><small>Existing landscape</small><h3>Most coverage stops at “aging creates pressure.”</h3><p>It repeats demographics, debt, and a possible selloff without naming the institutions or portfolio mechanics between them.</p></div>
+          <div class="v3-landscape-bars" aria-label="Relative content saturation"><p><span>Demographics</span><i style="--bar:92%"></i><b>High</b></p><p><span>Fiscal pressure</span><i style="--bar:78%"></i><b>High</b></p><p><span>Institutional flows</span><i style="--bar:34%"></i><b>Low</b></p></div>
+        </li>
+        <li class="is-connection">
+          <span class="v3-thread-index">03</span>
+          <div class="v3-thread-copy"><small>Unexpected connection</small><h3>Domestic yields and currency hedging can change the buyer decision before any sale.</h3><p>NBER research supplies the missing mechanism: mandates, duration, relative yields, and USD/JPY hedging sit between a demographic trend and an asset flow.</p></div>
+          <div class="v3-mechanism"><span>Higher JGB appeal</span><b>→</b><span>Weaker hedged returns</span><b>→</b><span>Less new foreign demand</span></div>
+        </li>
+        <li class="is-opportunity">
+          <span class="v3-thread-index">04</span>
+          <div class="v3-thread-copy"><small>Idea opportunity</small><h3>Japan does not need to dump Treasuries to change the U.S. financing story.</h3><p>The underdeveloped angle is marginal demand: who replaces Japanese buying if gradual reallocation makes overseas bonds less attractive?</p></div>
+          <div class="v3-opportunity-scores"><p><span>Information gain</span><strong>High</strong><small>Connection rarely developed</small></p><p><span>Audience relevance</span><strong>Strong</strong><small>Timely for policy audiences</small></p></div>
+        </li>
       </ol>
+      <div class="v3-example-action"><p><strong>Limits stay visible.</strong> A formal allocation change and aligned flow data could strengthen—or weaken—this interpretation.</p><a class="v3-text-link" href="/markov-engine/sample/">Inspect the source packet <span aria-hidden="true">→</span></a></div>
     </section>
 
-    <section class="product-section" aria-labelledby="workspace-title">
-      <p class="route-label">One workspace for the whole trail</p>
-      <h2 id="workspace-title">The source does not disappear after the output.</h2>
-      <p class="section-lede">Markov parses what you save, stores it in your workspace, builds and checks the research chain, and keeps every brief, report, and script connected to the claims and evidence that produced it.</p>
-      <ol class="workspace-capabilities" aria-label="Markov workspace capabilities">
-        <li><span>01</span><strong>Capture and parse</strong><p>Bring in videos, articles, PDFs, podcasts, posts, or a question.</p></li>
-        <li><span>02</span><strong>Store and connect</strong><p>Keep sources, claims, evidence, and research chains organized together.</p></li>
-        <li><span>03</span><strong>Review and decide</strong><p>Inspect passages, challenge weak links, and choose which branches deserve more work.</p></li>
-        <li><span>04</span><strong>Edit and create</strong><p>Refine briefs, reports, scripts, and answers without losing their research trail.</p></li>
-      </ol>
-    </section>
-
-    <section class="late-intake" id="access" aria-labelledby="intake-title">
-      <p class="route-label">Your turn</p>
-      <h2 id="intake-title">What do you want to understand—or make?</h2>
-      <form action="/markov-engine/sample/" method="get" data-landing-intake>
-        <label class="visually-hidden" for="landing-source">Paste a link or ask a question</label>
-        <input id="landing-source" name="source" placeholder="Paste a link or ask a question" autocomplete="off" required>
-        <button type="submit">See the product demo</button>
-      </form>
-      <p>This preview demonstrates the research journey. Account access is enabled in the deployable web application.</p>
-    </section>
-
-    <section class="post-intake-section" aria-label="Markov access options">
-      <div class="platform-bridge">
-        <div><span>For people</span><strong>A calm web app for research, review, and creation.</strong></div>
-        <div><span>For agents</span><strong>The same structured chains, evidence, and outputs through the Markov API.</strong></div>
+    <section class="v3-campaign" aria-labelledby="v3-campaign-title" data-campaign-demo>
+      <div class="v3-campaign-copy">
+        <p class="v3-kicker">One idea, developed by channel</p>
+        <h2 id="v3-campaign-title">A campaign is not the same post cut five ways.</h2>
+        <p>Markov recommends what each channel can contribute to the idea, in what sequence, and which audience response should guide the next move.</p>
+        <div class="v3-campaign-tabs" role="tablist" aria-label="Campaign channel treatments">
+          <button type="button" role="tab" aria-selected="true" data-campaign-tab="flagship">Flagship</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="newsletter">Newsletter</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="video">Video</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-campaign-tab="social">Social</button>
+        </div>
       </div>
-      <p class="mobile-handoff"><strong>Find something while browsing on your phone?</strong> Send it to Markov. It syncs into your web workspace, where the full chain is researched, reviewed, stored, and turned into finished work.</p>
-      <div class="product-actions">
-        <a href="/markov-engine/sample/">See the product demo <span aria-hidden="true">→</span></a>
-        <a href="/markov-engine/pricing/">View pricing</a>
-        <a href="/markov-engine/developers/">Build with the API</a>
+      <article class="v3-treatment" aria-live="polite">
+        <header><span data-campaign-label>CANONICAL ARTICLE / WEEK 1</span><small>Own the full argument</small></header>
+        <h3 data-campaign-title>Follow the missing buyer, not the dramatic seller.</h3>
+        <div data-campaign-body>
+          <section><span>Job</span><p>Establish the mechanism, compare the competing selloff story, and name the data that would change the conclusion.</p></section>
+          <section><span>Distinct contribution</span><p>A referenceable model of marginal Treasury demand with every source role attached.</p></section>
+          <section><span>Monitor next</span><p>Allocation guidance, sector-level flows, and audience questions about replacement buyers.</p></section>
+        </div>
+      </article>
+    </section>
+
+    <section class="v3-authorship" aria-labelledby="v3-authorship-title">
+      <div><p class="v3-kicker">Why Markov does not write in your place</p><h2 id="v3-authorship-title">Your point of view is the product.</h2></div>
+      <div class="v3-authorship-contrast">
+        <section><span>Markov contributes</span><ul><li>Landscape and saturation analysis</li><li>Unexpected, typed connections</li><li>Structured argument and story beats</li><li>Counterarguments and open questions</li><li>Channel-native treatments and sequence</li></ul></section>
+        <section><span>You contribute</span><ul><li>The final thesis you stand behind</li><li>Judgment about your audience</li><li>Your examples, experience, and voice</li><li>The language that earns trust</li><li>The decision to publish</li></ul></section>
       </div>
+    </section>
+
+    <section class="v3-aeo" aria-labelledby="v3-aeo-title">
+      <div class="v3-aeo-statement"><p class="v3-kicker">AEO starts before optimization</p><h2 id="v3-aeo-title">Publish what deserves to become part of the answer.</h2></div>
+      <div class="v3-aeo-compare">
+        <p><span>Conventional AEO asks</span>How do we make our existing content appear in AI-generated answers?</p>
+        <p><span>Markov asks</span>What should we publish that gives future answers something useful they are currently missing?</p>
+      </div>
+      <p class="v3-aeo-note">Markov does not claim to search all human knowledge. It explains which coverage it checked, what repeats, and where a useful connection appears underdeveloped.</p>
+    </section>
+
+    <section class="v3-product-preview" aria-labelledby="v3-preview-title">
+      <header class="v3-section-intro"><p class="v3-kicker">Inside the product</p><h2 id="v3-preview-title">A working surface for editorial decisions.</h2><p>Signals, landscapes, opportunities, briefs, and plans stay connected so the reason behind an idea does not disappear during production.</p></header>
+      <div class="v3-preview-canvas">
+        <aside><strong>MARKOV</strong><span>Home</span><span>Signals</span><span class="is-active">Ideas</span><span>Campaign plans</span><span>Published</span></aside>
+        <div class="v3-preview-workspace"><header><span>IDEA / JAPAN CAPITAL FLOWS</span><button type="button" disabled>Develop this idea</button></header><div class="v3-preview-thesis"><small>Proposed thesis</small><h3>Japan does not need to dump Treasuries to change the U.S. financing story.</h3><p><span>Observed</span> Domestic yields and hedging costs have repriced.</p><p><span>Interpretation</span> Marginal foreign-bond demand could weaken before a visible selloff.</p></div><div class="v3-preview-rails"><section><small>Information gain</small><strong>High</strong><p>Missing buyer connection</p></section><section><small>Audience relevance</small><strong>Strong</strong><p>Timely policy question</p></section><section><small>Coverage freshness</small><strong>Jul 18</strong><p>Example source packet</p></section></div></div>
+      </div>
+    </section>
+
+    <section class="v3-final-cta" aria-labelledby="v3-final-title">
+      <div><p class="v3-kicker">The next useful idea is rarely another summary.</p><h2 id="v3-final-title">Find the connection worth developing.</h2></div>
+      <div><a class="v3-button is-light" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a><p>Bring a source, question, observation, topic, or existing brief.</p></div>
     </section>
   </main>
 
-  <footer class="idea-footer">
-    <span>MARKOV</span>
-    <p>Find something. Understand it. Make something original.</p>
-    <nav aria-label="Footer navigation"><a href="#product">Product</a><a href="/markov-engine/pricing/">Pricing</a><a href="/markov-engine/developers/">API</a><a href="/markov-engine/sample/">Product demo</a></nav>
-  </footer>
+  <footer class="v3-site-footer">
+  <div class="v3-footer-lead">
+    <a class="v3-wordmark" href="/markov-engine/"><span aria-hidden="true"></span>MARKOV</a>
+    <p>Find the valuable ideas existing content has not yet connected.</p>
+  </div>
+  <nav aria-label="Footer navigation">
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/sample/">Japan example</a>
+    <a href="/markov-engine/pricing/">Pricing</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a href="/markov-engine/sample/">Product demo</a>
+  </nav>
+  <p class="v3-footer-note">Markov supports research, reasoning, structure, and distribution. Your final language remains yours.</p>
+</footer>
 
 </body>
 </html>
