@@ -1,131 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Home — Markov{% endblock %}
-{% block body_class %}app-body workspace-shell-body{% endblock %}
+{% block title %}Idea opportunities — Markov{% endblock %}
+{% block body_class %}app-body v3-app-body{% endblock %}
 {% block body %}
-  <div class="app-frame">
+  <div class="v3-app-frame">
     {% include "partials/app_sidebar.html" %}
-    <main class="app-main" id="main-content">
-      <header class="app-topbar workspace-topbar">
-        <a class="mobile-app-mark" href="/app" aria-label="Markov workspace">MARKOV</a>
-        <span class="breadcrumbs">Home</span>
-        <a class="topbar-action" href="#add-anything">Add source <span aria-hidden="true">＋</span></a>
-        <span class="mobile-context">Home</span>
+    <main class="v3-app-main" id="main-content">
+      <header class="v3-app-topbar">
+        <a class="v3-mobile-mark" href="/app" aria-label="Markov workspace"><span aria-hidden="true"></span>MARKOV</a>
+        <span>HOME / OPPORTUNITY FEED</span>
+        <a href="#add-signal">Add a signal <span aria-hidden="true">＋</span></a>
       </header>
 
-      <div class="app-content home-content">
-        <header class="home-heading">
-          <div>
-            <p class="eyebrow">Your workspace</p>
-            <h1>Turn what you find into knowledge you can continue—and work you can publish.</h1>
-          </div>
-          <p>Save any source. Markov reads it, checks the important claims, connects it to the rest of your research, and brings back the directions worth choosing.</p>
+      <div class="v3-app-content v3-home">
+        <header class="v3-home-intro">
+          <div><p class="v3-app-kicker">Editorial opportunity desk</p><h1>Find what should be published next.</h1></div>
+          <p>Add a source, question, observation, or emerging development. Markov compares it with existing coverage, your previous work, and your audience to find underdeveloped ideas.</p>
         </header>
 
-        <form class="quick-capture" id="add-anything" method="post" action="/app/jobs">
-          <label for="quick-source">Add anything</label>
-          <div class="quick-capture-row">
-            <input id="quick-source" name="value" type="text" placeholder="Paste a video, article, PDF, podcast, post, or ask a question…" required>
-            <select name="mode" aria-label="What should Markov do first?">
-              <option value="brief">Catch me up</option>
-              <option value="research" selected>Explore where it leads</option>
-              <option value="script">Turn it into a script</option>
-            </select>
-            <input type="hidden" name="review_level" value="instant">
-            <button type="submit">Add to Markov <span aria-hidden="true">→</span></button>
+        <form class="v3-signal-capture" id="add-signal" method="post" action="/app/jobs">
+          <div class="v3-capture-label"><label for="signal-input">Add a signal</label><span>Raw material, not saved knowledge</span></div>
+          <div class="v3-signal-types" role="group" aria-label="Signal type">
+            <button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste an article, video, podcast, or document URL…">URL</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Write the observation you do not want to lose…">Observation</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="What question keeps returning in your audience?">Question</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Name a topic Markov should scan…">Topic</button>
+            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Paste an existing draft or content brief…">Existing brief</button>
+            <button type="button" disabled title="Direct file upload is not enabled in this QA build">Upload <small>soon</small></button>
           </div>
-          <ol class="markov-process" aria-label="What Markov does next">
-            <li><span>01</span>Read the source</li>
-            <li><span>02</span>Map its claims</li>
-            <li><span>03</span>Check evidence</li>
-            <li><span>04</span>Find connections</li>
-            <li><span>05</span>Bring back directions</li>
-          </ol>
+          <div class="v3-capture-row">
+            <input id="signal-input" name="value" type="text" data-signal-input placeholder="Paste an article, video, podcast, or document URL…" required>
+            <input type="hidden" name="mode" value="research">
+            <input type="hidden" name="review_level" value="instant">
+            <button type="submit">Find idea opportunities <span aria-hidden="true">→</span></button>
+          </div>
+          <p class="v3-capture-scope"><span>Markov will compare</span> the signal, current coverage, existing ideas, and your audience profile. You choose what gets developed.</p>
         </form>
 
-        {% set decision_rows = ready if ready else cases[:2] %}
-        <div class="home-priority-grid">
-          <section class="decision-queue" aria-labelledby="decision-title">
-            <header class="home-section-heading">
-              <div><p class="eyebrow">Ready for your decision</p><h2 id="decision-title">Markov found the paths. You choose what matters.</h2></div>
-              <span>{{ decision_rows | length }}</span>
-            </header>
-            <div class="decision-list">
-              {% for row in decision_rows[:3] %}
-                <article class="decision-item">
-                  <div class="decision-number">{{ "%02d" | format(loop.index) }}</div>
-                  <div class="decision-main">
-                    <p class="workspace-meta"><span>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }}</span><span>{{ row.connection_count }} meaningful connection{{ '' if row.connection_count == 1 else 's' }}</span><span>{{ row.topic_count }} direction{{ '' if row.topic_count == 1 else 's' }}</span></p>
-                    <h3>{{ row.case.title }}</h3>
-                    <div class="decision-finding"><span>What Markov found</span><p>{{ row.finding }}</p></div>
+        {% set opportunity_rows = ready if ready else cases %}
+        <div class="v3-home-grid">
+          <section class="v3-opportunity-feed" aria-labelledby="opportunity-feed-title">
+            <header class="v3-app-section-head"><div><p class="v3-app-kicker">New opportunities for your audience</p><h2 id="opportunity-feed-title">Worth a decision now.</h2></div><span>{{ opportunity_rows | length }}</span></header>
+            <div class="v3-opportunity-list">
+              {% for row in opportunity_rows[:3] %}
+                <article class="v3-opportunity-card" data-opportunity>
+                  <header><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Coverage checked {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</header>
+                  <div class="v3-opportunity-body">
+                    <p class="v3-app-kicker">Proposed thesis</p>
+                    <h3>{{ row.opportunity_thesis }}</h3>
+                    <p>{{ row.opportunity_basis }}</p>
+                    <dl class="v3-opportunity-context">
+                      <div><dt>Signals analyzed</dt><dd>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }} · {{ row.connection_count }} connection{{ '' if row.connection_count == 1 else 's' }}</dd></div>
+                      <div><dt>Possible weakness</dt><dd>{{ row.opportunity_weakness | truncate(160) }}</dd></div>
+                    </dl>
                   </div>
-                  <div class="decision-next">
-                    <span>Next</span>
-                    <p>{{ row.next_action }}</p>
-                    {% if row.destination %}<a href="{{ row.destination }}">{{ row.action_label }} <span aria-hidden="true">→</span></a>{% endif %}
+                  <div class="v3-score-pair" aria-label="Separate opportunity assessments">
+                    <div><span>Information gain</span>{% if row.information_gain is not none %}<strong>{{ row.information_gain }}</strong><small>Connection novelty</small>{% else %}<strong>—</strong><small>Landscape scan pending</small>{% endif %}</div>
+                    <div><span>Audience relevance</span>{% if row.audience_relevance is not none %}<strong>{{ row.audience_relevance }}</strong><small>Demand fit</small>{% else %}<strong>—</strong><small>Audience profile needed</small>{% endif %}</div>
                   </div>
+                  <footer>
+                    {% if row.destination %}<a class="v3-app-primary" href="{{ row.destination }}">Develop this idea <span aria-hidden="true">→</span></a>{% endif %}
+                    {% if row.first_connection %}
+                      <form method="post" action="/app/connections/{{ row.first_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_to" value="/app"><button class="v3-app-quiet" type="submit">Save</button></form>
+                      <button class="v3-app-quiet" type="button" data-reject-opportunity>Not relevant</button>
+                    {% endif %}
+                  </footer>
+                  {% if row.first_connection %}<form class="v3-rejection-reason" method="post" action="/app/connections/{{ row.first_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_to" value="/app"><label for="reason-{{ row.case.id }}">Why does this miss?</label><div><input id="reason-{{ row.case.id }}" name="reason" placeholder="Wrong audience, familiar idea, weak connection…"><button type="submit">Dismiss and teach Markov</button></div></form>{% endif %}
                 </article>
               {% else %}
-                <div class="workspace-empty"><strong>No decision is waiting.</strong><span>Add a source above. Its strongest directions will return here.</span></div>
+                <div class="v3-app-empty"><span>NO OPPORTUNITIES YET</span><h3>Start with one signal.</h3><p>Markov will map what already exists before it recommends a direction.</p><a href="#add-signal">Add your first signal →</a></div>
               {% endfor %}
             </div>
           </section>
 
-          <aside class="processing-queue" aria-labelledby="processing-title">
-            <header class="home-section-heading"><div><p class="eyebrow">In progress</p><h2 id="processing-title">What Markov is doing now.</h2></div><span>{{ in_progress | length }}</span></header>
+          <aside class="v3-progress-rail" aria-labelledby="progress-title">
+            <header><p class="v3-app-kicker">Ideas emerging from recent signals</p><h2 id="progress-title">Current scans</h2></header>
             {% for row in in_progress[:3] %}
-              <article class="processing-item">
+              <article>
+                <span class="v3-processing-dot" aria-hidden="true"></span>
                 <h3>{{ row.case.title }}</h3>
                 <p>{{ row.finding }}</p>
-                <ol class="job-progress">
-                  {% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}
-                </ol>
-                <a href="{{ row.destination }}">See progress →</a>
+                <ol>{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span>{{ label }}</li>{% endfor %}</ol>
+                <a href="{{ row.destination }}">See scan progress →</a>
               </article>
             {% else %}
-              <div class="processing-empty"><span class="quiet-pulse"></span><p>Nothing is processing. New work will show its progress here without blocking the rest of your workspace.</p></div>
+              <div class="v3-rail-empty"><span aria-hidden="true"></span><p>No landscape scan is running. Add a signal when something changes.</p></div>
             {% endfor %}
+            <div class="v3-coverage-note"><span>How recommendations work</span><p>Markov separates observed coverage from interpretation and never treats an unexplained score as a conclusion.</p><a href="/app/onboarding">Review audience profile →</a></div>
           </aside>
         </div>
 
-        <section class="home-ledger" aria-labelledby="chains-title">
-          <header class="home-section-heading">
-            <div><p class="eyebrow">Continue a Chain</p><h2 id="chains-title">Return to the questions that are still alive.</h2></div>
-            <a href="/app/chains">View all Chains →</a>
-          </header>
-          <div class="home-chain-list">
+        <section class="v3-home-ledger" aria-labelledby="continue-title">
+          <header class="v3-app-section-head"><div><p class="v3-app-kicker">Continue developing</p><h2 id="continue-title">Ideas already in motion.</h2></div><a href="/app/ideas">View all ideas →</a></header>
+          <div>
             {% for row in cases[:4] %}
-              <a class="home-chain-row" href="{{ row.destination or '/app/chains' }}">
-                <span class="home-chain-index">{{ "%02d" | format(loop.index) }}</span>
-                <div><p class="workspace-meta"><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">Updated {{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</p><h3>{{ row.case.title }}</h3></div>
-                <p>{{ row.finding }}</p>
-                <strong>{{ row.action_label }} <span aria-hidden="true">↗</span></strong>
-              </a>
-            {% else %}<div class="workspace-empty"><strong>No Chains yet.</strong><span>Your first saved source will become a Chain.</span></div>{% endfor %}
+              <a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><small>{{ row.source_count }} signals · {{ row.topic_count }} opportunities</small><h3>{{ row.case.title }}</h3></div><p>{{ row.next_action }}</p><strong>{{ row.action_label }} →</strong></a>
+            {% else %}<div class="v3-app-empty is-compact"><h3>No idea is in development.</h3><p>Saved opportunities will appear here.</p></div>{% endfor %}
           </div>
         </section>
-
-        <div class="home-secondary-grid">
-          <section aria-labelledby="connections-title">
-            <header class="home-section-heading"><div><p class="eyebrow">New connections</p><h2 id="connections-title">Things Markov connected to what you saved.</h2></div></header>
-            <div class="connection-feed">
-              {% for item in connections[:3] %}
-                <a href="{{ item.row.destination }}">
-                  <span>{{ item.case.title }}</span>
-                  <h3>{{ item.connection.statement }}</h3>
-                  <p>{{ item.connection.why_it_matters }}</p>
-                  <strong>Inspect the connection →</strong>
-                </a>
-              {% else %}<div class="workspace-empty"><strong>No new connection yet.</strong><span>Markov will put useful relationships here after it checks them.</span></div>{% endfor %}
-            </div>
-          </section>
-
-          <section aria-labelledby="outputs-title">
-            <header class="home-section-heading"><div><p class="eyebrow">Recent outputs</p><h2 id="outputs-title">Work waiting to be reviewed and finished.</h2></div><a href="/app/outputs">View all →</a></header>
-            <div class="recent-output-list">
-              {% for item in outputs[:4] %}<a href="/app/artifacts/{{ item.artifact.id }}"><span>{{ item.artifact.artifact_type | humanize }}</span><h3>{{ item.artifact.title }}</h3><p>{{ item.case.title }}</p><strong>Review and finish →</strong></a>{% else %}<div class="workspace-empty"><strong>No outputs yet.</strong><span>Choose a promising direction from a Chain to make one.</span></div>{% endfor %}
-            </div>
-          </section>
-        </div>
       </div>
     </main>
   </div>
