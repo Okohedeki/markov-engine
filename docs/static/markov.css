@@ -729,68 +729,351 @@ code, kbd, pre { font-family: var(--mono); }
 }
 
 @media (max-width: 900px) {
-  :root { --page: calc(100% - 32px); }
-  .mk-public-header { height: 66px; }
-  .mk-nav-toggle { display: flex; }
-  .mk-public-nav { position: absolute; left: 0; right: 0; top: 66px; display: none; padding: 12px; border: 1px solid var(--line-strong); border-radius: 0 0 10px 10px; background: white; box-shadow: 0 18px 50px rgba(9, 21, 42, .14); }
-  .mk-public-nav[data-open="true"] { display: grid; }
-  .mk-public-nav a { min-height: 44px; display: flex; align-items: center; padding: 0 10px; }
-  .mk-public-nav .mk-nav-action { justify-content: space-between; }
-  .mk-hero { min-height: auto; padding-top: 64px; }
-  .mk-hero-intro, .mk-section-intro, .mk-support-hero { display: block; }
-  .mk-hero-intro h1 { font-size: clamp(4rem, 13vw, 7rem); }
-  .mk-hero-copy { margin-top: 34px; }
-  .mk-source-dock { margin-top: 60px; }
-  .mk-source-types { grid-template-columns: repeat(5, minmax(90px, 1fr)); overflow-x: auto; }
-  .mk-source-types button { border-bottom: 0; }
-  .mk-section-intro > p:last-child { margin-top: 24px; }
-  .mk-story-stop { grid-template-columns: 44px 1fr; }
-  .mk-story-stop > :last-child { grid-column: 2; }
-  .mk-route-layout { grid-template-columns: 1fr; }
-  .mk-route-list { display: grid; grid-template-columns: repeat(3, 1fr); border-right: 0; border-bottom: 1px solid var(--line-strong); }
-  .mk-route-list button { min-height: 130px; border-right: 1px solid var(--line); border-bottom: 0; }
-  .mk-route-list button:last-child { border-right: 0; }
-  .mk-fit-columns { grid-template-columns: 1fr; }
-  .mk-fit-columns section + section { padding-left: 0; border-left: 0; }
-  .mk-plan-ledger > div { grid-template-columns: 1fr; }
-  .mk-plan-ledger article { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-  .mk-credit-ledger > header { grid-template-columns: 1fr; gap: 24px; }
-  .mk-resource-list > div { grid-template-columns: 1fr 1fr; }
-  .mk-sample-layout { grid-template-columns: 1fr; }
-  .mk-sample-sources { position: static; }
-  .mk-public-footer { grid-template-columns: 1fr; }
+  :root {
+    --page: calc(100vw - 40px);
+  }
 
-  .mk-app-sidebar { transform: translateX(-102%); transition: transform 200ms var(--ease); box-shadow: 12px 0 48px rgba(9, 21, 42, .18); }
-  .mk-app-sidebar[data-open="true"] { transform: translateX(0); }
-  .mk-app-brand-row > button { display: block; }
-  .mk-app-scrim { position: fixed; inset: 0; z-index: 25; background: rgba(9, 21, 42, .45); }
-  .mk-app-main { margin-left: 0; }
-  .mk-mobile-appbar { position: sticky; top: 0; z-index: 22; display: flex; height: 58px; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); background: rgba(243, 246, 248, .96); backdrop-filter: blur(8px); }
-  .mk-mobile-appbar > button { display: grid; width: 42px; height: 42px; place-content: center; gap: 5px; border: 0; background: transparent; }
-  .mk-mobile-appbar > button span { display: block; width: 20px; height: 1px; background: var(--ink); }
-  .mk-mobile-appbar > a:last-child { color: var(--thread); font-size: .7rem; font-weight: 750; }
-  .mk-workspace-shell, .mk-library-shell, .mk-job-shell, .mk-case-shell { width: calc(100% - 32px); padding-top: 34px; }
-  .mk-dashboard-grid, .mk-job-grid { grid-template-columns: 1fr; }
-  .mk-dashboard-rail { grid-template-columns: 1fr 1fr; }
-  .mk-library-capture { grid-template-columns: 1fr; }
-  .mk-library-capture > div:first-child, .mk-library-capture .mk-capture-types { border-right: 0; border-bottom: 1px solid var(--line); }
-  .mk-library-capture .mk-capture-field { grid-column: auto; }
-  .mk-case-head { top: 58px; }
-  .mk-explore-layout { grid-template-columns: 1fr; }
-  .mk-source-shelf { position: static; }
-  .mk-document-layout { grid-template-columns: 1fr; }
-  .mk-document-outline, .mk-claim-margin { position: static; grid-column: auto; }
-  .mk-document-outline nav { grid-template-columns: repeat(2, 1fr); }
-  .mk-source-table { overflow-x: auto; }
-  .mk-source-table-head, .mk-source-table > article { min-width: 850px; }
-  .mk-auth-shell { grid-template-columns: 1fr; }
-  .mk-auth-story { min-height: 520px; }
-  .mk-auth-form { max-width: none; }
-  .mk-onboarding-grid { grid-template-columns: 1fr; gap: 40px; }
-  .mk-onboarding-grid > aside { position: static; }
-  .mk-review-shell > header { grid-template-columns: 1fr; gap: 30px; }
-  .mk-review-grid { grid-template-columns: 1fr; }
-  .mk-review-document { position: static; }
+  .mk-public-header {
+    top: 14px;
+    min-height: 58px;
+    padding: 5px 6px 5px 16px;
+  }
+
+  .mk-nav-toggle {
+    display: inline-flex;
+  }
+
+  .mk-public-nav {
+    position: absolute;
+    top: calc(100% + 9px);
+    right: 0;
+    left: 0;
+    display: none;
+    padding: 12px;
+    border-radius: 28px;
+    background: var(--paper);
+    box-shadow: var(--shadow-float);
+  }
+
+  .mk-public-nav.is-open {
+    display: grid;
+  }
+
+  .mk-public-nav a {
+    justify-content: space-between;
+    padding-inline: 16px;
+  }
+
+  .mk-hero {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    padding: 116px 20px 54px;
+  }
+
+  .mk-hero-intro {
+    order: 1;
+    padding-top: 58px;
+  }
+
+  .mk-hero h1 {
+    font-size: clamp(59px, 12vw, 92px);
+  }
+
+  .mk-hero-copy {
+    max-width: 620px;
+  }
+
+  .mk-hero-scene {
+    order: 4;
+    width: min(100%, 690px);
+    justify-self: center;
+    margin-top: 30px;
+    transform: none;
+  }
+
+  .mk-source-dock {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    order: 2;
+    grid-template-columns: 1fr;
+    margin-top: 38px;
+  }
+
+  .mk-source-types {
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+
+  .mk-source-types button {
+    flex: 0 0 auto;
+  }
+
+  .mk-dock-input {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .mk-hero-footnote {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    order: 3;
+  }
+
+  .mk-unfold {
+    grid-template-columns: 1fr;
+    gap: 80px;
+    padding-block: 120px;
+  }
+
+  .mk-unfold > .mk-section-intro {
+    position: static;
+  }
+
+  .mk-thread-story {
+    max-width: 720px;
+    margin-left: auto;
+  }
+
+  .mk-route-lab {
+    padding: 115px 20px 125px;
+    border-radius: 70px 0;
+  }
+
+  .mk-route-layout {
+    grid-template-columns: 1fr;
+    gap: 44px;
+    margin-top: 62px;
+  }
+
+  .mk-output-stage {
+    padding: 125px 20px 145px;
+  }
+
+  .mk-output-layout {
+    grid-template-columns: 1fr;
+    margin-top: 65px;
+  }
+
+  .mk-output-tabs {
+    display: flex;
+    padding: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .mk-output-tabs button {
+    min-width: 85px;
+    padding: 0;
+  }
+
+  .mk-output-tabs button::before {
+    top: auto;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    width: auto;
+    height: 2px;
+  }
+
+  .mk-evidence-margin {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 20px;
+    padding-top: 0;
+  }
+
+  .mk-evidence-margin ol {
+    margin-top: 0;
+  }
+
+  .mk-public-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-sample-layout {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+
+  .mk-support-hero > div,
+  .mk-credit-ledger > header {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-plan-ledger > div,
+  .mk-api-contract > ol,
+  .mk-resource-list > div {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-plan-ledger article > p {
+    min-height: 0;
+  }
+
+  .mk-code-scene {
+    margin-top: 80px;
+  }
+
+  .mk-sample-index {
+    padding-top: 4px;
+  }
+
+  .mk-sample-sources {
+    position: static;
+    padding: 45px 0 0;
+    border-top: 1px solid var(--line-strong);
+    border-left: 0;
+  }
+
+  .mk-app-sidebar {
+    width: min(310px, calc(100vw - 50px));
+    box-shadow: var(--shadow-float);
+    transform: translateX(-110%);
+    transition: transform 240ms var(--ease);
+  }
+
+  .mk-app-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .mk-app-brand-row > button {
+    display: block;
+  }
+
+  .mk-app-scrim {
+    position: fixed;
+    z-index: 35;
+    inset: 0;
+    background: rgba(7, 14, 27, 0.48);
+  }
+
+  .mk-app-main {
+    margin-left: 0;
+  }
+
+  .mk-mobile-appbar {
+    position: sticky;
+    top: 0;
+    z-index: 28;
+    display: flex;
+    min-height: 64px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 19px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(247, 246, 242, 0.9);
+    backdrop-filter: blur(16px);
+  }
+
+  .mk-mobile-appbar > button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-content: center;
+    gap: 5px;
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  .mk-mobile-appbar > button span {
+    width: 18px;
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .mk-mobile-appbar > a:last-child {
+    color: var(--cobalt);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .mk-workspace-shell,
+  .mk-library-shell,
+  .mk-job-shell,
+  .mk-case-shell {
+    width: calc(100vw - 40px);
+    padding-top: 38px;
+  }
+
+  .mk-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .mk-dashboard-rail {
+    padding-left: 0;
+    border-top: 1px solid var(--line-strong);
+    border-left: 0;
+  }
+
+  .mk-chain-library {
+    gap: 0 34px;
+  }
+
+  .mk-explore-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-source-shelf {
+    padding: 35px 0 0;
+    border-top: 1px solid var(--line-strong);
+    border-left: 0;
+  }
+
+  .mk-route-mechanism ol,
+  .mk-route-checks {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-document-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-document-outline {
+    position: static;
+  }
+
+  .mk-document-outline nav {
+    display: flex;
+    max-width: 100%;
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  .mk-document-outline nav a {
+    min-width: 150px;
+  }
+
+  .mk-claim-margin {
+    position: static;
+    grid-column: 1;
+  }
+
+  .mk-job-grid,
+  .mk-review-grid,
+  .mk-onboarding-grid {
+    grid-template-columns: 1fr;
+    gap: 55px;
+  }
+
+  .mk-job-next,
+  .mk-onboarding-grid > aside {
+    position: static;
+  }
+
+  .mk-auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .mk-auth-story {
+    min-height: 68vh;
+  }
+
+  .mk-auth-form {
+    min-height: 60vh;
+  }
 }
 
 @media (max-width: 640px) {
