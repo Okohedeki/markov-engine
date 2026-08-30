@@ -320,7 +320,10 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "Editorial studios and agencies" in landing.text
             assert "What everyone already says" in landing.text
             assert "What has not been connected" in landing.text
-            assert "What the audience still needs" in landing.text
+            assert "Competing research directions" in landing.text
+            assert landing.text.count("data-explorer-tab=") == 4
+            assert landing.text.count("data-story-tab=") == 3
+            assert landing.text.count("data-direction=") == 3
             for stage in ("01 / Signal", "02 / Existing answers", "03 / Missing connection", "04 / Idea opportunity"):
                 assert stage in landing.text
             assert "Japan’s pension pivot puts overseas capital in play" in landing.text
@@ -378,7 +381,8 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "--v3-accent" in css.text
             assert "--v3-connection" in css.text
             assert "--v3-audience" in css.text
-            assert ".v4-answer-map" in css.text
+            assert ".v5-explorer" in css.text
+            assert ".v5-story-stage" in css.text
             assert ".v3-app-nav" in css.text
 
             pdf_preview = await client.get("/static/japan-nber-cover.png")
@@ -387,6 +391,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
 
             javascript = await client.get("/static/markov-v3.js")
             assert javascript.status_code == 200
+            assert "data-explorer-tab" in javascript.text
+            assert "data-story-tab" in javascript.text
+            assert "data-direction-title" in javascript.text
             assert "data-campaign-tab" in javascript.text
             assert "ArrowLeft" in javascript.text
             assert "aria-expanded" in javascript.text
