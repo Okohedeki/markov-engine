@@ -761,6 +761,11 @@ textarea { min-height: 150px; resize: vertical; }
   .two-doors > div + div { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
   .sample-workspace { display: block; }
   .sample-sources { border-left: 0; border-top: 1px solid var(--line); }
+  .dashboard-intro { align-items: start; grid-template-columns: 1fr; }
+  .dashboard-intro .lede { max-width: 680px; }
+  .dashboard-lower { grid-template-columns: 1fr; }
+  .workspace-utility { display: grid; gap: 0 1.5rem; grid-template-columns: 1fr 1fr; }
+  .workspace-utility .eyebrow, .workspace-utility nav { grid-column: 1 / -1; }
   .app-sidebar { padding: 1rem .7rem; }
   .app-sidebar .wordmark { font-size: 0; justify-content: center; }
   .app-sidebar .wordmark::before { margin: 0; }
