@@ -855,6 +855,12 @@
     if (caseViews.some((view) => view.dataset.caseView === requestedView)) {
       selectCaseView(requestedView);
     }
+    window.addEventListener('hashchange', () => {
+      const nextView = window.location.hash.slice(1);
+      if (caseViews.some((view) => view.dataset.caseView === nextView)) {
+        selectCaseView(nextView);
+      }
+    });
   }
 
   const outputEditor = document.querySelector('[data-output-editor]');
@@ -882,7 +888,7 @@
         angleInput.value = trigger.dataset.topicFocus || '';
         context.textContent = trigger.dataset.topicId
           ? `Working from: ${trigger.dataset.topicTitle}`
-          : 'Choose the direction before Markov writes.';
+          : 'Choose the direction before Markov builds the brief.';
         composer.showModal();
         window.setTimeout(() => angleInput.focus(), 0);
       });
