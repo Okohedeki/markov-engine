@@ -815,4 +815,304 @@
       });
     });
   });
+
+  const caseTabs = [...document.querySelectorAll('[data-case-view-tab]')];
+  const caseViews = [...document.querySelectorAll('[data-case-view]')];
+  if (caseTabs.length && caseViews.length) {
+    const selectCaseView = (name, moveFocus = false) => {
+      caseTabs.forEach((tab) => {
+        const active = tab.dataset.caseViewTab === name;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active && moveFocus) tab.focus();
+      });
+      caseViews.forEach((view) => {
+        view.hidden = view.dataset.caseView !== name;
+      });
+      if (history.replaceState) history.replaceState(null, '', `#${name}`);
+    };
+
+    caseTabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectCaseView(tab.dataset.caseViewTab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = caseTabs.length - 1;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % caseTabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + caseTabs.length) % caseTabs.length;
+        selectCaseView(caseTabs[nextIndex].dataset.caseViewTab, true);
+      });
+    });
+    document.querySelectorAll('[data-case-view-jump]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        selectCaseView(trigger.dataset.caseViewJump, true);
+        document.querySelector('.case-view-tabs')?.scrollIntoView({ block: 'start' });
+      });
+    });
+    const requestedView = window.location.hash.slice(1);
+    if (caseViews.some((view) => view.dataset.caseView === requestedView)) {
+      selectCaseView(requestedView);
+    }
+    window.addEventListener('hashchange', () => {
+      const nextView = window.location.hash.slice(1);
+      if (caseViews.some((view) => view.dataset.caseView === nextView)) {
+        selectCaseView(nextView);
+      }
+    });
+  }
+
+  const outputEditor = document.querySelector('[data-output-editor]');
+  if (outputEditor) {
+    document.querySelectorAll('[data-editor-find]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        const needle = trigger.dataset.editorFind;
+        const index = outputEditor.value.toLocaleLowerCase().indexOf(needle.toLocaleLowerCase());
+        outputEditor.focus();
+        if (index >= 0) outputEditor.setSelectionRange(index, index + needle.length);
+      });
+    });
+  }
+
+  const composer = document.querySelector('[data-output-composer]');
+  if (composer) {
+    const topicInput = composer.querySelector('[data-composer-topic]');
+    const angleInput = composer.querySelector('[data-composer-angle]');
+    const context = composer.querySelector('[data-composer-context]');
+    let composerTrigger = null;
+    document.querySelectorAll('[data-open-composer]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        composerTrigger = trigger;
+        topicInput.value = trigger.dataset.topicId || '';
+        angleInput.value = trigger.dataset.topicFocus || '';
+        context.textContent = trigger.dataset.topicId
+          ? `Working from: ${trigger.dataset.topicTitle}`
+          : 'Choose the direction before Markov builds the brief.';
+        composer.showModal();
+        window.setTimeout(() => angleInput.focus(), 0);
+      });
+    });
+    composer.querySelector('[data-close-composer]')?.addEventListener('click', () => composer.close());
+    composer.addEventListener('close', () => composerTrigger?.focus());
+    composer.addEventListener('click', (event) => {
+      if (event.target !== composer) return;
+      const bounds = composer.getBoundingClientRect();
+      const inside = event.clientX >= bounds.left && event.clientX <= bounds.right
+        && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+      if (!inside) composer.close();
+    });
+  }
+})();
+
+(() => {
+  const page = document.querySelector('.narrative-landing');
+  if (!page) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const narrowLayout = window.matchMedia('(max-width: 900px)');
+  const header = document.querySelector('[data-narrative-header]');
+  const encounter = document.querySelector('[data-narrative-encounter]');
+  const encounterCards = [...document.querySelectorAll('[data-encounter-card]')];
+  let frameRequested = false;
+
+  if (!reduceMotion.matches) page.classList.add('has-narrative-motion');
+
+  const clamp = (value, minimum = 0, maximum = 1) => Math.min(maximum, Math.max(minimum, value));
+  const renderScrollState = () => {
+    frameRequested = false;
+    header?.classList.toggle('is-scrolled', window.scrollY > 16);
+    if (!encounter || reduceMotion.matches || narrowLayout.matches) {
+      encounterCards.forEach((card) => {
+        card.style.removeProperty('transform');
+        card.style.removeProperty('opacity');
+      });
+      return;
+    }
+    const bounds = encounter.getBoundingClientRect();
+    const travel = Math.max(1, encounter.offsetHeight - window.innerHeight * .58);
+    const progress = clamp(-bounds.top / travel);
+    const remaining = 1 - progress;
+    encounterCards.forEach((card) => {
+      const x = Number(card.dataset.startX || 0) * remaining;
+      const y = Number(card.dataset.startY || 0) * remaining;
+      const rotation = Number(card.dataset.startRotate || 0) * remaining;
+      const scale = .9 + progress * .1;
+      card.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
+      card.style.opacity = String(.5 + progress * .5);
+    });
+  };
+
+  const requestScrollRender = () => {
+    if (frameRequested) return;
+    frameRequested = true;
+    window.requestAnimationFrame(renderScrollState);
+  };
+  window.addEventListener('scroll', requestScrollRender, { passive: true });
+  window.addEventListener('resize', requestScrollRender);
+  reduceMotion.addEventListener?.('change', requestScrollRender);
+  narrowLayout.addEventListener?.('change', requestScrollRender);
+  renderScrollState();
+
+  const scenes = [...document.querySelectorAll('[data-narrative-scene]')];
+  if ('IntersectionObserver' in window && scenes.length) {
+    const sceneObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-active', 'was-seen');
+        page.dataset.activeScene = entry.target.dataset.narrativeScene;
+      });
+    }, { rootMargin: '-24% 0px -34%', threshold: [0.12, 0.45] });
+    scenes.forEach((scene) => sceneObserver.observe(scene));
+  } else {
+    scenes.forEach((scene) => scene.classList.add('was-seen'));
+  }
+
+  const understanding = {
+    substance: ['What remains after the headline', 'A policy signal and a plausible incentive—not evidence of one coordinated Treasury dump.'],
+    context: ['The actor changes the story', 'Pension funds, insurers, banks, households, and the central bank hold different assets under different mandates.'],
+    claim: ['The mechanism worth testing', 'Higher domestic yields plus an expensive currency hedge can make some foreign-bond positions less attractive.'],
+    question: ['The evidence still needed', 'A transaction claim needs the institution, instrument, date, and observed flow—not just a national narrative.'],
+  };
+  const understandLabel = document.querySelector('[data-understand-label]');
+  const understandCopy = document.querySelector('[data-understand-copy]');
+  document.querySelectorAll('[data-understand-trigger]').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const selected = understanding[trigger.dataset.understandTrigger];
+      if (!selected) return;
+      document.querySelectorAll('[data-understand-trigger]').forEach((candidate) => {
+        const active = candidate === trigger;
+        candidate.classList.toggle('is-active', active);
+        candidate.setAttribute('aria-pressed', String(active));
+      });
+      understandLabel.textContent = selected[0];
+      understandCopy.textContent = selected[1];
+    });
+  });
+
+  const branchDirections = {
+    evidence: {
+      rank: 'Strongest supported direction',
+      state: 'Independently supported',
+      title: 'Follow the slow reallocation, not the dump.',
+      copy: 'Higher domestic yields, policy pressure, and currency-hedging costs can change specific portfolio decisions before any coordinated national sale appears.',
+      test: 'A formal allocation change followed by aligned sector-level outflows.',
+    },
+    original: {
+      rank: 'Most original direction',
+      state: 'Mechanism supported',
+      title: 'The important signal may be a missing buyer.',
+      copy: 'Treasury pressure does not require a dramatic liquidation. Fewer new purchases from hedged Japanese institutions could change marginal demand first.',
+      test: 'Auction participation, net transaction data, and evidence that replacement buyers did not absorb the shift.',
+    },
+    consequence: {
+      rank: 'Most consequential direction',
+      state: 'Needs more evidence',
+      title: 'A domestic pivot could travel through global rates.',
+      copy: 'If Japanese institutions consistently prefer domestic duration, the downstream story becomes Treasury financing conditions—not one headline sale.',
+      test: 'Persistent allocation changes aligned with yields, flows, and the behavior of other major foreign holders.',
+    },
+  };
+  const branchFields = {
+    rank: document.querySelector('[data-branch-rank]'),
+    state: document.querySelector('[data-branch-state]'),
+    title: document.querySelector('[data-branch-title]'),
+    copy: document.querySelector('[data-branch-copy]'),
+    test: document.querySelector('[data-branch-test]'),
+  };
+  document.querySelectorAll('[data-branch-choice]').forEach((choice) => {
+    choice.addEventListener('click', () => {
+      const selected = branchDirections[choice.dataset.branchChoice];
+      if (!selected) return;
+      document.querySelectorAll('[data-branch-choice]').forEach((candidate) => {
+        const active = candidate === choice;
+        candidate.classList.toggle('is-selected', active);
+        candidate.setAttribute('aria-pressed', String(active));
+      });
+      Object.entries(branchFields).forEach(([name, field]) => {
+        if (field) field.textContent = selected[name];
+      });
+    });
+  });
+
+  const outputs = {
+    brief: {
+      label: 'MARKOV BRIEF · DECISION READY',
+      title: 'Why would Japanese investors sell U.S. Treasuries?',
+      paragraphs: [
+        ['BOTTOM LINE', 'A gradual reduction in foreign-bond demand is plausible. A coordinated Treasury dump is not established.'],
+        ['WHAT MATTERS', 'Domestic yields, currency-hedging costs, and institution-specific mandates connect the policy proposal to a possible portfolio change.'],
+        ['NEXT CHECK', 'Watch formal GPIF guidance and aligned sector-level flow data.'],
+      ],
+    },
+    report: {
+      label: 'MARKOV REPORT · EVIDENCE LINKED',
+      title: 'The policy signal came before the sale.',
+      paragraphs: [
+        ['THESIS', 'The dramatic interpretation turns a proposal into a completed liquidation. The stronger path predicts slower, institution-specific repatriation.'],
+        ['COMPETING PATH', 'Aging → fiscal pressure → forced national liquidation skips the institutions that actually own the assets.'],
+        ['RESEARCH PLAN', 'Track allocations, hedge ratios, foreign-asset flows, and Treasury transactions on aligned dates.'],
+      ],
+    },
+    script: {
+      label: 'MARKOV SCRIPT · READY TO RECORD',
+      title: 'Japan did not decide to dump America’s debt.',
+      paragraphs: [
+        ['OPEN', 'Japan did not wake up and decide to dump America’s debt. In July 2026, its finance minister floated something narrower—and potentially more important.'],
+        ['TURN', 'If Japanese government bonds now compete with U.S. bonds after currency hedging, why should every overseas allocation stay where it is?'],
+        ['CLOSE', 'The evidence supports a mechanism and a catalyst—not a dump. The next signal is a formal allocation change followed by the flow data.'],
+      ],
+    },
+    newsletter: {
+      label: 'MARKOV NEWSLETTER · SOURCE NOTES ATTACHED',
+      title: 'The Treasury story hiding inside Japan’s pension pivot',
+      paragraphs: [
+        ['THE SIGNAL', 'A proposal to steer pension assets home arrived as Japanese government bonds became more competitive after hedging.'],
+        ['THE SURPRISE', 'The first effect may be fewer marginal purchases, not a cinematic liquidation of existing holdings.'],
+        ['WHAT TO WATCH', 'Formal allocation rules, sector flows, hedge costs, and Treasury transaction data.'],
+      ],
+    },
+  };
+  const outputTabs = [...document.querySelectorAll('[data-output-choice]')];
+  const outputLabel = document.querySelector('[data-output-label]');
+  const outputTitle = document.querySelector('[data-output-title]');
+  const outputBody = document.querySelector('[data-output-body]');
+  const selectOutput = (name, moveFocus = false) => {
+    const selected = outputs[name];
+    if (!selected || !outputBody) return;
+    outputTabs.forEach((tab) => {
+      const active = tab.dataset.outputChoice === name;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      if (active && moveFocus) tab.focus();
+    });
+    outputLabel.textContent = selected.label;
+    outputTitle.textContent = selected.title;
+    outputBody.replaceChildren(...selected.paragraphs.map(([lead, copy]) => {
+      const paragraph = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = lead;
+      paragraph.append(strong, document.createTextNode(` ${copy}`));
+      return paragraph;
+    }));
+  };
+  outputTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectOutput(tab.dataset.outputChoice));
+    tab.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      let nextIndex = index;
+      if (event.key === 'Home') nextIndex = 0;
+      if (event.key === 'End') nextIndex = outputTabs.length - 1;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % outputTabs.length;
+      if (event.key === 'ArrowLeft') nextIndex = (index - 1 + outputTabs.length) % outputTabs.length;
+      selectOutput(outputTabs[nextIndex].dataset.outputChoice, true);
+    });
+  });
+
+  const capture = document.querySelector('[data-narrative-capture]');
+  capture?.addEventListener('submit', () => {
+    const source = capture.querySelector('[name="source"]');
+    if (source?.value.trim()) sessionStorage.setItem('markov.pendingSource', source.value.trim());
+  });
 })();
