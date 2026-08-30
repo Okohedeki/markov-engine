@@ -3,37 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Submit a source and retrieve its claims, validated connections, research paths, insights, artifacts, and branch state through Markov API V2.">
+  <meta name="description" content="Submit signals and retrieve inspectable claims, coverage, typed connections, idea opportunities, development briefs, and decision state through the Markov API.">
 
-  <title>Markov API — Follow ideas programmatically</title>
+  <title>Markov API — Idea opportunities for agents</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
+  <link rel="stylesheet" href="/markov-engine/static/markov-v3.css">
   <script defer src="/markov-engine/static/markov.js"></script>
+  <script defer src="/markov-engine/static/markov-v3.js"></script>
 </head>
-<body class="">
+<body class="v3-public v3-support-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="public-header">
-  <a class="wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
-  <nav class="public-nav" aria-label="Primary navigation">
-    <a href="/markov-engine/#product">Product</a>
+  <header class="v3-site-header" data-site-header>
+  <a class="v3-wordmark" href="/markov-engine/" aria-label="Markov home"><span aria-hidden="true"></span>MARKOV</a>
+  <button class="v3-nav-toggle" type="button" aria-expanded="false" aria-controls="v3-primary-nav" data-nav-toggle><span>Menu</span><i aria-hidden="true"></i></button>
+  <nav class="v3-site-nav" id="v3-primary-nav" aria-label="Primary navigation" data-site-nav>
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/#who-its-for">Who it’s for</a>
     <a href="/markov-engine/pricing/">Pricing</a>
-    <a href="/markov-engine/developers/">Developers</a>
-    <a class="button button-small button-secondary" href="/markov-engine/sample/">Product demo</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a class="v3-nav-signin" href="/markov-engine/sample/">Product demo</a>
   </nav>
 </header>
-  <main id="main-content">
-    <section class="page-hero">
-      <p class="plain-kicker">Markov API / v2</p>
-      <h1>Give your agents ideas they can inspect and continue.</h1>
-      <p class="v2-lede">Submit a source once. Retrieve the claims, evidence, typed connections, paths, insights, and finished artifact—or follow a branch and convert it into something new.</p>
-      <div class="button-row"><a class="button" href="/markov-engine/developers/">Open API reference</a><a class="button button-secondary" href="/markov-engine/sample/">Open Markov</a></div>
+  <main class="v3-support-main" id="main-content">
+    <section class="v3-support-hero v3-api-hero">
+      <div><p class="v3-kicker">Markov API / V2</p><h1>Give your agents ideas they can inspect and continue.</h1></div>
+      <div><p>Submit a signal once. Retrieve its claims, evidence, existing landscape, typed connections, ranked opportunities, and development state—or follow a promising connection without repeating the case.</p><div class="v3-action-row"><a class="v3-button" href="/markov-engine/developers/">Open API reference <span aria-hidden="true">→</span></a><a class="v3-text-link" href="/markov-engine/sample/">Open Markov</a></div></div>
     </section>
-    <section class="content-narrow section-rule">
-      <h2>Start an exploration.</h2>
-      <p class="lede">Use a stable idempotency key for retries. Customer language maps directly to the three V2 jobs.</p>
-      <div class="code-shell" aria-label="Example V2 API request">
-        <div class="code-bar"><span>REQUEST</span><span>POST /v2/jobs</span></div>
+
+    <section class="v3-support-section v3-api-contract" aria-labelledby="api-contract-heading">
+      <header><p class="v3-kicker">Agent contract</p><h2 id="api-contract-heading">Structured opportunity data—not generated prose in a box.</h2><p>Every resource keeps its evidence level, ranking dimension, uncertainty, decision history, and link to the originating case.</p></header>
+      <div class="v3-api-steps">
+        <article><span>01</span><h3>Signal in</h3><p>Pass a source, observation, question, topic, or existing brief with stable idempotency for safe retries.</p></article>
+        <article><span>02</span><h3>Opportunity out</h3><p>Read claims, landscape coverage, typed connections, mechanisms, weaknesses, and separate information-gain and audience-relevance signals.</p></article>
+        <article><span>03</span><h3>Decision retained</h3><p>Save, dismiss, validate, investigate, or develop a direction while keeping the evidence boundary attached.</p></article>
+      </div>
+    </section>
+
+    <section class="v3-support-section v3-api-example" aria-labelledby="api-example-heading">
+      <header><p class="v3-kicker">Request</p><h2 id="api-example-heading">Start an exploration.</h2><p>Customer language maps to the V2 job contract. The agent receives inspectable state it can reason over or present for a human decision.</p></header>
+      <div class="v3-code-shell" aria-label="Example V2 API request">
+        <div><span>REQUEST</span><span>POST /v2/jobs</span></div>
         <pre><code>curl -X POST https://your-markov-host/v2/jobs \
   -H "X-Markov-Key: $MARKOV_API_KEY" \
   -H "Idempotency-Key: japan-demographics-01" \
@@ -52,45 +63,26 @@
   }'</code></pre>
       </div>
     </section>
-    <section class="v2-section section-rule" aria-labelledby="api-contract-heading">
-      <div class="v2-section-heading"><h2 id="api-contract-heading">Structured work, not generated prose in a box.</h2><p>Each resource keeps its evidence level, score, uncertainty, and link to the case.</p></div>
-      <div class="job-cards">
-        <article><h3>Observe</h3><p>Poll jobs and meaningful events: extraction, claims, evidence, connections, validation, paths, insights, and rendering.</p></article>
-        <article><h3>Reason</h3><p>Read typed connections with endpoints, mechanisms, support, weaknesses, next steps, and reproducible scores.</p></article>
-        <article><h3>Continue</h3><p>Save, dismiss, validate, or follow a connection; convert an insight or artifact without repeating the case.</p></article>
-      </div>
-    </section>
-    <section class="content-narrow section-rule">
-      <h2>Core V2 routes</h2>
-      <div class="code-shell"><pre><code>GET  /v2/jobs/{job_id}
-GET  /v2/jobs/{job_id}/events
-GET  /v2/cases/{case_id}
-GET  /v2/cases/{case_id}/connections
-GET  /v2/cases/{case_id}/paths
-GET  /v2/cases/{case_id}/insights
-POST /v2/connections/{connection_id}/validate
-POST /v2/connections/{connection_id}/decisions
-POST /v2/connections/{connection_id}/follow
-POST /v2/insights/{insight_id}/convert
-POST /v2/artifacts/{artifact_id}/convert</code></pre></div>
-      <p>API access is entitlement-controlled. Citation quality, uncertainty labels, source packets, and accuracy checks are not.</p>
-      <div class="button-row" style="margin-top:2rem"><a class="button" href="/markov-engine/developers/">Read the generated reference</a><a href="/markov-engine/sample/">Inspect the real sample</a></div>
+
+    <section class="v3-support-section v3-route-section" aria-labelledby="routes-heading">
+      <header><p class="v3-kicker">Core resources</p><h2 id="routes-heading">Follow the whole idea trail.</h2><p>API access is entitlement-controlled. Citation quality, uncertainty labels, source packets, and accuracy checks are not.</p></header>
+      <div class="v3-route-ledger"><code>GET&nbsp; /v2/jobs/{job_id}</code><code>GET&nbsp; /v2/jobs/{job_id}/events</code><code>GET&nbsp; /v2/cases/{case_id}</code><code>GET&nbsp; /v2/cases/{case_id}/connections</code><code>GET&nbsp; /v2/cases/{case_id}/paths</code><code>GET&nbsp; /v2/cases/{case_id}/insights</code><code>POST /v2/connections/{connection_id}/validate</code><code>POST /v2/connections/{connection_id}/decisions</code><code>POST /v2/connections/{connection_id}/follow</code><code>POST /v2/insights/{insight_id}/convert</code></div>
+      <div class="v3-support-boundary"><span>Authorship boundary</span><p>The API returns evidence-linked briefs, opportunity structure, and channel strategy. Your product or agent remains responsible for the final authored language.</p><a href="/markov-engine/sample/">Inspect the Japan example →</a></div>
     </section>
   </main>
-  <footer class="public-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="wordmark" href="/markov-engine/">MARKOV</a>
-      <p class="fine">Find something. Understand it. Make something original.</p>
-    </div>
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a href="/markov-engine/#product">Product</a>
-      <a href="/markov-engine/sample/">Product demo</a>
-      <a href="/markov-engine/pricing/">Pricing</a>
-      <a href="/markov-engine/developers/">API</a>
-      <a href="/markov-engine/sample/">Product demo</a>
-    </nav>
+  <footer class="v3-site-footer">
+  <div class="v3-footer-lead">
+    <a class="v3-wordmark" href="/markov-engine/"><span aria-hidden="true"></span>MARKOV</a>
+    <p>Find the valuable ideas existing content has not yet connected.</p>
   </div>
+  <nav aria-label="Footer navigation">
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/sample/">Japan example</a>
+    <a href="/markov-engine/pricing/">Pricing</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a href="/markov-engine/sample/">Product demo</a>
+  </nav>
+  <p class="v3-footer-note">Markov supports research, reasoning, structure, and distribution. Your final language remains yours.</p>
 </footer>
 
 </body>
