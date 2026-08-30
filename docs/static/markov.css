@@ -1,25 +1,27 @@
 :root {
-  color-scheme: light;
-  --paper: #f7f8fb;
-  --paper-deep: #eef0f5;
-  --surface: #ffffff;
-  --ink: #15171c;
-  --ink-soft: #3f4653;
-  --muted: #697180;
-  --line: #dfe2e8;
-  --line-strong: #b8bec9;
-  --moss: #5556d9;
-  --moss-dark: #3f40b8;
-  --moss-pale: #ededff;
-  --signal: #5556d9;
-  --signal-pale: #ededff;
-  --warning: #8a5a12;
-  --danger: #8c3029;
-  --serif: Inter, Aptos, Segoe UI, Helvetica Neue, Arial, sans-serif;
-  --sans: Inter, Aptos, Segoe UI, Helvetica Neue, Arial, sans-serif;
-  --mono: Cascadia Mono, SFMono-Regular, Consolas, Liberation Mono, monospace;
-  --content: 1240px;
-  --shadow: 0 18px 55px rgb(31 36 48 / 9%);
+  --canvas: #f3f6f8;
+  --paper: #ffffff;
+  --ink: #10223d;
+  --ink-deep: #09152a;
+  --muted: #607086;
+  --faint: #8996a8;
+  --line: #cfd8e3;
+  --line-strong: #aebac9;
+  --thread: #2357ff;
+  --thread-dark: #173ec0;
+  --discovery: #d9ff62;
+  --support: #16745b;
+  --support-soft: #e6f5ef;
+  --qualified: #a55b0a;
+  --qualified-soft: #fff1d9;
+  --danger: #c54137;
+  --danger-soft: #ffe9e7;
+  --serif: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+  --sans: "Segoe UI Variable", Aptos, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --page: min(1280px, calc(100vw - 48px));
+  --radius: 10px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
 }
 
 * { box-sizing: border-box; }
