@@ -3,104 +3,78 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Choose Markov capacity and workflow features without paying to unlock citations, accuracy checks, uncertainty labels, or source access.">
+  <meta name="description" content="Choose a hosted Markov workspace for finding, developing, and distributing original ideas. Every plan keeps sources, uncertainty, and reasoning visible.">
 
   <title>Pricing — Markov</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
+  <link rel="stylesheet" href="/markov-engine/static/markov-v3.css">
   <script defer src="/markov-engine/static/markov.js"></script>
+  <script defer src="/markov-engine/static/markov-v3.js"></script>
 </head>
-<body class="">
+<body class="v3-public v3-support-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="public-header">
-  <a class="wordmark" href="/markov-engine/" aria-label="Markov home">MARKOV</a>
-  <nav class="public-nav" aria-label="Primary navigation">
-    <a href="/markov-engine/#product">Product</a>
+  <header class="v3-site-header" data-site-header>
+  <a class="v3-wordmark" href="/markov-engine/" aria-label="Markov home"><span aria-hidden="true"></span>MARKOV</a>
+  <button class="v3-nav-toggle" type="button" aria-expanded="false" aria-controls="v3-primary-nav" data-nav-toggle><span>Menu</span><i aria-hidden="true"></i></button>
+  <nav class="v3-site-nav" id="v3-primary-nav" aria-label="Primary navigation" data-site-nav>
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/#who-its-for">Who it’s for</a>
     <a href="/markov-engine/pricing/">Pricing</a>
-    <a href="/markov-engine/developers/">Developers</a>
-    <a class="button button-small button-secondary" href="/markov-engine/sample/">Product demo</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a class="v3-nav-signin" href="/markov-engine/sample/">Product demo</a>
   </nav>
 </header>
-  <main id="main-content">
-    <section class="page-hero">
-      <p class="plain-kicker">Pricing</p>
-      <h1>Scale capacity, not truth.</h1>
-      <p class="v2-lede">Every Markov profile includes citations, accuracy controls, uncertainty labels, and the source packet. Paid plans change throughput, retention, graph depth, exports, API access, and human review.</p>
+  <main class="v3-support-main" id="main-content">
+    <section class="v3-support-hero">
+      <div><p class="v3-kicker">Pricing</p><h1>Scale the editorial work.<br>Keep the reasoning intact.</h1></div>
+      <div><p>Every hosted workspace includes source access, citations, uncertainty labels, and an inspectable idea trail. Plans change capacity, retention, collaboration, exports, API access, and review—not the truthfulness of the result.</p><a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a></div>
     </section>
-    <section class="v2-section section-rule" aria-labelledby="profiles-heading">
-      <div class="v2-section-heading"><h2 id="profiles-heading">Entitlement profiles</h2><p>Limits are deployment configuration, so operators can tune them without changing research behavior.</p></div>
-      <div class="entitlement-grid">
-        <article><h3>Community</h3><p>Self-hosted and unmetered.</p><ul><li>Workspace and API</li><li>Unlimited local retention</li><li>No artificial graph cap</li></ul></article>
-        <article><h3>Cloud Free</h3><p>Try the complete trust model.</p><ul><li>One job at a time</li><li>Smaller connection graph</li><li>Markdown and JSON</li></ul></article>
-        <article><h3>Cloud Plus</h3><p>For regular individual work.</p><ul><li>API access</li><li>Deeper graphs</li><li>Longer retention</li></ul></article>
-        <article><h3>Cloud Pro</h3><p>For teams and production use.</p><ul><li>More concurrency</li><li>Deepest cloud graphs</li><li>Human review access</li></ul></article>
+
+    <section class="v3-support-section" aria-labelledby="profiles-heading">
+      <header><p class="v3-kicker">Hosted workspaces</p><h2 id="profiles-heading">Choose for publishing cadence, not feature anxiety.</h2><p>Start with the workflow you need now. Your signals, decisions, and evidence trail stay portable across workspace profiles.</p></header>
+      <div class="v3-plan-grid">
+        <article><span>01 / Explore</span><h3>Cloud Free</h3><p>For proving the workflow on a focused editorial question.</p><ul><li>One active scan at a time</li><li>Focused idea landscapes</li><li>Markdown and JSON exports</li><li>Sources and uncertainty visible</li></ul><a href="/markov-engine/sample/">Start finding ideas →</a></article>
+        <article class="is-primary"><span>02 / Publish consistently</span><h3>Cloud Plus</h3><p>For creators and lean teams developing ideas every week.</p><ul><li>Deeper connection searches</li><li>Longer idea-trail retention</li><li>API access for agent workflows</li><li>Development and distribution plans</li></ul><a href="/markov-engine/sample/">Open the workspace →</a></article>
+        <article><span>03 / Operate as a team</span><h3>Cloud Pro</h3><p>For editorial studios and company content operations.</p><ul><li>More concurrent research</li><li>Deepest hosted landscapes</li><li>Team production workflows</li><li>Structured human review access</li></ul><a href="/markov-engine/sample/">Evaluate Markov →</a></article>
       </div>
-      <div class="note" style="margin-top:1rem"><strong>Verified add-on</strong><p>Add structured human review to an eligible cloud workflow. Review changes confidence and accountability—not access to citations.</p></div>
+      <p class="v3-support-note"><strong>Production checkout is not represented in this QA build.</strong> Monetary pack pricing is configured by the operator and appears at checkout; this page shows the live entitlement model and job-credit catalog without inventing a price.</p>
     </section>
-    <section class="content-narrow section-rule" aria-labelledby="catalog-heading">
-      <h2 id="catalog-heading">Job credits</h2>
-      <p class="lede">Credit prices shown here come from the live product catalog. Monetary pack prices are configured by the operator and appear at checkout.</p>
-      <div class="price-table">
 
-          <div class="price-row">
-            <span class="price-name">Brief Instant</span>
-            <span class="muted">Agentic delivery with uncertainty and evidence visible.</span>
-            <span class="credit-cost">1 credit</span>
-          </div>
+    <section class="v3-support-section v3-credit-section" aria-labelledby="catalog-heading">
+      <header><p class="v3-kicker">Usage</p><h2 id="catalog-heading">Job credits</h2><p>Credit costs below come from the live product catalog. Each job remains explicit about sources, evidence boundaries, and unresolved questions.</p></header>
+      <div class="v3-credit-ledger">
 
-          <div class="price-row">
-            <span class="price-name">Brief Verified</span>
-            <span class="muted">Structured human review before final delivery.</span>
-            <span class="credit-cost">3 credits</span>
-          </div>
+          <div><span>01</span><strong>Brief Instant</strong><p>Agentic delivery with evidence and uncertainty visible.</p><b>1 credit</b></div>
 
-          <div class="price-row">
-            <span class="price-name">Research Instant</span>
-            <span class="muted">Agentic delivery with uncertainty and evidence visible.</span>
-            <span class="credit-cost">3 credits</span>
-          </div>
+          <div><span>02</span><strong>Brief Verified</strong><p>Structured human review before final delivery.</p><b>3 credits</b></div>
 
-          <div class="price-row">
-            <span class="price-name">Research Verified</span>
-            <span class="muted">Structured human review before final delivery.</span>
-            <span class="credit-cost">6 credits</span>
-          </div>
+          <div><span>03</span><strong>Research Instant</strong><p>Agentic delivery with evidence and uncertainty visible.</p><b>3 credits</b></div>
 
-          <div class="price-row">
-            <span class="price-name">Script Instant</span>
-            <span class="muted">Agentic delivery with uncertainty and evidence visible.</span>
-            <span class="credit-cost">4 credits</span>
-          </div>
+          <div><span>04</span><strong>Research Verified</strong><p>Structured human review before final delivery.</p><b>6 credits</b></div>
 
-          <div class="price-row">
-            <span class="price-name">Script Verified</span>
-            <span class="muted">Structured human review before final delivery.</span>
-            <span class="credit-cost">8 credits</span>
-          </div>
+          <div><span>05</span><strong>Script Instant</strong><p>Agentic delivery with evidence and uncertainty visible.</p><b>4 credits</b></div>
+
+          <div><span>06</span><strong>Script Verified</strong><p>Structured human review before final delivery.</p><b>8 credits</b></div>
 
       </div>
-      <div class="note" style="margin-top: 2rem">
-        <strong>What a credit never buys.</strong>
-        <p>A cleaner-looking answer or hidden certainty. Credits fund bounded work; every result still shows what is established, interpreted, hypothetical, or unresolved.</p>
-      </div>
-      <div class="button-row" style="margin-top: 2rem"><a class="button" href="/markov-engine/sample/">Open Markov</a><a class="button button-secondary" href="/markov-engine/developers/">Build with the API</a></div>
+      <div class="v3-support-boundary"><span>What a credit never buys</span><p>A cleaner-looking certainty signal or hidden evidence gap. Credits fund bounded research and development work; they do not change what Markov can honestly support.</p><a href="/markov-engine/developers/">Build with the API →</a></div>
     </section>
   </main>
-  <footer class="public-footer">
-  <div class="footer-inner">
-    <div>
-      <a class="wordmark" href="/markov-engine/">MARKOV</a>
-      <p class="fine">Find something. Understand it. Make something original.</p>
-    </div>
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a href="/markov-engine/#product">Product</a>
-      <a href="/markov-engine/sample/">Product demo</a>
-      <a href="/markov-engine/pricing/">Pricing</a>
-      <a href="/markov-engine/developers/">API</a>
-      <a href="/markov-engine/sample/">Product demo</a>
-    </nav>
+  <footer class="v3-site-footer">
+  <div class="v3-footer-lead">
+    <a class="v3-wordmark" href="/markov-engine/"><span aria-hidden="true"></span>MARKOV</a>
+    <p>Find the valuable ideas existing content has not yet connected.</p>
   </div>
+  <nav aria-label="Footer navigation">
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/sample/">Japan example</a>
+    <a href="/markov-engine/pricing/">Pricing</a>
+    <a href="/markov-engine/developers/">API</a>
+    <a href="/markov-engine/sample/">Product demo</a>
+  </nav>
+  <p class="v3-footer-note">Markov supports research, reasoning, structure, and distribution. Your final language remains yours.</p>
 </footer>
 
 </body>
