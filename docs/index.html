@@ -12,7 +12,7 @@
   <script defer src="/markov-engine/static/markov.js"></script>
   <script defer src="/markov-engine/static/markov-v3.js"></script>
 </head>
-<body class="v3-public v4-landing">
+<body class="v3-public v4-landing v5-landing">
   <a class="skip-link" href="#main-content">Skip to content</a>
 
   <header class="v3-site-header" data-site-header>
@@ -28,36 +28,89 @@
 </header>
 
   <main id="main-content">
-    <section class="v4-hero" aria-labelledby="v4-hero-title">
+    <section class="v5-hero" aria-labelledby="v5-hero-title">
       <div class="v4-hero-copy">
         <p class="v3-kicker">Idea opportunity discovery for professional publishers</p>
-        <h1 id="v4-hero-title">Find what should be published next.</h1>
+        <h1 id="v5-hero-title">Find what should be published next.</h1>
         <p class="v4-hero-deck">Give Markov a source, question, or trend. It compares current search results, AI answers, competitor coverage, and your previous work to reveal underdeveloped angles—then builds the development and distribution plan. You write the final piece.</p>
         <div class="v3-action-row"><a class="v3-button" href="/markov-engine/sample/">Find my next idea <span aria-hidden="true">→</span></a><a class="v3-text-link" href="#how-it-works">See how the gap appears <span aria-hidden="true">↓</span></a></div>
         <p class="v4-hero-boundary"><strong>For content leads, founders, and research-led creators.</strong> Not a read-later app, fact checker, or one-click AI writer.</p>
       </div>
 
-      <div class="v4-answer-map" aria-label="Example comparison revealing an underdeveloped idea">
-        <header><span>LIVE IDEA COMPARISON</span><strong>Japan / capital flows</strong></header>
-        <div class="v4-answer-sources">
-          <section><span>Search results</span><p>Aging population, fiscal pressure, slower growth</p></section>
-          <section><span>AI answers</span><p>Demographic decline raises debt and pension strain</p></section>
-          <section><span>Competitor coverage</span><p>Possible Treasury selling and yen volatility</p></section>
-          <section><span>Previous work</span><p>No buyer-side mechanism has been developed</p></section>
+      <div class="v5-explorer" data-opportunity-explorer>
+        <header><span>OPPORTUNITY EXPLORER</span><strong>Japan / capital flows</strong></header>
+        <div class="v5-lens-tabs" role="tablist" aria-label="Compare the current answer by source">
+          <button id="v5-lens-search" type="button" role="tab" aria-selected="true" aria-controls="v5-panel-search" data-explorer-tab="search"><span>01</span>Search results</button>
+          <button id="v5-lens-ai" type="button" role="tab" aria-selected="false" aria-controls="v5-panel-ai" tabindex="-1" data-explorer-tab="ai"><span>02</span>AI answers</button>
+          <button id="v5-lens-coverage" type="button" role="tab" aria-selected="false" aria-controls="v5-panel-coverage" tabindex="-1" data-explorer-tab="coverage"><span>03</span>Competitors</button>
+          <button id="v5-lens-history" type="button" role="tab" aria-selected="false" aria-controls="v5-panel-history" tabindex="-1" data-explorer-tab="history"><span>04</span>Previous work</button>
         </div>
-        <div class="v4-answer-gap"><span>Missing connection</span><p>Domestic yields and currency hedging can change new Treasury demand before a visible sale.</p></div>
-        <div class="v4-answer-opportunity"><div><span>Idea opportunity</span><strong>Follow the missing buyer—not the dramatic seller.</strong></div><dl><div><dt>Information gain</dt><dd>High</dd></div><div><dt>Audience relevance</dt><dd>Strong</dd></div></dl></div>
-        <footer><span>AEO BEFORE OPTIMIZATION</span><p>Publish the useful connection future answers are currently missing.</p></footer>
+        <div class="v5-lens-panels" aria-live="polite">
+          <section id="v5-panel-search" role="tabpanel" aria-labelledby="v5-lens-search" data-explorer-panel="search">
+            <div class="v5-dominant-answer"><span>Dominant answer</span><h2>Japan’s aging population and high debt increase pressure to repatriate capital.</h2><p>Search coverage repeatedly moves from demographics to the possibility of Treasury sales.</p></div>
+            <div class="v5-answer-seam"><span>What this lens leaves unfinished</span><p>A sale is treated as the first meaningful signal, while the quieter decision to stop buying is ignored.</p></div>
+            <div class="v5-found-opportunity"><div><span>Idea opportunity</span><strong>Follow the missing buyer—not the dramatic seller.</strong></div><dl><div><dt>Information gain</dt><dd>High</dd></div><div><dt>Audience relevance</dt><dd>Strong</dd></div></dl></div>
+          </section>
+          <section id="v5-panel-ai" role="tabpanel" aria-labelledby="v5-lens-ai" data-explorer-panel="ai" hidden>
+            <div class="v5-dominant-answer"><span>Dominant answer</span><h2>Demographic decline may push Japanese institutions to sell U.S. Treasuries.</h2><p>AI answers compress the subject into a plausible country-level cause and market effect.</p></div>
+            <div class="v5-answer-seam"><span>What this lens leaves unfinished</span><p>Institutions, mandates, relative yields, hedging costs, and competing evidence disappear inside the generalization.</p></div>
+            <div class="v5-found-opportunity"><div><span>Idea opportunity</span><strong>Model the decisions between demographics and demand.</strong></div><dl><div><dt>Information gain</dt><dd>High</dd></div><div><dt>Audience relevance</dt><dd>Strong</dd></div></dl></div>
+          </section>
+          <section id="v5-panel-coverage" role="tabpanel" aria-labelledby="v5-lens-coverage" data-explorer-panel="coverage" hidden>
+            <div class="v5-dominant-answer"><span>Dominant answer</span><h2>A repatriation wave could raise U.S. yields and amplify yen volatility.</h2><p>The dramatic selloff scenario supplies a clean headline and an immediate market consequence.</p></div>
+            <div class="v5-answer-seam"><span>What this lens leaves unfinished</span><p>Gradual weakness in new flows may arrive earlier, persist longer, and matter without producing a visible dump.</p></div>
+            <div class="v5-found-opportunity"><div><span>Idea opportunity</span><strong>The Treasury signal may appear before the first sale.</strong></div><dl><div><dt>Information gain</dt><dd>High</dd></div><div><dt>Audience relevance</dt><dd>Focused</dd></div></dl></div>
+          </section>
+          <section id="v5-panel-history" role="tabpanel" aria-labelledby="v5-lens-history" data-explorer-panel="history" hidden>
+            <div class="v5-dominant-answer"><span>Dominant answer</span><h2>Our previous brief explained why Japanese repatriation risk could rise.</h2><p>The original work established the macro context but stopped at the direction of travel.</p></div>
+            <div class="v5-answer-seam"><span>What this lens leaves unfinished</span><p>It did not ask who absorbs weaker Japanese demand or which evidence would reveal the handoff first.</p></div>
+            <div class="v5-found-opportunity"><div><span>Idea opportunity</span><strong>Turn a one-market story into a replacement-buyer map.</strong></div><dl><div><dt>Information gain</dt><dd>Medium</dd></div><div><dt>Audience relevance</dt><dd>Strong</dd></div></dl></div>
+          </section>
+        </div>
+        <footer><span data-explorer-status>Viewing Search results</span><p>Change the lens. The useful gap changes with it.</p></footer>
       </div>
     </section>
 
-    <section class="v4-landscape" id="how-it-works" aria-labelledby="v4-landscape-title">
-      <header><p class="v3-kicker">Inside the product</p><h2 id="v4-landscape-title">See the gap before you write into it.</h2><p>Markov does not hand you another topic list. It makes the repeated answer, the missing connection, your possible contribution, and the audience reason visible in one decision surface.</p></header>
-      <div class="v4-landscape-board">
-        <section class="v4-repeated-answer"><span>What everyone already says</span><h3>Japan is aging, public debt is high, and investors may sell overseas assets.</h3><ol><li>Demographic pressure</li><li>Fiscal sustainability</li><li>Possible repatriation</li></ol></section>
-        <section class="v4-missing-answer"><span>What has not been connected</span><h3>New buying can weaken before old holdings are sold.</h3><p>Relative yields, institutional mandates, and USD/JPY hedging sit between a demographic trend and a Treasury flow.</p><div><b>Missing mechanism</b><b>Different market consequence</b></div></section>
-        <section class="v4-audience-answer"><span>What the audience still needs</span><h3>Which buyer replaces marginal Japanese demand—and what signal would show the change first?</h3><p><strong>Why now:</strong> domestic allocation proposals and repriced yields make the old assumption newly useful to revisit.</p></section>
-        <aside class="v4-board-action"><div><span>Proposed contribution</span><strong>A buyer-side model of Treasury demand with the competing selloff story kept visible.</strong></div><a href="/markov-engine/sample/">Develop this idea →</a></aside>
+    <section class="v5-story" id="how-it-works" aria-labelledby="v5-story-title" data-opportunity-story>
+      <header><div><p class="v3-kicker">Operate the reasoning</p><h2 id="v5-story-title">Open the space between the answer and the idea.</h2></div><p>Choose a stage to advance the sequence. On larger screens, it also follows your scroll. The existing answer stays visible while the connection, audience need, and possible contribution become specific.</p></header>
+      <div class="v5-story-shell">
+        <div class="v5-story-rail" role="tablist" aria-label="Source-to-opportunity stages" aria-orientation="vertical">
+          <article data-story-marker="landscape"><button id="v5-story-tab-landscape" type="button" role="tab" aria-selected="true" aria-controls="v5-story-panel-landscape" data-story-tab="landscape"><span>01 / Existing answer</span><strong>Map what everyone already says.</strong><small>Separate the repeated conclusion from the source that triggered the question.</small></button></article>
+          <article data-story-marker="connection"><button id="v5-story-tab-connection" type="button" role="tab" aria-selected="false" aria-controls="v5-story-panel-connection" tabindex="-1" data-story-tab="connection"><span>02 / Missing connection</span><strong>Expose the mechanism coverage skips.</strong><small>Keep every step open to evidence, contradiction, and revision.</small></button></article>
+          <article data-story-marker="opportunity"><button id="v5-story-tab-opportunity" type="button" role="tab" aria-selected="false" aria-controls="v5-story-panel-opportunity" tabindex="-1" data-story-tab="opportunity"><span>03 / Choose contribution</span><strong>Decide which direction deserves development.</strong><small>Information gain and audience relevance remain separate decisions.</small></button></article>
+        </div>
+
+        <div class="v5-story-stage" data-story-stage>
+          <header><span data-story-counter>01 / 03</span><strong>Japan / capital flows</strong><small>Interpretation stays revisable</small></header>
+          <div class="v5-story-panels">
+            <section id="v5-story-panel-landscape" role="tabpanel" aria-labelledby="v5-story-tab-landscape" data-story-panel="landscape">
+              <div class="v5-stage-heading"><span>What everyone already says</span><h3>Japan is aging, debt is high, and overseas capital may come home.</h3></div>
+              <ol class="v5-answer-ledger"><li><span>Search</span><p>Demographic pressure raises repatriation risk.</p><b>Repeated</b></li><li><span>AI answers</span><p>Japanese institutions may sell Treasuries.</p><b>Repeated</b></li><li><span>Competitors</span><p>A selloff could lift U.S. yields.</p><b>Repeated</b></li><li><span>Previous work</span><p>The macro direction is already established.</p><b>Covered</b></li></ol>
+              <p class="v5-stage-note"><strong>Landscape finding</strong> The conclusion is crowded; the institutional decision between cause and market effect is not.</p>
+            </section>
+            <section id="v5-story-panel-connection" role="tabpanel" aria-labelledby="v5-story-tab-connection" data-story-panel="connection" hidden>
+              <div class="v5-stage-heading"><span>What has not been connected</span><h3>New buying can weaken before old holdings are sold.</h3></div>
+              <ol class="v5-mechanism-path"><li><span>01</span><strong>Domestic yields rise</strong><p>Local assets become more competitive.</p></li><li><span>02</span><strong>Mandates and hedging reprice</strong><p>Institutions reassess the foreign allocation.</p></li><li><span>03</span><strong>Marginal demand weakens</strong><p>New Treasury buying slows without a dump.</p></li><li><span>04</span><strong>Replacement buyer matters</strong><p>The financing question moves to the next institution.</p></li></ol>
+              <p class="v5-stage-note"><strong>Interpretation, not settled fact</strong> Allocation guidance and aligned flow data could strengthen or break this path.</p>
+            </section>
+            <section id="v5-story-panel-opportunity" role="tabpanel" aria-labelledby="v5-story-tab-opportunity" data-story-panel="opportunity" hidden>
+              <div class="v5-stage-heading"><span>Competing research directions</span><h3>Choose the contribution your audience should receive.</h3></div>
+              <div class="v5-direction-layout">
+                <div class="v5-direction-list" aria-label="Idea opportunities">
+                  <button type="button" aria-pressed="true" data-direction="buyer" data-title="Follow the missing buyer—not the dramatic seller." data-audience="Market-literate readers who need an earlier signal than an instrument-level sale." data-why="Domestic allocation proposals and repriced yields make marginal demand newly important." data-weakness="Institution-level flow data may not separate mandate changes from ordinary portfolio rebalancing."><span>01 / Buyer map</span><strong>Who replaces weaker Japanese demand?</strong><small>Information gain · high</small></button>
+                  <button type="button" aria-pressed="false" data-direction="mandate" data-title="The decisive story may be inside pension mandates, not national demographics." data-audience="Policy and institutional-investing readers who need the decision owners named." data-why="Current proposals could change which institutions are permitted or encouraged to allocate domestically." data-weakness="The policy may remain aspirational or preserve enough discretion that behavior barely changes."><span>02 / Mandate shift</span><strong>Which institution can actually change the flow?</strong><small>Information gain · focused</small></button>
+                  <button type="button" aria-pressed="false" data-direction="hedging" data-title="Currency hedging can reverse the apparent yield advantage." data-audience="Treasury, FX, and global-allocation readers who need the cross-market mechanism." data-why="The unhedged and hedged return can imply different demand stories at the same moment." data-weakness="Hedging behavior varies by institution and may not explain the aggregate allocation on its own."><span>03 / Hedging regime</span><strong>When does the foreign yield stop being attractive?</strong><small>Information gain · medium</small></button>
+                </div>
+                <article class="v5-direction-decision" aria-live="polite">
+                  <span>Proposed contribution</span><h4 data-direction-title>Follow the missing buyer—not the dramatic seller.</h4>
+                  <dl><div><dt>Audience promise</dt><dd data-direction-audience>Market-literate readers who need an earlier signal than an instrument-level sale.</dd></div><div><dt>Why now</dt><dd data-direction-why>Domestic allocation proposals and repriced yields make marginal demand newly important.</dd></div><div><dt>What could weaken it</dt><dd data-direction-weakness>Institution-level flow data may not separate mandate changes from ordinary portfolio rebalancing.</dd></div></dl>
+                  <a href="/markov-engine/sample/">Develop this direction <span aria-hidden="true">→</span></a>
+                </article>
+              </div>
+            </section>
+          </div>
+          <footer><span>Existing answer</span><i aria-hidden="true"></i><span>Missing connection</span><i aria-hidden="true"></i><span>Contribution</span></footer>
+        </div>
       </div>
     </section>
 
