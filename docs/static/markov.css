@@ -791,6 +791,7 @@ textarea { min-height: 150px; resize: vertical; }
   .app-content { padding-top: 2rem; }
   .app-title { align-items: start; flex-direction: column; }
   .app-topbar .breadcrumbs, .app-topbar > .fine { display: none; }
+  .topbar-action { display: none; }
   .mobile-app-mark { align-items: center; display: inline-flex; font-size: .78rem; font-weight: 850; letter-spacing: .14em; text-decoration: none; }
   .mobile-app-mark::before { background: var(--moss); content: ""; height: 8px; margin-right: 8px; transform: rotate(45deg); width: 8px; }
   .mobile-context { color: var(--muted); display: inline; font-size: .78rem; }
