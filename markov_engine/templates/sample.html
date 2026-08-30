@@ -1,77 +1,21 @@
 {% extends "base.html" %}
-{% block title %}A real signal-to-idea example — Markov{% endblock %}
-{% block description %}Inspect how Markov separates context, commentary, catalyst, mechanism, and proof while following a Japan source packet into an idea opportunity and development brief.{% endblock %}
-{% block body_class %}v3-public v3-support-body{% endblock %}
+{% block title %}One source, fully unfolded — Markov{% endblock %}
+{% block description %}Inspect how a Japan policy source becomes claims, a missing connection, competing research routes, and an evidence-linked brief.{% endblock %}
+{% block body_class %}mk-public-page mk-sample-page{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
-  <main id="main-content" class="sample-page v3-support-main v3-sample-page">
-    <header class="sample-hero v3-sample-hero">
-      <p class="v3-kicker">Inspectable sample · published sources</p>
-      <h1>From a Japan source packet to a defensible idea about Treasury demand.</h1>
-      <p>Five sources enter the same idea landscape, but they do not receive equal weight. Markov keeps context, commentary, catalyst, mechanism, and unresolved proof separate.</p>
-      <div class="sample-legend" aria-label="Evidence levels"><span class="evidence-level established">Established</span><span class="evidence-level interpretation">Evidence-backed interpretation</span><span class="evidence-level hypothesis">Plausible hypothesis</span></div>
-    </header>
-
-    <section class="sample-workspace" aria-label="Source to insight path">
-      <aside class="sample-outline"><nav aria-label="Sample outline"><a href="#starting-node">Starting question</a><a href="#connection-one">Source roles</a><a href="#connection-two">Policy catalyst</a><a href="#connection-three">Rates and hedging</a><a href="#insight">Resulting insight</a><a href="#brief-output">Development brief</a><a href="#sources">Sources</a></nav></aside>
-      <article class="sample-document">
-        <section id="starting-node">
-          <span class="evidence-level hypothesis">Open question</span>
-          <p class="connection-type">Starting node · user question</p>
-          <h2>Why would Japanese investors sell U.S. Treasuries?</h2>
-          <p>The wording contains two hidden assumptions: that “Japan” acts as one investor, and that a shift in foreign assets necessarily means a Treasury sale.</p>
-          <dl class="connection-anatomy"><div><dt>Question asks</dt><dd>What mechanism could move Japanese capital away from U.S. government debt?</dd></div><div><dt>Question assumes</dt><dd>A sale happened and can be attributed to one national actor.</dd></div><div><dt>Next check</dt><dd>Separate investor classes, the policy catalyst, and the assets actually affected.</dd></div></dl>
-        </section>
-        <section id="connection-one">
-          <span class="connection-type">Source classification · what each item can support</span>
-          <span class="evidence-level interpretation">Mixed evidence packet</span>
-          <h2>The most compelling source is not automatically the strongest evidence.</h2>
-          <p>The Financial Times film supplies demographic context. The TikTok clip advances a specific macro thesis about BOJ bond ownership, rate losses, and public-sector consolidation. The retirement podcast frames the Treasury-demand question. These are useful claims to investigate, not proof by themselves.</p>
-          <dl class="connection-anatomy"><div><dt>Useful for</dt><dd>Context, the originating thesis, and the exact claims the chain must test.</dd></div><div><dt>Weakens</dt><dd>No transcript was available for the video, TikTok, or podcast; only their published descriptions and metadata were captured.</dd></div><div><dt>Could lead to</dt><dd>Find reporting for the live catalyst and research for the financial mechanism.</dd></div></dl>
-        </section>
-        <section id="connection-two">
-          <span class="connection-type">Live catalyst · domestic-allocation proposal</span>
-          <span class="evidence-level established">Established proposal</span>
-          <h2>Japan’s finance minister proposed steering pension capital toward domestic assets.</h2>
-          <p>Reuters reported in July 2026 that the government wanted the $1.8 trillion GPIF and other retirement funds to increase domestic allocations. The reporting also stressed that implementation details were unsettled.</p>
-          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>A higher domestic target could require selling foreign assets or directing new contributions at home.</dd></div><div><dt>Weakens</dt><dd>A proposal is not a completed allocation change, and “foreign assets” includes more than Treasuries.</dd></div><div><dt>Could lead to</dt><dd>Track final GPIF guidance and sector-level transactions after the policy date.</dd></div></dl>
-        </section>
-        <section id="connection-three">
-          <span class="connection-type">Financial mechanism · relative yields and currency hedging</span>
-          <span class="evidence-level interpretation">Evidence-backed interpretation</span>
-          <h2>The decision turns on domestic yields and the return after converting dollars back into yen.</h2>
-          <p>The 2026 NBER paper describes a consolidated Japanese public-sector balance sheet with duration and currency mismatches. It shows how BOJ purchases displaced private JGB holders, pension funds expanded foreign risky assets, and currency hedging can erase the extra return on foreign investments.</p>
-          <dl class="connection-anatomy"><div><dt>Mechanism</dt><dd>As JGB yields rise and USD/JPY hedging remains costly, domestic assets can compete more effectively with U.S. bonds.</dd></div><div><dt>Weakens</dt><dd>The paper explains incentives and constraints; it does not observe a coordinated Treasury liquidation.</dd></div><div><dt>Could lead to</dt><dd>Compare allocation targets, hedge ratios, foreign-bond flows, and Treasury transactions on aligned dates.</dd></div></dl>
-        </section>
-        <section id="insight" class="insight-result">
-          <span class="evidence-level hypothesis">Plausible hypothesis</span>
-          <h2>Resulting insight: repatriation is plausible; a Treasury dump is unproven.</h2>
-          <p>The strongest chain is: domestic-allocation proposal → higher JGB appeal → weaker hedged foreign returns → gradual, institution-specific rebalancing. That can reduce marginal Treasury demand without producing one dramatic sale.</p>
-          <p><strong>Why this is useful:</strong> it separates a real policy signal and mechanism from a headline that outruns the evidence.</p>
-          <p><strong>What would strengthen it:</strong> final GPIF targets followed by aligned sector-level foreign-asset outflows and Treasury transaction data.</p>
-          <p><strong>What would weaken it:</strong> domestic allocations rising entirely through new contributions while foreign holdings and hedge behavior remain stable.</p>
-        </section>
-        <section id="brief-output" class="sample-output">
-          <p class="v3-kicker">Development brief</p>
-          <h2>The research trail becomes creative scaffolding without writing in your place.</h2>
-          <dl class="connection-anatomy"><div><dt>Working thesis</dt><dd>Marginal Japanese demand may weaken before any visible Treasury selloff.</dd></div><div><dt>Flagship job</dt><dd>Explain the relative-yield and currency-hedging mechanism, then test the strongest competing explanation.</dd></div><div><dt>Audience question</dt><dd>Which replacement buyer matters if a major holder redirects new capital rather than liquidating old positions?</dd></div><div><dt>What could change it</dt><dd>Final allocation guidance, sector-level flow data, or stable hedge behavior after domestic targets change.</dd></div></dl>
-          <p>Markov supplies the reasoning, structure, and evidence boundary. The user remains responsible for the final article, newsletter, video, or podcast language.</p>
-          <div class="source-note"><strong>What remains attached:</strong> evidence level, supporting passages, weakening conditions, the next check, and the branch decision that produced this angle.</div>
-        </section>
+  <main class="mk-sample-main" id="main-content">
+    <header class="mk-sample-hero"><p class="mk-kicker">A truthful product example</p><h1>One Japan source, followed all the way through.</h1><p>This case shows the starting signal, the hidden mechanism, the competing route, and the finished brief together. It is a demonstration—not a customer result.</p><nav aria-label="Jump through the case"><a href="#starting-node">Source</a><a href="#missing-step">Missing step</a><a href="#routes">Routes</a><a href="#brief-output">Output</a><a href="#sources">Sources</a></nav></header>
+    <div class="mk-sample-layout">
+      <article class="mk-sample-trail">
+        <section id="starting-node"><span class="mk-sample-index">01</span><div><p class="mk-kicker">Starting source</p><h2>Japan’s pension pivot puts overseas capital in play.</h2><p>A Reuters policy report says domestic allocation may rise. The report establishes the proposal and timing; it does not establish that Japanese investors will sell U.S. Treasuries.</p><dl><div><dt>Established</dt><dd>A policy proposal may change domestic-allocation targets.</dd></div><div><dt>Not established</dt><dd>The timing, size, or direction of any Treasury transaction.</dd></div></dl></div></section>
+        <section id="missing-step"><span class="mk-sample-index">02</span><div><p class="mk-kicker">The missing mechanism</p><h2>Demand can change before holdings do.</h2><ol class="mk-mechanism-list"><li>Domestic yields become more competitive.</li><li>Institutional mandates reprice.</li><li>Currency hedging changes the relative return.</li><li>Marginal foreign buying weakens.</li><li>A replacement buyer becomes the real question.</li></ol><aside><strong>Why this matters</strong><p>The visible story may begin in auction demand or sector holdings before a dramatic selloff appears.</p></aside></div></section>
+        <section id="routes"><span class="mk-sample-index">03</span><div><p class="mk-kicker">Competing research routes</p><h2>Three ways to test the same Chain.</h2><div class="mk-sample-routes"><article><span>Strongest route</span><h3>Who replaces weaker Japanese demand?</h3><p>Track marginal buyers and auction behavior.</p><small>Weakens if another buyer offsets the flow.</small></article><article><span>Decision route</span><h3>Which institution can change the allocation?</h3><p>Name the mandate owners and implementation dates.</p><small>Weakens if the proposal never changes practice.</small></article><article><span>Competing route</span><h3>When does hedging reverse the story?</h3><p>Compare domestic and hedged foreign returns.</p><small>Weakens if currency costs remain secondary.</small></article></div></div></section>
+        <section id="brief-output"><span class="mk-sample-index">04</span><div><p class="mk-kicker">Finished brief</p><article class="mk-sample-document"><header><span>Decision brief</span><small>Evidence-linked example</small></header><h2>The first Treasury signal may be the buyer who never arrives.</h2><p>A visible selloff is not required for Japanese allocation changes to matter. Higher domestic yields, institutional mandates, and hedging costs can weaken marginal buying before old holdings move.</p><blockquote><span>Boundary</span><p>Policy timing and the institutional mechanism have support. The magnitude and timing of the demand effect remain open pending aligned flow data.</p></blockquote><footer><span>4 sources</span><span>1 unresolved question</span><span>3 possible routes</span></footer></article></div></section>
       </article>
-      <aside class="sample-sources" id="sources" aria-label="Published sources">
-        <h2>Source packet</h2>
-        <ol>
-          <li><a href="https://www.youtube.com/watch?v=nmdujC0MUKA">Financial Times, Japan’s population crisis reaches tipping point</a><small>YouTube film. Demographic context; metadata and chapter description captured.</small></li>
-          <li><a href="https://www.tiktok.com/@scottmelkerwolf/video/7677675462264409357">The Wolf Of All Streets, Mark Yusko says Japan showed us the playbook</a><small>TikTok. Macro thesis about BOJ bond ownership, rate losses, and consolidated public debt; claim-level input requiring verification.</small></li>
-          <li><a href="https://podcasts.apple.com/us/podcast/u-s-debt-japanese-yen-and-your-retirement/id1761667964?i=1000785502708">U.S. Debt, Japanese Yen and Your Retirement?</a><small>Podcast. Originating market thesis and financial commentary.</small></li>
-          <li><a href="https://www.reuters.com/world/asia-pacific/takaichis-pension-pivot-seeks-reverse-abe-era-outpouring-japanese-capital-2026-07-10/">Reuters, Japan’s pension pivot</a><small>July 10, 2026. Live policy catalyst with implementation caveats.</small></li>
-          <li><a href="https://www.nber.org/system/files/chapters/c15418/revisions/c15418.rev0.pdf">Chien, Cole, and Lustig, What about Japan?</a><small>NBER, March 2026. Public-sector balance sheet, duration, rates, and currency-hedging mechanism.</small></li>
-        </ol>
-        <div class="source-note"><strong>Source discipline</strong><p>Claims are paraphrased. Dates, figures, caveats, source roles, and links are retained so the reader can inspect the original record.</p></div>
-        <a class="button" href="{{ workspace_url }}">{{ workspace_label }}</a>
-      </aside>
-    </section>
+      <aside class="mk-sample-sources" id="sources" aria-label="Published sources"><p class="mk-kicker">Source packet</p><h2>What the example rests on</h2><ol><li><span>01</span><div><strong>Reuters</strong><p>Japan pension-policy signal and proposal timing.</p><a href="https://www.reuters.com/world/asia-pacific/" target="_blank" rel="noopener">Published reporting ↗</a></div></li><li><span>02</span><div><strong>NBER research</strong><p>Institutional portfolios under demographic pressure.</p><span>Primary research context</span></div></li><li><span>03</span><div><strong>U.S. Treasury data</strong><p>Holdings and flow context for testing magnitude.</p><span>Structured data</span></div></li><li><span>04</span><div><strong>Bank of Japan</strong><p>Domestic yield and policy context.</p><span>Primary institutional source</span></div></li></ol><p class="mk-source-caveat">This static demonstration summarizes the stored example. Exact passages and locators belong in the live case reader.</p></aside>
+    </div>
+    <section class="mk-final-cta"><p class="mk-kicker">Start another trail</p><h2>Bring your own source or question.</h2><p>The workflow stays the same; the route belongs to the material.</p><a class="mk-button mk-button-dark" href="{{ workspace_url }}">{{ workspace_label }} <span aria-hidden="true">↗</span></a></section>
   </main>
   {% include "partials/public_footer.html" %}
 {% endblock %}
