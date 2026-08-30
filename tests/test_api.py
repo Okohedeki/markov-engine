@@ -255,36 +255,33 @@ async def test_web_login_and_focused_intake_page():
         ) as client:
             redirected = await client.get("/app")
             assert "Workspace access key" in redirected.text
-            assert "QA access" in redirected.text
-            assert "Production email and Google sign-in are coming next" in redirected.text
+            assert "This build uses an access key" in redirected.text
+            assert "Email and social sign-in are not enabled" in redirected.text
             signed_in = await client.post(
                 "/app/login",
                 content="api_key=customer-key",
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "Find what should be published next" in signed_in.text
-            assert "Add a signal" in signed_in.text
-            assert "New opportunities for your audience" in signed_in.text
-            assert "Information gain" in signed_in.text
-            assert "Audience relevance" in signed_in.text
+            assert "Pick up the thread" in signed_in.text
+            assert "Add a source or question" in signed_in.text
+            assert "Needs your attention" in signed_in.text
+            assert "No decision is waiting" in signed_in.text
             assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
             assert f'href="/app/artifacts/{artifact.id}"' in signed_in.text
-            assert "youtube.com" in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
             assert "owner-1" not in signed_in.text
             assert 'href="/app/signals"' in signed_in.text
             assert 'href="/app/ideas"' in signed_in.text
             assert 'href="/app/plans"' in signed_in.text
-            assert 'href="/app/published"' in signed_in.text
             assert 'href="/app/search"' in signed_in.text
 
             for path, heading in (
-                ("/app/signals", "Raw material that may change what your audience needs next"),
-                ("/app/ideas", "Opportunities Markov can explain"),
-                ("/app/plans", "Development briefs and channel treatments"),
-                ("/app/published", "Connect finished work to the idea that produced it"),
-                ("/app/search?q=Japanese", "Search signals, ideas, audience questions"),
+                ("/app/signals", "Sources, notes, and questions that can begin"),
+                ("/app/ideas", "Research trails you can inspect"),
+                ("/app/plans", "Briefs, reports, and factual scripts"),
+                ("/app/published", "Reconnect live work to the Chain"),
+                ("/app/search?q=Japanese", "Search sources, Chains, open questions"),
             ):
                 page = await client.get(path)
                 assert page.status_code == 200
@@ -311,31 +308,28 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "Find what should be published next." in landing.text
-            assert "current search results, AI answers, competitor coverage" in landing.text
-            assert "You write the final piece" in landing.text
-            assert landing.text.count("Find my next idea") == 2
-            assert "Lean company content teams" in landing.text
-            assert "Research-led creators" in landing.text
-            assert "Editorial studios and agencies" in landing.text
-            assert "What everyone already says" in landing.text
-            assert "What has not been connected" in landing.text
-            assert "Competing research directions" in landing.text
-            assert landing.text.count("data-explorer-tab=") == 4
-            assert landing.text.count("data-story-tab=") == 3
-            assert landing.text.count("data-direction=") == 3
-            for stage in ("01 / Signal", "02 / Existing answers", "03 / Missing connection", "04 / Idea opportunity"):
+            assert "Don’t stop at" in landing.text
+            assert "Bring a video, article, paper, podcast, post, or question" in landing.text
+            assert "Catch me up" in landing.text
+            assert "Explore where it leads" in landing.text
+            assert "Turn it into a script" in landing.text
+            assert landing.text.count("Open the workspace") == 2
+            assert "Research-led creators and editorial teams" in landing.text
+            assert "Analysts, strategists, and consultants" in landing.text
+            assert "Work where the source trail is optional" in landing.text
+            assert "New demand can weaken before holdings are sold" in landing.text
+            assert "Compare directions before you commit to one" in landing.text
+            assert landing.text.count("data-source-choice=") == 5
+            assert landing.text.count("data-route-choice=") == 3
+            assert landing.text.count("data-output-choice=") == 3
+            for stage in ("Starting source", "Separate the claim", "Expose the skipped step", "Follow the connection"):
                 assert stage in landing.text
             assert "Japan’s pension pivot puts overseas capital in play" in landing.text
-            assert "https://www.reuters.com/world/asia-pacific/" in landing.text
-            assert "Japan need not dump Treasuries" in landing.text
-            assert "Information gain" in landing.text
-            assert "Audience relevance" in landing.text
-            assert "A campaign is not the same post cut five ways" in landing.text
-            assert landing.text.count("data-campaign-tab=") == 4
-            assert "Markov plans. You publish." in landing.text
-            assert "Give future answers something worth including" in landing.text
-            assert "Not a read-later app, fact checker, or one-click AI writer" in landing.text
+            assert "buyer who never arrives" in landing.text
+            assert "High information gain" in landing.text
+            assert "Every route says what it explains" in landing.text
+            assert "The evidence does not disappear when the format changes" in landing.text
+            assert "The final judgment remains yours" in landing.text
             assert "Skip to content" in landing.text
             assert landing.text.count("<h1") == 1
             for disallowed in ("ai-powered", "open source", "github", "free trial", "customer logos"):
@@ -351,53 +345,48 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
 
             pricing = await client.get("/pricing")
             assert pricing.status_code == 200
-            assert "Brief Instant" in pricing.text
+            assert "Hosted workspace pricing" in pricing.text
             assert "2 credits" in pricing.text
-            assert "live product catalog" in pricing.text
+            assert "Job credits from the live catalog" in pricing.text
 
             developers = await client.get("/developers")
             assert developers.status_code == 200
             assert "Idempotency-Key" in developers.text
             assert "POST /v2/jobs" in developers.text
-            assert "typed connections" in developers.text
+            assert "typed connections" in developers.text.lower()
 
             sample = await client.get("/sample")
             assert sample.status_code == 200
-            assert "From a Japan source packet" in sample.text
-            assert "Resulting insight" in sample.text
+            assert "One Japan source, followed all the way through" in sample.text
+            assert "The missing mechanism" in sample.text
             assert "U.S. Treasuries" in sample.text
-            assert "published sources" in sample.text
+            assert "Source packet" in sample.text
             assert "Japan’s pension pivot" in sample.text
-            assert "What about Japan?" in sample.text
-            assert "The Wolf Of All Streets" in sample.text
-            assert "7677675462264409357" in sample.text
             assert "child-free creator" not in sample.text
             assert "CASE MKV" not in sample.text
 
-            css = await client.get("/static/markov-v3.css")
+            css = await client.get("/static/markov.css")
             assert css.status_code == 200
             assert "prefers-reduced-motion" in css.text
-            assert "--v3-paper" in css.text
-            assert "--v3-accent" in css.text
-            assert "--v3-connection" in css.text
-            assert "--v3-audience" in css.text
-            assert ".v5-explorer" in css.text
-            assert ".v5-story-stage" in css.text
-            assert ".v3-app-nav" in css.text
+            assert "--thread" in css.text
+            assert "--discovery" in css.text
+            assert "--support" in css.text
+            assert ".mk-thread-story" in css.text
+            assert ".mk-app-nav" in css.text
 
             pdf_preview = await client.get("/static/japan-nber-cover.png")
             assert pdf_preview.status_code == 200
             assert pdf_preview.headers["content-type"] == "image/png"
 
-            javascript = await client.get("/static/markov-v3.js")
+            javascript = await client.get("/static/markov.js")
             assert javascript.status_code == 200
-            assert "data-explorer-tab" in javascript.text
-            assert "data-story-tab" in javascript.text
-            assert "data-direction-title" in javascript.text
-            assert "data-campaign-tab" in javascript.text
+            assert "data-source-choice" in javascript.text
+            assert "data-route-choice" in javascript.text
+            assert "data-output-choice" in javascript.text
+            assert "data-case-view-tab" in javascript.text
             assert "ArrowLeft" in javascript.text
             assert "aria-expanded" in javascript.text
-            assert "event.key === 'Escape'" in javascript.text
+            assert 'event.key === "Escape"' in javascript.text
     finally:
         await store.close()
 
@@ -425,22 +414,21 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert job.status_code == 200
-            assert "Your idea landscape is ready." in job.text
+            assert "Your next decision is ready." in job.text
             artifact_match = re.search(r'href="(/app/artifacts/\d+)"', job.text)
             assert artifact_match is not None
 
             artifact = await client.get(artifact_match.group(1))
             assert artifact.status_code == 200
-            assert "Existing landscape" in artifact.text
-            assert "Idea opportunities" in artifact.text
-            assert "Development brief" in artifact.text
-            assert "Distribution plan" in artifact.text
+            assert "Routes worth inspecting" in artifact.text
+            assert ">Explore<" in artifact.text
+            assert ">Output<" in artifact.text
             assert "Sources and provenance" in artifact.text
-            assert "Review margin" in artifact.text
-            assert "Claims to check" in artifact.text
-            assert "Editable creative scaffolding" in artifact.text
-            assert "Turn the direction into creative scaffolding" in artifact.text
-            assert "not finished posts or scripts" in artifact.text
+            assert "Evidence margin" in artifact.text
+            assert "Claims to inspect" in artifact.text
+            assert "Saving creates a new version" in artifact.text
+            assert "Shape an output" in artifact.text
+            assert "Give this route a job" in artifact.text
             assert "Export JSON" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
 
@@ -577,13 +565,13 @@ async def test_case_workspace_exposes_topics_gaps_and_supplemental_sources():
         assert "Which intermediary turns the premise" in response.text
         assert "Supplemental reporting that changes the question" in response.text
         assert f'data-topic-id="{topic.id}"' in response.text
-        assert "Idea opportunities" in response.text
-        assert "Proposed thesis" in response.text
+        assert "Routes worth inspecting" in response.text
+        assert "Why this route exists" in response.text
         assert "Mixed evidence" in response.text
-        assert "Investigate claim" in response.text
-        assert "Develop this idea" in response.text
+        assert "Research this route" in response.text
+        assert "Shape an output" in response.text
         assert "Sources and provenance" in response.text
-        assert "Everything Markov analyzed for this idea" in response.text
+        assert "Everything Markov analyzed for this Chain" in response.text
     finally:
         await store.close()
 
@@ -642,15 +630,14 @@ def test_github_pages_export_is_static_and_project_relative():
     root = Path(__file__).resolve().parents[1]
     landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
     assert 'href="/markov-engine/static/markov.css"' in landing
-    assert 'href="/markov-engine/static/markov-v3.css"' in landing
-    assert 'src="/markov-engine/static/markov-v3.js"' in landing
+    assert 'src="/markov-engine/static/markov.js"' in landing
     assert 'href="/markov-engine/sample/"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
     assert "Product demo" in landing
-    assert "Find what should be published next." in landing
-    assert landing.count("Find my next idea") == 2
-    assert landing.count("data-campaign-tab=") == 4
+    assert "Don’t stop at" in landing
+    assert landing.count("Open the workspace") == 2
+    assert landing.count("data-output-choice=") == 3
     assert "Run locally" not in landing
     assert "open-source" not in landing.lower()
     assert "github.com" not in landing.lower()
