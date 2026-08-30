@@ -1306,7 +1306,7 @@
 .v4-login-layout { align-items: stretch; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(420px, .85fr); margin: 0 auto; max-width: var(--v3-content); min-height: calc(100vh - 70px); }
 .v4-login-story { border-right: 1px solid var(--v3-rule); display: grid; gap: 3rem; grid-template-rows: 1fr auto; padding: clamp(3.5rem, 7vw, 7rem) 7vw 3rem 0; }
 .v4-login-story h1 { font-size: clamp(3.8rem, 6vw, 5.6rem); line-height: .9; margin: 0; max-width: 720px; }
-.v4-login-story > div:first-child > p:last-child { font-size: 1.05rem; line-height: 1.6; max-width: 610px; }
+.v4-login-story > div:first-child > p:last-child { font-size: 1.05rem; line-height: 1.6; margin: 1.7rem 0 0; max-width: 610px; }
 .v4-login-map { border: 1px solid var(--v3-rule-dark); display: grid; grid-template-columns: .72fr 1.18fr 1.1fr; }
 .v4-login-map section { border-left: 1px solid var(--v3-rule); min-height: 150px; padding: 1rem; }
 .v4-login-map section:first-child { background: var(--v3-accent-pale); border-left: 0; border-top: 4px solid var(--v3-accent); }
