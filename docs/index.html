@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#f3f6f8">
-  <meta name="description" content="Bring Markov a video, article, paper, podcast, post, or question. Leave with an evidence-linked brief, research path, or factual script.">
+  <meta name="theme-color" content="#f4f2ed">
+  <meta name="description" content="Give Markov a video, article, paper, podcast, post, or question. It follows what is missing and turns the trail into useful, evidence-linked work.">
 
-  <title>Markov — Follow the idea past the source</title>
+  <title>Markov — A source is where the thinking starts</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/markov-engine/static/markov.css">
   <script defer src="/markov-engine/static/markov.js"></script>
@@ -24,8 +24,8 @@
     <span>Menu</span><i aria-hidden="true"></i>
   </button>
   <nav class="mk-public-nav" id="mk-public-nav" aria-label="Primary navigation" data-site-nav>
-    <a href="/markov-engine/#unfold">How it unfolds</a>
-    <a href="/markov-engine/sample/">Finished case</a>
+    <a href="/markov-engine/#unfold">How it works</a>
+    <a href="/markov-engine/sample/">Sample</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
     <a class="mk-nav-action" href="/markov-engine/sample/">Product demo <span aria-hidden="true">↗</span></a>
@@ -34,76 +34,91 @@
 
   <main id="main-content">
     <section class="mk-hero" aria-labelledby="mk-hero-title">
+      <div class="mk-hero-wash" aria-hidden="true"></div>
       <div class="mk-hero-intro">
-        <p class="mk-kicker"><span aria-hidden="true">↳</span> A workspace for what your source starts</p>
-        <h1 id="mk-hero-title">Don’t stop at<br><em>the source.</em></h1>
-        <p class="mk-hero-copy">Bring a video, article, paper, podcast, post, or question. Markov finds what matters, checks what connects, and helps you leave with a brief, research path, or factual script.</p>
+        <p class="mk-eyebrow">For work that starts with a source</p>
+        <h1 id="mk-hero-title">A source is where<br><em>the thinking starts.</em></h1>
+        <p class="mk-hero-copy">Give Markov a video, article, paper, podcast, post, or question. It finds what is missing, follows the strongest connection, and turns the trail into a brief, research report, or factual script.</p>
         <div class="mk-hero-actions">
           <a class="mk-button mk-button-primary" href="/markov-engine/sample/">Open the workspace <span aria-hidden="true">↗</span></a>
-          <a class="mk-text-link" href="#unfold">See one source unfold <span aria-hidden="true">↓</span></a>
+          <a class="mk-text-link" href="/markov-engine/sample/">See a finished case <span aria-hidden="true">→</span></a>
         </div>
+      </div>
+
+      <div class="mk-hero-scene" aria-label="One source becoming a research direction and finished brief">
+        <svg class="mk-scene-thread" viewBox="0 0 720 520" fill="none" aria-hidden="true">
+          <path d="M18 140C146 140 132 62 258 84C373 104 326 300 454 284C554 271 542 386 704 386" pathLength="1"/>
+        </svg>
+        <article class="mk-scene-source mk-scene-source-article">
+          <span>Reuters · Article</span>
+          <strong>Japan’s pension pivot puts overseas capital in play</strong>
+          <small>Starting source</small>
+        </article>
+        <article class="mk-scene-source mk-scene-source-paper">
+          <img src="/markov-engine/static/japan-nber-cover.png" alt="Cover preview of an NBER working paper used in the sample research trail" width="320" height="414">
+          <div><span>NBER · Paper</span><strong>Portfolio mechanism</strong></div>
+        </article>
+        <div class="mk-scene-gap">
+          <span aria-hidden="true">?</span>
+          <p>Who becomes the buyer before anyone becomes the seller?</p>
+        </div>
+        <article class="mk-scene-work">
+          <header><span>Markov / working brief</span><i aria-hidden="true"></i></header>
+          <p>Emerging angle</p>
+          <h2>The first Treasury signal may be the buyer who never arrives.</h2>
+          <div class="mk-scene-mechanism"><span>Policy shift</span><i aria-hidden="true">→</i><span>Marginal demand</span><i aria-hidden="true">→</i><span>Financing signal</span></div>
+          <footer><span><i aria-hidden="true"></i> Evidence attached</span><strong>1 open question</strong></footer>
+        </article>
       </div>
 
       <div class="mk-source-dock" aria-label="What Markov accepts">
-        <div class="mk-source-dock-head">
-          <span>Start with almost anything</span>
-          <span class="mk-live-label"><i aria-hidden="true"></i> One shared research trail</span>
-        </div>
         <div class="mk-source-types" role="tablist" aria-label="Choose a starting source">
-          <button type="button" role="tab" aria-selected="true" data-source-choice="video" data-placeholder="Paste a YouTube or video link…"><span>▶</span>Video</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="article" data-placeholder="Paste an article or post link…"><span>¶</span>Article</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="paper" data-placeholder="Add a paper or PDF…"><span>▤</span>Paper</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="audio" data-placeholder="Paste a podcast or audio link…"><span>◖</span>Audio</button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="question" data-placeholder="Ask the question you cannot shake…"><span>?</span>Question</button>
+          <button type="button" role="tab" aria-selected="true" data-source-choice="video" data-placeholder="Paste a YouTube or video link…">Video</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="article" data-placeholder="Paste an article or post link…">Article</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="paper" data-placeholder="Add a paper or PDF…">Paper</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="audio" data-placeholder="Paste a podcast or audio link…">Audio</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-source-choice="question" data-placeholder="Ask the question you cannot shake…">Question</button>
         </div>
         <a class="mk-dock-input" href="/markov-engine/sample/" data-source-placeholder>
-          <span>Paste a YouTube or video link…</span><b>Start in Markov</b><i aria-hidden="true">→</i>
+          <span>Paste a YouTube or video link…</span><b>Start a Chain</b><i aria-hidden="true">→</i>
         </a>
       </div>
-
-      <div class="mk-hero-thread" aria-hidden="true">
-        <span class="is-source"></span><i></i><span></span><i></i><span></span><i></i><span class="is-finish"></span>
-      </div>
-      <ol class="mk-hero-outcomes" aria-label="Markov outcomes">
-        <li><span>01</span><strong>Catch me up</strong><small>Substance, omissions, weak points</small></li>
-        <li><span>02</span><strong>Explore where it leads</strong><small>Connections, evidence, research paths</small></li>
-        <li><span>03</span><strong>Turn it into a script</strong><small>An original angle and ready-to-record draft</small></li>
-      </ol>
+      <p class="mk-hero-footnote"><span aria-hidden="true"></span> One source in. Context, connections, and finished work stay on the same trail.</p>
     </section>
 
     <section class="mk-unfold" id="unfold" aria-labelledby="mk-unfold-title">
       <header class="mk-section-intro">
-        <p class="mk-kicker">One source, still moving</p>
-        <h2 id="mk-unfold-title">A useful source should open a path—not close the question.</h2>
-        <p>This real Japan example begins with a policy signal. Markov separates what happened from what people infer, then finds the missing link worth following.</p>
+        <p class="mk-eyebrow">One source, still moving</p>
+        <h2 id="mk-unfold-title">The useful part is often what the source leaves out.</h2>
+        <p>Markov separates what happened from what people infer, then follows the missing link that changes the story.</p>
       </header>
 
       <div class="mk-thread-story">
         <article class="mk-story-stop is-source">
-          <div class="mk-thread-pin"><span>1</span></div>
-          <div class="mk-story-copy"><p class="mk-kicker">Starting source</p><h3>Japan’s pension pivot puts overseas capital in play.</h3><p>A Reuters report establishes a proposed domestic-allocation shift. It does not establish a Treasury selloff.</p></div>
-          <div class="mk-source-ticket"><span>Article · Reuters</span><strong>Policy signal</strong><p>Proposal and timing are visible. The aggregate flow effect is still an interpretation.</p><small>Saved to the Japan Chain</small></div>
+          <div class="mk-thread-pin"><span>01</span></div>
+          <div class="mk-story-copy"><p>Starting source</p><h3>Japan’s pension pivot puts overseas capital in play.</h3><p>A Reuters report establishes a proposed domestic-allocation shift. It does not establish a Treasury selloff.</p></div>
+          <div class="mk-source-ticket"><span>What is known</span><strong>Policy proposal and timing</strong><p>The aggregate flow effect is still an interpretation.</p></div>
         </article>
 
         <article class="mk-story-stop is-claim">
-          <div class="mk-thread-pin"><span>2</span></div>
-          <div class="mk-story-copy"><p class="mk-kicker">Separate the claim</p><h3>“Japanese investors will dump Treasuries” is several claims wearing one coat.</h3><p>Markov breaks the dramatic conclusion into institutional decisions that can be inspected independently.</p></div>
+          <div class="mk-thread-pin"><span>02</span></div>
+          <div class="mk-story-copy"><p>Separate the claim</p><h3>“Japanese investors will dump Treasuries” is several claims wearing one coat.</h3><p>Domestic yields, allocation mandates, hedging costs, and marginal demand can move on different timelines.</p></div>
           <div class="mk-claim-stack" aria-label="Claim breakdown">
             <span>Domestic yields become more competitive.</span>
-            <span>Portfolio mandates can change allocation.</span>
-            <span>New demand can weaken before holdings are sold.</span>
+            <span>Mandates can alter new allocation.</span>
+            <span>Demand can weaken before holdings are sold.</span>
           </div>
         </article>
 
         <article class="mk-story-stop is-gap">
-          <div class="mk-thread-pin"><span>3</span></div>
-          <div class="mk-story-copy"><p class="mk-kicker">Expose the skipped step</p><h3>Who becomes the buyer before anyone becomes the seller?</h3><p>The useful story is not the loudest prediction. It is the financing question hidden between demographic pressure and a market outcome.</p></div>
-          <blockquote class="mk-margin-note"><span>Open question</span><p>Which institution changes the marginal flow—and what data would reveal it first?</p></blockquote>
+          <div class="mk-thread-pin"><span>03</span></div>
+          <div class="mk-story-copy"><p>Expose the skipped step</p><h3>Who becomes the buyer before anyone becomes the seller?</h3><p>The more useful story is the financing question hidden between demographic pressure and a market outcome.</p></div>
+          <blockquote class="mk-margin-note"><span>Missing link</span><p>Which institution changes the marginal flow—and what data would reveal it first?</p></blockquote>
         </article>
 
         <article class="mk-story-stop is-connection">
-          <div class="mk-thread-pin"><span>4</span></div>
-          <div class="mk-story-copy"><p class="mk-kicker">Follow the connection</p><h3>The first Treasury signal may be the buyer who never arrives.</h3><p>Higher domestic yields, mandate changes, and hedging costs can weaken marginal buying before a visible sale. The connection stays labeled as an interpretation until aligned flow data supports it.</p></div>
+          <div class="mk-thread-pin"><span>04</span></div>
+          <div class="mk-story-copy"><p>Follow the connection</p><h3>The first Treasury signal may be the buyer who never arrives.</h3><p>Higher domestic yields, mandate changes, and hedging costs can weaken marginal buying before a visible sale. The connection stays labelled as an interpretation until aligned flow data supports it.</p></div>
           <div class="mk-evidence-pair">
             <div><span>Supports</span><strong>Reuters policy timing</strong><small>Establishes the proposal</small></div>
             <div><span>Qualifies</span><strong>NBER portfolio research</strong><small>Supplies a plausible mechanism</small></div>
@@ -114,19 +129,19 @@
 
     <section class="mk-route-lab" aria-labelledby="mk-route-title" data-route-lab>
       <header class="mk-section-intro is-compact">
-        <p class="mk-kicker">Choose the useful turn</p>
-        <h2 id="mk-route-title">Compare directions before you commit to one.</h2>
-        <p>Every route says what it explains, what supports it, and where it could break.</p>
+        <p class="mk-eyebrow">Choose the useful turn</p>
+        <h2 id="mk-route-title">A question can lead somewhere. Or just make more noise.</h2>
+        <p>Compare the mechanism, the evidence, and the weak point before choosing what deserves more work.</p>
       </header>
       <div class="mk-route-layout">
         <div class="mk-route-list" role="tablist" aria-label="Research directions">
-          <button type="button" role="tab" aria-selected="true" data-route-choice="buyers"><span>01 · Strongest route</span><strong>Map the missing buyer</strong><small>Earlier signal, broader consequence</small></button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-route-choice="mandates"><span>02 · Decision route</span><strong>Find who can move the flow</strong><small>Names the institutions behind the macro claim</small></button>
-          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-route-choice="hedging"><span>03 · Competing route</span><strong>Test the hedging regime</strong><small>Asks when foreign yield stops being attractive</small></button>
+          <button type="button" role="tab" aria-selected="true" data-route-choice="buyers"><span>01</span><strong>Map the missing buyer</strong><small>Earlier signal, broader consequence</small></button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-route-choice="mandates"><span>02</span><strong>Find who can move the flow</strong><small>The institutions behind the macro claim</small></button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-route-choice="hedging"><span>03</span><strong>Test the hedging regime</strong><small>When foreign yield stops looking attractive</small></button>
         </div>
         <article class="mk-route-detail" role="tabpanel" aria-live="polite">
           <header><span data-route-status>Supported direction</span><small data-route-strength>High information gain</small></header>
-          <p class="mk-kicker">Working question</p>
+          <p>Working question</p>
           <h3 data-route-title>Who absorbs gradually weaker Japanese demand?</h3>
           <p data-route-body>Track the institutions most likely to replace marginal buying, then compare auction demand and sector-level holdings before treating a proposal as a sale.</p>
           <dl>
@@ -140,9 +155,9 @@
 
     <section class="mk-output-stage" id="product" aria-labelledby="mk-output-title" data-output-stage>
       <header class="mk-section-intro is-light">
-        <p class="mk-kicker">Same trail, useful finish</p>
-        <h2 id="mk-output-title">Turn the chosen route into finished work.</h2>
-        <p>The evidence does not disappear when the format changes. Brief, research, and script remain views of the same inspected Chain.</p>
+        <p class="mk-eyebrow">Same trail, useful finish</p>
+        <h2 id="mk-output-title">The research changes shape.<br>The evidence stays attached.</h2>
+        <p>A brief, research report, and script are different views of the same inspected Chain.</p>
       </header>
       <div class="mk-output-layout">
         <div class="mk-output-tabs" role="tablist" aria-label="Choose an output">
@@ -153,7 +168,7 @@
         <article class="mk-output-paper" role="tabpanel" aria-live="polite">
           <header><span data-output-label>Decision brief</span><small>4 sources · 1 open question</small></header>
           <div class="mk-output-paper-body">
-            <p class="mk-kicker">Japan / capital flows</p>
+            <p>Japan / capital flows</p>
             <h3 data-output-title>The first Treasury signal may be the buyer who never arrives.</h3>
             <p data-output-copy>A visible selloff is not required for Japanese allocation changes to matter. Watch marginal demand, institutional mandates, and hedging costs before the dramatic headline.</p>
             <blockquote><span>Evidence boundary</span><p data-output-note>Policy timing is supported. The demand effect remains an interpretation pending aligned flow data.</p></blockquote>
@@ -161,7 +176,7 @@
           <footer><span><i aria-hidden="true"></i>Evidence attached</span><a href="/markov-engine/sample/">Read the finished case <b aria-hidden="true">↗</b></a></footer>
         </article>
         <aside class="mk-evidence-margin" aria-label="Evidence margin">
-          <p class="mk-kicker">Evidence margin</p>
+          <p>Evidence margin</p>
           <ol>
             <li><span>01</span><div><strong>Reuters policy signal</strong><small>Proposal and timing</small></div><b>Supports</b></li>
             <li><span>02</span><div><strong>NBER portfolio research</strong><small>Institutional mechanism</small></div><b>Qualifies</b></li>
@@ -172,17 +187,18 @@
     </section>
 
     <section class="mk-fit-section" id="who-its-for" aria-labelledby="mk-fit-title">
-      <header class="mk-section-intro is-compact"><p class="mk-kicker">A deliberate fit</p><h2 id="mk-fit-title">For work that has to hold up after it leaves the draft.</h2></header>
+      <header class="mk-section-intro is-compact"><p class="mk-eyebrow">A deliberate fit</p><h2 id="mk-fit-title">For people whose work has to hold up.</h2></header>
       <div class="mk-fit-columns">
-        <section><span>Best for</span><h3>People who publish factual work.</h3><ul><li>Research-led creators and editorial teams</li><li>Analysts, strategists, and consultants</li><li>Teams turning recurring research into briefs, reports, or scripts</li><li>Agent builders who need inspectable research state</li></ul></section>
-        <section><span>Not for</span><h3>Work where the source trail is optional.</h3><ul><li>Generic high-volume copy or social filler</li><li>Fiction and unconstrained creative writing</li><li>Passive read-later or personal-archive workflows</li><li>Replacing the human decision to publish</li></ul></section>
+        <section><span>Markov fits</span><h3>Research-led creators, analysts, strategists, and consultants.</h3><p>People turning recurring research into briefs, reports, or scripts—and agent builders who need inspectable research state.</p></section>
+        <section><span>Markov does not fit</span><h3>High-volume filler, unconstrained fiction, or passive read-later archives.</h3><p>The source trail is part of the product. Markov does not replace the human decision to publish.</p></section>
       </div>
     </section>
 
     <section class="mk-final-cta" aria-labelledby="mk-final-title">
-      <p class="mk-kicker">Your next Chain</p>
-      <h2 id="mk-final-title">Bring the thing you can’t stop thinking about.</h2>
-      <p>Markov will help you understand it, test it, follow it, and turn it into work you can defend.</p>
+      <div class="mk-final-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p>Your next Chain</p>
+      <h2 id="mk-final-title">Bring the thing you<br>can’t stop thinking about.</h2>
+      <p>Understand it, test it, follow it, and turn it into work you can defend.</p>
       <a class="mk-button mk-button-dark" href="/markov-engine/sample/">Open the workspace <span aria-hidden="true">↗</span></a>
     </section>
   </main>
@@ -192,16 +208,16 @@
     <a class="mk-wordmark" href="/markov-engine/" aria-label="Markov home">
       <span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span>
     </a>
-    <p>A source is the first node, not the answer.</p>
+    <p>A source is where the thinking starts.</p>
   </div>
   <nav aria-label="Footer navigation">
-    <a href="/markov-engine/#unfold">How it unfolds</a>
-    <a href="/markov-engine/sample/">Finished case</a>
+    <a href="/markov-engine/#unfold">How it works</a>
+    <a href="/markov-engine/sample/">Sample</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
     <a href="/markov-engine/sample/">Product demo</a>
   </nav>
-  <p class="mk-footer-note">Markov keeps sources, qualifications, open questions, and finished work on the same trail. The final judgment remains yours.</p>
+  <p class="mk-footer-note">Sources, qualifications, open questions, and finished work stay on the same trail. The final judgment remains yours.</p>
 </footer>
 
 </body>
