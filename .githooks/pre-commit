@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+stats=$(git diff --cached --numstat)
+files=0
+lines=0
+tab=$(printf '\t')
+
+while IFS="$tab" read -r added deleted path; do
+  [ -z "$path" ] && continue
+  files=$((files + 1))
+  [ "$added" = "-" ] || lines=$((lines + added))
+  [ "$deleted" = "-" ] || lines=$((lines + deleted))
+done <<EOF
+$stats
+EOF
+
+if [ "$files" -gt 20 ] || [ "$lines" -gt 1000 ]; then
+  printf 'Commit rejected: staged diff has %d files and %d changed lines.\n' "$files" "$lines" >&2
+  printf '%s\n' 'Split it into one-logical-outcome checkpoints (limits: 20 files, 1000 lines).' >&2
+  exit 1
+fi
