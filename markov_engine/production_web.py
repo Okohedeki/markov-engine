@@ -8,7 +8,7 @@ from markov_engine.billing import credit_cost
 from markov_engine.entitlements import require_paid_feature, resolve_entitlements
 from markov_engine.research import convert_case_artifact
 
-STATUSES = {'all': 'All ideas', 'ideas': 'To explore', 'shortlisted': 'Shortlisted', 'ready': 'Ready to record', 'recorded': 'Recorded'}
+STATUSES = {'all': 'All stories', 'ideas': 'To explore', 'shortlisted': 'Shortlisted', 'ready': 'Ready', 'recorded': 'Finished'}
 
 
 async def queue_context(store, owner_id, request, settings):
