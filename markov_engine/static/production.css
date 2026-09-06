@@ -53,6 +53,27 @@
 .status-ready { background:#e8f1e9; color:#386547; }
 .status-recorded { background:#e9eaec; color:#555d65; }
 .production-row-end a { font-size:11px; min-height:26px; }
+.production-row:has(details[open]) { align-items:start; }
+.production-preview { margin-top:8px; }
+.production-preview > summary { width:fit-content; min-height:44px; padding:12px 0; cursor:pointer; font-size:13px; color:#86401f; }
+.production-preview[open] { padding-bottom:8px; }
+.production-preview [data-preview-content] { border-top:1px solid #e1e5e9; padding-top:16px; }
+.production-preview-angle { font-size:14px; line-height:1.6; }
+.production-preview-note { font-size:12px; line-height:1.6; color:#63707c; margin:8px 0 20px; }
+.production-preview-columns { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:28px; }
+.production-preview-columns h4 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.production-preview-columns p { color:#63707c; font-size:12px; line-height:1.6; }
+.production-preview-columns ul { list-style:none; padding:0; margin:0; }
+.production-preview-columns li { padding:12px 0; border-bottom:1px solid #e6e9ed; overflow-wrap:anywhere; }
+.production-preview-columns a, .production-preview-columns strong { display:block; font-size:14px; line-height:1.5; font-weight:500; }
+.production-preview-columns a { text-decoration:underline; text-decoration-color:#bbc5cd; text-underline-offset:4px; }
+.production-preview-columns a:hover { color:#a44923; }
+.production-preview-columns small { display:block; font-size:12px; line-height:1.5; color:#63707c; margin-top:5px; }
+.production-preview-fallback { display:inline-flex; align-items:center; min-height:44px; margin-top:12px; font-size:13px; }
+.production-preview button { min-height:44px; padding:10px 14px; margin-top:10px; background:#edf1f5; border-radius:7px; }
+@media(max-width:1000px) {
+ .production-preview-columns { grid-template-columns:minmax(0,1fr); gap:24px; }
+}
 .production-paid-actions { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:17px 20px; margin-top:16px; background:#f0f3f7; border:1px solid #dce2e8; border-radius:10px; }
 [data-batch-form]:not(:has(input[name="item"]:checked)) .production-paid-actions,
 [data-batch-form]:not(:has(input[name="item"]:checked)) .production-batch > div { display:none; }
