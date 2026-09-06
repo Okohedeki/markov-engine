@@ -1,7 +1,8 @@
 # Source-to-story V1
 
 2026-09-05. The user's correction supersedes V10/V11's generic posting-angle
-positioning. Preserve V11's visual system, not its product interpretation.
+positioning. On 6 September the user explicitly set aside the previous UI/UX
+skills and requested independent, high-quality reference-led design judgment.
 
 ## Scope and acceptance
 
@@ -31,15 +32,22 @@ not pretend that this curated example is a live engine run.
    paid generation or simulated research. Keyboard, no-JS and narrow mobile work.
 
 Memory hook: a space-station water story leads to a brewery and a chip factory.
-Use DM Sans, the existing cool opening and orange actions; open layouts and
-quiet dividers, not an equal-card feature grid. Preserve the existing Recall,
-Vitsœ and accessible-tabs reference principles documented in V11. No new brand
-direction, logos, stock illustration, fabricated metrics or automatic animation.
+The newer design instruction replaces the prior prescribed archetype and visual
+rules. Keep working interactions and real content; design the page independently.
 
-Explorer (primary) / Creator (accent): curious, concrete, enabling. Avoid vague
-AI claims, forced contrarian takes and quantity as a substitute for originality.
-The emotional progress is finding a story worth telling; the social progress is
-having a distinct point of view; repeated use should sustain an original output.
+Live references visually inspected in the browser on 6 September:
+
+- Recall, https://www.recall.it/: asymmetrical opening, medium-weight headline,
+  compact capsule navigation and tangible source material as the visual anchor.
+- Linear, https://linear.app/: readable type, deliberate spacing, restrained
+  interface detail and one clear product story per section.
+- Cosmos, https://www.cosmos.so/: visual discovery and layered objects that feel
+  connected to the product's purpose rather than a feature list.
+
+Translation: a focused left-hand promise, a photographic source-to-story
+composition, then a spacious interactive source trail. Do not copy competitors'
+assets, proprietary fonts, logos, testimonials or claims. Use the existing
+self-hosted DM Sans as a pragmatic licensed typeface, with a lighter hierarchy.
 
 ## Source ledger
 
