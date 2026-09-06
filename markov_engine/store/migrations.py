@@ -420,12 +420,24 @@ async def _migration_5(conn: aiosqlite.Connection) -> None:
     await conn.executescript(PRODUCTION_SCHEMA)
 
 
+async def _migration_6(conn: aiosqlite.Connection) -> None:
+    # Keep the balance and its ledger entry in the same atomic SQL statement.
+    # Setting (not incrementing) the balance also supports the previous writer.
+    await conn.execute(
+        "CREATE TRIGGER IF NOT EXISTS credit_transaction_balance "
+        "AFTER INSERT ON credit_transactions BEGIN "
+        "UPDATE credit_accounts SET balance = NEW.balance_after, "
+        "updated_at = datetime('now') WHERE owner_id = NEW.owner_id; END"
+    )
+
+
 _MIGRATIONS = (
     (1, "research_case_v1", _migration_1),
     (2, "connection_graph_v2", _migration_2),
     (3, "focused_research_plan_v2", _migration_3),
     (4, "branched_artifacts_v2", _migration_4),
     (5, "production_queue_and_series", _migration_5),
+    (6, "atomic_credit_balance", _migration_6),
 )
 
 
