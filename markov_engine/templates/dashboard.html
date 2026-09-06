@@ -1,78 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Home — Markov{% endblock %}
+{% block title %}Creator studio — Markov{% endblock %}
 {% block body_class %}mk-app-page{% endblock %}
 {% block body %}
-  {% set focus = ready[0] if ready else none %}
   <div class="mk-app-frame">
     {% include "partials/app_sidebar.html" %}
     <main class="mk-app-main" id="main-content">
       <header class="mk-mobile-appbar">
         <button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button>
         <a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
-        <a href="#new-chain">Add <span aria-hidden="true">＋</span></a>
+        <a href="#new-topic">New topic ＋</a>
       </header>
-
       <div class="mk-workspace-shell">
-        <header class="mk-workspace-head">
-          <div><p class="mk-kicker">Research desk</p><h1>Pick up the thread.</h1><p>Resume the work that needs judgment, or begin with something new.</p></div>
-          <div class="mk-workspace-summary" aria-label="Workspace status"><span><i class="is-running" aria-hidden="true"></i>{{ in_progress | length }} active</span><span><i class="is-ready" aria-hidden="true"></i>{{ ready | length }} ready</span><a href="/app/search">Search <kbd>/</kbd></a></div>
-        </header>
-
-        <form class="mk-capture-bar" id="new-chain" method="post" action="/app/jobs">
-          <div class="mk-capture-title"><span aria-hidden="true">＋</span><div><label for="signal-input">Add a source or question</label><small>Markov will keep it on one research trail.</small></div></div>
-          <div class="mk-capture-types" role="group" aria-label="Starting material type">
-            <button type="button" aria-pressed="true" data-signal-type data-placeholder="Paste a video, article, PDF, podcast, or post URL…">Link</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Ask the question you want to investigate…">Question</button>
-            <button type="button" aria-pressed="false" data-signal-type data-placeholder="Write the observation you do not want to lose…">Note</button>
-            <button type="button" disabled title="Direct upload is not enabled yet">Upload</button>
-          </div>
-          <div class="mk-capture-field">
-            <input id="signal-input" name="value" type="text" data-signal-input placeholder="Paste a video, article, PDF, podcast, or post URL…" required>
-            <input type="hidden" name="mode" value="research">
-            <input type="hidden" name="review_level" value="instant">
-            <button type="submit">Start a Chain <span aria-hidden="true">→</span></button>
-          </div>
+        <header class="studio-head"><div><p class="mk-kicker">Your creator studio</p><h1>What will you post next?</h1><p>A conversation is a starting point. Find the ideas inside it.</p></div><a href="/sample">Explore example topics <span aria-hidden="true">↗</span></a></header>
+        <form class="studio-intake" id="new-topic" method="post" action="/app/jobs">
+          <label for="signal-input">What's being talked about in your corner of the internet?</label>
+          <div class="studio-input"><input id="signal-input" name="value" type="text" placeholder="Paste a link, or describe a discussion…" required><button class="mk-button mk-button-primary" type="submit">Find posting angles <span aria-hidden="true">↗</span></button></div>
+          <input type="hidden" name="mode" value="research"><input type="hidden" name="review_level" value="instant">
+          <input type="hidden" name="focus" value="Develop distinct posting angles from this discussion: a practical takeaway, a counterpoint, an unexpected connection, an explainer, and an open question. Avoid repeating the same thesis. Keep claims grounded in available sources and make uncertainty clear.">
+          <details {% if request.query_params.get('audience') %}open{% endif %}><summary>Make it relevant to your audience</summary><div><label for="creator-audience">Who are you posting for?<input id="creator-audience" name="audience" value="{{ request.query_params.get('audience', '') }}" placeholder="e.g. independent designers and creative teams"></label><label for="creator-tone">Your voice<input id="creator-tone" name="tone" value="{{ request.query_params.get('tone', '') }}" placeholder="e.g. curious, direct, a little opinionated"></label></div></details>
+          <p class="studio-hint">Bring a current source or topic. Automatic trend discovery and direct publishing aren't connected yet.</p>
         </form>
-
-        <div class="mk-dashboard-grid">
-          <section class="mk-attention" aria-labelledby="attention-title">
-            <header class="mk-panel-head"><div><p class="mk-kicker">Next decision</p><h2 id="attention-title">Needs your attention <span>{{ ready | length }}</span></h2></div><a href="/app/ideas">View all Chains <span aria-hidden="true">→</span></a></header>
-            {% if focus %}
-              <article class="mk-focus-chain">
-                <div class="mk-focus-thread" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
-                <div class="mk-focus-main">
-                  <div class="mk-row-meta"><span>{{ focus.source_label }}</span>{% if focus.updated_at %}<time datetime="{{ focus.updated_at.isoformat() }}">Updated {{ focus.updated_at.strftime("%b %d") }}</time>{% endif %}</div>
-                  <p class="mk-state mk-state-ready"><i aria-hidden="true"></i> Ready for a decision</p>
-                  <h3 title="{{ focus.case.title }}">{{ focus.case.title | truncate(110) }}</h3>
-                  <blockquote><span>Markov found</span><p>{{ focus.opportunity_thesis | truncate(260) }}</p></blockquote>
-                  <p class="mk-focus-next"><strong>Next:</strong> {{ focus.next_action }}</p>
-                </div>
-                <dl class="mk-focus-facts">
-                  <div><dt>Sources</dt><dd>{{ focus.source_count }}</dd></div>
-                  <div><dt>Connections</dt><dd>{{ focus.connection_count }}</dd></div>
-                  <div><dt>Directions</dt><dd>{{ focus.topic_count }}</dd></div>
-                </dl>
-                {% if focus.destination %}<a class="mk-focus-action" href="{{ focus.destination }}"><span>Review the strongest route</span><b aria-hidden="true">→</b></a>{% endif %}
-              </article>
-              <div class="mk-chain-rows">
-                {% for row in ready[1:4] %}<a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index + 1) }}</span><div><small>{{ row.source_label }}</small><strong title="{{ row.case.title }}">{{ row.case.title | truncate(90) }}</strong><p>{{ row.finding | truncate(130) }}</p></div><b aria-hidden="true">→</b></a>{% endfor %}
-              </div>
-            {% else %}
-              <div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No decision is waiting.</h3><p>Start a Chain or let active research finish. The next useful choice will appear here.</p><a href="#new-chain">Add a source or question <span aria-hidden="true">→</span></a></div></div>
-            {% endif %}
+        <div class="studio-layout">
+          <section aria-labelledby="collections-title">
+            <header class="studio-section-head"><h2 id="collections-title">Your idea collections</h2><a href="/app/ideas">View all <span aria-hidden="true">→</span></a></header>
+            <div class="studio-topic-list">
+              {% for row in cases[:4] %}
+              <article class="studio-topic"><header><span>{{ row.source_label }}</span>{% if row.updated_at %}<time datetime="{{ row.updated_at.isoformat() }}">{{ row.updated_at.strftime("%b %d") }}</time>{% endif %}</header><h3>{{ row.case.title | truncate(110) }}</h3><p>{{ row.opportunity_thesis | truncate(240) }}</p><footer><span>{{ row.topic_count }} angle{{ '' if row.topic_count == 1 else 's' }} · {{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }}</span><a href="{{ row.destination or '/app/ideas' }}">Explore ideas <span aria-hidden="true">↗</span></a></footer></article>
+              {% else %}
+              <div class="studio-empty"><h3>Your next batch starts with one topic.</h3><p>Add a discussion above. Its angles and supporting sources will stay together here, ready to turn into something you want to post.</p><a href="/sample">Try the example studio first <span aria-hidden="true">→</span></a></div>
+              {% endfor %}
+            </div>
           </section>
-
-          <aside class="mk-dashboard-rail">
-            <section class="mk-activity" aria-labelledby="activity-title">
-              <header class="mk-panel-head is-small"><div><p class="mk-kicker">In motion</p><h2 id="activity-title">Active research <span>{{ in_progress | length }}</span></h2></div><a href="/app/signals">Inbox</a></header>
-              {% for row in in_progress[:3] %}
-                <a class="mk-active-row" href="{{ row.destination }}"><div><span class="mk-state mk-state-running"><i aria-hidden="true"></i>{{ row.finding }}</span><strong title="{{ row.case.title }}">{{ row.case.title | truncate(74) }}</strong></div><ol aria-label="Research progress">{% for stage, label in stages %}<li class="{% if loop.index <= row.stage_index %}is-complete{% elif loop.index == row.stage_index + 1 %}is-current{% endif %}"><span></span><small>{{ label }}</small></li>{% endfor %}</ol></a>
-              {% else %}<div class="mk-quiet-state"><span aria-hidden="true">✓</span><div><strong>The queue is clear.</strong><p>Your saved Chains are ready whenever you are.</p></div></div>{% endfor %}
-            </section>
-
-            <section class="mk-recent" aria-labelledby="recent-title">
-              <header class="mk-panel-head is-small"><div><p class="mk-kicker">Keep going</p><h2 id="recent-title">Recent Chains</h2></div></header>
-              <div>{% for row in cases[:5] %}<a href="{{ row.destination or '/app/ideas' }}"><span>{{ "%02d" | format(loop.index) }}</span><div><strong title="{{ row.case.title }}">{{ row.case.title | truncate(64) }}</strong><small>{{ row.source_count }} source{{ '' if row.source_count == 1 else 's' }} · {{ row.topic_count }} route{{ '' if row.topic_count == 1 else 's' }}</small></div><b aria-hidden="true">→</b></a>{% else %}<p>No saved Chains yet.</p>{% endfor %}</div>
+          <aside class="studio-rail">
+            <section class="studio-rail-section"><header class="studio-section-head"><h2>Drafts to pick up</h2><a href="/app/plans">All drafts →</a></header>{% for item in outputs[:3] %}<a class="studio-draft" href="/app/artifacts/{{ item.artifact.id }}#output"><span>{{ item.artifact.artifact_type | humanize }}</span><strong>{{ item.artifact.title | truncate(85) }}</strong><small>{{ item.artifact.word_count }} words · {{ item.artifact.status | humanize }}</small></a>{% else %}<p class="studio-empty">No drafts yet. Choose an angle from a collection to develop it.</p>{% endfor %}</section>
+            <section class="studio-rail-section"><header class="studio-section-head"><h2>In the works</h2><span>{{ in_progress | length }}</span></header>{% for row in in_progress[:3] %}<a class="studio-draft" href="{{ row.destination }}"><span class="mk-state mk-state-running"><i aria-hidden="true"></i>{{ row.finding }}</span><strong>{{ row.case.title | truncate(80) }}</strong><small>View progress →</small></a>{% else %}<p class="studio-hint">Nothing processing right now.</p>{% endfor %}
+              <a class="studio-example-link" href="/sample"><span>TAKE IT FOR A SPIN</span><strong>One topic.<br>Six ways into it.</strong><p>Try an example, collect your favorites, and sketch a post. ↗</p></a>
             </section>
           </aside>
         </div>

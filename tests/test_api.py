@@ -263,10 +263,11 @@ async def test_web_login_and_focused_intake_page():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "Pick up the thread" in signed_in.text
-            assert "Add a source or question" in signed_in.text
-            assert "Needs your attention" in signed_in.text
-            assert "No decision is waiting" in signed_in.text
+            assert "What will you post next?" in signed_in.text
+            assert "Find posting angles" in signed_in.text
+            assert "Your idea collections" in signed_in.text
+            assert 'name="focus"' in signed_in.text
+            assert "Automatic trend discovery and direct publishing" in signed_in.text
             assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
             assert f'href="/app/artifacts/{artifact.id}"' in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()

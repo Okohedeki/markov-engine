@@ -1,17 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Audience profile — Markov{% endblock %}
+{% block title %}Audience & voice — Markov{% endblock %}
 {% block body_class %}mk-app-page mk-onboarding-page{% endblock %}
 {% block body %}
-  <main class="mk-onboarding-shell" id="main-content">
-    <header><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><a href="/app">Skip for now</a></header>
-    <div class="mk-onboarding-grid"><aside><p class="mk-kicker">Audience profile</p><h1>Teach Markov what “useful” means here.</h1><p>This context helps rank routes for your audience. It does not turn a conclusion into evidence.</p><ol><li class="is-current">Publishing context</li><li>Audience and subjects</li><li>Formats and boundaries</li></ol></aside>
-      <form action="/app" method="get">
-        <fieldset><legend>How do you publish?</legend><p>Choose the closest operating context.</p><div class="mk-choice-grid"><label><input type="radio" name="publisher_type" value="company" checked><span><strong>Editorial team</strong>Research-led work for an organization</span></label><label><input type="radio" name="publisher_type" value="creator"><span><strong>Independent creator</strong>Your name and judgment are on the work</span></label><label><input type="radio" name="publisher_type" value="agency"><span><strong>Studio or agency</strong>Research across several audiences</span></label></div></fieldset>
-        <div class="mk-form-pair"><label><span>Describe the audience</span><textarea name="audience" rows="4" placeholder="What do they already understand, and what decision are they trying to make?" required></textarea></label><label><span>Subjects you return to</span><textarea name="subjects" rows="4" placeholder="One subject per line…" required></textarea></label></div>
-        <fieldset><legend>Where should finished work go?</legend><div class="mk-channel-grid"><label><input type="checkbox" name="channels" value="brief"><span>Internal briefs</span></label><label><input type="checkbox" name="channels" value="newsletter"><span>Newsletter</span></label><label><input type="checkbox" name="channels" value="podcast"><span>Podcast</span></label><label><input type="checkbox" name="channels" value="youtube"><span>YouTube</span></label><label><input type="checkbox" name="channels" value="article"><span>Articles</span></label><label><input type="checkbox" name="channels" value="social"><span>Social analysis</span></label></div></fieldset>
-        <div class="mk-form-pair"><label><span>Ideas already covered</span><textarea name="covered" rows="3" placeholder="Arguments Markov should avoid repeating…"></textarea></label><label><span>Questions worth returning to</span><textarea name="explore" rows="3" placeholder="Tensions or developments to keep watching…"></textarea></label></div>
-        <footer><p>You can change this later. No audience profile can override evidence status.</p><button class="mk-button mk-button-primary" type="submit">Save profile <span aria-hidden="true">→</span></button></footer>
-      </form>
-    </div>
-  </main>
+<main class="mk-onboarding-shell" id="main-content">
+  <header><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><a href="/app">Back to your studio</a></header>
+  <div class="mk-onboarding-grid"><aside><p class="mk-kicker">Audience & voice</p><h1>A lot of ideas.<br>Still unmistakably you.</h1><p>Tell Markov who you post for and how you like to sound. Use that context for the topic you start next.</p></aside>
+    <form action="/app" method="get">
+      <label for="profile-audience">Who is on the other side of your posts?<textarea id="profile-audience" name="audience" rows="4" placeholder="e.g. Freelance designers figuring out how to build a sustainable studio" required></textarea></label>
+      <label for="profile-tone">What does your voice sound like?<textarea id="profile-tone" name="tone" rows="3" placeholder="e.g. Conversational and direct. Useful examples, no motivational fluff."></textarea></label>
+      <footer><p>This fills the audience and voice fields for your next topic. It is not a saved account profile.</p><button class="mk-button mk-button-primary" type="submit">Use for my next topic <span aria-hidden="true">→</span></button></footer>
+    </form>
+  </div>
+</main>
 {% endblock %}

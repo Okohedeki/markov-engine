@@ -1,0 +1,65 @@
+.mk-auth-shell { min-height: 100dvh; display: grid; grid-template-columns: 1fr 1fr; }
+.mk-auth-story { display: flex; flex-direction: column; justify-content: space-between; gap: 60px; padding: 55px 12%; background: var(--mint); }
+.mk-auth-story h1 { max-width: 560px; margin-top: 23px; font-size: clamp(42px,4.6vw,70px); }
+.mk-auth-story div > p:last-child { max-width: 430px; margin-top: 25px; color: #5f6958; }
+.mk-auth-story ol { display: grid; gap: 18px; list-style: none; color: #5f6958; font-size: 13px; }
+.mk-auth-story li { display: flex; align-items: center; gap: 14px; }
+.mk-auth-story li span { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.mk-auth-form { align-self: center; padding: 80px 14%; }
+.mk-auth-form h2 { font-size: 34px; margin: 15px 0; }
+.mk-auth-form p { font-size: 14px; color: var(--muted); }
+.mk-auth-form form, .mk-review-login form { margin-top: 36px; }
+.mk-auth-form form label, .mk-review-login label { display: block; font-size: 12px; font-weight: 600; }
+.mk-auth-form form > div, .mk-review-login form > div { display: grid; gap: 13px; margin-top: 10px; }
+.mk-auth-form input, .mk-review-login input { min-width: 0; width: 100%; border: 1px solid var(--line); border-radius: 7px; padding: 14px; background: #fff; }
+.mk-auth-form button, .mk-review-login button { padding: 14px; border-radius: 7px; background: var(--accent); color: #fff; }
+.mk-auth-help { margin-top: 24px; font-size: 11px !important; overflow-wrap: anywhere; }
+.mk-auth-help strong { display: block; margin-bottom: 5px; }
+.mk-auth-form > a { display: inline-block; margin-top: 30px; font-size: 12px; color: var(--accent); }
+.mk-alert { padding: 16px; margin-top: 23px; border-radius: 7px; font-size: 13px; background: var(--mint); }
+.mk-alert.is-error { background: #fae9e0; color: #923d26; }
+.mk-onboarding-shell { max-width: 1060px; margin: auto; padding: 40px 30px 100px; }
+.mk-onboarding-shell > header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.mk-onboarding-shell > header > a:last-child { font-size: 12px; color: var(--muted); }
+.mk-onboarding-grid { display: grid; grid-template-columns: .8fr 1fr; gap: 90px; margin-top: 100px; }
+.mk-onboarding-grid h1 { font-size: 51px; margin: 20px 0; }
+.mk-onboarding-grid aside > p:last-child { color: var(--muted); font-size: 15px; }
+.mk-onboarding-grid form > label { display: block; margin-bottom: 25px; font-size: 14px; font-weight: 500; }
+.mk-onboarding-grid textarea { display: block; width: 100%; resize: vertical; padding: 15px; margin-top: 12px; border: 1px solid var(--line); border-radius: 7px; background: #fff; font-size: 14px; }
+.mk-onboarding-grid footer p { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+.mk-review-shell { max-width: 1300px; padding: 40px; margin: auto; }
+.mk-review-shell header > div { margin-top: 50px; max-width: 830px; }
+.mk-review-shell h1 { font-size: 40px; margin: 15px 0; }
+.mk-review-shell header p:not(.mk-kicker) { color: var(--muted); font-size: 14px; }
+.mk-review-list { margin-top: 45px; }
+.mk-review-list > a { display: grid; grid-template-columns: 100px 1fr 20px; padding: 25px 0; gap: 20px; border-block-start: 1px solid var(--line); font-size: 13px; }
+.mk-review-list small { display: block; color: var(--muted); margin-top: 8px; }
+.mk-review-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; margin-top: 40px; }
+.mk-review-grid > * { min-width: 0; }
+.mk-review-document { background: #fff; padding: 30px; border: 1px solid var(--line); border-radius: 8px; align-self: start; }
+.mk-review-document pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.8 var(--sans); margin-top: 20px; }
+.mk-review-decisions > section { padding-bottom: 30px; margin-bottom: 30px; border-bottom: 1px solid var(--line); }
+.mk-review-decisions section > header { display: flex; gap: 20px; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.mk-review-decisions h2 { font-size: 24px; margin: 20px 0; }
+.mk-review-decisions blockquote { padding: 20px; background: var(--mint); margin: 20px 0; font-size: 13px; }
+.mk-review-decisions cite { display: block; margin-top: 15px; font-size: 11px; }
+.mk-review-decisions form { margin-top: 25px; }
+.mk-review-decisions label { display: block; margin: 16px 0 8px; font-size: 12px; }
+.mk-review-decisions input, .mk-review-decisions select { width: 100%; padding: 11px; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+.mk-review-decisions button { padding: 11px 14px; border-radius: 5px; background: var(--mint); color: var(--green); margin-top: 12px; font-size: 12px; }
+.mk-review-decisions button.is-danger { color: #923d26; background: #fae9e0; }
+.mk-review-login, .mk-error-shell { max-width: 660px; padding: 45px 25px; margin: auto; }
+.mk-review-login > section, .mk-error-shell > div { margin-top: 110px; }
+.mk-review-login h1, .mk-error-shell h1 { font-size: 46px; margin: 18px 0; }
+.mk-review-login p:not(.mk-kicker), .mk-error-shell p:not(.mk-kicker) { color: var(--muted); }
+.mk-error-shell .mk-button { margin-top: 25px; }
+@media(max-width:900px) {
+  .mk-auth-shell { grid-template-columns: 1fr; }
+  .mk-auth-story { padding: 30px 8% 50px; gap: 40px; }
+  .mk-auth-story ol { display: none; }
+  .mk-auth-form { padding: 50px 8%; }
+  .mk-onboarding-grid { grid-template-columns: 1fr; gap: 40px; margin-top: 60px; }
+  .mk-onboarding-grid h1 { font-size: 42px; }
+  .mk-review-grid { grid-template-columns: 1fr; }
+  .mk-review-shell { padding: 30px 20px; }
+}
