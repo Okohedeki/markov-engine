@@ -149,5 +149,27 @@ def create_production_router(*, settings, owner, render):
             raise HTTPException(404, 'Series not found.')
         return render(request, 'series_detail.html', story=series[0], **await common(request, owner_id))
 
+    @router.post('/app/series/{series_id}/episodes')
+    async def episode_action(series_id: int, request: Request):
+        owner_id = owner(request)
+        values = await form(request)
+        key, action = values.get('item', [''])[0], values.get('action', [''])[0]
+        store = request.app.state.store
+        try:
+            paid(owner_id, 'story_mode')
+            series = await store.story_series(owner_id, series_id)
+            if not series or key not in [e['item_key'] for e in series[0]['episodes']]:
+                raise ValueError('Episode not found in your series.')
+            if action in {'up', 'down'}:
+                await store.reorder_story_episode(owner_id, series_id, key, action)
+            elif action in {'recorded', 'shortlisted'}:
+                await store.move_production_ideas(owner_id, [key], action)
+            else:
+                raise ValueError('Choose a valid episode action.')
+        except ValueError as exc:
+            if 'paid feature' in str(exc):
+                return RedirectResponse('/app/upgrade', 303)
+            return error(request, str(exc))
+        return RedirectResponse(f'/app/series/{series_id}', 303)
 
     return router
