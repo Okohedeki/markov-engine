@@ -265,7 +265,7 @@ async def synthesize_story_angles(
         raise ValueError("Research case not found")
     properties = {
         key: {"type": "string"}
-        for key in ("title", "question", "new_information", "why_it_matters",
+        for key in ("lens", "title", "question", "new_information", "why_it_matters",
                     "novelty_basis", "uncertainty", "next_question")
     }
     properties["support"] = {
@@ -295,6 +295,9 @@ async def synthesize_story_angles(
             "repeats the seed. Each angle needs new_information beyond the seed, "
             "a clear audience question, and novelty_basis explaining the exact "
             "addition. Different hooks or formats of one premise are ONE angle. "
+            "Declare the lens from the supporting inspected passages. Return at "
+            "most one angle per lens, favoring breadth across event mechanism, "
+            "overlooked context, and downstream consequence where sourced. "
             "Do not write scripts, talking points, episode outlines, or series. "
             "Use only the supplied evidence IDs. For each supporting source, "
             "copy a short exact quote of at least 24 characters from its passage; "
