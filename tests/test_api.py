@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 
 import httpx
@@ -118,6 +119,94 @@ async def test_api_job_idempotency_auth_status_and_safe_export():
             )
             assert account.json()["account"]["balance"] == 18
     finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("route", ["/v1/jobs", "/v2/jobs"])
+@pytest.mark.parametrize("fail_first", [False, True])
+async def test_concurrent_customers_share_capacity_not_data(monkeypatch, route, fail_first):
+    import markov_engine.api as api_module
+
+    store = await SqliteStore.open(":memory:")
+    settings = _settings()
+    settings.default_entitlement_profile = "cloud_pro"
+    settings.job_concurrency = 2
+    settings.api_keys["third-key"] = "owner-3"
+    two_started, third_submitted, release = (asyncio.Event() for _ in range(3))
+    active = peak = 0
+    original_submit = api_module.submit_job
+
+    async def observed_submit(*args, **kwargs):
+        result = await original_submit(*args, **kwargs)
+        if kwargs["owner_id"] == "owner-3":
+            third_submitted.set()
+        return result
+
+    async def held_process(store, *, case_id, **kwargs):
+        nonlocal active, peak
+        active += 1
+        peak = max(peak, active)
+        if active == 2:
+            two_started.set()
+        try:
+            await release.wait()
+            case = await store.get_research_case(case_id)
+            if fail_first and case.owner_id == "owner-1":
+                raise RuntimeError("fixture provider failure")
+            return await _fake_process(store, case_id=case_id, **kwargs)
+        finally:
+            active -= 1
+
+    monkeypatch.setattr(api_module, "submit_job", observed_submit)
+    app = create_app(store=store, settings=settings, process_case=held_process)
+    requests = []
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            for index, key in enumerate(["customer-key", "other-key", "third-key"]):
+                source = {"type": "text", "value": f"Private input from owner-{index + 1}"}
+                payload = {"mode": "brief", "inputs": [source]} if route == "/v1/jobs" else {
+                    "job": "Catch me up", "source": source,
+                }
+                requests.append(asyncio.create_task(client.post(
+                    route, json=payload,
+                    headers={"X-Markov-Key": key, "Idempotency-Key": "shared-key"},
+                )))
+                if index == 1:
+                    try:
+                        await asyncio.wait_for(two_started.wait(), timeout=5)
+                    except TimeoutError:
+                        outcomes = [
+                            repr(task.exception()) if task.exception() else task.result().text
+                            for task in requests if task.done()
+                        ]
+                        pytest.fail(f"Both customers did not start: {outcomes}")
+            await asyncio.wait_for(third_submitted.wait(), timeout=5)
+            assert (await store.list_jobs(owner_id="owner-3"))[0].status == "queued"
+            assert active == 2
+            release.set()
+            responses = await asyncio.wait_for(asyncio.gather(*requests), timeout=5)
+            assert [response.status_code for response in responses] == [202, 202, 202]
+            jobs = [response.json()["job"] for response in responses]
+            assert len({job["id"] for job in jobs}) == 3
+            assert peak == 2
+            for index, job in enumerate(jobs, start=1):
+                saved = await store.get_job(job["id"], owner_id=f"owner-{index}")
+                failed = fail_first and index == 1
+                assert saved.status == ("failed" if failed else "completed"), saved.error
+                assert (await store.get_credit_account(f"owner-{index}")).balance == (
+                    20 if failed else 18
+                )
+                denied = await client.get(
+                    f"/v1/research-cases/{job['research_case_id']}",
+                    headers={"X-Markov-Key": "other-key" if index == 1 else "customer-key"},
+                )
+                assert denied.status_code == 404
+    finally:
+        release.set()
+        await asyncio.gather(*requests, return_exceptions=True)
         await store.close()
 
 
