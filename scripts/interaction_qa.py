@@ -179,6 +179,14 @@ def main() -> None:
                 develop = app_page.locator("[data-open-composer]").first
                 if develop.count():
                     app_page.locator('[data-case-view-tab="explore"]').click()
+                    details = app_page.locator("[data-route-toggle]").first
+                    expect(details).to_have_attribute("aria-expanded", "false")
+                    details.click()
+                    expect(app_page.locator("[data-route-panel]").first).to_be_visible()
+                    details.click()
+                    expect(app_page.locator("[data-route-panel]").first).not_to_be_visible()
+                    expect(develop).to_be_visible()
+                    checks.append("angle details expand on demand without hiding the draft action")
                     develop.click()
                     dialog = app_page.locator("[data-output-composer]")
                     expect(dialog).to_be_visible()

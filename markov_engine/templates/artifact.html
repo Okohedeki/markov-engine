@@ -40,13 +40,19 @@
                 {% for row in topic_rows %}
                   {% set primary_claim = row.claims[0].claim if row.claims else none %}
                   {% set primary_connection = connection_rows[loop.index0].connection if loop.index0 < connection_rows | length else connection_rows[0].connection if connection_rows else none %}
-                  <article class="mk-case-route {% if loop.first %}is-open{% endif %}" data-route-card>
-                    <button class="mk-route-toggle" type="button" aria-expanded="{{ 'true' if loop.first else 'false' }}" aria-controls="route-panel-{{ row.topic.id }}" data-route-toggle>
+                  <article class="mk-case-route" data-route-card>
+                    <button class="mk-route-toggle" type="button" aria-expanded="false" aria-controls="route-panel-{{ row.topic.id }}" data-route-toggle>
                       <span class="mk-route-number">{{ "%02d" | format(loop.index) }}</span>
-                      <span class="mk-route-summary"><small>{{ row.rank_label }}</small><strong>{{ row.insights[0].thesis if row.insights else row.topic.focus }}</strong><em class="{{ row.evidence_class }}">{{ row.evidence_label }}</em></span>
+                      <span class="mk-route-summary"><small>{{ row.topic.title }}</small><strong>{{ row.insights[0].thesis if row.insights else row.topic.focus }}</strong><em class="{{ row.evidence_class }}">{{ row.evidence_label }}</em></span>
                       <span class="mk-route-open" aria-hidden="true">＋</span>
                     </button>
-                    <div class="mk-route-panel" id="route-panel-{{ row.topic.id }}" data-route-panel {% if not loop.first %}hidden{% endif %}>
+                      <footer class="mk-route-actions">
+                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea <span aria-hidden="true">→</span></button>
+                        {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Dig deeper</button></form>{% endif %}
+                        {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Save</button></form><button class="mk-button mk-button-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
+                      </footer>
+                      {% if primary_connection %}<form class="mk-rejection-form" method="post" action="/app/connections/{{ primary_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><label for="route-reason-{{ row.topic.id }}">What makes this route unhelpful?</label><div><input id="route-reason-{{ row.topic.id }}" name="reason" placeholder="Familiar thesis, weak mechanism, wrong audience…"><button type="submit">Dismiss route</button></div></form>{% endif %}
+                    <div class="mk-route-panel" id="route-panel-{{ row.topic.id }}" data-route-panel hidden>
                       <div class="mk-route-mechanism">
                         <p class="mk-kicker">What makes this angle interesting</p>
                         <p>{{ row.insights[0].novelty_basis if row.insights and row.insights[0].novelty_basis else primary_connection.why_it_matters if primary_connection else 'The current case points here, but the mechanism still needs a clearer rationale.' }}</p>
@@ -57,16 +63,10 @@
                         </ol>
                       </div>
                       <dl class="mk-route-checks">
-                        <div><dt>Why it matters</dt><dd>{{ primary_connection.why_it_matters if primary_connection else 'Audience relevance needs a configured profile.' }}</dd></div>
+                        <div><dt>Why it matters</dt><dd>{{ primary_connection.why_it_matters if primary_connection else 'Add audience context when developing this idea.' }}</dd></div>
                         <div><dt>Where it may break</dt><dd>{{ row.insights[0].uncertainty if row.insights and row.insights[0].uncertainty else primary_connection.weakens if primary_connection and primary_connection.weakens else 'No weakness is recorded; inspect before developing.' }}</dd></div>
                         <div><dt>Material attached</dt><dd>{% for source in row.sources[:3] %}{{ source.title or source.source_type | humanize }}{% if not loop.last %} · {% endif %}{% else %}{{ row.claims | length }} claim{{ '' if row.claims | length == 1 else 's' }} from the current source packet{% endfor %}</dd></div>
                       </dl>
-                      <footer class="mk-route-actions">
-                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea <span aria-hidden="true">→</span></button>
-                        {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Dig deeper</button></form>{% endif %}
-                        {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Save</button></form><button class="mk-button mk-button-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
-                      </footer>
-                      {% if primary_connection %}<form class="mk-rejection-form" method="post" action="/app/connections/{{ primary_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><label for="route-reason-{{ row.topic.id }}">What makes this route unhelpful?</label><div><input id="route-reason-{{ row.topic.id }}" name="reason" placeholder="Familiar thesis, weak mechanism, wrong audience…"><button type="submit">Dismiss route</button></div></form>{% endif %}
                     </div>
                   </article>
                 {% else %}

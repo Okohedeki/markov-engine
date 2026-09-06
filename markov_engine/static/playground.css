@@ -90,5 +90,7 @@
   .angle-card > button:first-child > span { font-size: 12px; }
   .idea-editor { padding: 22px; }
   .idea-editor h2 { font-size: 27px; }
-  .idea-editor > footer { flex-direction: column; }
+  .idea-editor textarea { height: 190px; min-height: 190px; }
+  .idea-editor > footer { gap: 10px; }
+  .idea-editor > footer .mk-button { flex: 1; padding-inline: 10px; font-size: 12px; }
 }

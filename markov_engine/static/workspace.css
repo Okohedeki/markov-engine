@@ -129,7 +129,7 @@
 .mk-route-mechanism li, .mk-route-checks > div { padding-top: 14px; border-top: 1px solid var(--line); }
 .mk-route-mechanism li span, .mk-route-checks dt { font-size: 12px; color: var(--accent); }
 .mk-route-mechanism li p, .mk-route-checks dd { margin-top: 7px; color: var(--muted); font-size: 12px; }
-.mk-route-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+.mk-route-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 25px 35px; }
 .mk-route-actions .mk-button { min-height: 40px; padding-inline: 14px; font-size: 12px; }
 .mk-rejection-form { margin-top: 23px; font-size: 12px; }
 .mk-rejection-form > div { display: flex; gap: 10px; margin-top: 8px; }
@@ -240,6 +240,7 @@
   .mk-view-intro { flex-direction: column; gap: 15px; }
   .mk-view-intro > p { max-width: none; }
   .mk-route-panel { padding-left: 0; }
+  .mk-route-actions { margin-left: 0; }
   .mk-document-layout { grid-template-columns: minmax(0,1fr); }
   .mk-document-outline { position: static; }
   .mk-document-outline nav { display: flex; overflow-x: auto; gap: 20px; }
