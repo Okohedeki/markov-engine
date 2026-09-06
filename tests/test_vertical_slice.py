@@ -7,6 +7,7 @@ import pytest
 from markov_engine.config import Settings
 from markov_engine.exports import export_artifact
 from markov_engine.extract import ExtractedContent, ExtractedSegment
+from markov_engine.model_errors import ModelResponseError
 from markov_engine.research import (
     create_research_case,
     generate_case_artifact,
@@ -15,6 +16,31 @@ from markov_engine.research import (
 from markov_engine.reviews import finalize_review, record_review_decision
 from markov_engine.revisions import deepen_claim, revise_script_section
 from markov_engine.store.sqlite import SqliteStore
+
+
+@pytest.mark.asyncio
+async def test_failed_extraction_records_cost_without_publishing_claims():
+    store = await SqliteStore.open(":memory:")
+
+    async def truncated(segments):
+        raise ModelResponseError("max_output_tokens", cost=0.012)
+
+    try:
+        case = await create_research_case(
+            store, owner_id="fixture", original_input="A short source to inspect.",
+            input_type="text", mode="research",
+        )
+        with pytest.raises(ModelResponseError, match="max_output_tokens"):
+            await process_research_case(store, case_id=case.id, claim_extractor=truncated)
+        assert (await store.get_research_case(case.id)).status == "failed"
+        assert await store.list_claims(case.id) == []
+        assert await store.list_case_artifacts(case.id) == []
+        costs = [item for item in await store.list_costs(case.id)
+                 if item.operation == "claim_extraction_failed"]
+        assert len(costs) == 1
+        assert costs[0].cost == pytest.approx(0.012)
+    finally:
+        await store.close()
 
 
 @pytest.mark.asyncio
