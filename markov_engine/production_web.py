@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from fastapi import APIRouter, HTTPException
 
 from markov_engine.billing import credit_cost
-from markov_engine.entitlements import require_paid_feature
+from markov_engine.entitlements import require_paid_feature, resolve_entitlements
 
 STATUSES = {'all': 'All ideas', 'ideas': 'To explore', 'shortlisted': 'Shortlisted', 'ready': 'Ready to record', 'recorded': 'Recorded'}
 
@@ -56,6 +56,10 @@ def create_production_router(*, settings, owner, render):
         result = render(request, 'error.html', title='Could not update your production queue', message=message)
         result.status_code = 400
         return result
+
+    async def common(request, owner_id):
+        return dict(active='series', account=await request.app.state.store.get_credit_account(owner_id),
+                    entitlements=resolve_entitlements(owner_id, settings=settings))
 
 
     return router
