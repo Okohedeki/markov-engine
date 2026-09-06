@@ -185,8 +185,20 @@ def select_relevant_segments(
     """Select exact stored segments; never promote a search snippet to evidence."""
     claim_tokens = _tokens(claim_text)
     scored = []
+    reference_headings = {
+        "references", "sources", "our sources", "bibliography", "further reading",
+        "related articles", "related content", "footnotes",
+    }
     for segment in segments:
+        headings = {
+            heading.strip().strip(":").casefold()
+            for heading in [segment.section_title or "", *segment.heading_path]
+        }
+        if headings & reference_headings:
+            continue
         segment_tokens = _tokens(segment.text)
+        if len(segment_tokens) < 8:
+            continue
         overlap = len(claim_tokens & segment_tokens) / max(1, len(claim_tokens))
         scored.append((overlap, len(segment.text), segment))
     scored.sort(key=lambda item: (item[0], item[1]), reverse=True)
