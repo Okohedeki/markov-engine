@@ -39,6 +39,26 @@
   update();
 })();
 
+(() => {
+  const intake = document.getElementById('new-topic');
+  if (!intake) return;
+  const reveal = () => {
+    intake.open = true;
+    intake.querySelector('input[name="value"]')?.focus();
+  };
+  document.querySelectorAll('a[href="/app#new-topic"]').forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      history.replaceState(null, '', `${location.pathname}${location.search}#new-topic`);
+      reveal();
+    });
+  });
+  if (location.hash === '#new-topic') reveal();
+  window.addEventListener('hashchange', () => {
+    if (location.hash === '#new-topic') reveal();
+  });
+})();
+
 // Read stored material only: opening a story never starts research or generation.
 (() => {
   const queueLink = path => {
