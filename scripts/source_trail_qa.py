@@ -99,6 +99,7 @@ def main() -> None:
         expect(page.locator('[data-trail-panel="script"]')).to_be_visible()
         page.reload(wait_until='networkidle')
         expect(page.locator('[data-trail-panel="script"]')).to_be_visible()
+        assert page.locator('[data-trail-tabs]').bounding_box()['y'] >= 0
         assert page.evaluate("getComputedStyle(document.documentElement).scrollBehavior") == 'auto'
         checks.append('script deep link survives reload; reduced motion disables smooth scrolling')
         context.close()

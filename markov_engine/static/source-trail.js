@@ -8,6 +8,14 @@
   const picks = [...root.querySelectorAll('[data-trail-pick]')];
   const status = root.querySelector('[data-trail-status]');
   const fallback = root.querySelector('[data-trail-fallback]');
+  const film = root.querySelector('[data-source-film]');
+  if (film) {
+    const video = film.querySelector('video');
+    film.addEventListener('toggle', () => { if (!film.open) video.pause(); });
+    video.addEventListener('error', () => {
+      film.querySelector('[data-source-film-status]').textContent = 'Playback is unavailable. Download the recording or explore the same steps below.';
+    });
+  }
   let selected = 'beer';
 
   function chooseIdea(id) {
@@ -104,6 +112,7 @@
     status.textContent = 'Outline downloaded with its sources and reporting boundaries.';
   });
   function followHash() {
+    if (location.hash === '#walkthroughs' && film) film.open = true;
     if (location.hash === '#source-notes') root.querySelector('#source-notes').open = true;
     const name = location.hash.replace('#trail-', '');
     if (['source', 'connections', 'script'].includes(name)) {
@@ -115,5 +124,7 @@
   chooseIdea('beer');
   chooseStep('connections');
   followHash();
+  // Native fragment scrolling can run after deferred scripts on first load.
+  window.addEventListener('load', () => requestAnimationFrame(followHash), {once: true});
   window.addEventListener('hashchange', followHash);
 })();

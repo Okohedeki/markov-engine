@@ -29,6 +29,18 @@
     <div><p class="eyebrow">From interesting to original</p><h2 id="trail-title">Follow the story<br>beyond the link.</h2></div>
     <p>Start with one NASA article. Follow it to a brewery or a chip factory. See the different scripts those connections could become.</p>
   </header>
+  <details class="trail-film" id="walkthroughs" data-source-film>
+    <summary><span class="trail-film-icon" aria-hidden="true">▷</span>Watch the 47-second walkthrough <span aria-hidden="true">+</span></summary>
+    <div class="trail-film-body">
+      <p id="source-film-description">A recorded tour of this curated example—not a live research run. Follow the source, explore the connections, and take away a script outline.</p>
+      <video controls playsinline preload="none" width="1440" height="1000" poster="{{ site_base }}/static/walkthroughs/source-to-story.webp" aria-label="Source-to-story walkthrough" aria-describedby="source-film-description" tabindex="0">
+        <source src="{{ site_base }}/static/walkthroughs/source-to-story.mp4" type="video/mp4">
+        <track kind="captions" srclang="en" label="English" src="{{ site_base }}/static/walkthroughs/source-to-story.vtt" default>
+        Your browser cannot play this recording. Explore the same steps in the section below.
+      </video>
+      <div class="trail-film-footer"><p role="status" data-source-film-status>Captioned · No sound required · The interactive version is just below.</p><a href="{{ site_base }}/static/walkthroughs/source-to-story.mp4" download>Download recording <span aria-hidden="true">↓</span></a></div>
+    </div>
+  </details>
   <div class="trail-canvas">
     <nav class="trail-steps" aria-label="Example steps" data-trail-tabs hidden>
       <button type="button" id="trail-tab-source" data-trail-tab="source"><span>01</span>The link</button>

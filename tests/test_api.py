@@ -318,6 +318,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert 'data-trail-idea="chips"' in landing.text
             assert "Curated example, not a live Markov run" in landing.text
             assert "Sources travel with the idea" in landing.text
+            assert 'data-source-film' in landing.text
+            assert 'preload="none"' in landing.text
+            assert 'source-to-story.vtt" default' in landing.text
             assert landing.text.count("<h1") == 1
             assert "Skip to content" in landing.text
 
