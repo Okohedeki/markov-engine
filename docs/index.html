@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#fcfbf8">
+  <meta name="theme-color" content="#171b24">
   <meta name="description" content="Turn the conversations you follow into fresh posting angles. Markov is an idea studio for creators, social teams, and people who post often.">
 
   <title>Markov — More to post. More to say.</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/playground.css">
+  <link rel="preload" href="/markov-engine/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/idea-story.css">
   <script defer src="/markov-engine/static/markov.js"></script>
-  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/playground.js"></script>
+  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/idea-story.js"></script>
 </head>
 <body class="creator-public">
   <a class="mk-skip" href="#main-content">Skip to content</a>
@@ -36,63 +37,45 @@
     <section class="creator-hero">
       <p class="eyebrow">For creators with a lot to say</p>
       <h1>More to post.<br><em>More to say.</em></h1>
-      <p>Take what people are talking about and find your next angle. Markov expands one conversation into fresh ideas for your next batch of posts.</p>
-      <div class="creator-actions"><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#product">Explore an example <span aria-hidden="true">↓</span></a></div>
+      <p>Take what people are talking about and find your next angle. One conversation becomes fresh ideas for your next batch of posts.</p>
+      <div class="creator-actions"><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#product">See it in action <span aria-hidden="true">↓</span></a></div>
     </section>
     <section class="creator-stage" id="product" aria-label="See one discussion become posting ideas">
-      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Pick a conversation. Find an angle. Make it yours.</span></div>
-      <section class="idea-playground" data-idea-playground aria-label="Interactive posting ideas example">
-  <header class="playground-topbar">
-    <div><span class="studio-dot" aria-hidden="true"></span><strong>One conversation. More possibilities.</strong></div>
-    <span class="example-label">Interactive example</span>
+      <div class="idea-story" data-idea-story>
+  <header class="idea-story-header">
+    <span class="story-label">One conversation, opened up</span>
+    <div class="story-tabs" role="tablist" aria-label="From conversation to post">
+      <button id="story-tab-conversation" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-conversation" data-story-tab="conversation">Conversation</button>
+      <button id="story-tab-angles" type="button" role="tab" aria-selected="true" tabindex="0" aria-controls="story-angles" data-story-tab="angles">Angles</button>
+      <button id="story-tab-draft" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-draft" data-story-tab="draft">Draft</button>
+    </div>
+    <span class="story-label">Interactive example</span>
   </header>
-  <div class="playground-body">
-    <aside class="topic-rail">
-      <p class="rail-label">Start with a conversation</p>
-      <label class="mobile-topic-picker" for="mobile-topic">Example conversation<select id="mobile-topic" data-mobile-topic><option value="agents">The AI agent rush</option><option value="creators">Standing out in the feed</option><option value="work">Life after the meeting</option></select></label>
-      <div class="topic-buttons" role="group" aria-label="Example conversations">
-        <button type="button" data-topic="agents" aria-pressed="true"><span>01</span><span><small>Technology</small><strong>The AI agent rush</strong></span><b aria-hidden="true">↗</b></button>
-        <button type="button" data-topic="creators" aria-pressed="false"><span>02</span><span><small>Creator economy</small><strong>Standing out in the feed</strong></span><b aria-hidden="true">↗</b></button>
-        <button type="button" data-topic="work" aria-pressed="false"><span>03</span><span><small>Work & culture</small><strong>Life after the meeting</strong></span><b aria-hidden="true">↗</b></button>
-      </div>
-      <p class="example-note">Sample discussions and prewritten angles. Live trend discovery is not connected.</p>
-
-    </aside>
-    <div class="angle-workspace">
-      <header class="angle-heading"><p data-topic-category>Technology</p><h2 data-topic-title>Everyone is building an AI agent. What actually needs one?</h2><p data-topic-context>The conversation: tools that can take actions, and the work people would trust them to do.</p></header>
-      <div class="angle-toolbar">
-        <div role="group" aria-label="Idea collection view"><button type="button" data-collection="all" aria-pressed="true">The angles <span data-angle-count>6</span></button><button type="button" data-collection="saved" aria-pressed="false">Shortlist <span data-saved-count>0</span></button></div>
-        <button type="button" class="download-ideas" data-download disabled>Export shortlist <span aria-hidden="true">↓</span></button>
-      </div>
-      <div class="angle-grid" data-angle-grid></div>
-      <noscript><p class="playground-empty">Turn on JavaScript to explore the example, or <a href="/markov-engine/sample/">open your studio</a> to work with your own topic.</p></noscript>
-      <p class="playground-status" role="status" aria-live="polite" data-playground-status>Choose an angle to see its hook and outline.</p>
+  <div class="story-scene conversation-scene" id="story-conversation" role="tabpanel" aria-labelledby="story-tab-conversation" tabindex="0" data-story-panel="conversation" hidden>
+    <div class="conversation-paper"><span class="paper-label">The starting point · Technology</span><h2>Everyone is building an AI agent. What actually needs one?</h2><p>A conversation about tools that take actions, and the work people would trust them to do.</p><div class="conversation-prompts"><span>What changes?</span><span>What gets missed?</span><span>What's your take?</span></div><button class="mk-button mk-button-dark" type="button" data-story-next="angles">Find a way in <span aria-hidden="true">→</span></button></div>
+  </div>
+  <div class="story-scene angles-scene" id="story-angles" role="tabpanel" aria-labelledby="story-tab-angles" tabindex="0" data-story-panel="angles">
+    <div class="source-paper"><span class="paper-symbol" aria-hidden="true">“</span><span class="paper-label">The conversation</span><h2>The AI<br>agent rush.</h2><p>Everyone is building one.<br>What actually needs one?</p><span class="source-footnote">A starting point, not your final take.</span></div>
+    <svg class="angle-branches" viewBox="0 0 180 320" fill="none" aria-hidden="true"><path d="M0 160H45C95 160 75 35 130 35H180M45 160H180M45 160C95 160 75 285 130 285H180" stroke="currentColor" stroke-width="1.5"/><circle cx="45" cy="160" r="5" fill="currentColor" stroke="#f5f6f8" stroke-width="5"/></svg>
+    <div class="story-angle-stack">
+      <button class="story-angle" type="button" data-demo-idea="0"><span class="paper-label">The other side <b aria-hidden="true">↗</b></span><strong>The best AI workflow might be the one with fewer agents.</strong></button>
+      <button class="story-angle" type="button" data-demo-idea="1"><span class="paper-label">Make it practical <b aria-hidden="true">↗</b></span><strong>Before you build an agent, write its job description.</strong></button>
+      <button class="story-angle" type="button" data-demo-idea="2"><span class="paper-label">An unexpected connection <b aria-hidden="true">↗</b></span><strong>Delegating to AI has the same problem as delegating to people.</strong></button>
     </div>
   </div>
-  <dialog class="idea-editor" data-idea-editor aria-labelledby="idea-editor-title">
-    <header><p class="eyebrow">Make it your own</p><button type="button" data-editor-close aria-label="Close idea">×</button></header>
-    <h2 id="idea-editor-title" data-editor-title></h2>
-    <p class="editor-origin" data-editor-origin></p>
-    <label for="idea-format">Shape this as</label>
-    <select id="idea-format" data-idea-format><option value="post">Short post</option><option value="thread">Thread</option><option value="video">Video outline</option></select>
-    <label for="idea-draft">Your working outline</label>
-    <textarea id="idea-draft" data-idea-draft rows="10"></textarea>
-    <p class="editor-note">Example outline. Add your perspective and verify factual claims before posting. Edits are saved in this browser when you shortlist the idea.</p>
-    <footer><button class="mk-button mk-button-quiet" type="button" data-copy-idea>Copy outline</button><button class="mk-button mk-button-primary" type="button" data-save-idea>Save to shortlist <span aria-hidden="true">＋</span></button></footer>
-    <p role="status" aria-live="polite" data-editor-status></p>
-  </dialog>
-</section>
+  <div class="story-scene draft-scene" id="story-draft" role="tabpanel" aria-labelledby="story-tab-draft" tabindex="0" data-story-panel="draft" hidden>
+    <div class="draft-context"><span class="paper-label">An idea you can work with</span><h2>A new angle.<br>Your own voice.</h2><p data-story-summary>Turn a technical discussion into a checklist people can use.</p><a class="mk-button mk-button-dark" href="/markov-engine/sample/">Make an outline your own <span aria-hidden="true">↗</span></a></div>
+    <article class="draft-paper"><header><span>Working outline</span><span>Short post</span></header><h3 data-story-hook>Before you build an agent, write its job description.</h3><ol data-story-outline><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show an example of a task that is too vague, then rewrite it.</li></ol><p>Add an example only you could give.</p></article>
+  </div>
+  <footer class="idea-story-footer"><span>Sample discussions and prewritten angles. Live trend discovery is not connected.</span><a href="/markov-engine/sample/">Explore all the angles <span aria-hidden="true">→</span></a></footer>
+</div>
+      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Choose an angle above to open its outline.</span></div>
     </section>
     <section class="creator-story" id="unfold" aria-labelledby="story-title">
-      <div><p class="eyebrow">Keep the ideas coming</p><h2>One discussion.<br>So many ways in.</h2></div>
-      <ol class="creator-steps">
-        <li><span>01</span><div><h3>Start where the conversation is.</h3><p>Bring the post, video, article, or question you keep seeing. Give Markov a starting point in the world you create for.</p></div></li>
-        <li><span>02</span><div><h3>Go beyond the obvious take.</h3><p>Follow a consequence, challenge an assumption, explain the missing piece, or connect it to something your audience already knows.</p></div></li>
-        <li><span>03</span><div><h3>Build your next batch.</h3><p>Collect the angles you like. Develop a hook and outline, add your perspective, and take the work into your publishing flow.</p></div></li>
-      </ol>
+      <div class="story-copy"><p class="eyebrow">Keep the ideas coming</p><h2 id="story-title">The same conversation.<br>A different thing to say.</h2><p>A useful explanation. A counterpoint. A connection nobody's made yet. Find more ways into the topics your audience cares about.</p><p>Keep the angles that feel like you. Shape them into an outline, add your perspective, and build your next batch.</p><a class="mk-text-link" href="/markov-engine/sample/">Find your next angle <span aria-hidden="true">→</span></a></div>
+      <article class="story-paper"><header><span>Your next post</span><span>Example outline</span></header><h3>Before you build an agent, write its job description.</h3><ol><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show a task that's too vague, then rewrite it.</li></ol><p>The starting point is here. The perspective is yours.</p></article>
     </section>
-    <section class="creator-fit" id="who-its-for"><div><p class="eyebrow">A studio for showing up</p><h2>For the people<br>who post again<br>tomorrow.</h2></div><div><p>Creators, social teams, personal brands, and agencies. When posting is part of your everyday work, having something worth saying should be part of the routine.</p><a class="mk-text-link" href="/markov-engine/sample/">Build an example shortlist <span aria-hidden="true">→</span></a></div></section>
-    <section class="creator-finale"><p class="eyebrow">Your next idea has company</p><h2>Find one.<br>Follow it further.</h2><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a></section>
+    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a></section>
   </main>
   <footer class="mk-public-footer">
   <div>
