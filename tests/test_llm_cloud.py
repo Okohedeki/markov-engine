@@ -55,6 +55,29 @@ async def test_responses_rejects_unfinished_output_and_preserves_cost(monkeypatc
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("finish_reason,message,expected", [
+    ("length", {"content": '{"claims":['}, "max_output_tokens"),
+    ("content_filter", {"content": ""}, "content_filter"),
+    ("stop", {"refusal": "Cannot answer", "content": ""}, "refusal"),
+    ("stop", {"content": " "}, "empty_output"),
+])
+async def test_chat_rejects_unusable_output(monkeypatch, finish_reason, message, expected):
+    from markov_engine.model_errors import ModelResponseError
+
+    monkeypatch.setattr(llm.httpx, "AsyncClient", _FakeClient)
+    _FakeClient.response_data = {
+        "choices": [{"finish_reason": finish_reason, "message": message}],
+        "usage": {"prompt_tokens": 1000, "completion_tokens": 100},
+    }
+    with pytest.raises(ModelResponseError) as error:
+        await llm._openai_chat(
+            [], max_tokens=2048, json_mode=True, model="gpt-5.6-luna"
+        )
+    assert error.value.reason == expected
+    assert error.value.cost == pytest.approx(0.00032)
+
+
+@pytest.mark.asyncio
 async def test_official_openai_uses_responses_structured_outputs_and_tracks_cost(
     monkeypatch,
 ):
