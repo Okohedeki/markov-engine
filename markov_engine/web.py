@@ -1087,4 +1087,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         )
         return RedirectResponse("/app/reviews", status_code=303)
 
+    @router.get("/privacy")
+    async def privacy(request: Request):
+        return _render(request, "privacy.html")
+
     return router
