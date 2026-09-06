@@ -8,14 +8,14 @@
       <header class="mk-mobile-appbar">
         <button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button>
         <a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
-        <a href="/app/ideas">Ideas</a>
+        <a href="/app?{{ request.query_params.get('queue', '') }}">Story queue</a>
       </header>
 
       <div class="mk-case-shell">
         <header class="mk-case-head">
-          <div class="mk-case-breadcrumb"><a href="/app/ideas">Ideas</a><span aria-hidden="true">/</span><span>Your topic</span></div>
+          <div class="mk-case-breadcrumb"><a href="/app?{{ request.query_params.get('queue', '') }}">← Story queue</a><span aria-hidden="true">/</span><span>Your topic</span></div>
           <div class="mk-case-title-row">
-            <div><p class="mk-kicker">One topic, several posting angles</p><h1>{{ case.title }}</h1><p>Find your way into the conversation. Develop an angle, edit a draft, and check the sources behind it.</p></div>
+            <div><h1>{{ case.title }}</h1></div>
             <div class="mk-case-actions"><span class="mk-state {% if artifact.status == 'completed' %}mk-state-ready{% endif %}"><i aria-hidden="true"></i>{{ 'Ready to explore' if artifact.status == 'completed' else artifact.status | humanize }}</span>{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}" aria-label="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}" title="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}">{{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
           </div>
           <nav class="mk-case-tabs" role="tablist" aria-label="Topic views">
@@ -86,11 +86,11 @@
         </section>
 
         <section class="mk-case-view" id="case-view-output" role="tabpanel" aria-labelledby="case-tab-output" data-case-view="output" hidden>
-          <header class="mk-output-toolbar"><div><p class="mk-kicker">Finished work</p><h2>{{ artifact.artifact_type | humanize }}</h2><span>{{ artifact.word_count }} words · {{ artifact.status | humanize }}</span></div><button class="mk-button mk-button-primary" form="mk-document-form" name="action" value="finish" type="submit">Mark reviewed</button></header>
+          <header class="mk-output-toolbar"><div><h2>{{ 'Script / talking points' if artifact.artifact_type == 'script' else 'Research notes' if artifact.artifact_type == 'research_report' else 'Source brief' }}</h2><span>{{ artifact.word_count }} words · <span data-document-save-state role="status">Saved version</span></span></div><div class="mk-writing-actions"><button class="mk-button mk-button-quiet" type="button" data-case-view-jump="sources">Check sources</button><button class="mk-button mk-button-primary" form="mk-document-form" name="action" value="save" type="submit">Save revision</button></div></header>
           <div class="mk-document-layout">
             <aside class="mk-document-outline"><p class="mk-kicker">Outline</p><nav aria-label="Output sections">{% for section in sections %}<a href="#output-section-{{ loop.index0 }}"><span>{{ "%02d" | format(loop.index) }}</span>{{ section.title }}</a>{% else %}<a href="#output-section-0"><span>01</span>Working document</a>{% endfor %}</nav><div><span>Versions</span>{% for version in artifact_versions | reverse %}<p><strong>V{{ version.version }}</strong><small>{{ version.change_kind | humanize }}</small></p>{% else %}<p><strong>V1</strong><small>Initial artifact</small></p>{% endfor %}</div></aside>
 
-            <form class="mk-document" id="mk-document-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit">
+            <form class="mk-document" id="mk-document-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit?queue={{ request.query_params.get('queue', '') | urlencode }}">
               <header><span>{{ artifact.artifact_type | humanize }}</span><small>Saving creates a new version</small></header>
               {% for section in sections %}<section id="output-section-{{ loop.index0 }}"><div><label for="section-{{ loop.index0 }}">{{ section.title }}</label><small>Editable section</small></div><input type="hidden" name="section_title_{{ loop.index0 }}" value="{{ section.title }}"><textarea id="section-{{ loop.index0 }}" name="section_{{ loop.index0 }}" rows="{{ 9 if section.content | length > 500 else 6 }}" required>{{ section.content }}</textarea></section>{% else %}<section id="output-section-0"><div><label for="document-content">Working document</label><small>Editable output</small></div><textarea id="document-content" name="content" rows="20" required>{{ artifact.content }}</textarea></section>{% endfor %}
               <footer><span>Sources and route decisions stay attached.</span><button class="mk-button mk-button-primary" name="action" value="save" type="submit">Save revision</button></footer>
