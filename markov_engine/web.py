@@ -6,7 +6,7 @@ import base64
 import hashlib
 import hmac
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
@@ -981,8 +981,9 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             change_kind="manual_edit",
             changed_section="full_document",
         )
+        queue = request.query_params.get('queue', '')[:1000]
         return RedirectResponse(
-            f"/app/artifacts/{artifact_id}#brief", status_code=303
+            f"/app/artifacts/{artifact_id}?{urlencode({'queue': queue})}#output", status_code=303
         )
 
     @router.get("/app/reviewer/login")
