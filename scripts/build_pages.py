@@ -21,6 +21,9 @@ PAGES = {
     "developers.html": OUTPUT / "developers" / "index.html",
     "sample.html": OUTPUT / "sample" / "index.html",
     "demo.html": OUTPUT / "demo" / "index.html",
+    "privacy.html": OUTPUT / "privacy" / "index.html",
+    "terms.html": OUTPUT / "terms" / "index.html",
+    "copyright.html": OUTPUT / "copyright" / "index.html",
 }
 
 PRODUCTS = [
