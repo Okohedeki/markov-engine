@@ -6,6 +6,7 @@
 .studio-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
 .example-label { color: var(--muted); font-size: 11px; }
 .playground-body { display: grid; grid-template-columns: 250px minmax(0,1fr); }
+.playground-body > * { min-width: 0; }
 .topic-rail { padding: 28px 18px; background: #f8f8f3; border-right: 1px solid var(--line); }
 .rail-label { padding: 0 10px; font-size: 11px; font-weight: 600; color: var(--muted); }
 .topic-buttons { margin: 23px 0 28px; }

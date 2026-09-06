@@ -308,32 +308,14 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "A source is where" in landing.text
-            assert "Give Markov a video, article, paper, podcast, post, or question" in landing.text
-            assert "The useful part is often what the source leaves out" in landing.text
-            assert "A question can lead somewhere. Or just make more noise." in landing.text
-            assert "The research changes shape" in landing.text
-            assert landing.text.count("Open the workspace") == 2
-            assert "Research-led creators, analysts, strategists, and consultants" in landing.text
-            assert "High-volume filler, unconstrained fiction, or passive read-later archives" in landing.text
-            assert "The source trail is part of the product" in landing.text
-            assert "Demand can weaken before holdings are sold" in landing.text
-            assert "Compare the mechanism, the evidence, and the weak point" in landing.text
-            assert landing.text.count("data-source-choice=") == 5
-            assert landing.text.count("data-route-choice=") == 3
-            assert landing.text.count("data-output-choice=") == 3
-            for stage in ("Starting source", "Separate the claim", "Expose the skipped step", "Follow the connection"):
-                assert stage in landing.text
-            assert "Japan’s pension pivot puts overseas capital in play" in landing.text
-            assert "buyer who never arrives" in landing.text
-            assert "High information gain" in landing.text
-            assert "A slower buyer can change financing conditions" in landing.text
-            assert "The evidence stays attached" in landing.text
-            assert "Markov does not replace the human decision to publish" in landing.text
-            assert "Skip to content" in landing.text
+            assert "More to post." in landing.text
+            assert 'href="/app/login"' in landing.text
+            assert 'href="#product"' in landing.text
+            assert 'data-idea-playground' in landing.text
+            assert "Sample discussions and prewritten angles" in landing.text
+            assert "Live trend discovery is not connected" in landing.text
             assert landing.text.count("<h1") == 1
-            for disallowed in ("ai-powered", "open source", "github", "free trial", "customer logos"):
-                assert disallowed not in landing.text.lower()
+            assert "Skip to content" in landing.text
 
             narrative = await client.get("/story")
             assert narrative.status_code == 307
@@ -357,22 +339,15 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
 
             sample = await client.get("/sample")
             assert sample.status_code == 200
-            assert "One Japan source, followed all the way through" in sample.text
-            assert "The missing mechanism" in sample.text
-            assert "U.S. Treasuries" in sample.text
-            assert "Source packet" in sample.text
-            assert "Japan’s pension pivot" in sample.text
-            assert "child-free creator" not in sample.text
-            assert "CASE MKV" not in sample.text
+            assert "What will you post next?" in sample.text
+            assert 'data-idea-playground' in sample.text
+            assert 'data-idea-editor' in sample.text
+            assert "Your shortlist stays in this browser" in sample.text
 
-            css = await client.get("/static/markov.css")
+            css = await client.get("/static/studio.css")
             assert css.status_code == 200
             assert "prefers-reduced-motion" in css.text
-            assert "--fog" in css.text
-            assert "--cobalt" in css.text
-            assert "--ember" in css.text
-            assert ".mk-thread-story" in css.text
-            assert ".mk-app-nav" in css.text
+            assert "--accent" in css.text
 
             pdf_preview = await client.get("/static/japan-nber-cover.png")
             assert pdf_preview.status_code == 200
@@ -380,9 +355,6 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
 
             javascript = await client.get("/static/markov.js")
             assert javascript.status_code == 200
-            assert "data-source-choice" in javascript.text
-            assert "data-route-choice" in javascript.text
-            assert "data-output-choice" in javascript.text
             assert "data-case-view-tab" in javascript.text
             assert "ArrowLeft" in javascript.text
             assert "aria-expanded" in javascript.text
@@ -629,15 +601,14 @@ def test_html_export_escapes_source_markup():
 def test_github_pages_export_is_static_and_project_relative():
     root = Path(__file__).resolve().parents[1]
     landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
-    assert 'href="/markov-engine/static/markov.css"' in landing
+    assert 'href="/markov-engine/static/studio.css"' in landing
     assert 'src="/markov-engine/static/markov.js"' in landing
     assert 'href="/markov-engine/sample/"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "A source is where" in landing
-    assert "The useful part is often what the source leaves out" in landing
-    assert landing.count("Open the workspace") == 2
-    assert landing.count("data-output-choice=") == 3
+    assert "More to post." in landing
+    assert "Try the idea studio" in landing
+    assert "data-idea-playground" in landing
     assert "Run locally" not in landing
     assert "open-source" not in landing.lower()
     assert "github.com" not in landing.lower()
