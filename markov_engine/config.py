@@ -120,6 +120,10 @@ class Settings(BaseSettings):
 
     # ── Commercial V1 delivery ─────────────────────────────────────
     database_path: str = Field("data/markov.db", alias="MARKOV_DATABASE_PATH")
+    job_concurrency: int = Field(
+        2, ge=1, alias="MARKOV_JOB_CONCURRENCY",
+        description="Maximum research jobs executing at once in one API process.",
+    )
     api_keys: dict[str, str] = Field(
         default_factory=dict,
         alias="MARKOV_API_KEYS",
