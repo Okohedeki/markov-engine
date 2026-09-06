@@ -11,6 +11,11 @@
 .production-intake input, .series-builder input, .series-builder textarea { width:100%; min-height:47px; background:#f8f9fb; border:1px solid #dce1e7; border-radius:8px; padding:12px 14px; font-size:14px; color:inherit; }
 .production-intake .mk-button { flex-shrink:0; min-height:47px; font-size:13px; border-radius:8px; }
 .production-intake > p { font-size:11px; color:#687480; margin-top:6px; }
+.production-source { margin-bottom:30px; background:#fff; border:1px solid #dde3e8; border-radius:12px; }
+.production-source > summary { padding:18px 22px; min-height:56px; font-size:14px; font-weight:500; }
+.production-source > summary span { float:right; color:#a44923; }
+.production-source[open] > summary { border-bottom:1px solid #e2e6eb; }
+.production-source .production-intake { margin:0; border:0; border-radius:0 0 12px 12px; box-shadow:none; }
 .production-intake summary { font-size:12px; padding:14px 0 6px; min-height:38px; }
 .production-preferences { display:flex; gap:15px; padding:12px 0; }
 .production-preferences label { flex:1; font-size:12px; }
