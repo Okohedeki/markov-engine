@@ -21,6 +21,7 @@ from markov_engine.config import Settings
 from markov_engine.entitlements import resolve_entitlements
 from markov_engine.exports import export_artifact
 from markov_engine.jobs import run_job, submit_job
+from markov_engine.production_web import create_production_router, queue_context
 from markov_engine.research import convert_case_artifact
 from markov_engine.reviews import finalize_review, record_review_decision
 from markov_engine.revisions import deepen_claim, revise_script_section
@@ -404,10 +405,10 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             return RedirectResponse("/app/login", status_code=303)
         store = request.app.state.store
         account = await store.get_credit_account(owner_id)
-        snapshot = await _workspace_snapshot(store, owner_id=owner_id, limit=12)
+        snapshot = await queue_context(store, owner_id, request, settings)
         return _render(
             request,
-            "dashboard.html",
+            "production_dashboard.html",
             active="home",
             owner_id=owner_id,
             account=account,
@@ -1099,4 +1100,5 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def copyright_page(request: Request):
         return _render(request, "copyright.html")
 
+    router.include_router(create_production_router(settings=settings, owner=owner, render=_render))
     return router
