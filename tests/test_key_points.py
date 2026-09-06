@@ -30,28 +30,31 @@ def test_coerce_key_points_shapes():
 
 async def test_ingest_persists_key_points(monkeypatch):
     store = await SqliteStore.open(":memory:")
-    kps = [
-        {"title": "Point one", "detail": "The first thing explained in depth."},
-        {"title": "Point two", "detail": "The second thing explained in depth."},
-    ]
+    try:
+        kps = [
+            {"title": "Point one", "detail": "The first thing explained in depth."},
+            {"title": "Point two", "detail": "The second thing explained in depth."},
+        ]
 
-    async def _fake_extract(url, tmp_dir, whisper_model):
-        return ExtractedContent(url=url, source_type="youtube", title="Clip",
-                                content_text="a transcript body", metadata={})
+        async def _fake_extract(url, tmp_dir, whisper_model):
+            return ExtractedContent(url=url, source_type="youtube", title="Clip",
+                                    content_text="a transcript body", metadata={})
 
-    async def _fake_entities(text, title, source_type, model=None):
-        return {"success": True, "summary": "sum", "key_points": kps,
-                "entities": [], "relationships": [], "cost_usd": 0.0}
+        async def _fake_entities(text, title, source_type, model=None):
+            return {"success": True, "summary": "sum", "key_points": kps,
+                    "entities": [], "relationships": [], "cost_usd": 0.0}
 
-    monkeypatch.setattr(ingest_mod, "extract_content", _fake_extract)
-    monkeypatch.setattr(ingest_mod, "extract_entities", _fake_entities)
+        monkeypatch.setattr(ingest_mod, "extract_content", _fake_extract)
+        monkeypatch.setattr(ingest_mod, "extract_entities", _fake_entities)
 
-    res = await ingest_mod.ingest_url(store, "https://youtube.com/watch?v=x", cluster=False)
-    assert res["success"] is True
+        res = await ingest_mod.ingest_url(store, "https://youtube.com/watch?v=x", cluster=False)
+        assert res["success"] is True
 
-    rows = await (await store._conn.execute(
-        "SELECT ordinal, title, detail FROM source_key_points WHERE source_id=? ORDER BY ordinal",
-        (res["source_id"],),
-    )).fetchall()
-    assert [(r[0], r[1]) for r in rows] == [(0, "Point one"), (1, "Point two")]
-    assert rows[0][2] == "The first thing explained in depth."
+        rows = await (await store._conn.execute(
+            "SELECT ordinal, title, detail FROM source_key_points WHERE source_id=? ORDER BY ordinal",
+            (res["source_id"],),
+        )).fetchall()
+        assert [(r[0], r[1]) for r in rows] == [(0, "Point one"), (1, "Point two")]
+        assert rows[0][2] == "The first thing explained in depth."
+    finally:
+        await store.close()
