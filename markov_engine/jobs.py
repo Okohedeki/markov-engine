@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import ipaddress
@@ -193,6 +194,14 @@ async def _send_webhook(
     finally:
         if owns_client:
             await client.aclose()
+
+
+async def run_job_with_capacity(
+    slots: asyncio.Semaphore, store: SqliteStore, **kwargs,
+) -> JobRec:
+    """Leave a submitted job queued until this API process has a free slot."""
+    async with slots:
+        return await run_job(store, **kwargs)
 
 
 async def run_job(
