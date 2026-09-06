@@ -19,16 +19,22 @@
   let current = null;
   let saved = new Set();
   let edits = {};
-  const storageKey = 'markov-creator-example-v1';
+  let savedDrafts = {};
+  const kinds = ['post', 'thread', 'video'];
+  const storageKey = root.dataset.storageKey || 'markov-creator-example-v1';
   try {
     const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
     saved = new Set(Array.isArray(stored.saved) ? stored.saved.filter(id => records.some(record => record.id === id)) : []);
     if (stored.edits && typeof stored.edits === 'object' && !Array.isArray(stored.edits)) edits = stored.edits;
+    if (stored.drafts && typeof stored.drafts === 'object') {
+      savedDrafts = Object.fromEntries(Object.entries(stored.drafts).filter(([id, kind]) => records.some(record => record.id === id) && kinds.includes(kind)));
+    }
   } catch { status.textContent = 'Browser storage is unavailable. You can still explore and export this session.'; }
   const persist = () => {
     try {
-      const retained = Object.fromEntries(Object.entries(edits).filter(([key]) => [...saved].some(id => key.startsWith(`${id}:`))));
-      localStorage.setItem(storageKey, JSON.stringify({saved: [...saved], edits: retained}));
+      const retainedIds = new Set([...saved, ...Object.keys(savedDrafts)]);
+      const retained = Object.fromEntries(Object.entries(edits).filter(([key, value]) => typeof value === 'string' && [...retainedIds].some(id => kinds.some(kind => key === `${id}:${kind}`))));
+      localStorage.setItem(storageKey, JSON.stringify({saved: [...saved], edits: retained, drafts: savedDrafts}));
       return true;
     } catch { return false; }
   };
@@ -52,11 +58,11 @@
     if (kind === 'video') return `HOOK\n${record.hook}\n\nSETUP\n${points[0]}\n\nDEVELOP\n${points.slice(1).join('\n')}\n\nCLOSE\nWhat should your audience do or think about next?`;
     return `${record.hook}\n\n${points.join('\n\n')}\n\nYour take: add a specific example or experience.`;
   };
-  const openIdea = (record) => {
+  const openIdea = (record, kind = 'post') => {
     current = record;
     find('[data-editor-title]').textContent = record.hook;
     find('[data-editor-origin]').textContent = `${record.lens} · ${record.topic.category} · Example outline`;
-    format.value = 'post';
+    format.value = kinds.includes(kind) ? kind : 'post';
     draft.value = textFor(record, format.value);
     editorStatus.textContent = '';
     find('[data-save-idea]').textContent = saved.has(record.id) ? 'Save changes' : 'Save to shortlist +';
@@ -102,6 +108,7 @@
       card.append(open, footer);
       grid.append(card);
     });
+    root.dispatchEvent(new CustomEvent('markov:collection-change'));
   }
   const chooseTopic = (id) => {
     selectedTopic = topics.find(topic => topic.id === id) || topics[0];
@@ -113,7 +120,10 @@
   find('[data-mobile-topic]').addEventListener('change', (event) => chooseTopic(event.target.value));
   all('[data-collection]').forEach(button => button.addEventListener('click', () => { collection = button.dataset.collection; render(); }));
   find('[data-editor-close]').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('close', () => (find(`[data-open-idea="${current?.id}"]`) || find('[data-collection="all"]')).focus());
+  dialog.addEventListener('close', () => {
+    const draftTrigger = document.querySelector(`[data-guest-draft="${current?.id}"]`);
+    (draftTrigger?.getClientRects().length ? draftTrigger : find(`[data-open-idea="${current?.id}"]`) || find('[data-collection="all"]')).focus();
+  });
   draft.addEventListener('input', () => { edits[`${current.id}:${format.value}`] = draft.value; });
   format.addEventListener('change', () => { draft.value = textFor(current, format.value); editorStatus.textContent = `Showing the ${format.options[format.selectedIndex].text.toLowerCase()}.`; });
   find('[data-save-idea]').addEventListener('click', () => {
@@ -121,6 +131,13 @@
     setSaved(current, true);
     editorStatus.textContent = status.textContent;
     find('[data-save-idea]').textContent = 'Save changes';
+  });
+  find('[data-save-draft]')?.addEventListener('click', () => {
+    edits[`${current.id}:${format.value}`] = draft.value;
+    savedDrafts[current.id] = format.value;
+    const stored = persist();
+    editorStatus.textContent = stored ? 'Draft saved in this browser. Find it in Your drafts.' : 'Draft kept for this session. Storage unavailable; copy or export before leaving.';
+    render();
   });
   find('[data-copy-idea]').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(draft.value); editorStatus.textContent = 'Outline copied. Ready for your writing app.'; }
@@ -139,5 +156,17 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     status.textContent = `Exported ${saved.size} shortlisted ideas.`;
   });
+  // The guest shell uses the same editor and collection behavior as the example.
+  root.markovPlayground = {
+    state: () => ({records, topics, saved: [...saved], drafts: {...savedDrafts}, collection, selectedTopic, textFor}),
+    chooseTopic,
+    chooseCollection: (value) => { collection = value === 'saved' ? 'saved' : 'all'; render(); },
+    open: (id, kind) => { const record = records.find(item => item.id === id); if (record) openIdea(record, kind); },
+    reset: () => {
+      saved = new Set(); edits = {}; savedDrafts = {}; collection = 'all'; selectedTopic = topics[0];
+      const stored = persist(); render();
+      status.textContent = stored ? 'Guest workspace reset. Your sample conversations are ready again.' : 'This session was reset. Browser storage is unavailable.';
+    }
+  };
   render();
 })();

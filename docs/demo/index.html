@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#171b24">
+  <meta name="description" content="Try Markov without an account. Explore example conversations, collect posting ideas, and edit and export your own working drafts.">
+
+  <title>Guest studio — Markov</title>
+  <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
+  <link rel="preload" href="/markov-engine/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/workspace.css"><link rel="stylesheet" href="/markov-engine/static/playground.css"><link rel="stylesheet" href="/markov-engine/static/guest-studio.css">
+  <script defer src="/markov-engine/static/markov.js"></script>
+  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/playground.js"></script><script defer src="/markov-engine/static/guest-studio.js"></script>
+</head>
+<body class="mk-app-page guest-page">
+  <a class="mk-skip" href="#main-content">Skip to content</a>
+
+  <aside class="mk-app-sidebar" id="mk-app-sidebar" data-app-sidebar>
+    <div class="mk-app-brand-row"><a class="mk-wordmark" href="/markov-engine/" aria-label="Markov home"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><button type="button" aria-label="Close workspace navigation" data-app-nav-close>×</button></div>
+    <p class="mk-workspace-label">YOUR GUEST WORKSPACE</p>
+    <nav class="mk-app-nav" aria-label="Guest workspace">
+      <a href="#studio" data-guest-view="studio" aria-current="page"><span aria-hidden="true">⑂</span><strong>Find ideas</strong></a>
+      <a href="#shortlist" data-guest-view="shortlist"><span aria-hidden="true">＋</span><strong>Your shortlist</strong><small data-guest-saved-count>0</small></a>
+      <a href="#drafts" data-guest-view="drafts"><span aria-hidden="true">▤</span><strong>Your drafts</strong><small data-guest-draft-count>0</small></a>
+    </nav>
+    <div class="guest-sidebar-help"><p>Take it for a spin.</p><span>Pick an angle, add your perspective, and leave with a draft.</span><a href="/markov-engine/#walkthroughs">Watch the walkthroughs <span aria-hidden="true">↗</span></a></div>
+    <nav class="mk-app-secondary" aria-label="Guest workspace options"><a href="/markov-engine/">Back to Markov <span aria-hidden="true">↗</span></a><button type="button" data-guest-reset>Reset guest workspace</button></nav>
+  </aside>
+  <div class="mk-app-scrim" data-app-scrim hidden></div>
+  <main class="mk-app-main" id="main-content">
+    <div class="mk-mobile-appbar"><button type="button" data-app-nav-open aria-label="Open workspace navigation" aria-controls="mk-app-sidebar" aria-expanded="false"><span></span><span></span><span></span></button><a class="mk-wordmark" href="/markov-engine/">Markov</a><span>Guest mode</span></div>
+    <div class="guest-shell">
+      <div class="guest-notice"><span><i aria-hidden="true"></i>Guest mode</span><p>Example content. Real editing. Saved on this device.</p><a href="/markov-engine/#walkthroughs">Quick tour <span aria-hidden="true">↗</span></a></div>
+      <header class="guest-heading"><div><p class="eyebrow" data-guest-eyebrow>A conversation is just the beginning</p><h1 tabindex="-1" data-guest-title>Find your next batch of ideas.</h1><p data-guest-description>Choose a conversation below. Explore different angles, then keep the ones that feel like you.</p></div><span class="guest-no-account">No account. No credit card.</span></header>
+      <section class="idea-playground" data-idea-playground data-storage-key="markov-guest-studio-v1" aria-label="Interactive posting ideas example">
+  <header class="playground-topbar">
+    <div><span class="studio-dot" aria-hidden="true"></span><strong>One conversation. More possibilities.</strong></div>
+    <span class="example-label">Interactive example</span>
+  </header>
+  <section class="guest-drafts" data-guest-drafts aria-label="Saved working drafts" hidden></section>
+  <div class="playground-body">
+    <aside class="topic-rail">
+      <p class="rail-label">Start with a conversation</p>
+      <label class="mobile-topic-picker" for="mobile-topic">Example conversation<select id="mobile-topic" data-mobile-topic><option value="agents">The AI agent rush</option><option value="creators">Standing out in the feed</option><option value="work">Life after the meeting</option></select></label>
+      <div class="topic-buttons" role="group" aria-label="Example conversations">
+        <button type="button" data-topic="agents" aria-pressed="true"><span>01</span><span><small>Technology</small><strong>The AI agent rush</strong></span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-topic="creators" aria-pressed="false"><span>02</span><span><small>Creator economy</small><strong>Standing out in the feed</strong></span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-topic="work" aria-pressed="false"><span>03</span><span><small>Work & culture</small><strong>Life after the meeting</strong></span><b aria-hidden="true">↗</b></button>
+      </div>
+      <p class="example-note">Sample discussions and prewritten angles. Live trend discovery is not connected.</p>
+
+    </aside>
+    <div class="angle-workspace">
+      <header class="angle-heading"><p data-topic-category>Technology</p><h2 data-topic-title>Everyone is building an AI agent. What actually needs one?</h2><p data-topic-context>The conversation: tools that can take actions, and the work people would trust them to do.</p></header>
+      <div class="angle-toolbar">
+        <div role="group" aria-label="Idea collection view"><button type="button" data-collection="all" aria-pressed="true">The angles <span data-angle-count>6</span></button><button type="button" data-collection="saved" aria-pressed="false">Shortlist <span data-saved-count>0</span></button></div>
+        <button type="button" class="download-ideas" data-download disabled>Export shortlist <span aria-hidden="true">↓</span></button>
+      </div>
+      <div class="angle-grid" data-angle-grid></div>
+      <noscript><p class="playground-empty">Turn on JavaScript to explore the example, or <a href="/markov-engine/demo/">open your studio</a> to work with your own topic.</p></noscript>
+      <p class="playground-status" role="status" aria-live="polite" data-playground-status>Choose an angle to see its hook and outline. Your shortlist stays in this browser.</p>
+    </div>
+  </div>
+  <dialog class="idea-editor" data-idea-editor aria-labelledby="idea-editor-title">
+    <header><p class="eyebrow">Make it your own</p><button type="button" data-editor-close aria-label="Close idea">×</button></header>
+    <h2 id="idea-editor-title" data-editor-title></h2>
+    <p class="editor-origin" data-editor-origin></p>
+    <label for="idea-format">Shape this as</label>
+    <select id="idea-format" data-idea-format><option value="post">Short post</option><option value="thread">Thread</option><option value="video">Video outline</option></select>
+    <label for="idea-draft">Your working outline</label>
+    <textarea id="idea-draft" data-idea-draft rows="10" maxlength="20000"></textarea>
+    <p class="editor-note">Example outline. Add your perspective and verify factual claims before posting. Edits are saved in this browser when you shortlist the idea.</p>
+    <footer><button class="mk-button mk-button-quiet" type="button" data-copy-idea>Copy outline</button><button class="mk-button mk-button-quiet" type="button" data-save-idea>Save to shortlist <span aria-hidden="true">＋</span></button><button class="mk-button mk-button-primary" type="button" data-save-draft>Save draft <span aria-hidden="true">↗</span></button></footer>
+    <p role="status" aria-live="polite" data-editor-status></p>
+  </dialog>
+</section>
+      <p class="guest-boundary">This is a hands-on showcase using three prewritten example conversations. It does not run live AI research or publish to social accounts. Your guest work is separate from any signed-in workspace.</p>
+    </div>
+  </main>
+  <dialog class="guest-reset-dialog" data-guest-reset-dialog aria-labelledby="guest-reset-title"><h2 id="guest-reset-title">Start fresh?</h2><p>This removes the shortlist and drafts in this guest workspace from this browser. Export anything you want to keep first. Your signed-in work is not affected.</p><div><button class="mk-button mk-button-quiet" type="button" data-guest-reset-cancel>Keep my work</button><button class="mk-button mk-button-dark" type="button" data-guest-reset-confirm>Reset guest workspace</button></div></dialog>
+
+</body>
+</html>
