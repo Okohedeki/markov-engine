@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Markov — More to post. More to say.{% endblock %}
 {% block description %}Turn the conversations you follow into fresh posting angles. Markov is an idea studio for creators, social teams, and people who post often.{% endblock %}
-{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/playground.css">{% endblock %}
-{% block scripts %}<script defer src="{{ site_base }}/static/studio-examples.js"></script><script defer src="{{ site_base }}/static/playground.js"></script>{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/idea-story.css">{% endblock %}
+{% block scripts %}<script defer src="{{ site_base }}/static/studio-examples.js"></script><script defer src="{{ site_base }}/static/idea-story.js"></script>{% endblock %}
 {% block body_class %}creator-public{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
@@ -10,23 +10,18 @@
     <section class="creator-hero">
       <p class="eyebrow">For creators with a lot to say</p>
       <h1>More to post.<br><em>More to say.</em></h1>
-      <p>Take what people are talking about and find your next angle. Markov expands one conversation into fresh ideas for your next batch of posts.</p>
-      <div class="creator-actions"><a class="mk-button mk-button-primary" href="{{ workspace_url }}">{% if static_preview %}Try the idea studio{% else %}Open your studio{% endif %}<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#product">Explore an example <span aria-hidden="true">↓</span></a></div>
+      <p>Take what people are talking about and find your next angle. One conversation becomes fresh ideas for your next batch of posts.</p>
+      <div class="creator-actions"><a class="mk-button mk-button-primary" href="{{ workspace_url }}">{% if static_preview %}Try the idea studio{% else %}Open your studio{% endif %}<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#product">See it in action <span aria-hidden="true">↓</span></a></div>
     </section>
     <section class="creator-stage" id="product" aria-label="See one discussion become posting ideas">
-      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Pick a conversation. Find an angle. Make it yours.</span></div>
-      {% include "partials/idea_playground.html" %}
+      {% include "partials/idea_story.html" %}
+      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Choose an angle above to open its outline.</span></div>
     </section>
     <section class="creator-story" id="unfold" aria-labelledby="story-title">
-      <div><p class="eyebrow">Keep the ideas coming</p><h2>One discussion.<br>So many ways in.</h2></div>
-      <ol class="creator-steps">
-        <li><span>01</span><div><h3>Start where the conversation is.</h3><p>Bring the post, video, article, or question you keep seeing. Give Markov a starting point in the world you create for.</p></div></li>
-        <li><span>02</span><div><h3>Go beyond the obvious take.</h3><p>Follow a consequence, challenge an assumption, explain the missing piece, or connect it to something your audience already knows.</p></div></li>
-        <li><span>03</span><div><h3>Build your next batch.</h3><p>Collect the angles you like. Develop a hook and outline, add your perspective, and take the work into your publishing flow.</p></div></li>
-      </ol>
+      <div class="story-copy"><p class="eyebrow">Keep the ideas coming</p><h2 id="story-title">The same conversation.<br>A different thing to say.</h2><p>A useful explanation. A counterpoint. A connection nobody's made yet. Find more ways into the topics your audience cares about.</p><p>Keep the angles that feel like you. Shape them into an outline, add your perspective, and build your next batch.</p><a class="mk-text-link" href="{{ site_base }}/sample/">Find your next angle <span aria-hidden="true">→</span></a></div>
+      <article class="story-paper"><header><span>Your next post</span><span>Example outline</span></header><h3>Before you build an agent, write its job description.</h3><ol><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show a task that's too vague, then rewrite it.</li></ol><p>The starting point is here. The perspective is yours.</p></article>
     </section>
-    <section class="creator-fit" id="who-its-for"><div><p class="eyebrow">A studio for showing up</p><h2>For the people<br>who post again<br>tomorrow.</h2></div><div><p>Creators, social teams, personal brands, and agencies. When posting is part of your everyday work, having something worth saying should be part of the routine.</p><a class="mk-text-link" href="{{ site_base }}/sample/">Build an example shortlist <span aria-hidden="true">→</span></a></div></section>
-    <section class="creator-finale"><p class="eyebrow">Your next idea has company</p><h2>Find one.<br>Follow it further.</h2><a class="mk-button mk-button-primary" href="{{ workspace_url }}">{% if static_preview %}Try the idea studio{% else %}Open your studio{% endif %}<span aria-hidden="true">↗</span></a></section>
+    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="{{ workspace_url }}">{% if static_preview %}Try the idea studio{% else %}Open your studio{% endif %}<span aria-hidden="true">↗</span></a></section>
   </main>
   {% include "partials/public_footer.html" %}
 {% endblock %}

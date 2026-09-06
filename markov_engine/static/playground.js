@@ -86,7 +86,7 @@
       open.type = 'button';
       open.dataset.openIdea = record.id;
       open.setAttribute('aria-label', `Develop: ${record.hook}`);
-      open.append(element('span', record.lens), element('h3', record.hook), element('small', 'Explore this angle ↗'));
+      open.append(element('span', record.lens), element('h3', record.hook), element('p', record.summary, 'angle-summary'), element('small', 'Develop this idea ↗'));
       open.addEventListener('click', () => openIdea(record));
       const footer = element('footer');
       const toggle = element('button', saved.has(record.id) ? '✓' : '+');

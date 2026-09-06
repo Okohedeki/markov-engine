@@ -1,0 +1,77 @@
+/* The public demonstration focuses on one transformation at a time. */
+.idea-story { overflow: hidden; border: 1px solid #ffffffc7; border-radius: 32px; background: #f5f6f8; box-shadow: 0 3px 5px #233d5410, 0 24px 55px #233d5418, 0 65px 95px #233d5409; }
+.idea-story-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 22px 30px; }
+.story-label { color: var(--muted); font-size: 12px; }
+.story-tabs { display: flex; padding: 5px; gap: 5px; border-radius: 99px; background: #e5e8ed; box-shadow: inset 0 1px 2px #24375212; }
+.story-tabs button { min-height: 40px; padding: 10px 22px; border-radius: 99px; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); }
+.story-tabs button[aria-selected=true] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px #24375219, 0 3px 7px #24375208; }
+.story-scene { min-height: 425px; padding: 22px 60px 40px; }
+.angles-scene { display: grid; grid-template-columns: 260px 160px minmax(0,1fr); align-items: center; max-width: 1040px; margin: auto; }
+.source-paper { position: relative; z-index: 1; background: #fff; padding: 28px; border: 1px solid #e7eaf0; border-radius: 24px; box-shadow: 0 2px 5px #24375205, 0 20px 35px #24375209; }
+.paper-symbol { display: flex; align-items: center; justify-content: center; width: 43px; height: 43px; margin-bottom: 20px; border-radius: 12px; color: var(--accent); background: #fff0e8; font-size: 43px; line-height: 1; padding-top: 15px; }
+.paper-label { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+.source-paper h2 { margin: 14px 0; font-size: 33px; }
+.source-paper > p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+.source-footnote { display: block; margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+.angle-branches { width: 100%; height: 320px; color: #e89164; overflow: visible; }
+.story-angle-stack { display: grid; gap: 13px; padding-right: 12px; }
+.story-angle { position: relative; padding: 20px 24px; text-align: left; background: #fff; border: 1px solid #e4e8ee; border-radius: 18px; box-shadow: 0 2px 3px #24375204, 0 12px 22px #24375208; transition: transform 160ms var(--ease), box-shadow 160ms var(--ease); }
+.story-angle:first-child { transform: translateX(-8px) rotate(-2deg); }
+.story-angle:last-child { transform: translateX(9px) rotate(2deg); }
+.story-angle:hover { transform: translateX(5px); box-shadow: 0 3px 8px #24375208, 0 15px 25px #24375212; }
+.story-angle .paper-label { display: flex; justify-content: space-between; gap: 15px; }
+.story-angle b { font-weight: 400; color: var(--accent); }
+.story-angle strong { display: block; margin-top: 10px; font-size: 19px; line-height: 1.25; font-weight: 600; letter-spacing: -.03em; }
+.idea-story-footer { padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; gap: 25px; border-top: 1px solid #e7eaf0; font-size: 12px; color: var(--muted); }
+.idea-story-footer > a { flex-shrink: 0; display: inline-flex; align-items: center; gap: 12px; min-height: 40px; font-weight: 600; color: var(--ink); }
+.idea-story-footer > a:hover { color: var(--accent); }
+.conversation-scene { display: grid; place-items: center; }
+.conversation-paper { max-width: 670px; padding: 30px 38px; border-radius: 24px; background: #fff; box-shadow: var(--shadow); }
+.conversation-paper h2 { margin-top: 17px; font-size: 30px; }
+.conversation-paper p { margin-top: 18px; color: var(--muted); font-size: 14px; }
+.conversation-prompts { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 22px 0; color: var(--muted); font-size: 12px; }
+.conversation-prompts span::before { content: '+ '; color: var(--accent); }
+.draft-scene { display: grid; grid-template-columns: .85fr 1.15fr; gap: 70px; align-items: center; }
+.draft-context h2 { margin-top: 20px; font-size: 34px; }
+.draft-context p { margin: 18px 0 24px; color: var(--muted); font-size: 14px; max-width: 300px; }
+.draft-paper { padding: 27px 30px; border: 1px solid #e7eaf0; border-radius: 22px; background: #fff; box-shadow: var(--shadow); }
+.draft-paper header { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 15px; }
+.draft-paper h3 { margin: 20px 0; font-size: 24px; }
+.draft-paper ol { padding-left: 19px; font-size: 13px; color: var(--muted); }
+.draft-paper li { padding: 0 0 12px 4px; }
+.draft-paper > p { padding-top: 6px; color: var(--accent); font-size: 12px; }
+@media(max-width:1000px) {
+  .idea-story-header { justify-content: center; }
+  .idea-story-header .story-label { display: none; }
+  .story-scene { padding-inline: 35px; }
+  .angles-scene { grid-template-columns: 240px 95px minmax(0,1fr); }
+  .draft-scene { gap: 35px; }
+}
+@media(max-width:700px) {
+  .idea-story { border-radius: 26px; }
+  .idea-story-header { padding: 20px 12px; }
+  .story-tabs { width: 100%; gap: 2px; }
+  .story-tabs button { flex: 1; padding-inline: 10px; }
+  .story-scene { padding: 5px 22px 25px; min-height: 0; }
+  .angles-scene { grid-template-columns: 1fr; gap: 24px; }
+  .source-paper { padding: 20px 22px; }
+  .paper-symbol { display: none; }
+  .source-paper h2 { font-size: 28px; margin: 9px 0; }
+  .source-paper h2 br, .source-paper > p br { display: none; }
+  .source-footnote { display: none; }
+  .angle-branches { display: none; }
+  .story-angle-stack { position: relative; gap: 12px; padding: 0 0 0 16px; border-left: 1px solid #e89164; }
+  .story-angle { padding: 18px; }
+  .story-angle::before { content: ''; position: absolute; top: 50%; left: -17px; width: 16px; border-top: 1px solid #e89164; }
+  .story-angle:first-child, .story-angle:last-child { transform: none; }
+  .story-angle strong { font-size: 18px; }
+  .idea-story-footer { display: block; padding: 18px 24px; }
+  .idea-story-footer > span { display: block; }
+  .idea-story-footer > a { margin-top: 10px; }
+  .conversation-paper { padding: 25px; }
+  .conversation-paper h2 { font-size: 26px; }
+  .draft-scene { grid-template-columns: 1fr; gap: 25px; }
+  .draft-context { padding: 5px 4px; }
+  .draft-context h2 { font-size: 29px; margin-top: 10px; }
+  .draft-paper { padding: 24px; }
+}

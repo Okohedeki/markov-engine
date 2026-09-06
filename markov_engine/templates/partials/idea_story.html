@@ -1,0 +1,28 @@
+<div class="idea-story" data-idea-story>
+  <header class="idea-story-header">
+    <span class="story-label">One conversation, opened up</span>
+    <div class="story-tabs" role="tablist" aria-label="From conversation to post">
+      <button id="story-tab-conversation" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-conversation" data-story-tab="conversation">Conversation</button>
+      <button id="story-tab-angles" type="button" role="tab" aria-selected="true" tabindex="0" aria-controls="story-angles" data-story-tab="angles">Angles</button>
+      <button id="story-tab-draft" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-draft" data-story-tab="draft">Draft</button>
+    </div>
+    <span class="story-label">Interactive example</span>
+  </header>
+  <div class="story-scene conversation-scene" id="story-conversation" role="tabpanel" aria-labelledby="story-tab-conversation" tabindex="0" data-story-panel="conversation" hidden>
+    <div class="conversation-paper"><span class="paper-label">The starting point · Technology</span><h2>Everyone is building an AI agent. What actually needs one?</h2><p>A conversation about tools that take actions, and the work people would trust them to do.</p><div class="conversation-prompts"><span>What changes?</span><span>What gets missed?</span><span>What's your take?</span></div><button class="mk-button mk-button-dark" type="button" data-story-next="angles">Find a way in <span aria-hidden="true">→</span></button></div>
+  </div>
+  <div class="story-scene angles-scene" id="story-angles" role="tabpanel" aria-labelledby="story-tab-angles" tabindex="0" data-story-panel="angles">
+    <div class="source-paper"><span class="paper-symbol" aria-hidden="true">“</span><span class="paper-label">The conversation</span><h2>The AI<br>agent rush.</h2><p>Everyone is building one.<br>What actually needs one?</p><span class="source-footnote">A starting point, not your final take.</span></div>
+    <svg class="angle-branches" viewBox="0 0 180 320" fill="none" aria-hidden="true"><path d="M0 160H45C95 160 75 35 130 35H180M45 160H180M45 160C95 160 75 285 130 285H180" stroke="currentColor" stroke-width="1.5"/><circle cx="45" cy="160" r="5" fill="currentColor" stroke="#f5f6f8" stroke-width="5"/></svg>
+    <div class="story-angle-stack">
+      <button class="story-angle" type="button" data-demo-idea="0"><span class="paper-label">The other side <b aria-hidden="true">↗</b></span><strong>The best AI workflow might be the one with fewer agents.</strong></button>
+      <button class="story-angle" type="button" data-demo-idea="1"><span class="paper-label">Make it practical <b aria-hidden="true">↗</b></span><strong>Before you build an agent, write its job description.</strong></button>
+      <button class="story-angle" type="button" data-demo-idea="2"><span class="paper-label">An unexpected connection <b aria-hidden="true">↗</b></span><strong>Delegating to AI has the same problem as delegating to people.</strong></button>
+    </div>
+  </div>
+  <div class="story-scene draft-scene" id="story-draft" role="tabpanel" aria-labelledby="story-tab-draft" tabindex="0" data-story-panel="draft" hidden>
+    <div class="draft-context"><span class="paper-label">An idea you can work with</span><h2>A new angle.<br>Your own voice.</h2><p data-story-summary>Turn a technical discussion into a checklist people can use.</p><a class="mk-button mk-button-dark" href="{{ site_base }}/sample/">Make an outline your own <span aria-hidden="true">↗</span></a></div>
+    <article class="draft-paper"><header><span>Working outline</span><span>Short post</span></header><h3 data-story-hook>Before you build an agent, write its job description.</h3><ol data-story-outline><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show an example of a task that is too vague, then rewrite it.</li></ol><p>Add an example only you could give.</p></article>
+  </div>
+  <footer class="idea-story-footer"><span>Sample discussions and prewritten angles. Live trend discovery is not connected.</span><a href="{{ site_base }}/sample/">Explore all the angles <span aria-hidden="true">→</span></a></footer>
+</div>

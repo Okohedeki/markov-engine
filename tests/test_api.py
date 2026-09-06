@@ -312,7 +312,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert "More to post." in landing.text
             assert 'href="/app/login"' in landing.text
             assert 'href="#product"' in landing.text
-            assert 'data-idea-playground' in landing.text
+            assert 'data-idea-story' in landing.text
+            assert 'role="tablist"' in landing.text
+            assert 'data-demo-idea="1"' in landing.text
             assert "Sample discussions and prewritten angles" in landing.text
             assert "Live trend discovery is not connected" in landing.text
             assert landing.text.count("<h1") == 1
@@ -610,7 +612,7 @@ def test_github_pages_export_is_static_and_project_relative():
     assert 'href="/app/login"' not in landing
     assert "More to post." in landing
     assert "Try the idea studio" in landing
-    assert "data-idea-playground" in landing
+    assert "data-idea-story" in landing
     assert "Run locally" not in landing
     assert "open-source" not in landing.lower()
     assert "github.com" not in landing.lower()
