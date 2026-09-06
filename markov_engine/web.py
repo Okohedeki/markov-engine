@@ -20,7 +20,7 @@ from markov_engine.branching import (
 from markov_engine.config import Settings
 from markov_engine.entitlements import resolve_entitlements
 from markov_engine.exports import export_artifact
-from markov_engine.jobs import run_job, submit_job
+from markov_engine.jobs import run_job_with_capacity, submit_job
 from markov_engine.production_web import create_production_router, queue_context
 from markov_engine.research import convert_case_artifact
 from markov_engine.reviews import finalize_review, record_review_decision
@@ -581,7 +581,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             )
         if created:
             background_tasks.add_task(
-                run_job,
+                run_job_with_capacity,
+                request.app.state.job_slots,
                 request.app.state.store,
                 job_id=job.id,
                 settings=settings,
