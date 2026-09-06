@@ -43,6 +43,27 @@ series around distinct episode questions, new evidence per installment, and
 continuity with previously approved work. Compare proposed stories with the
 creator's own catalog before measuring broader audience novelty.
 
+## Run without the GUI
+
+From the repository root, with the existing model/search settings configured:
+
+```powershell
+python scripts/discover_stories.py "https://example.com/source"
+```
+
+This creates a separate `data/editorial-<id>.db` file and prints angle briefs,
+source locators, search history, and completion status as JSON. Full inspected
+passages and model-cost records stay in that database. No preferred angle is
+supplied. The command runs extraction plus editorial discovery, not the older
+claim-by-claim verification pipeline. Normal research jobs run both passes and
+include the new angle sections in their existing research artifacts.
+
+The discovery pass allows at most two rounds, eight inspected sources, twelve
+page-read attempts, 180 seconds of research, and 60 seconds of final synthesis.
+Source extraction precedes that budget. Offline mode returns no fabricated
+angles. Exact-quote checks validate provenance, not the truth of an inference;
+single-source leads remain visibly labeled and require editorial review.
+
 ## Manual quality comparison
 
 Use identical, unsteered links in Markov and the closest competing workflows:
