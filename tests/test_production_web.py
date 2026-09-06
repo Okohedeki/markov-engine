@@ -67,3 +67,30 @@ async def test_queue_to_series_journey_and_free_gates():
             assert (await post(client, '/app/queue/actions', {'item': keys, 'action': 'move'})).status_code == 400
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_pending_batch_never_starts_paid_generation(monkeypatch):
+    import markov_engine.production_web as production
+
+    async def unexpected_generation(*args, **kwargs):
+        raise AssertionError('Pending research must not reach generation')
+
+    monkeypatch.setattr(production, 'convert_case_artifact', unexpected_generation)
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'owner'},
+        MARKOV_WEB_SESSION_SECRET='test-only', MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus')
+    try:
+        case = await store.create_research_case(owner_id='owner', title='Still researching',
+            original_input='A test seed', input_type='text', purpose='research', status='pending')
+        app = create_app(store=store, settings=settings)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            await client.post('/app/login', data={'api_key': 'key'})
+            response = await client.post('/app/queue/actions',
+                data={'action': 'talking_points', 'item': f'case:{case.id}'})
+            assert response.status_code == 400
+            assert 'Wait for research to finish' in response.text
+            assert await store.list_case_artifacts(case.id) == []
+            assert (await store.get_credit_account('owner')).balance == 0
+    finally:
+        await store.close()
