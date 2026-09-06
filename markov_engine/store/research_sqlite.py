@@ -1680,6 +1680,27 @@ class ResearchSqliteMixin:
             metadata=metadata or {},
         )
 
+    async def latest_case_event(
+        self, *, case_id: int, event_type: str
+    ) -> UsageEventRec | None:
+        """Read one case checkpoint without loading an owner's entire history."""
+        async with self._conn.execute(
+            "SELECT e.* FROM usage_events e "
+            "JOIN research_cases c ON c.id = e.research_case_id "
+            "AND c.owner_id = e.owner_id "
+            "WHERE e.research_case_id = ? AND e.event_type = ? "
+            "ORDER BY e.id DESC LIMIT 1",
+            (case_id, event_type),
+        ) as cur:
+            row = await cur.fetchone()
+        if row is None:
+            return None
+        return UsageEventRec(
+            id=row["id"], owner_id=row["owner_id"], event_type=row["event_type"],
+            research_case_id=row["research_case_id"], artifact_id=row["artifact_id"],
+            metadata=_json(row["metadata"], {}), created_at=_ts(row["created_at"]),
+        )
+
     async def list_usage_events(self, *, owner_id: str) -> list[UsageEventRec]:
         async with self._conn.execute(
             "SELECT * FROM usage_events WHERE owner_id = ? ORDER BY id", (owner_id,)
