@@ -330,13 +330,14 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert pricing.status_code == 200
             assert "Hosted workspace pricing" in pricing.text
             assert "2 credits" in pricing.text
-            assert "Job credits from the live catalog" in pricing.text
+            assert "Current job credit costs" in pricing.text
+            assert "paid checkout and subscription prices are not available" in pricing.text
 
             developers = await client.get("/developers")
             assert developers.status_code == 200
             assert "Idempotency-Key" in developers.text
             assert "POST /v2/jobs" in developers.text
-            assert "typed connections" in developers.text.lower()
+            assert "structured research and drafts" in developers.text.lower()
 
             sample = await client.get("/sample")
             assert sample.status_code == 200

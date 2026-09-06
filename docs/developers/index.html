@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#fcfbf8">
   <meta name="description" content="Submit a source or question and retrieve structured jobs, claims, evidence, connections, artifacts, and review state through the Markov API.">
 
-  <title>Markov API — One research trail for people and agents</title>
+  <title>Markov API — From topics to drafts</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/markov-engine/static/markov.css">
+  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/workspace.css"><link rel="stylesheet" href="/markov-engine/static/account.css">
   <script defer src="/markov-engine/static/markov.js"></script>
 
 </head>
@@ -33,11 +33,11 @@
   </nav>
 </header>
   <main class="mk-support-main" id="main-content">
-    <header class="mk-support-hero mk-api-hero"><p class="mk-kicker">Markov for agents</p><h1>Send one research job. Keep the whole trail.</h1><div><p>The API exposes the same case people inspect in the workspace: stable job state, claims, evidence passages, typed connections, artifacts, costs, and review events.</p><a class="mk-button mk-button-primary" href="/markov-engine/developers/">Open API reference <span aria-hidden="true">↗</span></a></div></header>
-    <section class="mk-api-contract" aria-labelledby="contract-title"><header class="mk-section-intro is-compact"><p class="mk-kicker">The contract</p><h2 id="contract-title">A finished artifact and the state required to audit or continue it.</h2></header><ol><li><span>01</span><div><h3>Submit a source or question</h3><p>Use one idempotent asynchronous job for a brief, research report, or factual script.</p></div></li><li><span>02</span><div><h3>Observe useful stages</h3><p>Follow source reading, claim mapping, evidence checks, connection validation, and artifact creation.</p></div></li><li><span>03</span><div><h3>Retrieve inspectable state</h3><p>Exact passages, locators, stance, uncertainty, and user branch decisions stay addressable.</p></div></li><li><span>04</span><div><h3>Continue the same case</h3><p>Convert outputs or follow a connection without repeating unchanged extraction and research.</p></div></li></ol></section>
-    <section class="mk-code-scene" aria-labelledby="request-title"><header><div><p class="mk-kicker">Request</p><h2 id="request-title">Start an exploration.</h2></div><span>POST /v2/jobs</span></header><pre><code>curl -X POST /markov-engine/developers//v2/jobs \
+    <header class="mk-support-hero mk-api-hero"><p class="mk-kicker">For your content workflow</p><h1>Your next idea.<br>Part of your workflow.</h1><div><p>Bring topics into your own workflow through the same engine that powers the studio. Submit a source, follow progress, and retrieve structured research and drafts with their sources attached.</p><a class="mk-button mk-button-primary" href="https://github.com/Okohedeki/markov-engine">View the repository <span aria-hidden="true">↗</span></a></div></header>
+    <section class="mk-api-contract" aria-labelledby="contract-title"><header class="mk-section-intro is-compact"><p class="mk-kicker">The contract</p><h2 id="contract-title">From a topic to work you can build on.</h2></header><ol><li><span>01</span><div><h3>Submit a source or question</h3><p>Use one idempotent asynchronous job for a brief, research report, or factual script.</p></div></li><li><span>02</span><div><h3>Observe useful stages</h3><p>Follow source reading, claim mapping, evidence checks, connection validation, and artifact creation.</p></div></li><li><span>03</span><div><h3>Retrieve inspectable state</h3><p>Exact passages, locators, stance, uncertainty, and user branch decisions stay addressable.</p></div></li><li><span>04</span><div><h3>Continue the same case</h3><p>Convert outputs or follow a connection without repeating unchanged extraction and research.</p></div></li></ol></section>
+    <section class="mk-code-scene" aria-labelledby="request-title"><header><div><p class="mk-kicker">Request</p><h2 id="request-title">Start an exploration.</h2></div><span>POST /v2/jobs</span></header><pre><code>curl -X POST http://localhost:8000/v2/jobs \
   -H "X-Markov-Key: $MARKOV_KEY" \
-  -H "Idempotency-Key: japan-brief-1" \
+  -H "Idempotency-Key: creator-topic-1" \
   -H "Content-Type: application/json" \
   -d '{
     "job": "Explore where it leads",
@@ -46,7 +46,7 @@
       "type": "url",
       "value": "https://www.youtube.com/watch?v=..."
     },
-    "options": {"focus": "capital-flow mechanism"}
+    "options": {"focus": "distinct posting angles and practical takeaways"}
   }'</code></pre></section>
     <section class="mk-resource-list" aria-labelledby="resources-title"><header><p class="mk-kicker">Core resources</p><h2 id="resources-title">Follow the idea at every resolution.</h2></header><div><article><span>Jobs</span><p>Status, stage events, cost, retry, and webhook delivery.</p></article><article><span>Cases</span><p>Sources, claims, research gaps, topics, and artifacts.</p></article><article><span>Connections</span><p>Typed endpoints, mechanism, support, weakness, and next step.</p></article><article><span>Artifacts</span><p>Versioned brief, research, and script outputs with exports.</p></article></div></section>
   </main>
