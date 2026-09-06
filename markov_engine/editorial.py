@@ -188,7 +188,7 @@ async def read_story_source(
 def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
     """Reject invented citations, inexact quotes, empty briefs, and repetitions."""
     by_id = {item["evidence_id"]: item for item in findings}
-    angles, fingerprints = [], []
+    angles, fingerprints, used_lenses = [], [], set()
     fields = ("title", "question", "new_information", "why_it_matters",
               "novelty_basis", "uncertainty", "next_question")
     candidates = data.get("angles")
@@ -220,6 +220,12 @@ def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
             citations.append({"evidence_id": evidence_id, "quote": quote})
         if len(citations) != len(support):
             continue
+        cited_lenses = {by_id[c["evidence_id"]].get("lens") for c in citations} - {None}
+        lens = item.get("lens")
+        if cited_lenses and lens is not None and (
+            not isinstance(lens, str) or lens not in cited_lenses or lens in used_lenses
+        ):
+            continue
         challenge_ids = item.get("challenge_evidence_ids", [])
         if not isinstance(challenge_ids, list) or any(
             type(value) is not int or value not in by_id for value in challenge_ids
@@ -238,7 +244,10 @@ def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
             "evidence_status": "single_source_lead" if len(sources) == 1
             else "sourced_interpretation",
             "source_count": len(sources),
+            "lens": lens if isinstance(lens, str) else None,
         })
+        if cited_lenses and isinstance(lens, str):
+            used_lenses.add(lens)
         fingerprints.append(fingerprint)
         if len(angles) == 3:
             break
