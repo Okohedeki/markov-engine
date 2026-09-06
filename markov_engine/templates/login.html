@@ -5,14 +5,15 @@
   <main class="mk-auth-shell" id="main-content">
     <section class="mk-auth-story">
       <a class="mk-wordmark" href="/"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
-      <div><p class="mk-kicker">Your creator studio</p><h1>Come back with<br>something to say.</h1><p>Your topics, posting angles, and drafts. All in one place, ready when you are.</p></div>
-      <ol aria-label="From conversation to content"><li><span></span>Start with a conversation</li><li><span></span>Find a different angle</li><li><span></span>Make it your next post</li></ol>
+      <div><p class="mk-kicker">Your production desk</p><h1>Your next story<br>starts somewhere.</h1><p>Follow a link into related stories. Keep the strongest ideas and build your next production batch.</p></div>
+      <ol aria-label="From source to production"><li><span></span>Bring a link that caught your eye</li><li><span></span>Explore connected stories and sources</li><li><span></span>Develop paid talking points or a series</li></ol>
     </section>
     <section class="mk-auth-form" aria-labelledby="signin-title">
       <div><p class="mk-kicker">Workspace access</p><h2 id="signin-title">Sign in to Markov</h2><p>This build uses an access key. Email and social sign-in are not enabled.</p></div>
       {% if error %}<p class="mk-alert is-error" role="alert">{{ error }}</p>{% endif %}
       <form method="post" action="/app/login"><label for="api-key">Workspace access key</label><div><input id="api-key" name="api_key" type="password" autocomplete="current-password" required autofocus><button type="submit">Continue <span aria-hidden="true">→</span></button></div></form>
-      <p class="mk-auth-help"><strong>Local development?</strong> Use the key configured in <code>MARKOV_API_KEYS</code>.</p>
+      <p class="mk-auth-help"><strong>Need a workspace?</strong> <a href="mailto:okohedeki@gmail.com?subject=Markov%20workspace%20access">Request access from EyeQ enterprises</a>. Local development uses a key configured in <code>MARKOV_API_KEYS</code>.</p>
+      <p class="mk-auth-help"><a href="/privacy">Privacy policy</a> · <a href="/terms">Terms of use</a> · <a href="/copyright">Copyright</a></p>
       <a href="/">← Back to the public site</a>
     </section>
   </main>
