@@ -180,7 +180,7 @@ async def read_story_source(
             "evidence_id": evidence.id, "source_id": source.id,
             "claim_id": claim.id, "url": source.url, "title": source.title,
             "locator": segment.locator, "passage": evidence.passage_text,
-            "question": question["question"],
+            "question": question["question"], "lens": question.get("lens"),
         })
     return findings
 
