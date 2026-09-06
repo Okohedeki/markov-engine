@@ -64,6 +64,30 @@
 .production-pagination a, .production-footer a { display:inline-flex; align-items:center; min-height:40px; }
 .production-footer { margin-top:45px; border-top:1px solid #dfe4e8; font-size:11px; }
 .production-back { display:inline-block; margin-bottom:25px; font-size:12px; }
+.series-builder { max-width:850px; }
+.series-builder h2 { font-size:27px; font-weight:500; margin-bottom:25px; }
+.series-builder > label { display:block; font-size:14px; margin-bottom:20px; }
+.series-builder input, .series-builder textarea { display:block; margin-top:10px; background:#fff; }
+.series-builder ol { padding-left:24px; margin:28px 0; }
+.series-builder li { padding:14px 0 14px 12px; border-bottom:1px solid #dfe4e9; font-size:15px; }
+.series-builder li p, .series-builder > p { font-size:13px; color:#687480; margin-top:6px; }
+.series-builder > .mk-button { margin-top:23px; }
+.series-entry { display:flex; justify-content:space-between; gap:25px; padding:28px 0; border-block:1px solid #dfe4e9; }
+.series-entry span { font-size:12px; color:#697784; }
+.series-entry h2 { margin:14px 0 10px; font-size:27px; font-weight:500; }
+.series-entry p { font-size:14px; color:#64717e; max-width:750px; }
+.series-next { display:flex; align-items:center; flex-wrap:wrap; gap:15px 25px; padding:23px; background:#edf2f7; border-left:3px solid #607c96; border-radius:0 10px 10px 0; }
+.series-next span, .series-next a { font-size:12px; }
+.series-next strong { font-size:17px; font-weight:500; flex:1; min-width:220px; }
+.series-episodes { list-style:none; padding:0; margin-top:30px; }
+.series-episodes > li { display:grid; grid-template-columns:45px minmax(0,1fr); gap:20px; padding:30px 0; border-bottom:1px solid #dce3e8; scroll-margin-top:20px; }
+.episode-number { font-size:24px; color:#8b99a5; }
+.series-episodes h2 { font-size:25px; font-weight:500; margin:14px 0 10px; }
+.series-episodes p { color:#63717d; font-size:14px; max-width:780px; }
+.episode-actions { display:flex; flex-wrap:wrap; align-items:center; gap:15px; margin-top:22px; }
+.episode-actions a { font-size:12px; }
+.episode-actions form { display:flex; gap:7px; }
+.episode-actions button:disabled { opacity:.35; cursor:not-allowed; }
 @media(max-width:1200px) {
  .production-shell { padding:32px 28px 0; }
  .production-toolbar { align-items:start; flex-direction:column-reverse; gap:0; }
@@ -100,4 +124,9 @@
  .production-paid-actions button { padding:10px 8px; }
  .production-paid-actions > div:last-child { width:100%; }
  .production-pagination, .production-footer { align-items:start; flex-direction:column; gap:8px; }
+ .upgrade-features { grid-template-columns:1fr; gap:30px; }
+ .series-episodes > li { grid-template-columns:25px minmax(0,1fr); gap:10px; }
+ .series-episodes h2 { font-size:23px; }
+ .episode-actions { gap:12px; }
+ .series-builder li { padding-left:5px; }
 }
