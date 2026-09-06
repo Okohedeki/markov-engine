@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#171b24">
-  <meta name="description" content="Turn the conversations you follow into fresh posting angles. Markov is an idea studio for creators, social teams, and people who post often.">
+  <meta name="description" content="Follow a link into related articles, unexpected connections, and fresh script ideas. Markov helps creators find a story beyond the obvious retelling.">
 
-  <title>Markov — More to post. More to say.</title>
+  <title>Markov — Start with a link. Leave with a story.</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="preload" href="/markov-engine/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/idea-story.css"><link rel="stylesheet" href="/markov-engine/static/walkthroughs.css">
+  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/source-trail.css">
   <script defer src="/markov-engine/static/markov.js"></script>
-  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/idea-story.js"></script><script defer src="/markov-engine/static/walkthroughs.js"></script>
+  <script defer src="/markov-engine/static/source-trail.js"></script>
 </head>
-<body class="creator-public">
+<body class="creator-public source-home">
   <a class="mk-skip" href="#main-content">Skip to content</a>
 
   <header class="mk-public-header" data-site-header>
@@ -26,117 +26,139 @@
     <span>Menu</span><i aria-hidden="true"></i>
   </button>
   <nav class="mk-public-nav" id="mk-public-nav" aria-label="Primary navigation" data-site-nav>
-    <a href="/markov-engine/#unfold">How it works</a>
-    <a href="/markov-engine/#walkthroughs">Walkthroughs</a>
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/#source-notes">The sources</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
-    <a class="mk-nav-action" href="/markov-engine/demo/">Try without an account <span aria-hidden="true">↗</span></a>
+    <a class="mk-nav-action" href="/markov-engine/#how-it-works">See an example <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
   <main id="main-content">
-    <section class="creator-hero">
-      <p class="eyebrow">For creators with a lot to say</p>
-      <h1>More to post.<br><em>More to say.</em></h1>
-      <p>Take what people are talking about and find your next angle. One conversation becomes fresh ideas for your next batch of posts.</p>
-      <div class="creator-actions"><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try without an account<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#walkthroughs">Watch it in action <span aria-hidden="true">▷</span></a></div>
+    <section class="story-opening">
+      <div class="story-opening-copy">
+        <p class="eyebrow">Follow your curiosity a little further.</p>
+        <h1>Start with a link.<br>Find a story<br><em>worth telling.</em></h1>
+        <p>Related articles. Unexpected connections. Original script ideas. Markov finds the paths beyond the thing you just watched or read.</p>
+        <a class="mk-button mk-button-primary" href="#how-it-works">See how it works <span aria-hidden="true">↗</span></a>
+        <span class="source-types">YouTube · Articles · Podcasts · Social posts</span>
+      </div>
+      <div class="opening-trail" aria-label="Example: a space story connects to a beer project, then a new script idea">
+        <svg class="opening-path" viewBox="0 0 620 530" fill="none" aria-hidden="true"><path d="M275 164H429C466 164 480 187 480 223V290C480 352 430 360 355 360" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 5"/><path d="M310 360V420" stroke="currentColor" stroke-width="1.5"/><circle cx="310" cy="360" r="4" fill="currentColor"/></svg>
+        <a class="opening-source" href="#trail-source"><img src="/markov-engine/static/orbit.webp" width="1000" height="561" fetchpriority="high" alt="A spacecraft above the blue curve of Earth, photographed from the space station"><div><span>01 / A link you found <b aria-hidden="true">↗</b></span><strong>A space station.<br>A water loop.</strong><small>NASA · Water recovery</small></div></a>
+        <a class="opening-connection" href="#trail-connections"><span>02 / An unexpected connection <b aria-hidden="true">↗</b></span><strong>What if the next chapter <br>is at a brewery?</strong><p>A real recycled-water beer project.</p><small>Epic Cleantec · Related story</small></a>
+        <a class="opening-script" href="#trail-script"><span aria-hidden="true">↳</span><div><small>03 / A fresh script idea</small><strong>The hardest part might not be the filter.</strong></div><b aria-hidden="true">↗</b></a>
+        <p class="opening-caption">One illustrated example. Explore the sources below.</p>
+      </div>
     </section>
-    <section class="creator-stage" id="product" aria-label="See one discussion become posting ideas">
-      <div class="idea-story" data-idea-story>
-  <header class="idea-story-header">
-    <span class="story-label">One conversation, opened up</span>
-    <div class="story-tabs" role="tablist" aria-label="From conversation to post">
-      <button id="story-tab-conversation" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-conversation" data-story-tab="conversation">Conversation</button>
-      <button id="story-tab-angles" type="button" role="tab" aria-selected="true" tabindex="0" aria-controls="story-angles" data-story-tab="angles">Angles</button>
-      <button id="story-tab-draft" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="story-draft" data-story-tab="draft">Draft</button>
-    </div>
-    <span class="story-label">Interactive example</span>
+    <div class="creator-stage" id="product">
+
+
+
+
+<section class="source-trail" id="how-it-works" aria-labelledby="trail-title" data-source-trail>
+  <span id="unfold" class="trail-anchor" aria-hidden="true"></span>
+  <header class="trail-heading">
+    <div><p class="eyebrow">From interesting to original</p><h2 id="trail-title">Follow the story<br>beyond the link.</h2></div>
+    <p>Start with one NASA article. Follow it to a brewery or a chip factory. See the different scripts those connections could become.</p>
   </header>
-  <div class="story-scene conversation-scene" id="story-conversation" role="tabpanel" aria-labelledby="story-tab-conversation" tabindex="0" data-story-panel="conversation" hidden>
-    <div class="conversation-paper"><span class="paper-label">The starting point · Technology</span><h2>Everyone is building an AI agent. What actually needs one?</h2><p>A conversation about tools that take actions, and the work people would trust them to do.</p><div class="conversation-prompts"><span>What changes?</span><span>What gets missed?</span><span>What's your take?</span></div><button class="mk-button mk-button-dark" type="button" data-story-next="angles">Find a way in <span aria-hidden="true">→</span></button></div>
-  </div>
-  <div class="story-scene angles-scene" id="story-angles" role="tabpanel" aria-labelledby="story-tab-angles" tabindex="0" data-story-panel="angles">
-    <div class="source-paper"><span class="paper-symbol" aria-hidden="true">“</span><span class="paper-label">The conversation</span><h2>The AI <br>agent rush.</h2><p>Everyone is building one. <br>What actually needs one?</p><span class="source-footnote">A starting point, not your final take.</span></div>
-    <svg class="angle-branches" viewBox="0 0 180 320" fill="none" aria-hidden="true"><path d="M0 160H45C95 160 75 35 130 35H180M45 160H180M45 160C95 160 75 285 130 285H180" stroke="currentColor" stroke-width="1.5"/><circle cx="45" cy="160" r="5" fill="currentColor" stroke="#f5f6f8" stroke-width="5"/></svg>
-    <div class="story-angle-stack">
-      <button class="story-angle" type="button" data-demo-idea="0"><span class="paper-label">The other side <b aria-hidden="true">↗</b></span><strong>The best AI workflow might be the one with fewer agents.</strong></button>
-      <button class="story-angle" type="button" data-demo-idea="1"><span class="paper-label">Make it practical <b aria-hidden="true">↗</b></span><strong>Before you build an agent, write its job description.</strong></button>
-      <button class="story-angle" type="button" data-demo-idea="2"><span class="paper-label">An unexpected connection <b aria-hidden="true">↗</b></span><strong>Delegating to AI has the same problem as delegating to people.</strong></button>
+  <details class="trail-film" id="walkthroughs" data-source-film>
+    <summary><span class="trail-film-icon" aria-hidden="true">▷</span>Watch the 47-second walkthrough <span aria-hidden="true">+</span></summary>
+    <div class="trail-film-body">
+      <p id="source-film-description">A recorded tour of this curated example—not a live research run. Follow the source, explore the connections, and take away a script outline.</p>
+      <video controls playsinline preload="none" width="1440" height="1000" poster="/markov-engine/static/walkthroughs/source-to-story.webp" aria-label="Source-to-story walkthrough" aria-describedby="source-film-description" tabindex="0">
+        <source src="/markov-engine/static/walkthroughs/source-to-story.mp4" type="video/mp4">
+        <track kind="captions" srclang="en" label="English" src="/markov-engine/static/walkthroughs/source-to-story.vtt" default>
+        Your browser cannot play this recording. Explore the same steps in the section below.
+      </video>
+      <div class="trail-film-footer"><p role="status" data-source-film-status>Captioned · No sound required · The interactive version is just below.</p><a href="/markov-engine/static/walkthroughs/source-to-story.mp4" download>Download recording <span aria-hidden="true">↓</span></a></div>
     </div>
-  </div>
-  <div class="story-scene draft-scene" id="story-draft" role="tabpanel" aria-labelledby="story-tab-draft" tabindex="0" data-story-panel="draft" hidden>
-    <div class="draft-context"><span class="paper-label">An idea you can work with</span><h2>A new angle.<br>Your own voice.</h2><p data-story-summary>Turn a technical discussion into a checklist people can use.</p><a class="mk-button mk-button-dark" href="/markov-engine/demo/">Make an outline your own <span aria-hidden="true">↗</span></a></div>
-    <article class="draft-paper"><header><span>Working outline</span><span>Short post</span></header><h3 data-story-hook>Before you build an agent, write its job description.</h3><ol data-story-outline><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show an example of a task that is too vague, then rewrite it.</li></ol><p>Add an example only you could give.</p></article>
-  </div>
-  <footer class="idea-story-footer"><span>Sample discussions and prewritten angles. Live trend discovery is not connected.</span><a href="/markov-engine/demo/">Explore all the angles <span aria-hidden="true">→</span></a></footer>
-</div>
-      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Choose an angle above to open its outline.</span></div>
+  </details>
+  <div class="trail-canvas">
+    <nav class="trail-steps" aria-label="Example steps" data-trail-tabs hidden>
+      <button type="button" id="trail-tab-source" data-trail-tab="source"><span>01</span>The link</button>
+      <button type="button" id="trail-tab-connections" data-trail-tab="connections"><span>02</span>Connected stories</button>
+      <button type="button" id="trail-tab-script" data-trail-tab="script"><span>03</span>A fresh script idea</button>
+    </nav>
+
+    <section class="trail-scene trail-start" id="trail-source" data-trail-panel="source" aria-labelledby="trail-source-title">
+      <article class="trail-source-paper">
+        <p class="trail-label">The article you found · NASA · 20 Jun 2023</p>
+        <a class="trail-url" href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span>nasa.gov / water-recovery-milestone</a>
+        <h3 id="trail-source-title">Astronauts are getting almost all their water back.</h3>
+        <p>NASA reported that the space station’s system demonstrated 98% total water recovery.</p>
+        <a class="mk-text-link" href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer">Read the original article <span aria-hidden="true">↗</span></a>
+      </article>
+      <div class="trail-start-copy"><p class="eyebrow">A starting point, not the whole story</p><h3>Where else does<br>this idea show up?</h3><p>The useful next move is to look beyond the article: other industries, unexpected applications, and questions worth following.</p><button class="mk-button mk-button-dark" type="button" data-trail-next="connections" hidden>Follow the connections <span aria-hidden="true">→</span></button></div>
     </section>
 
-<section class="walkthrough-section" id="unfold" aria-labelledby="walkthrough-title">
-  <div class="walkthrough-shell" id="walkthroughs" data-walkthroughs>
-    <header class="walkthrough-heading"><div><p class="eyebrow">A little show, then your turn</p><h2 id="walkthrough-title">See your next post take shape.</h2></div><p>Three short recordings of the guest studio. No account, no setup—just the workflow.<span>Silent videos with captions. Sample content, real interactions.</span></p></header>
-    <div class="walkthrough-layout">
-      <div class="walkthrough-chooser"><div class="walkthrough-menu" role="tablist" aria-label="Choose a walkthrough" aria-orientation="vertical">
-        <button type="button" role="tab" id="tour-tab-find-angles" aria-controls="tour-panel-find-angles" aria-selected="true" tabindex="0" data-tour-tab="find-angles"><span>01</span><div><strong>Find a fresh angle</strong><small>One conversation. Several ways to post about it.</small></div><b aria-hidden="true">▷</b></button><button type="button" role="tab" id="tour-tab-build-shortlist" aria-controls="tour-panel-build-shortlist" aria-selected="false" tabindex="-1" data-tour-tab="build-shortlist"><span>02</span><div><strong>Build your next batch</strong><small>Collect the ideas you want to come back to.</small></div><b aria-hidden="true">▷</b></button><button type="button" role="tab" id="tour-tab-shape-draft" aria-controls="tour-panel-shape-draft" aria-selected="false" tabindex="-1" data-tour-tab="shape-draft"><span>03</span><div><strong>Make the draft yours</strong><small>Add your perspective. Leave with something usable.</small></div><b aria-hidden="true">▷</b></button>
-      </div><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try it yourself <span aria-hidden="true">↗</span></a>
+    <section class="trail-scene trail-connections" id="trail-connections" data-trail-panel="connections" aria-label="From the NASA source to related stories">
+      <aside class="trail-origin">
+        <p class="trail-label">Your starting link</p>
+        <a href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer"><span class="trail-source-name">NASA <span aria-hidden="true">↗</span></span><h3>A space station. <br>A water loop.</h3><p>The 2023 water-recovery milestone.</p></a>
+        <div class="trail-origin-note"><span aria-hidden="true">↳</span><p>The connection to follow:<br><strong>making used water useful again.</strong></p></div>
+      </aside>
+      <div class="trail-story-list">
+        <p class="trail-label">Beyond the original article</p>
+        <details class="trail-related" data-trail-related="beer" open>
+          <summary><span class="trail-story-number">01</span><div><small>A different setting · Food & culture</small><h3>A brewery turns recycled shower water into beer.</h3></div><span class="trail-expand" aria-hidden="true">+</span></summary>
+          <div class="trail-related-body"><p>Epic Cleantec’s project with Devil’s Canyon takes water reuse out of the engineering room and into a glass.</p><a class="trail-citation" href="https://epiccleantec.com/blog/epic-onewater-brew-recycled-beer" target="_blank" rel="noopener noreferrer">Epic Cleantec · Project account <span aria-hidden="true">↗</span></a><div class="trail-connection-note"><strong>Why it connects</strong><p>Same water-reuse question, different challenge: public perception. That opens a human story, not another explanation of a space-station filter.</p></div><button class="mk-text-link" type="button" data-trail-idea="beer" hidden>See the script idea <span aria-hidden="true">→</span></button></div>
+        </details>
+        <details class="trail-related" data-trail-related="chips">
+          <summary><span class="trail-story-number">02</span><div><small>A different industry · Technology</small><h3>A chip factory plans its own water-recycling loop.</h3></div><span class="trail-expand" aria-hidden="true">+</span></summary>
+          <div class="trail-related-body"><p>TSMC’s Arizona plans include a reclamation plant expected in 2028, targeting at least 90% recycling.</p><a class="trail-citation" href="https://www.tsmc.com/static/abouttsmcaz/index.htm" target="_blank" rel="noopener noreferrer">TSMC · Company plans <span aria-hidden="true">↗</span></a><div class="trail-connection-note"><strong>Why it connects</strong><p>Resource constraints connect spaceflight and manufacturing. The story to investigate is what a recycling target means—and what it leaves out.</p></div><button class="mk-text-link" type="button" data-trail-idea="chips" hidden>See the script idea <span aria-hidden="true">→</span></button></div>
+        </details>
       </div>
-      <div class="walkthrough-player">
-        <div role="tabpanel" id="tour-panel-find-angles" aria-labelledby="tour-tab-find-angles" tabindex="0" data-tour-panel="find-angles" >
-          <div class="walkthrough-media">
-          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Find a fresh angle walkthrough" hidden><img src="/markov-engine/static/walkthroughs/find-angles.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
-          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/find-angles.webp" aria-label="Find a fresh angle — captioned guest studio recording">
-            <source src="/markov-engine/static/walkthroughs/find-angles.mp4" type="video/mp4">
-            <track kind="captions" src="/markov-engine/static/walkthroughs/find-angles.vtt" srclang="en" label="English instructions" default>
-            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/find-angles.mp4">Download the video</a> or read the walkthrough below.</p>
-          </video>
-          </div>
-          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
-          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Choose a sample conversation in the guest studio.</li><li>Explore the different angles and open one to see its hook and outline.</li><li>Switch between a short post, thread, and video outline.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
-        </div><div role="tabpanel" id="tour-panel-build-shortlist" aria-labelledby="tour-tab-build-shortlist" tabindex="0" data-tour-panel="build-shortlist" hidden>
-          <div class="walkthrough-media">
-          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Build your next batch walkthrough" hidden><img src="/markov-engine/static/walkthroughs/build-shortlist.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
-          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/build-shortlist.webp" aria-label="Build your next batch — captioned guest studio recording">
-            <source src="/markov-engine/static/walkthroughs/build-shortlist.mp4" type="video/mp4">
-            <track kind="captions" src="/markov-engine/static/walkthroughs/build-shortlist.vtt" srclang="en" label="English instructions" default>
-            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/build-shortlist.mp4">Download the video</a> or read the walkthrough below.</p>
-          </video>
-          </div>
-          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
-          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Tap plus on an idea to add it to your shortlist.</li><li>Switch conversations and save another angle.</li><li>Open Your shortlist to see them together, then export the batch as Markdown.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
-        </div><div role="tabpanel" id="tour-panel-shape-draft" aria-labelledby="tour-tab-shape-draft" tabindex="0" data-tour-panel="shape-draft" hidden>
-          <div class="walkthrough-media">
-          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Make the draft yours walkthrough" hidden><img src="/markov-engine/static/walkthroughs/shape-draft.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
-          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/shape-draft.webp" aria-label="Make the draft yours — captioned guest studio recording">
-            <source src="/markov-engine/static/walkthroughs/shape-draft.mp4" type="video/mp4">
-            <track kind="captions" src="/markov-engine/static/walkthroughs/shape-draft.vtt" srclang="en" label="English instructions" default>
-            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/shape-draft.mp4">Download the video</a> or read the walkthrough below.</p>
-          </video>
-          </div>
-          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
-          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Open an angle and edit its working outline.</li><li>Choose Save draft, then open Your drafts from the sidebar.</li><li>Continue writing or export your saved draft. Nothing is posted automatically.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
-        </div>
-        <noscript><p class="walkthrough-noscript">More recordings: <a href="/markov-engine/static/walkthroughs/build-shortlist.mp4">Build your next batch</a> · <a href="/markov-engine/static/walkthroughs/shape-draft.mp4">Make the draft yours</a>. Their caption files accompany each recording.</p></noscript>
+    </section>
+
+    <section class="trail-scene trail-scripts" id="trail-script" data-trail-panel="script" aria-label="Source-linked script ideas">
+      <aside class="trail-idea-menu"><p class="trail-label">Two different stories to tell</p><button type="button" data-trail-pick="beer" aria-pressed="true" hidden><span>01 / The human story</span><strong>The hardest part of recycled water might not be the filter.</strong><b aria-hidden="true">↗</b></button><button type="button" data-trail-pick="chips" aria-pressed="false" hidden><span>02 / The hidden infrastructure story</span><strong>Why a chip factory has a space-station problem.</strong><b aria-hidden="true">↗</b></button><p class="trail-editorial-note">Script directions, not finished reporting. The facts have links; the angle is an editorial interpretation.</p></aside>
+      <div class="trail-treatments">
+
+        <article class="trail-treatment" data-trail-treatment="beer" aria-labelledby="idea-title-beer">
+          <header><span class="trail-label">Script idea / The human story</span><span class="trail-label">Editorial example</span></header>
+          <h3 id="idea-title-beer">The hardest part of recycled water might not be the filter.</h3>
+          <p class="trail-hook" data-trail-hook>On a space station, recycled water is a necessity. Back on Earth, a brewer put it in a beer. Could the next challenge be getting people to take a sip?</p>
+          <div class="trail-difference"><strong>What makes this a different story</strong><p>Move from a technical milestone to a story about trust: what makes an unfamiliar idea feel ordinary?</p></div>
+          <details class="trail-outline"><summary>Open the script outline <span aria-hidden="true">↓</span></summary><ol><li>Open in orbit: NASA reported a 98% total water-recovery demonstration in 2023. Establish the constraint: supplies cannot simply be topped up on a long mission.</li><li>Cut to a brewery: Epic Cleantec describes a beer project using treated shower and laundry water from a San Francisco high-rise, with Devil’s Canyon Brewing Company.</li><li>Follow the human question: the company says the project challenges perceptions of recycled water. Interview drinkers and an independent water specialist before claiming it changes minds.</li></ol><p class="trail-boundary"><strong>Keep this boundary:</strong> This is a thematic comparison, not a claim that the brewery uses NASA hardware. A company account does not establish public acceptance.</p></details>
+          <div class="trail-attached-sources"><span class="trail-label">Sources travel with the idea</span><a class="trail-citation" href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer">NASA · the starting article <span aria-hidden="true">↗</span></a><a class="trail-citation" href="https://epiccleantec.com/blog/epic-onewater-brew-recycled-beer" target="_blank" rel="noopener noreferrer">Epic Cleantec · the beer project <span aria-hidden="true">↗</span></a></div>
+        </article>
+
+        <article class="trail-treatment" data-trail-treatment="chips" aria-labelledby="idea-title-chips">
+          <header><span class="trail-label">Script idea / The hidden infrastructure story</span><span class="trail-label">Editorial example</span></header>
+          <h3 id="idea-title-chips">Why a chip factory has a space-station problem.</h3>
+          <p class="trail-hook" data-trail-hook>A space station and a chip factory both need water to come back. But their recycling numbers do not tell the same story.</p>
+          <div class="trail-difference"><strong>What makes this a different story</strong><p>Connect spaceflight to the infrastructure behind chips, then investigate what the impressive recycling percentages actually measure.</p></div>
+          <details class="trail-outline"><summary>Open the script outline <span aria-hidden="true">↓</span></summary><ol><li>Start with the shared constraint: keeping water in use matters when bringing in more is difficult. Use the NASA article to introduce the space example.</li><li>Follow it to Arizona: TSMC describes a water-reclamation plant expected in 2028, with a target of at least 90% recycling. Present this as a company plan, not a completed result.</li><li>Make the comparison useful: ask what each percentage includes, how much fresh water is still required, and what treatment costs. Get comparable figures before drawing a conclusion.</li></ol><p class="trail-boundary"><strong>Keep this boundary:</strong> Do not equate the two systems, their water standards or their percentage denominators. No shared technology or NASA-to-TSMC transfer is established by these sources.</p></details>
+          <div class="trail-attached-sources"><span class="trail-label">Sources travel with the idea</span><a class="trail-citation" href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer">NASA · the starting article <span aria-hidden="true">↗</span></a><a class="trail-citation" href="https://www.tsmc.com/static/abouttsmcaz/index.htm" target="_blank" rel="noopener noreferrer">TSMC · Arizona water plans <span aria-hidden="true">↗</span></a></div>
+        </article>
+
+        <div class="trail-tools" data-trail-tools hidden><button class="mk-button mk-button-dark" type="button" data-trail-copy>Copy idea + sources</button><button class="mk-text-link" type="button" data-trail-download>Download outline <span aria-hidden="true">↓</span></button></div>
+        <p class="trail-status" role="status" data-trail-status></p>
+        <div class="trail-copy-fallback" data-trail-fallback hidden><label for="trail-copy-text">Select and copy your outline</label><textarea id="trail-copy-text" readonly rows="8"></textarea></div>
       </div>
-    </div>
+    </section>
+    <footer class="trail-footnote"><p>Curated example, not a live Markov run. Real sources; editorial connections.</p><a href="#source-notes">Check the source notes <span aria-hidden="true">↗</span></a></footer>
   </div>
+  <details class="trail-source-notes" id="source-notes"><summary>What is factual, and what is an angle?</summary><div><p>The starting article is from 2023. These sources were checked on 5 September 2026; this example is not a live news feed.</p><ul><li><a href="https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" target="_blank" rel="noopener noreferrer">NASA</a> supports the reported ISS recovery milestone.</li><li><a href="https://epiccleantec.com/blog/epic-onewater-brew-recycled-beer" target="_blank" rel="noopener noreferrer">Epic Cleantec</a> describes its own beer project; that is not independent evidence of changing public attitudes.</li><li><a href="https://www.tsmc.com/static/abouttsmcaz/index.htm" target="_blank" rel="noopener noreferrer">TSMC</a> describes future Arizona plans, not an achieved 90% result.</li></ul><p>The connection is thematic. These sources do not establish shared technology, identical water standards or directly comparable recovery percentages. The script ideas are interpretations and identify the next reporting questions.</p><p class="trail-image-credit">Orbital image: <a href="https://images.nasa.gov/details/iss074e0395792" target="_blank" rel="noopener noreferrer">NASA</a>, used illustratively; it is not a photograph of the 2023 water demonstration. Source publishers do not endorse Markov.</p></div></details>
 </section>
-    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try without an account<span aria-hidden="true">↗</span></a></section>
+    </div>
+    <section class="creator-finale"><div><p class="eyebrow">For the next thing you can’t stop thinking about.</p><h2>There’s more<br>to the story.</h2></div><div><p>Find a steady supply of ideas with somewhere new to go. Built for creators and teams who publish often—and want their work to feel like their own.</p><a class="mk-button mk-button-dark" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally<span aria-hidden="true">↗</span></a></div></section>
   </main>
   <footer class="mk-public-footer">
   <div>
     <a class="mk-wordmark" href="/markov-engine/" aria-label="Markov home">
       <span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span>
     </a>
-    <p>One conversation. Your next batch of ideas.</p>
+    <p>Start anywhere. Follow the idea. Make something original.</p>
   </div>
   <nav aria-label="Footer navigation">
-    <a href="/markov-engine/#unfold">How it works</a>
-    <a href="/markov-engine/demo/">Idea studio</a>
+    <a href="/markov-engine/#how-it-works">How it works</a>
+    <a href="/markov-engine/#source-notes">Source notes</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
-    <a href="/markov-engine/demo/">Guest studio</a>
+    <a href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally</a>
   </nav>
-  <p class="mk-footer-note">Bring a topic. Find fresh angles. Make them yours. Direct social publishing and live trend discovery are not connected in this build.</p>
+  <p class="mk-footer-note">Links lead to related stories. Stories lead to original script ideas. The public example is curated; it does not run live research.</p>
 </footer>
 
 </body>
