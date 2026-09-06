@@ -265,6 +265,9 @@
   .mk-document > section > div { flex-direction: column; gap: 7px; }
   .mk-document > footer { flex-direction: column; align-items: start; }
   .mk-output-toolbar { align-items: start; flex-direction: column; gap: 10px; }
+  .mk-case-tabs { width: 100%; }
+  .mk-case-tabs button { flex: 1; min-width: 0; padding: 10px 12px; }
+  .mk-case-tabs button span { display: none; }
   .mk-writing-actions { width: 100%; }
   .mk-writing-actions .mk-button { flex: 1; font-size: 12px; }
   .mk-composer-fields, .mk-job-grid { grid-template-columns: 1fr; }
