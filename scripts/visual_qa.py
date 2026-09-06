@@ -109,7 +109,23 @@ def main() -> None:
         context.close()
         browser.close()
 
-    print(json.dumps(report, indent=2))
+    failures = [
+        capture
+        for capture in report["captures"]
+        if capture["status"] != 200
+        or capture["horizontalOverflow"]
+        or capture["h1Count"] != 1
+        or capture["landmarks"]["main"] != 1
+        or capture["console_errors"]
+        or capture["page_errors"]
+        or capture["failed_requests"]
+    ]
+    report["failures"] = len(failures)
+    serialized = json.dumps(report, indent=2)
+    (args.output / "report.json").write_text(serialized, encoding="utf-8")
+    print(serialized)
+    if failures:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
