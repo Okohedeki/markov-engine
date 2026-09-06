@@ -96,7 +96,13 @@
               <footer><span>Sources and route decisions stay attached.</span><button class="mk-button mk-button-primary" name="action" value="save" type="submit">Save revision</button></footer>
             </form>
 
-            <aside class="mk-claim-margin"><p class="mk-kicker">Evidence margin</p><h2>Claims to inspect</h2>{% for row in claim_rows[:6] %}<details><summary><span>{{ {'supported':'Supported','completed':'Supported','partially_supported':'Mixed','qualified':'Mixed','opinion_or_inference':'Interpretation','disputed':'Disputed','contradicted':'Contradicted'}.get(row.claim.verification_status, 'Open') }}</span>{{ row.claim.research_text | truncate(150) }}</summary>{% for link in row.evidence[:2] %}<blockquote>{{ link.evidence.passage_text if link.evidence else 'No source passage retained.' }}<cite>{{ link.evidence | locator if link.evidence else 'No locator' }}</cite></blockquote>{% else %}<p>No independent passage is attached.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button type="submit">Research this claim</button></form></details>{% else %}<p>No claim review is attached.</p>{% endfor %}</aside>
+            <aside class="mk-claim-margin">
+              <details class="mk-writing-sources" open><summary>Source material · {{ sources | length }}</summary>
+                <p>Collected for this topic. A source is not proof of every claim.</p>
+                <ul>{% for source in sources %}<li>{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener noreferrer">{{ source.title or 'Open source' }} ↗</a>{% else %}<strong>{{ source.title or 'Source material' }}</strong>{% endif %}<small>{{ 'Starting source' if source is sameas seed_source else 'Related material' }}</small></li>{% else %}<li>No source material is attached yet.</li>{% endfor %}</ul>
+              </details>
+              <h2>Claims to inspect</h2>{% for row in claim_rows[:6] %}<details><summary><span>{{ {'supported':'Supported','completed':'Supported','partially_supported':'Mixed','qualified':'Mixed','opinion_or_inference':'Interpretation','disputed':'Disputed','contradicted':'Contradicted'}.get(row.claim.verification_status, 'Open') }}</span>{{ row.claim.research_text | truncate(150) }}</summary>{% for link in row.evidence[:2] %}<blockquote>{{ link.evidence.passage_text if link.evidence else 'No source passage retained.' }}<cite>{{ link.evidence | locator if link.evidence else 'No locator' }}</cite></blockquote>{% else %}<p>No independent passage is attached.</p>{% endfor %}<form method="post" action="/app/claims/{{ row.claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button type="submit">Research this claim</button></form></details>{% else %}<p>No claim review is attached.</p>{% endfor %}
+            </aside>
           </div>
         </section>
 
