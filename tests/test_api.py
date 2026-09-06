@@ -633,7 +633,9 @@ def test_github_pages_export_is_static_and_project_relative(tmp_path, monkeypatc
     assert (tmp_path / "sample" / "index.html").is_file()
     assert (tmp_path / "static" / "source-trail.js").is_file()
     pricing = (tmp_path / "pricing" / "index.html").read_text(encoding="utf-8")
-    assert pricing.count("Read setup guide") == 2
+    assert "No full talking-point generation or series creation" in pricing
+    assert "Ask about Plus access" in pricing
+    assert "Credits do not unlock paid features" in pricing
     assert "Explore the studio" not in pricing
     sample = (tmp_path / "sample" / "index.html").read_text(encoding="utf-8")
     assert "read local setup instructions" in sample
