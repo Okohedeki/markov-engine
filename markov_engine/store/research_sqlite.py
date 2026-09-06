@@ -1787,51 +1787,32 @@ class ResearchSqliteMixin:
     ) -> CreditAccountRec:
         await self.ensure_credit_account(owner_id)
         async with self._credit_lock:
-            try:
-                await self._conn.execute("BEGIN IMMEDIATE")
-                if idempotency_key:
-                    async with self._conn.execute(
-                        "SELECT balance_after FROM credit_transactions "
-                        "WHERE owner_id = ? AND idempotency_key = ?",
-                        (owner_id, idempotency_key),
-                    ) as cur:
-                        prior = await cur.fetchone()
-                    if prior:
-                        await self._conn.commit()
-                        return CreditAccountRec(
-                            owner_id=owner_id, balance=float(prior[0])
-                        )
+            if idempotency_key:
                 async with self._conn.execute(
-                    "SELECT balance FROM credit_accounts WHERE owner_id = ?",
-                    (owner_id,),
+                    "SELECT balance_after FROM credit_transactions "
+                    "WHERE owner_id = ? AND idempotency_key = ?",
+                    (owner_id, idempotency_key),
                 ) as cur:
-                    row = await cur.fetchone()
-                balance = float(row[0]) + float(amount)
-                if balance < 0 and not allow_negative:
-                    raise ValueError("Insufficient credits")
-                await self._conn.execute(
-                    "UPDATE credit_accounts SET balance = ?, updated_at = datetime('now') "
-                    "WHERE owner_id = ?",
-                    (balance, owner_id),
-                )
-                await self._conn.execute(
-                    "INSERT INTO credit_transactions (owner_id, amount, balance_after, reason, "
-                    "product_variant, reference, idempotency_key) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        owner_id,
-                        float(amount),
-                        balance,
-                        reason,
-                        product_variant,
-                        reference,
-                        idempotency_key,
-                    ),
-                )
-                await self._conn.commit()
-                return CreditAccountRec(owner_id=owner_id, balance=balance)
-            except Exception:
-                await self._conn.rollback()
-                raise
+                    prior = await cur.fetchone()
+                if prior:
+                    return CreditAccountRec(owner_id=owner_id, balance=float(prior[0]))
+            # The migration's AFTER INSERT trigger updates the account balance.
+            # One statement avoids interleaving BEGIN/COMMIT with other customers.
+            async with self._conn.execute(
+                "INSERT INTO credit_transactions (owner_id, amount, balance_after, reason, "
+                "product_variant, reference, idempotency_key) "
+                "SELECT owner_id, ?, balance + ?, ?, ?, ?, ? FROM credit_accounts "
+                "WHERE owner_id = ? AND (? OR balance + ? >= 0)",
+                (
+                    float(amount), float(amount), reason, product_variant, reference,
+                    idempotency_key, owner_id, allow_negative, float(amount),
+                ),
+            ) as cur:
+                inserted = cur.rowcount
+            await self._conn.commit()
+            if not inserted:
+                raise ValueError("Insufficient credits")
+            return await self.get_credit_account(owner_id)
 
     async def has_credit_transaction(
         self, *, owner_id: str, idempotency_key: str
