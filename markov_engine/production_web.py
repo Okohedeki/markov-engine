@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from fastapi import APIRouter, HTTPException
 
 from markov_engine.billing import credit_cost
+from markov_engine.entitlements import require_paid_feature
 
 STATUSES = {'all': 'All ideas', 'ideas': 'To explore', 'shortlisted': 'Shortlisted', 'ready': 'Ready to record', 'recorded': 'Recorded'}
 
@@ -47,6 +48,9 @@ def create_production_router(*, settings, owner, render):
         if len(raw) > 32_000:
             raise HTTPException(413, 'This selection is too large.')
         return parse_qs(raw.decode('utf-8', errors='replace'))
+
+    def paid(owner_id, feature):
+        require_paid_feature(owner_id, feature, settings=settings)
 
 
     return router
