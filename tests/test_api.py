@@ -639,3 +639,25 @@ def test_github_pages_export_is_static_and_project_relative(tmp_path, monkeypatc
     assert "Explore the studio" not in pricing
     sample = (tmp_path / "sample" / "index.html").read_text(encoding="utf-8")
     assert "read local setup instructions" in sample
+
+
+def test_legal_export_identifies_operator_and_paid_boundary(tmp_path, monkeypatch):
+    from scripts import build_pages
+
+    monkeypatch.setattr(build_pages, "PAGES", {
+        name: tmp_path / path.relative_to(build_pages.OUTPUT)
+        for name, path in build_pages.PAGES.items()
+        if name in {"privacy.html", "terms.html", "copyright.html"}
+    })
+    monkeypatch.setattr(build_pages, "OUTPUT", tmp_path)
+    build_pages.build()
+    for name in ["privacy", "terms", "copyright"]:
+        page = (tmp_path / name / "index.html").read_text(encoding="utf-8")
+        assert "EyeQ enterprises" in page and "Phoenix, Arizona" in page
+        assert 'href="mailto:okohedeki@gmail.com"' in page
+        assert 'href="/markov-engine/privacy/"' in page
+        assert 'href="/markov-engine/static/public-info.css"' in page
+        assert page.count("<h1") == 1
+    terms = (tmp_path / "terms" / "index.html").read_text(encoding="utf-8")
+    assert "Generating full talking points and creating series in Story Mode require paid access" in terms
+    assert "Subscription checkout is not available" in terms
