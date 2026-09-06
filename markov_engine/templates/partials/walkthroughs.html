@@ -7,9 +7,9 @@
   <div class="walkthrough-shell" id="walkthroughs" data-walkthroughs>
     <header class="walkthrough-heading"><div><p class="eyebrow">A little show, then your turn</p><h2 id="walkthrough-title">See your next post take shape.</h2></div><p>Three short recordings of the guest studio. No account, no setup—just the workflow.<span>Silent videos with captions. Sample content, real interactions.</span></p></header>
     <div class="walkthrough-layout">
-      <div class="walkthrough-menu" role="tablist" aria-label="Choose a walkthrough" aria-orientation="vertical">
+      <div class="walkthrough-chooser"><div class="walkthrough-menu" role="tablist" aria-label="Choose a walkthrough" aria-orientation="vertical">
         {% for tour in tours %}<button type="button" role="tab" id="tour-tab-{{ tour.id }}" aria-controls="tour-panel-{{ tour.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}" data-tour-tab="{{ tour.id }}"><span>0{{ loop.index }}</span><div><strong>{{ tour.title }}</strong><small>{{ tour.summary }}</small></div><b aria-hidden="true">▷</b></button>{% endfor %}
-        <a class="mk-button mk-button-primary" href="{{ site_base }}/demo/">Try it yourself <span aria-hidden="true">↗</span></a>
+      </div><a class="mk-button mk-button-primary" href="{{ site_base }}/demo/">Try it yourself <span aria-hidden="true">↗</span></a>
       </div>
       <div class="walkthrough-player">
         {% for tour in tours %}<div role="tabpanel" id="tour-panel-{{ tour.id }}" aria-labelledby="tour-tab-{{ tour.id }}" tabindex="0" data-tour-panel="{{ tour.id }}" {% if not loop.first %}hidden{% endif %}>

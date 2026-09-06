@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -22,7 +23,7 @@ def main() -> None:
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(args.base_url.rstrip('/') + '/', wait_until='networkidle')
         assert not requested_videos, 'Video bytes must not load with the page'
-        expect(page.locator('.creator-actions > a').first).to_have_attribute('href', args.base_url.replace('http://127.0.0.1:8015', '').rstrip('/') + '/demo/' if '8015' in args.base_url else '/demo/')
+        expect(page.locator('.creator-actions > a').first).to_have_attribute('href', urlsplit(args.base_url).path.rstrip('/') + '/demo/')
         tabs = page.locator('[data-tour-tab]')
         tabs.first.focus()
         page.keyboard.press('ArrowDown')
