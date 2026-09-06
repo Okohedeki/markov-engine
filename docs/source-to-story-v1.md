@@ -79,3 +79,36 @@ links; no guest-demo promotion; live/static parity; and preserved private auth.
 
 Use small verified local commits. Earlier remote push approval was rejected;
 do not retry without explicit user approval. Preserve unrelated worktree changes.
+
+## Verified delivery · 6 September 2026
+
+- Replaced the homepage's generic posting-angle promotion with a visual
+  source-to-story opening and an inspectable, branching editorial example.
+- Both branches include a hook, a three-beat outline, reporting boundaries,
+  original sources, exact clipboard output and a Markdown download.
+- Added an actual 46.2-second recording of the section, English captions, a
+  native click-to-play player and a direct download. The MP4 is 1.12 MB and is
+  not requested on initial page load. Closing the player pauses playback.
+- Updated the GitHub Pages export, including project-relative assets and
+  accurately labeled local-setup links instead of guest-demo promotion.
+
+Checks completed in Chrome against the local FastAPI site and static export:
+
+- `pytest tests/test_api.py tests/test_guest_ui.py -q`: 12 passed.
+- `source_trail_qa.py`: seven check groups passed on both builds, including
+  both branches, exact exports, clipboard fallback, keyboard tabs, deep links,
+  reduced motion, readable no-JS content and widths 320/390/760/1024/1440.
+  Layered titles and source credits are checked for visual occlusion.
+- `source_film_qa.py`: five check groups passed on both builds, including real
+  H.264 playback/seek, default captions, lazy loading, pause-on-close and no-JS.
+- `interaction_qa.py`: all 12 existing public/sample regression checks passed.
+- `visual_qa.py`: nine local captures (homepage, pricing, login) and nine
+  static captures (homepage, pricing, API) reported zero failures. Inspected
+  desktop/mobile homepage renders and sampled actual video frames.
+- Focused Ruff checks and `node --check static/source-trail.js` passed.
+
+The guest workspace and engine were not developed in this change. No live
+research job, paid generation, posting, billing or deployment was performed.
+The example is deliberately identified as curated; these checks do not certify
+the research engine or a production-ready signed-in workflow. Remote publishing
+still needs resolution of the earlier push-approval rejection.
