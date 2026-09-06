@@ -94,3 +94,33 @@ async def test_pending_batch_never_starts_paid_generation(monkeypatch):
             assert (await store.get_credit_account('owner')).balance == 0
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_free_composer_and_historical_talking_points():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'owner'},
+        MARKOV_WEB_SESSION_SECRET='test-only', MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_free')
+    try:
+        case = await store.create_research_case(owner_id='owner', title='Source trail',
+            original_input='Fixture source', input_type='text', purpose='research', status='completed')
+        research = None
+        for kind, title in [('research', 'Research-only output'), ('script', 'Previously paid talking points')]:
+            item = await store.add_case_artifact(research_case_id=case.id, artifact_type=kind,
+                review_level='instant', status='draft', title=title, content='Fixture content',
+                structured_content={}, word_count=2, model_used='fixture', generation_cost=0, source_ids=[])
+            if kind == 'research':
+                research = item
+        app = create_app(store=store, settings=settings)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            await client.post('/app/login', data={'api_key': 'key'})
+            library = await client.get('/app/plans')
+            assert 'Previously paid talking points' in library.text
+            assert 'Research-only output' not in library.text
+            view = await client.get(f'/app/artifacts/{research.id}')
+            options = view.text.split('<select name="mode">', 1)[1].split('</select>', 1)[0]
+            assert 'value="script"' not in options
+            assert 'value="research"' in options
+            assert 'Full talking points and Story Mode require paid access' in view.text
+    finally:
+        await store.close()
