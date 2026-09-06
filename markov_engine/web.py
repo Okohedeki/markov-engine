@@ -1091,4 +1091,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def privacy(request: Request):
         return _render(request, "privacy.html")
 
+    @router.get("/terms")
+    async def terms(request: Request):
+        return _render(request, "terms.html")
+
     return router
