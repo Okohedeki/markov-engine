@@ -50,7 +50,7 @@ input, textarea { min-width: 0; }
 .mk-nav-action { min-height: 48px; font-size: 12px; }
 .mk-nav-toggle { display: none; min-height: 44px; padding: 8px 12px; border-radius: 99px; background: #f0f2f5; }
 .creator-public, .creator-preview { position: relative; isolation: isolate; background: #fafbfc; }
-.creator-public::before, .creator-preview::before { content: ''; position: absolute; z-index: -1; inset: -28px 0 auto; height: 1100px; background: linear-gradient(180deg,#171b24 0%,#233f5a 32%,#769bbd 52%,#dce7f0 78%,#fafbfc 100%); pointer-events: none; }
+.creator-public::before, .creator-preview::before { content: ''; position: absolute; z-index: -1; inset: -28px 0 auto; height: 1100px; background: linear-gradient(180deg,#171b24 0%,#233f5a 38%,#769bbd 57%,#dce7f0 78%,#fafbfc 100%); pointer-events: none; }
 .creator-preview::before { height: 750px; background: linear-gradient(180deg,#171b24 0%,#325573 40%,#b8cfe0 75%,#fafbfc 100%); }
 .creator-hero { width: var(--page); margin: auto; padding: 82px 0 48px; text-align: center; color: #fff; }
 .creator-hero .eyebrow { color: #d5e4f1; font-weight: 500; }
@@ -79,10 +79,10 @@ input, textarea { min-width: 0; }
 .mk-public-footer > div p { margin-top: 10px; color: var(--muted); font-size: 13px; }
 .mk-public-footer nav { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; font-size: 12px; }
 .mk-footer-note { grid-column: 1/-1; font-size: 12px; color: var(--muted); }
-.preview-main { width: var(--page); margin: 62px auto 85px; }
-.preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin: 0 10px 35px; color: #fff; }
+.preview-main { width: var(--page); margin: 44px auto 85px; }
+.preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin: 0 10px 26px; color: #fff; }
 .preview-heading .eyebrow { color: #d5e4f1; }
-.preview-heading h1 { font-size: 42px; margin-top: 12px; }
+.preview-heading h1 { font-size: 38px; margin-top: 12px; }
 .preview-heading p:not(.eyebrow) { margin-top: 12px; max-width: 650px; color: #e3edf6; font-size: 14px; }
 .mk-support-main { width: var(--page); margin: auto; }
 .mk-support-hero { padding: 75px 0 100px; }

@@ -7,7 +7,7 @@
 {% block body %}
   {% include "partials/public_header.html" %}
   <main class="preview-main" id="main-content">
-    <header class="preview-heading"><div><p class="eyebrow">Try the workflow</p><h1>What will you post next?</h1><p>Explore three example conversations, collect your favorite angles, and make an outline your own. Your shortlist stays in this browser.</p></div>{% if not static_preview %}<a class="mk-button mk-button-primary" href="{{ workspace_url }}">Use your own topic <span aria-hidden="true">↗</span></a>{% endif %}</header>
+    <header class="preview-heading"><div><p class="eyebrow">Try the workflow</p><h1>What will you post next?</h1><p>Pick a conversation. Collect your favorite angles. Make the outline your own.</p></div>{% if not static_preview %}<a class="mk-button mk-button-primary" href="{{ workspace_url }}">Use your own topic <span aria-hidden="true">↗</span></a>{% endif %}</header>
     {% include "partials/idea_playground.html" %}
   </main>
   {% include "partials/public_footer.html" %}
