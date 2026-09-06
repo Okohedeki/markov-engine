@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from markov_engine.editorial import story_angle_sections
 from markov_engine.store.records import (
     ClaimRec,
     ConnectionRec,
@@ -664,6 +665,10 @@ async def render_research_report(
         else case.title
     )
     title = f"Markov Research: {subject}"
+    sections = await story_angle_sections(
+        store, case_id=case_id,
+        claim_ids={claim.id for claim in claims} if context["selected_topic"] else None,
+    ) + sections
     citations = _citation_lines(context)
     content = _assemble(title, sections, citations)
     return RenderedArtifact(
