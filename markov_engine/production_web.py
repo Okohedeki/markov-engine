@@ -61,6 +61,7 @@ def create_production_router(*, settings, owner, render):
 
     async def common(request, owner_id):
         return dict(active='series', account=await request.app.state.store.get_credit_account(owner_id),
+                    talking_point_cost=credit_cost('script', 'instant', settings),
                     entitlements=resolve_entitlements(owner_id, settings=settings))
 
     @router.get('/app/upgrade')
