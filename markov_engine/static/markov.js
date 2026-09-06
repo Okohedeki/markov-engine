@@ -79,6 +79,27 @@
   });
 
   const caseTabs = all("[data-case-view-tab]");
+  const documentForm = document.querySelector('#mk-document-form');
+  if (documentForm) {
+    const saveState = document.querySelector('[data-document-save-state]');
+    let dirty = false;
+    on(documentForm, 'input', () => {
+      dirty = true;
+      if (saveState) saveState.textContent = 'Unsaved changes';
+    });
+    on(documentForm, 'submit', () => {
+      dirty = false;
+      if (saveState) saveState.textContent = 'Saving revision…';
+    });
+    on(window, 'beforeunload', event => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
+    on(window, 'pageshow', () => {
+      if (saveState) saveState.textContent = dirty ? 'Unsaved changes' : 'Saved version';
+    });
+  }
   const caseViewAlias = { brief: "output", landscape: "explore", opportunity: "explore" };
   const chooseCaseView = (tab, updateHash = true) => {
     const value = tab.dataset.caseViewTab;
