@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from urllib.parse import urlsplit
 
 from markov_engine.config import get_settings
@@ -167,3 +168,63 @@ async def read_story_source(
             "question": question["question"],
         })
     return findings
+
+
+def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
+    """Reject invented citations, inexact quotes, empty briefs, and repetitions."""
+    by_id = {item["evidence_id"]: item for item in findings}
+    angles, fingerprints = [], []
+    fields = ("title", "question", "new_information", "why_it_matters",
+              "novelty_basis", "uncertainty", "next_question")
+    candidates = data.get("angles")
+    if not isinstance(candidates, list):
+        return []
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+        if any(not isinstance(item.get(key), str) for key in fields):
+            continue
+        clean = {key: " ".join(item[key].split())[:1200] for key in fields}
+        if any(len(value) < 8 for value in clean.values()):
+            continue
+        support = item.get("support")
+        if not isinstance(support, list) or not support:
+            continue
+        citations = []
+        for citation in support:
+            if not isinstance(citation, dict):
+                break
+            evidence_id, quote = citation.get("evidence_id"), citation.get("quote")
+            if type(evidence_id) is not int or evidence_id not in by_id:
+                break
+            if not isinstance(quote, str):
+                break
+            quote = " ".join(quote.split())
+            if len(quote) < 24 or quote not in " ".join(by_id[evidence_id]["passage"].split()):
+                break
+            citations.append({"evidence_id": evidence_id, "quote": quote})
+        if len(citations) != len(support):
+            continue
+        challenge_ids = item.get("challenge_evidence_ids", [])
+        if not isinstance(challenge_ids, list) or any(
+            type(value) is not int or value not in by_id for value in challenge_ids
+        ):
+            continue
+        fingerprint = set(re.findall(r"\w{4,}", clean["new_information"].casefold()))
+        if any(len(fingerprint & old) / max(1, len(fingerprint | old)) > 0.65
+               for old in fingerprints):
+            continue
+        if any(clean["title"].casefold() == old["title"].casefold() for old in angles):
+            continue
+        sources = {by_id[c["evidence_id"]]["source_id"] for c in citations}
+        angles.append({
+            **clean, "support": citations,
+            "challenge_evidence_ids": list(dict.fromkeys(challenge_ids)),
+            "evidence_status": "single_source_lead" if len(sources) == 1
+            else "sourced_interpretation",
+            "source_count": len(sources),
+        })
+        fingerprints.append(fingerprint)
+        if len(angles) == 3:
+            break
+    return angles
