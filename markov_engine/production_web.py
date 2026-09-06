@@ -141,5 +141,13 @@ def create_production_router(*, settings, owner, render):
             return error(request, str(exc))
         return RedirectResponse(f'/app/series/{series_id}', 303)
 
+    @router.get('/app/series/{series_id}')
+    async def series_detail(series_id: int, request: Request):
+        owner_id = owner(request)
+        series = await request.app.state.store.story_series(owner_id, series_id)
+        if not series:
+            raise HTTPException(404, 'Series not found.')
+        return render(request, 'series_detail.html', story=series[0], **await common(request, owner_id))
+
 
     return router
