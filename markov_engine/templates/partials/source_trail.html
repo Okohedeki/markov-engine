@@ -1,0 +1,90 @@
+{% set nasa = 'https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/' %}
+{% set epic = 'https://epiccleantec.com/blog/epic-onewater-brew-recycled-beer' %}
+{% set tsmc = 'https://www.tsmc.com/static/abouttsmcaz/index.htm' %}
+{% set ideas = [
+  {'id': 'beer', 'label': 'The human story', 'title': 'The hardest part of recycled water might not be the filter.',
+   'hook': 'On a space station, recycled water is a necessity. Back on Earth, a brewer put it in a beer. Could the next challenge be getting people to take a sip?',
+   'difference': 'Move from a technical milestone to a story about trust: what makes an unfamiliar idea feel ordinary?',
+   'beats': [
+     'Open in orbit: NASA reported a 98% total water-recovery demonstration in 2023. Establish the constraint: supplies cannot simply be topped up on a long mission.',
+     'Cut to a brewery: Epic Cleantec describes a beer project using treated shower and laundry water from a San Francisco high-rise, with Devil’s Canyon Brewing Company.',
+     'Follow the human question: the company says the project challenges perceptions of recycled water. Interview drinkers and an independent water specialist before claiming it changes minds.'
+   ],
+   'boundary': 'This is a thematic comparison, not a claim that the brewery uses NASA hardware. A company account does not establish public acceptance.',
+   'sources': [{'name': 'NASA · the starting article', 'url': nasa}, {'name': 'Epic Cleantec · the beer project', 'url': epic}]},
+  {'id': 'chips', 'label': 'The hidden infrastructure story', 'title': 'Why a chip factory has a space-station problem.',
+   'hook': 'A space station and a chip factory both need water to come back. But their recycling numbers do not tell the same story.',
+   'difference': 'Connect spaceflight to the infrastructure behind chips, then investigate what the impressive recycling percentages actually measure.',
+   'beats': [
+     'Start with the shared constraint: keeping water in use matters when bringing in more is difficult. Use the NASA article to introduce the space example.',
+     'Follow it to Arizona: TSMC describes a water-reclamation plant expected in 2028, with a target of at least 90% recycling. Present this as a company plan, not a completed result.',
+     'Make the comparison useful: ask what each percentage includes, how much fresh water is still required, and what treatment costs. Get comparable figures before drawing a conclusion.'
+   ],
+   'boundary': 'Do not equate the two systems, their water standards or their percentage denominators. No shared technology or NASA-to-TSMC transfer is established by these sources.',
+   'sources': [{'name': 'NASA · the starting article', 'url': nasa}, {'name': 'TSMC · Arizona water plans', 'url': tsmc}]}
+] %}
+<section class="source-trail" id="how-it-works" aria-labelledby="trail-title" data-source-trail>
+  <span id="unfold" class="trail-anchor" aria-hidden="true"></span>
+  <header class="trail-heading">
+    <div><p class="eyebrow">From interesting to original</p><h2 id="trail-title">Follow the story<br>beyond the link.</h2></div>
+    <p>Start with one NASA article. Follow it to a brewery or a chip factory. See the different scripts those connections could become.</p>
+  </header>
+  <div class="trail-canvas">
+    <nav class="trail-steps" aria-label="Example steps" data-trail-tabs hidden>
+      <button type="button" id="trail-tab-source" data-trail-tab="source"><span>01</span>The link</button>
+      <button type="button" id="trail-tab-connections" data-trail-tab="connections"><span>02</span>Connected stories</button>
+      <button type="button" id="trail-tab-script" data-trail-tab="script"><span>03</span>A fresh script idea</button>
+    </nav>
+
+    <section class="trail-scene trail-start" id="trail-source" data-trail-panel="source" aria-labelledby="trail-source-title">
+      <article class="trail-source-paper">
+        <p class="trail-label">The article you found · NASA · 20 Jun 2023</p>
+        <a class="trail-url" href="{{ nasa }}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span>nasa.gov / water-recovery-milestone</a>
+        <h3 id="trail-source-title">Astronauts are getting almost all their water back.</h3>
+        <p>NASA reported that the space station’s system demonstrated 98% total water recovery.</p>
+        <a class="mk-text-link" href="{{ nasa }}" target="_blank" rel="noopener noreferrer">Read the original article <span aria-hidden="true">↗</span></a>
+      </article>
+      <div class="trail-start-copy"><p class="eyebrow">A starting point, not the whole story</p><h3>Where else does<br>this idea show up?</h3><p>The useful next move is to look beyond the article: other industries, unexpected applications, and questions worth following.</p><button class="mk-button mk-button-dark" type="button" data-trail-next="connections" hidden>Follow the connections <span aria-hidden="true">→</span></button></div>
+    </section>
+
+    <section class="trail-scene trail-connections" id="trail-connections" data-trail-panel="connections" aria-label="From the NASA source to related stories">
+      <aside class="trail-origin">
+        <p class="trail-label">Your starting link</p>
+        <a href="{{ nasa }}" target="_blank" rel="noopener noreferrer"><span class="trail-source-name">NASA <span aria-hidden="true">↗</span></span><h3>A space station. <br>A water loop.</h3><p>The 2023 water-recovery milestone.</p></a>
+        <div class="trail-origin-note"><span aria-hidden="true">↳</span><p>The connection to follow:<br><strong>making used water useful again.</strong></p></div>
+      </aside>
+      <div class="trail-story-list">
+        <p class="trail-label">Beyond the original article</p>
+        <details class="trail-related" data-trail-related="beer" open>
+          <summary><span class="trail-story-number">01</span><div><small>A different setting · Food & culture</small><h3>A brewery turns recycled shower water into beer.</h3></div><span class="trail-expand" aria-hidden="true">+</span></summary>
+          <div class="trail-related-body"><p>Epic Cleantec’s project with Devil’s Canyon takes water reuse out of the engineering room and into a glass.</p><a class="trail-citation" href="{{ epic }}" target="_blank" rel="noopener noreferrer">Epic Cleantec · Project account <span aria-hidden="true">↗</span></a><div class="trail-connection-note"><strong>Why it connects</strong><p>Same water-reuse question, different challenge: public perception. That opens a human story, not another explanation of a space-station filter.</p></div><button class="mk-text-link" type="button" data-trail-idea="beer" hidden>See the script idea <span aria-hidden="true">→</span></button></div>
+        </details>
+        <details class="trail-related" data-trail-related="chips">
+          <summary><span class="trail-story-number">02</span><div><small>A different industry · Technology</small><h3>A chip factory plans its own water-recycling loop.</h3></div><span class="trail-expand" aria-hidden="true">+</span></summary>
+          <div class="trail-related-body"><p>TSMC’s Arizona plans include a reclamation plant expected in 2028, targeting at least 90% recycling.</p><a class="trail-citation" href="{{ tsmc }}" target="_blank" rel="noopener noreferrer">TSMC · Company plans <span aria-hidden="true">↗</span></a><div class="trail-connection-note"><strong>Why it connects</strong><p>Resource constraints connect spaceflight and manufacturing. The story to investigate is what a recycling target means—and what it leaves out.</p></div><button class="mk-text-link" type="button" data-trail-idea="chips" hidden>See the script idea <span aria-hidden="true">→</span></button></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="trail-scene trail-scripts" id="trail-script" data-trail-panel="script" aria-label="Source-linked script ideas">
+      <aside class="trail-idea-menu"><p class="trail-label">Two different stories to tell</p>{% for idea in ideas %}<button type="button" data-trail-pick="{{ idea.id }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" hidden><span>0{{ loop.index }} / {{ idea.label }}</span><strong>{{ idea.title }}</strong><b aria-hidden="true">↗</b></button>{% endfor %}<p class="trail-editorial-note">Script directions, not finished reporting. The facts have links; the angle is an editorial interpretation.</p></aside>
+      <div class="trail-treatments">
+      {% for idea in ideas %}
+        <article class="trail-treatment" data-trail-treatment="{{ idea.id }}" aria-labelledby="idea-title-{{ idea.id }}">
+          <header><span class="trail-label">Script idea / {{ idea.label }}</span><span class="trail-label">Editorial example</span></header>
+          <h3 id="idea-title-{{ idea.id }}">{{ idea.title }}</h3>
+          <p class="trail-hook" data-trail-hook>{{ idea.hook }}</p>
+          <div class="trail-difference"><strong>What makes this a different story</strong><p>{{ idea.difference }}</p></div>
+          <details class="trail-outline"><summary>Open the script outline <span aria-hidden="true">↓</span></summary><ol>{% for beat in idea.beats %}<li>{{ beat }}</li>{% endfor %}</ol><p class="trail-boundary"><strong>Keep this boundary:</strong> {{ idea.boundary }}</p></details>
+          <div class="trail-attached-sources"><span class="trail-label">Sources travel with the idea</span>{% for source in idea.sources %}<a class="trail-citation" href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.name }} <span aria-hidden="true">↗</span></a>{% endfor %}</div>
+        </article>
+      {% endfor %}
+        <div class="trail-tools" data-trail-tools hidden><button class="mk-button mk-button-dark" type="button" data-trail-copy>Copy idea + sources</button><button class="mk-text-link" type="button" data-trail-download>Download outline <span aria-hidden="true">↓</span></button></div>
+        <p class="trail-status" role="status" data-trail-status></p>
+        <div class="trail-copy-fallback" data-trail-fallback hidden><label for="trail-copy-text">Select and copy your outline</label><textarea id="trail-copy-text" readonly rows="8"></textarea></div>
+      </div>
+    </section>
+    <footer class="trail-footnote"><p>Curated example, not a live Markov run. Real sources; editorial connections.</p><a href="#source-notes">Check the source notes <span aria-hidden="true">↗</span></a></footer>
+  </div>
+  <details class="trail-source-notes" id="source-notes"><summary>What is factual, and what is an angle?</summary><div><p>The starting article is from 2023. These sources were checked on 5 September 2026; this example is not a live news feed.</p><ul><li><a href="{{ nasa }}" target="_blank" rel="noopener noreferrer">NASA</a> supports the reported ISS recovery milestone.</li><li><a href="{{ epic }}" target="_blank" rel="noopener noreferrer">Epic Cleantec</a> describes its own beer project; that is not independent evidence of changing public attitudes.</li><li><a href="{{ tsmc }}" target="_blank" rel="noopener noreferrer">TSMC</a> describes future Arizona plans, not an achieved 90% result.</li></ul><p>The connection is thematic. These sources do not establish shared technology, identical water standards or directly comparable recovery percentages. The script ideas are interpretations and identify the next reporting questions.</p><p class="trail-image-credit">Orbital image: <a href="https://images.nasa.gov/details/iss074e0395792" target="_blank" rel="noopener noreferrer">NASA</a>, used illustratively; it is not a photograph of the 2023 water demonstration. Source publishers do not endorse Markov.</p></div></details>
+</section>

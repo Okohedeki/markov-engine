@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import httpx
 import pytest
@@ -309,16 +308,16 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             landing = await client.get("/")
             assert landing.status_code == 200
-            assert "More to post." in landing.text
+            assert "Start with a link." in landing.text
             assert 'href="/app/login"' in landing.text
-            assert 'href="#walkthroughs"' in landing.text
-            assert 'href="/demo/"' in landing.text
-            assert 'preload="none"' in landing.text
-            assert 'data-idea-story' in landing.text
-            assert 'role="tablist"' in landing.text
-            assert 'data-demo-idea="1"' in landing.text
-            assert "Sample discussions and prewritten angles" in landing.text
-            assert "Live trend discovery is not connected" in landing.text
+            assert 'href="#how-it-works"' in landing.text
+            assert 'href="/demo/"' not in landing.text
+            assert 'data-source-trail' in landing.text
+            assert 'data-trail-tabs' in landing.text
+            assert 'data-trail-idea="beer"' in landing.text
+            assert 'data-trail-idea="chips"' in landing.text
+            assert "Curated example, not a live Markov run" in landing.text
+            assert "Sources travel with the idea" in landing.text
             assert landing.text.count("<h1") == 1
             assert "Skip to content" in landing.text
 
@@ -604,22 +603,29 @@ def test_html_export_escapes_source_markup():
     assert "<img" not in rendered
 
 
-def test_github_pages_export_is_static_and_project_relative():
-    root = Path(__file__).resolve().parents[1]
-    landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
+def test_github_pages_export_is_static_and_project_relative(tmp_path, monkeypatch):
+    from scripts import build_pages
+
+    monkeypatch.setattr(build_pages, "PAGES", {
+        name: tmp_path / path.relative_to(build_pages.OUTPUT)
+        for name, path in build_pages.PAGES.items()
+    })
+    monkeypatch.setattr(build_pages, "OUTPUT", tmp_path)
+    build_pages.build()
+    landing = (tmp_path / "index.html").read_text(encoding="utf-8")
     assert 'href="/markov-engine/static/studio.css"' in landing
     assert 'src="/markov-engine/static/markov.js"' in landing
-    assert 'href="/markov-engine/demo/"' in landing
+    assert 'href="/markov-engine/#how-it-works"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "More to post." in landing
-    assert "Try without an account" in landing
-    assert 'href="/markov-engine/demo/"' in landing
-    assert "data-idea-story" in landing
-    assert "Run locally" not in landing
-    assert "open-source" not in landing.lower()
-    assert "github.com" not in landing.lower()
+    assert "Start with a link." in landing
+    assert "Try without an account" not in landing
+    assert 'href="/markov-engine/demo/"' not in landing
+    assert "data-source-trail" in landing
+    assert "Run locally" in landing
+    assert 'href="https://github.com/Okohedeki/markov-engine#local-setup"' in landing
     assert landing.count("<h1") == 1
-    assert (root / "docs" / "developers" / "index.html").is_file()
-    assert (root / "docs" / "pricing" / "index.html").is_file()
-    assert (root / "docs" / "sample" / "index.html").is_file()
+    assert (tmp_path / "developers" / "index.html").is_file()
+    assert (tmp_path / "pricing" / "index.html").is_file()
+    assert (tmp_path / "sample" / "index.html").is_file()
+    assert (tmp_path / "static" / "source-trail.js").is_file()

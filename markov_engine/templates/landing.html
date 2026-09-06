@@ -1,24 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Markov — More to post. More to say.{% endblock %}
-{% block description %}Turn the conversations you follow into fresh posting angles. Markov is an idea studio for creators, social teams, and people who post often.{% endblock %}
-{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/idea-story.css"><link rel="stylesheet" href="{{ site_base }}/static/walkthroughs.css">{% endblock %}
-{% block scripts %}<script defer src="{{ site_base }}/static/studio-examples.js"></script><script defer src="{{ site_base }}/static/idea-story.js"></script><script defer src="{{ site_base }}/static/walkthroughs.js"></script>{% endblock %}
-{% block body_class %}creator-public{% endblock %}
+{% block title %}Markov — Start with a link. Leave with a story.{% endblock %}
+{% block description %}Follow a link into related articles, unexpected connections, and fresh script ideas. Markov helps creators find a story beyond the obvious retelling.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/source-trail.css">{% endblock %}
+{% block scripts %}<script defer src="{{ site_base }}/static/source-trail.js"></script>{% endblock %}
+{% block body_class %}creator-public source-home{% endblock %}
 {% block body %}
   {% include "partials/public_header.html" %}
   <main id="main-content">
-    <section class="creator-hero">
-      <p class="eyebrow">For creators with a lot to say</p>
-      <h1>More to post.<br><em>More to say.</em></h1>
-      <p>Take what people are talking about and find your next angle. One conversation becomes fresh ideas for your next batch of posts.</p>
-      <div class="creator-actions"><a class="mk-button mk-button-primary" href="{{ site_base }}/demo/">Try without an account<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#walkthroughs">Watch it in action <span aria-hidden="true">▷</span></a></div>
+    <section class="story-opening">
+      <div class="story-opening-copy">
+        <p class="eyebrow">Follow your curiosity a little further.</p>
+        <h1>Start with a link.<br>Find a story<br><em>worth telling.</em></h1>
+        <p>Related articles. Unexpected connections. Original script ideas. Markov finds the paths beyond the thing you just watched or read.</p>
+        <a class="mk-button mk-button-primary" href="#how-it-works">See how it works <span aria-hidden="true">↗</span></a>
+        <span class="source-types">YouTube · Articles · Podcasts · Social posts</span>
+      </div>
+      <div class="opening-trail" aria-label="Example: a space story connects to a beer project, then a new script idea">
+        <svg class="opening-path" viewBox="0 0 620 530" fill="none" aria-hidden="true"><path d="M275 164H429C466 164 480 187 480 223V290C480 352 430 360 355 360" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 5"/><path d="M310 360V420" stroke="currentColor" stroke-width="1.5"/><circle cx="310" cy="360" r="4" fill="currentColor"/></svg>
+        <a class="opening-source" href="#trail-source"><img src="{{ site_base }}/static/orbit.webp" width="1000" height="561" fetchpriority="high" alt="A spacecraft above the blue curve of Earth, photographed from the space station"><div><span>01 / A link you found <b aria-hidden="true">↗</b></span><strong>A space station.<br>A water loop.</strong><small>NASA · Water recovery</small></div></a>
+        <a class="opening-connection" href="#trail-connections"><span>02 / An unexpected connection <b aria-hidden="true">↗</b></span><strong>What if the next chapter <br>is at a brewery?</strong><p>A real recycled-water beer project.</p><small>Epic Cleantec · Related story</small></a>
+        <a class="opening-script" href="#trail-script"><span aria-hidden="true">↳</span><div><small>03 / A fresh script idea</small><strong>The hardest part might not be the filter.</strong></div><b aria-hidden="true">↗</b></a>
+        <p class="opening-caption">One illustrated example. Explore the sources below.</p>
+      </div>
     </section>
-    <section class="creator-stage" id="product" aria-label="See one discussion become posting ideas">
-      {% include "partials/idea_story.html" %}
-      <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Choose an angle above to open its outline.</span></div>
-    </section>
-    {% include "partials/walkthroughs.html" %}
-    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="{{ site_base }}/demo/">Try without an account<span aria-hidden="true">↗</span></a></section>
+    <div class="creator-stage" id="product">
+      {% include "partials/source_trail.html" %}
+    </div>
+    <section class="creator-finale"><div><p class="eyebrow">For the next thing you can’t stop thinking about.</p><h2>There’s more<br>to the story.</h2></div><div><p>Find a steady supply of ideas with somewhere new to go. Built for creators and teams who publish often—and want their work to feel like their own.</p><a class="mk-button mk-button-dark" href="{{ workspace_url }}">{{ 'Run locally' if static_preview else 'Open Markov' }}<span aria-hidden="true">↗</span></a></div></section>
   </main>
   {% include "partials/public_footer.html" %}
 {% endblock %}
