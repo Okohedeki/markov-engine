@@ -40,7 +40,7 @@ from markov_engine.connections import revalidate_connection
 from markov_engine.config import Settings, get_settings
 from markov_engine.entitlements import require_capability, resolve_entitlements
 from markov_engine.exports import export_artifact
-from markov_engine.jobs import run_job, run_job_with_capacity, submit_job
+from markov_engine.jobs import run_job_with_capacity, submit_job
 from markov_engine.research import convert_case_artifact, process_research_case
 from markov_engine.reviews import finalize_review, record_review_decision
 from markov_engine.revisions import deepen_claim, revise_script_section
@@ -529,7 +529,8 @@ def create_app(
             raise HTTPException(status_code=status, detail=message) from exc
         if created:
             background_tasks.add_task(
-                run_job,
+                run_job_with_capacity,
+                request.app.state.job_slots,
                 request.app.state.store,
                 job_id=job.id,
                 settings=settings,
