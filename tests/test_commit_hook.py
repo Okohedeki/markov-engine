@@ -14,6 +14,7 @@ import pytest
         (1, 150, 0, True),
         (1, 151, 0, False),
         (1, 1, 0, True),
+        (2, 1, 0, False),
         (6, 1, 0, False),
         (1, 75, 75, True),
         (1, 75, 76, False),
@@ -72,4 +73,4 @@ def test_commit_hook_ceiling(tmp_path, file_count, added, deleted, accepted):
     assert (result.returncode == 0) is accepted, result.stderr
     if not accepted:
         assert "Commit rejected" in result.stderr
-        assert "150 added-plus-deleted lines" in result.stderr
+        assert "1 file, 150 added-plus-deleted lines" in result.stderr
