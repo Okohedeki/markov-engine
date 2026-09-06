@@ -1,7 +1,7 @@
 """Production queue and paid series routes using the existing session boundary."""
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from markov_engine.billing import credit_cost
 from markov_engine.entitlements import require_paid_feature, resolve_entitlements
@@ -60,6 +60,11 @@ def create_production_router(*, settings, owner, render):
     async def common(request, owner_id):
         return dict(active='series', account=await request.app.state.store.get_credit_account(owner_id),
                     entitlements=resolve_entitlements(owner_id, settings=settings))
+
+    @router.get('/app/upgrade')
+    async def upgrade(request: Request):
+        owner_id = owner(request)
+        return render(request, 'upgrade.html', **await common(request, owner_id))
 
 
     return router
