@@ -64,6 +64,7 @@
     find('[data-editor-close]').focus();
   };
   function render() {
+    find('[data-mobile-topic]').value = selectedTopic.id;
     all('[data-topic]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.topic === selectedTopic.id)));
     all('[data-collection]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.collection === collection)));
     find('[data-topic-category]').textContent = collection === 'saved' ? 'Your collection' : selectedTopic.category;
@@ -102,12 +103,14 @@
       grid.append(card);
     });
   }
-  all('[data-topic]').forEach(button => button.addEventListener('click', () => {
-    selectedTopic = topics.find(topic => topic.id === button.dataset.topic);
+  const chooseTopic = (id) => {
+    selectedTopic = topics.find(topic => topic.id === id) || topics[0];
     collection = 'all';
     render();
     status.textContent = `Showing ${selectedTopic.angles.length} example angles about ${selectedTopic.category.toLowerCase()}.`;
-  }));
+  };
+  all('[data-topic]').forEach(button => button.addEventListener('click', () => chooseTopic(button.dataset.topic)));
+  find('[data-mobile-topic]').addEventListener('change', (event) => chooseTopic(event.target.value));
   all('[data-collection]').forEach(button => button.addEventListener('click', () => { collection = button.dataset.collection; render(); }));
   find('[data-editor-close]').addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => (find(`[data-open-idea="${current?.id}"]`) || find('[data-collection="all"]')).focus());

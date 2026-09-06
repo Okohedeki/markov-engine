@@ -59,7 +59,7 @@ def main() -> None:
         expect(page.locator("[data-saved-count]")).to_have_text("1")
         checks.append("outline formats retain independent edits; shortlist save restores focus")
 
-        page.locator('[data-topic="creators"]').click()
+        page.locator('[data-mobile-topic]').select_option("creators")
         expect(page.locator("[data-angle-grid] article")).to_have_count(6)
         page.locator("[data-save-card]").first.click()
         page.locator('[data-collection="saved"]').click()
@@ -90,7 +90,7 @@ def main() -> None:
         expect(page.locator("[data-angle-grid]")).to_contain_text("Your next batch starts")
         checks.append("removing the last idea gives an empty state and disables export")
 
-        page.locator('[data-topic="work"]').click()
+        page.locator('[data-mobile-topic]').select_option("work")
         page.locator("[data-open-idea]").first.click()
         page.evaluate("Object.defineProperty(navigator, 'clipboard', {value: undefined, configurable: true})")
         page.locator("[data-copy-idea]").click()
