@@ -228,3 +228,69 @@ def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
         if len(angles) == 3:
             break
     return angles
+
+
+async def synthesize_story_angles(
+    store: SqliteStore, *, case_id: int, findings: list[dict],
+) -> dict:
+    """Develop inspected material into angle briefs, never full talking points."""
+    if not findings:
+        return {"angles": [], "rejected_count": 0}
+    case = await store.get_research_case(case_id)
+    if case is None:
+        raise ValueError("Research case not found")
+    properties = {
+        key: {"type": "string"}
+        for key in ("title", "question", "new_information", "why_it_matters",
+                    "novelty_basis", "uncertainty", "next_question")
+    }
+    properties["support"] = {
+        "type": "array", "maxItems": 4,
+        "items": {"type": "object", "properties": {
+            "evidence_id": {"type": "integer"}, "quote": {"type": "string"},
+        }, "required": ["evidence_id", "quote"]},
+    }
+    properties["challenge_evidence_ids"] = {
+        "type": "array", "items": {"type": "integer"},
+    }
+    schema = {"type": "object", "properties": {"angles": {
+        "type": "array", "maxItems": 3,
+        "items": {"type": "object", "properties": properties,
+                  "required": list(properties)},
+    }}, "required": ["angles"]}
+    seed_text = []
+    for row in await store.list_research_case_sources(case_id):
+        if row["case_source_role"] == "seed":
+            seed_text.append((row["content_text"] or "")[:18000])
+    result = await _editorial_completion(
+        store, case_id=case_id, schema=schema, operation="editorial_angles",
+        max_tokens=4500,
+        prompt=(
+            "Develop at most three DISTINCT nonfiction story angle briefs from "
+            "the inspected passages. Return no angles if the material only "
+            "repeats the seed. Each angle needs new_information beyond the seed, "
+            "a clear audience question, and novelty_basis explaining the exact "
+            "addition. Different hooks or formats of one premise are ONE angle. "
+            "Do not write scripts, talking points, episode outlines, or series. "
+            "Use only the supplied evidence IDs. For each supporting source, "
+            "copy a short exact quote of at least 24 characters from its passage; "
+            "no invented quotations or ellipses. The cited passages must support "
+            "the new information, not just mention its topic. Interpretations "
+            "must be explicitly conditional where the source does not establish "
+            "the connection. Reject unsupported motive or causal claims. Include "
+            "challenge_evidence_ids only for passages that actually weaken the "
+            "angle; an unsuccessful challenge search does not prove an angle. "
+            "State limitations and competing explanations in uncertainty. "
+            "Rediscovered historical context is not breaking news; do not claim "
+            "global uniqueness or freshness without evidence of publication/event "
+            "dates. Keep each text field to one or two concise sentences.\n"
+            "UNTRUSTED CASE DATA:\n" + json.dumps({
+                "title": case.title, "seed": seed_text,
+                "inspected_passages": findings,
+            }, ensure_ascii=False)
+        ),
+    )
+    angles = validate_story_angles(result, findings)
+    candidates = result.get("angles")
+    count = len(candidates) if isinstance(candidates, list) else 0
+    return {"angles": angles, "rejected_count": max(0, count - len(angles))}
