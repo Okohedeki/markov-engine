@@ -15,8 +15,8 @@ done <<EOF
 $stats
 EOF
 
-if [ "$files" -gt 20 ] || [ "$lines" -gt 1000 ]; then
+if [ "$files" -gt 5 ] || [ "$lines" -gt 150 ]; then
   printf 'Commit rejected: staged diff has %d files and %d changed lines.\n' "$files" "$lines" >&2
-  printf '%s\n' 'Split it into one-logical-outcome checkpoints (limits: 20 files, 1000 lines).' >&2
+  printf '%s\n' 'Commit one verified function or logical block at a time (maximum: 5 files, 150 added-plus-deleted lines).' >&2
   exit 1
 fi
