@@ -549,7 +549,7 @@ async def test_case_workspace_exposes_topics_gaps_and_supplemental_sources():
         assert "What makes this angle interesting" in response.text
         assert "Mixed evidence" in response.text
         assert "Dig deeper" in response.text
-        assert "Develop this idea" in response.text
+        assert 'data-open-composer' in response.text
         assert "Sources and provenance" in response.text
         assert "The sources behind this topic" in response.text
     finally:
