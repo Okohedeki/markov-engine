@@ -8,19 +8,19 @@
       <header class="mk-mobile-appbar">
         <button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button>
         <a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
-        <a href="/app/ideas">Chains</a>
+        <a href="/app/ideas">Ideas</a>
       </header>
 
       <div class="mk-case-shell">
         <header class="mk-case-head">
-          <div class="mk-case-breadcrumb"><a href="/app/ideas">Chains</a><span aria-hidden="true">/</span><span>Current Chain</span></div>
+          <div class="mk-case-breadcrumb"><a href="/app/ideas">Ideas</a><span aria-hidden="true">/</span><span>Your topic</span></div>
           <div class="mk-case-title-row">
-            <div><p class="mk-kicker">One source, several useful routes</p><h1>{{ case.title }}</h1><p>Explore what the source starts, shape an output, or inspect every source that changed the trail.</p></div>
-            <div class="mk-case-actions"><span class="mk-state {% if artifact.status == 'completed' %}mk-state-ready{% endif %}"><i aria-hidden="true"></i>{{ 'Ready for review' if artifact.status == 'completed' else artifact.status | humanize }}</span>{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}" aria-label="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}" title="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}">{{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
+            <div><p class="mk-kicker">One topic, several posting angles</p><h1>{{ case.title }}</h1><p>Find your way into the conversation. Develop an angle, edit a draft, and check the sources behind it.</p></div>
+            <div class="mk-case-actions"><span class="mk-state {% if artifact.status == 'completed' %}mk-state-ready{% endif %}"><i aria-hidden="true"></i>{{ 'Ready to explore' if artifact.status == 'completed' else artifact.status | humanize }}</span>{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}" aria-label="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}" title="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}">{{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
           </div>
-          <nav class="mk-case-tabs" role="tablist" aria-label="Chain views">
-            <button id="case-tab-explore" type="button" role="tab" aria-selected="true" aria-controls="case-view-explore" data-case-view-tab="explore"><span>01</span>Explore</button>
-            <button id="case-tab-output" type="button" role="tab" aria-selected="false" aria-controls="case-view-output" data-case-view-tab="output" tabindex="-1"><span>02</span>Output</button>
+          <nav class="mk-case-tabs" role="tablist" aria-label="Topic views">
+            <button id="case-tab-explore" type="button" role="tab" aria-selected="true" aria-controls="case-view-explore" data-case-view-tab="explore"><span>01</span>Angles</button>
+            <button id="case-tab-output" type="button" role="tab" aria-selected="false" aria-controls="case-view-output" data-case-view-tab="output" tabindex="-1"><span>02</span>Draft</button>
             <button id="case-tab-sources" type="button" role="tab" aria-selected="false" aria-controls="case-view-sources" data-case-view-tab="sources" tabindex="-1"><span>03</span>Sources</button>
           </nav>
         </header>
@@ -34,7 +34,7 @@
 
           <div class="mk-explore-layout">
             <section class="mk-routes" aria-labelledby="routes-title">
-              <header class="mk-view-intro"><div><p class="mk-kicker">Routes worth inspecting</p><h2 id="routes-title">{{ topic_rows | length if topic_rows else gaps | length }} possible direction{{ '' if (topic_rows | length if topic_rows else gaps | length) == 1 else 's' }}</h2></div><p>Each route keeps its claim, missing context, supporting material, and weak point together.</p></header>
+              <header class="mk-view-intro"><div><p class="mk-kicker">Ideas to develop</p><h2 id="routes-title">{{ topic_rows | length if topic_rows else gaps | length }} posting angle{{ '' if (topic_rows | length if topic_rows else gaps | length) == 1 else 's' }}</h2></div><p>Different entry points into the same topic. Check the context, then make an idea your own.</p></header>
 
               <div class="mk-route-stack">
                 {% for row in topic_rows %}
@@ -48,7 +48,7 @@
                     </button>
                     <div class="mk-route-panel" id="route-panel-{{ row.topic.id }}" data-route-panel {% if not loop.first %}hidden{% endif %}>
                       <div class="mk-route-mechanism">
-                        <p class="mk-kicker">Why this route exists</p>
+                        <p class="mk-kicker">What makes this angle interesting</p>
                         <p>{{ row.insights[0].novelty_basis if row.insights and row.insights[0].novelty_basis else primary_connection.why_it_matters if primary_connection else 'The current case points here, but the mechanism still needs a clearer rationale.' }}</p>
                         <ol aria-label="Route anatomy">
                           <li><span>Claim from the source</span><p>{{ row.claims[0].claim.research_text if row.claims else 'No source claim is attached yet.' }}</p></li>
@@ -62,21 +62,21 @@
                         <div><dt>Material attached</dt><dd>{% for source in row.sources[:3] %}{{ source.title or source.source_type | humanize }}{% if not loop.last %} · {% endif %}{% else %}{{ row.claims | length }} claim{{ '' if row.claims | length == 1 else 's' }} from the current source packet{% endfor %}</dd></div>
                       </dl>
                       <footer class="mk-route-actions">
-                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Shape an output <span aria-hidden="true">→</span></button>
-                        {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Research this route</button></form>{% endif %}
+                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea <span aria-hidden="true">→</span></button>
+                        {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Dig deeper</button></form>{% endif %}
                         {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Save</button></form><button class="mk-button mk-button-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
                       </footer>
                       {% if primary_connection %}<form class="mk-rejection-form" method="post" action="/app/connections/{{ primary_connection.id }}/actions" data-rejection-reason hidden><input type="hidden" name="action" value="dismiss"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><label for="route-reason-{{ row.topic.id }}">What makes this route unhelpful?</label><div><input id="route-reason-{{ row.topic.id }}" name="reason" placeholder="Familiar thesis, weak mechanism, wrong audience…"><button type="submit">Dismiss route</button></div></form>{% endif %}
                     </div>
                   </article>
                 {% else %}
-                  {% for gap in gaps[:5] %}<article class="mk-open-route"><span aria-hidden="true">?</span><div><p class="mk-kicker">Open question</p><h3>{{ gap.question }}</h3><p>Markov has not attached enough independent material to call this a supported direction.</p>{% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-primary" type="submit">Investigate this question</button></form>{% endif %}</div></article>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No route is ready yet.</h3><p>Add another source or deepen an important claim to keep the Chain moving.</p><a href="/app/signals">Add a source <span aria-hidden="true">→</span></a></div></div>{% endfor %}
+                  {% for gap in gaps[:5] %}<article class="mk-open-route"><span aria-hidden="true">?</span><div><p class="mk-kicker">Open question</p><h3>{{ gap.question }}</h3><p>Markov has not attached enough independent material to call this a supported direction.</p>{% if gap.claim_id %}<form method="post" action="/app/claims/{{ gap.claim_id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-primary" type="submit">Investigate this question</button></form>{% endif %}</div></article>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No angle is ready yet.</h3><p>Add a source or explore an open question to find a useful angle.</p><a href="/app/signals">Add a source <span aria-hidden="true">→</span></a></div></div>{% endfor %}
                 {% endfor %}
               </div>
             </section>
 
             <aside class="mk-source-shelf" aria-labelledby="source-shelf-title">
-              <header><p class="mk-kicker">Source shelf</p><h2 id="source-shelf-title">What changed the trail</h2><span>{{ sources | length }}</span></header>
+              <header><p class="mk-kicker">Source shelf</p><h2 id="source-shelf-title">Behind the ideas</h2><span>{{ sources | length }}</span></header>
               <div>
                 {% for source in sources[:8] %}<article class="{% if source is sameas seed_source %}is-seed{% endif %}"><span>{{ 'Starting source' if source is sameas seed_source else source.case_source_role | default('Collected') | humanize }}</span><strong>{{ source.title or source.source_type | humanize }}</strong><p>{{ (source.publisher or source.url or 'Source details unavailable') | truncate(70) }}</p>{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener" aria-label="Open {{ source.title or 'source' }}">↗</a>{% endif %}</article>{% else %}<p>No source packet is attached.</p>{% endfor %}
               </div>
@@ -101,10 +101,10 @@
         </section>
 
         <section class="mk-case-view" id="case-view-sources" role="tabpanel" aria-labelledby="case-tab-sources" data-case-view="sources" hidden>
-          <header class="mk-view-intro"><div><p class="mk-kicker">Sources and provenance</p><h2>Everything Markov analyzed for this Chain.</h2></div><p>Starting material and supplemental research remain separate. Locators point to exact passages where available.</p></header>
+          <header class="mk-view-intro"><div><p class="mk-kicker">Sources and provenance</p><h2>The sources behind this topic.</h2></div><p>Starting material and supplemental research remain separate. Locators point to exact passages where available.</p></header>
           <div class="mk-source-table" role="table" aria-label="Case sources">
             <div class="mk-source-table-head" role="row"><span role="columnheader">Role</span><span role="columnheader">Source</span><span role="columnheader">Type</span><span role="columnheader">Quality</span><span role="columnheader">Open</span></div>
-            {% for source in sources %}<article role="row"><span role="cell">{{ 'Starting source' if source is sameas seed_source else source.case_source_role | default('Collected') | humanize }}</span><div role="cell"><strong>{{ source.title or source.source_type | humanize }}</strong><small>{{ (source.publisher or source.url or 'Source details unavailable') | truncate(100) }}</small></div><span role="cell">{{ source.source_type | humanize }}</span><span role="cell">{{ source.quality_tier | default('Not rated') | humanize }}</span><span role="cell">{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener" aria-label="Open {{ source.title or 'source' }}">↗</a>{% else %}—{% endif %}</span></article>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No source packet is attached.</h3><p>Return to the Chain after source processing completes.</p></div></div>{% endfor %}
+            {% for source in sources %}<article role="row"><span role="cell">{{ 'Starting source' if source is sameas seed_source else source.case_source_role | default('Collected') | humanize }}</span><div role="cell"><strong>{{ source.title or source.source_type | humanize }}</strong><small>{{ (source.publisher or source.url or 'Source details unavailable') | truncate(100) }}</small></div><span role="cell">{{ source.source_type | humanize }}</span><span role="cell">{{ source.quality_tier | default('Not rated') | humanize }}</span><span role="cell">{% if source.safe_url %}<a href="{{ source.safe_url }}" target="_blank" rel="noopener" aria-label="Open {{ source.title or 'source' }}">↗</a>{% else %}—{% endif %}</span></article>{% else %}<div class="mk-empty-state"><span aria-hidden="true">↳</span><div><h3>No source packet is attached.</h3><p>Return to the topic after source processing completes.</p></div></div>{% endfor %}
           </div>
         </section>
       </div>
@@ -113,18 +113,18 @@
 
   <dialog class="mk-composer" data-output-composer aria-labelledby="composer-title">
     <form method="post" action="/app/cases/{{ case.id }}/convert">
-      <header><div><p class="mk-kicker">Shape an output</p><h2 id="composer-title">Give this route a job.</h2><p data-composer-context>Choose a route before Markov builds another view of the Chain.</p></div><button type="button" data-close-composer aria-label="Close output composer">×</button></header>
+      <header><div><p class="mk-kicker">Develop this idea</p><h2 id="composer-title">Turn this angle into a draft.</h2><p data-composer-context>Choose an angle, a format, and something you want the audience to take away.</p></div><button type="button" data-close-composer aria-label="Close draft composer">×</button></header>
       <input type="hidden" name="selected_topic_id" value="" data-composer-topic><input type="hidden" name="review_level" value="instant">
       <div class="mk-composer-fields">
-        <label><span>Output</span><select name="mode"><option value="brief">Brief</option><option value="research">Research report</option><option value="script">Factual script</option></select></label>
+        <label><span>Draft type</span><select name="mode"><option value="brief">Brief</option><option value="research">Research report</option><option value="script" selected>Factual script</option></select></label>
         <label><span>Audience</span><input name="audience" placeholder="Who needs this and what do they already know?"></label>
         <label class="is-wide"><span>Working angle or question</span><textarea name="angle" rows="3" required data-composer-angle placeholder="What should this route test or explain?"></textarea><small>Markov treats this as a direction to test, not a conclusion to endorse.</small></label>
-        <label><span>Format</span><select name="delivery_format"><option>Decision brief</option><option>Company article</option><option>Newsletter essay</option><option>Podcast episode</option><option>YouTube essay</option></select></label>
-        <label><span>Target length</span><select name="target_minutes"><option value="3">About 3 minutes</option><option value="6" selected>About 6 minutes</option><option value="10">About 10 minutes</option><option value="15">About 15 minutes</option></select></label>
+        <label><span>Format</span><select name="delivery_format"><option>Short video</option><option>Social post</option><option>Article</option><option>Newsletter essay</option><option>Podcast episode</option><option>YouTube essay</option></select></label>
+        <label><span>Target length</span><select name="target_minutes"><option value="1">About 1 minute</option><option value="3" selected>About 3 minutes</option><option value="6">About 6 minutes</option><option value="10">About 10 minutes</option><option value="15">About 15 minutes</option></select></label>
         <label class="is-wide"><span>Desired takeaway</span><input name="desired_takeaway" placeholder="What useful understanding should the audience leave with?"></label>
         <fieldset class="is-wide"><legend>When an essential gap remains</legend><label><input type="radio" name="evidence_boundary" value="keep_gaps_visible" checked><span><strong>Keep it visible</strong>Preserve the unresolved question as a caveat.</span></label><label><input type="radio" name="evidence_boundary" value="block_on_gaps"><span><strong>Stop at the gap</strong>Do not draft past an unsupported link.</span></label></fieldset>
       </div>
-      <footer><button class="mk-button mk-button-quiet" type="button" data-close-composer>Cancel</button><button class="mk-button mk-button-primary" type="submit">Build from this route <span aria-hidden="true">→</span></button></footer>
+      <footer><button class="mk-button mk-button-quiet" type="button" data-close-composer>Cancel</button><button class="mk-button mk-button-primary" type="submit">Create draft <span aria-hidden="true">→</span></button></footer>
     </form>
   </dialog>
 {% endblock %}

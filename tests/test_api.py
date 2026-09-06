@@ -278,11 +278,11 @@ async def test_web_login_and_focused_intake_page():
             assert 'href="/app/search"' in signed_in.text
 
             for path, heading in (
-                ("/app/signals", "Sources, notes, and questions that can begin"),
-                ("/app/ideas", "Research trails you can inspect"),
-                ("/app/plans", "Briefs, reports, and factual scripts"),
-                ("/app/published", "Reconnect live work to the Chain"),
-                ("/app/search?q=Japanese", "Search sources, Chains, open questions"),
+                ("/app/signals", "Bring in a conversation"),
+                ("/app/ideas", "Explore different angles"),
+                ("/app/plans", "Pick up a draft, add your voice"),
+                ("/app/published", "Take a finished draft to your channel"),
+                ("/app/search?q=Japanese", "Find the topic or idea"),
             ):
                 page = await client.get(path)
                 assert page.status_code == 200
@@ -387,21 +387,21 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert job.status_code == 200
-            assert "Your next decision is ready." in job.text
+            assert "Your ideas are ready to explore." in job.text
             artifact_match = re.search(r'href="(/app/artifacts/\d+)"', job.text)
             assert artifact_match is not None
 
             artifact = await client.get(artifact_match.group(1))
             assert artifact.status_code == 200
-            assert "Routes worth inspecting" in artifact.text
-            assert ">Explore<" in artifact.text
-            assert ">Output<" in artifact.text
+            assert "Ideas to develop" in artifact.text
+            assert ">Angles<" in artifact.text
+            assert ">Draft<" in artifact.text
             assert "Sources and provenance" in artifact.text
             assert "Evidence margin" in artifact.text
             assert "Claims to inspect" in artifact.text
             assert "Saving creates a new version" in artifact.text
-            assert "Shape an output" in artifact.text
-            assert "Give this route a job" in artifact.text
+            assert "Develop this idea" in artifact.text
+            assert "Turn this angle into a draft" in artifact.text
             assert "Export JSON" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
 
@@ -538,13 +538,13 @@ async def test_case_workspace_exposes_topics_gaps_and_supplemental_sources():
         assert "Which intermediary turns the premise" in response.text
         assert "Supplemental reporting that changes the question" in response.text
         assert f'data-topic-id="{topic.id}"' in response.text
-        assert "Routes worth inspecting" in response.text
-        assert "Why this route exists" in response.text
+        assert "Ideas to develop" in response.text
+        assert "What makes this angle interesting" in response.text
         assert "Mixed evidence" in response.text
-        assert "Research this route" in response.text
-        assert "Shape an output" in response.text
+        assert "Dig deeper" in response.text
+        assert "Develop this idea" in response.text
         assert "Sources and provenance" in response.text
-        assert "Everything Markov analyzed for this Chain" in response.text
+        assert "The sources behind this topic" in response.text
     finally:
         await store.close()
 
