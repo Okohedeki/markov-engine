@@ -14,6 +14,7 @@ from markov_engine.connections import (
 )
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
+from markov_engine.editorial import discover_story_angles
 from markov_engine.extract import classify_url, extract_content, segment_text
 from markov_engine.model_errors import ModelResponseError
 from markov_engine.planning import plan_research_case
@@ -554,6 +555,7 @@ async def process_research_case(
     claim_researcher=research_claim,
     research_planner=plan_research_case,
     connection_discoverer=discover_connection_candidates,
+    story_discoverer=discover_story_angles,
     searcher=None,
     max_priority_claims: int = 18,
     max_sources_per_claim: int = 3,
@@ -630,6 +632,18 @@ async def process_research_case(
         claims = await store.list_claims(case.id)
         core_claims = [item for item in claims if item.disposition == "core"]
         await stage("comparing_sources")
+        editorial = {"status": "disabled"}
+        if any(mode in {"research", "research_report"} for mode in selected_modes):
+            await stage("discovering_story_angles")
+            kwargs = {"case_id": case.id, "extractor": extractor}
+            if searcher is not None:
+                kwargs["searcher"] = searcher
+            editorial = await story_discoverer(store, **kwargs)
+            await stage("assessing_story_angles", {
+                "status": editorial["status"],
+                "angles": len(editorial.get("angles", [])),
+                "sources": editorial.get("source_count", 0),
+            })
         await stage("discovering_connections")
         graph = await process_connection_graph(
             store,
@@ -678,7 +692,7 @@ async def process_research_case(
         ]
         final_status = (
             "partial"
-            if incomplete_core
+            if incomplete_core or editorial["status"] == "partial"
             else "awaiting_review"
             if review_level == "verified"
             else "completed"
