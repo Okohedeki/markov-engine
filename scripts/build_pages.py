@@ -50,8 +50,8 @@ def build() -> None:
     environment.filters.update(humanize=humanize, credits=credits)
     context = {
         "site_base": SITE_BASE,
-        "workspace_url": f"{SITE_BASE}/sample/",
-        "workspace_label": "Product demo",
+        "workspace_url": f"{SITE_BASE}/demo/",
+        "workspace_label": "Guest studio",
         "api_docs_url": f"{SITE_BASE}/developers/",
         "repository_url": REPOSITORY_URL,
         "static_preview": True,

@@ -10,9 +10,9 @@
   <title>Markov — More to post. More to say.</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
   <link rel="preload" href="/markov-engine/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/idea-story.css">
+  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/idea-story.css"><link rel="stylesheet" href="/markov-engine/static/walkthroughs.css">
   <script defer src="/markov-engine/static/markov.js"></script>
-  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/idea-story.js"></script>
+  <script defer src="/markov-engine/static/studio-examples.js"></script><script defer src="/markov-engine/static/idea-story.js"></script><script defer src="/markov-engine/static/walkthroughs.js"></script>
 </head>
 <body class="creator-public">
   <a class="mk-skip" href="#main-content">Skip to content</a>
@@ -27,10 +27,10 @@
   </button>
   <nav class="mk-public-nav" id="mk-public-nav" aria-label="Primary navigation" data-site-nav>
     <a href="/markov-engine/#unfold">How it works</a>
-    <a href="/markov-engine/sample/">Idea studio</a>
+    <a href="/markov-engine/#walkthroughs">Walkthroughs</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
-    <a class="mk-nav-action" href="/markov-engine/sample/">Product demo <span aria-hidden="true">↗</span></a>
+    <a class="mk-nav-action" href="/markov-engine/demo/">Try without an account <span aria-hidden="true">↗</span></a>
   </nav>
 </header>
   <main id="main-content">
@@ -38,7 +38,7 @@
       <p class="eyebrow">For creators with a lot to say</p>
       <h1>More to post.<br><em>More to say.</em></h1>
       <p>Take what people are talking about and find your next angle. One conversation becomes fresh ideas for your next batch of posts.</p>
-      <div class="creator-actions"><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#product">See it in action <span aria-hidden="true">↓</span></a></div>
+      <div class="creator-actions"><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try without an account<span aria-hidden="true">↗</span></a><a class="mk-text-link" href="#walkthroughs">Watch it in action <span aria-hidden="true">▷</span></a></div>
     </section>
     <section class="creator-stage" id="product" aria-label="See one discussion become posting ideas">
       <div class="idea-story" data-idea-story>
@@ -55,7 +55,7 @@
     <div class="conversation-paper"><span class="paper-label">The starting point · Technology</span><h2>Everyone is building an AI agent. What actually needs one?</h2><p>A conversation about tools that take actions, and the work people would trust them to do.</p><div class="conversation-prompts"><span>What changes?</span><span>What gets missed?</span><span>What's your take?</span></div><button class="mk-button mk-button-dark" type="button" data-story-next="angles">Find a way in <span aria-hidden="true">→</span></button></div>
   </div>
   <div class="story-scene angles-scene" id="story-angles" role="tabpanel" aria-labelledby="story-tab-angles" tabindex="0" data-story-panel="angles">
-    <div class="source-paper"><span class="paper-symbol" aria-hidden="true">“</span><span class="paper-label">The conversation</span><h2>The AI<br>agent rush.</h2><p>Everyone is building one.<br>What actually needs one?</p><span class="source-footnote">A starting point, not your final take.</span></div>
+    <div class="source-paper"><span class="paper-symbol" aria-hidden="true">“</span><span class="paper-label">The conversation</span><h2>The AI <br>agent rush.</h2><p>Everyone is building one. <br>What actually needs one?</p><span class="source-footnote">A starting point, not your final take.</span></div>
     <svg class="angle-branches" viewBox="0 0 180 320" fill="none" aria-hidden="true"><path d="M0 160H45C95 160 75 35 130 35H180M45 160H180M45 160C95 160 75 285 130 285H180" stroke="currentColor" stroke-width="1.5"/><circle cx="45" cy="160" r="5" fill="currentColor" stroke="#f5f6f8" stroke-width="5"/></svg>
     <div class="story-angle-stack">
       <button class="story-angle" type="button" data-demo-idea="0"><span class="paper-label">The other side <b aria-hidden="true">↗</b></span><strong>The best AI workflow might be the one with fewer agents.</strong></button>
@@ -64,18 +64,63 @@
     </div>
   </div>
   <div class="story-scene draft-scene" id="story-draft" role="tabpanel" aria-labelledby="story-tab-draft" tabindex="0" data-story-panel="draft" hidden>
-    <div class="draft-context"><span class="paper-label">An idea you can work with</span><h2>A new angle.<br>Your own voice.</h2><p data-story-summary>Turn a technical discussion into a checklist people can use.</p><a class="mk-button mk-button-dark" href="/markov-engine/sample/">Make an outline your own <span aria-hidden="true">↗</span></a></div>
+    <div class="draft-context"><span class="paper-label">An idea you can work with</span><h2>A new angle.<br>Your own voice.</h2><p data-story-summary>Turn a technical discussion into a checklist people can use.</p><a class="mk-button mk-button-dark" href="/markov-engine/demo/">Make an outline your own <span aria-hidden="true">↗</span></a></div>
     <article class="draft-paper"><header><span>Working outline</span><span>Short post</span></header><h3 data-story-hook>Before you build an agent, write its job description.</h3><ol data-story-outline><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show an example of a task that is too vague, then rewrite it.</li></ol><p>Add an example only you could give.</p></article>
   </div>
-  <footer class="idea-story-footer"><span>Sample discussions and prewritten angles. Live trend discovery is not connected.</span><a href="/markov-engine/sample/">Explore all the angles <span aria-hidden="true">→</span></a></footer>
+  <footer class="idea-story-footer"><span>Sample discussions and prewritten angles. Live trend discovery is not connected.</span><a href="/markov-engine/demo/">Explore all the angles <span aria-hidden="true">→</span></a></footer>
 </div>
       <div class="stage-caption"><strong>A topic is a starting point. See where it goes.</strong><span>Choose an angle above to open its outline.</span></div>
     </section>
-    <section class="creator-story" id="unfold" aria-labelledby="story-title">
-      <div class="story-copy"><p class="eyebrow">Keep the ideas coming</p><h2 id="story-title">The same conversation.<br>A different thing to say.</h2><p>A useful explanation. A counterpoint. A connection nobody's made yet. Find more ways into the topics your audience cares about.</p><p>Keep the angles that feel like you. Shape them into an outline, add your perspective, and build your next batch.</p><a class="mk-text-link" href="/markov-engine/sample/">Find your next angle <span aria-hidden="true">→</span></a></div>
-      <article class="story-paper"><header><span>Your next post</span><span>Example outline</span></header><h3>Before you build an agent, write its job description.</h3><ol><li>Define one outcome and the inputs it needs.</li><li>List the actions it may take and when it should stop.</li><li>Show a task that's too vague, then rewrite it.</li></ol><p>The starting point is here. The perspective is yours.</p></article>
-    </section>
-    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="/markov-engine/sample/">Try the idea studio<span aria-hidden="true">↗</span></a></section>
+
+<section class="walkthrough-section" id="unfold" aria-labelledby="walkthrough-title">
+  <div class="walkthrough-shell" id="walkthroughs" data-walkthroughs>
+    <header class="walkthrough-heading"><div><p class="eyebrow">A little show, then your turn</p><h2 id="walkthrough-title">See your next post take shape.</h2></div><p>Three short recordings of the guest studio. No account, no setup—just the workflow.<span>Silent videos with captions. Sample content, real interactions.</span></p></header>
+    <div class="walkthrough-layout">
+      <div class="walkthrough-chooser"><div class="walkthrough-menu" role="tablist" aria-label="Choose a walkthrough" aria-orientation="vertical">
+        <button type="button" role="tab" id="tour-tab-find-angles" aria-controls="tour-panel-find-angles" aria-selected="true" tabindex="0" data-tour-tab="find-angles"><span>01</span><div><strong>Find a fresh angle</strong><small>One conversation. Several ways to post about it.</small></div><b aria-hidden="true">▷</b></button><button type="button" role="tab" id="tour-tab-build-shortlist" aria-controls="tour-panel-build-shortlist" aria-selected="false" tabindex="-1" data-tour-tab="build-shortlist"><span>02</span><div><strong>Build your next batch</strong><small>Collect the ideas you want to come back to.</small></div><b aria-hidden="true">▷</b></button><button type="button" role="tab" id="tour-tab-shape-draft" aria-controls="tour-panel-shape-draft" aria-selected="false" tabindex="-1" data-tour-tab="shape-draft"><span>03</span><div><strong>Make the draft yours</strong><small>Add your perspective. Leave with something usable.</small></div><b aria-hidden="true">▷</b></button>
+      </div><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try it yourself <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="walkthrough-player">
+        <div role="tabpanel" id="tour-panel-find-angles" aria-labelledby="tour-tab-find-angles" tabindex="0" data-tour-panel="find-angles" >
+          <div class="walkthrough-media">
+          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Find a fresh angle walkthrough" hidden><img src="/markov-engine/static/walkthroughs/find-angles.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
+          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/find-angles.webp" aria-label="Find a fresh angle — captioned guest studio recording">
+            <source src="/markov-engine/static/walkthroughs/find-angles.mp4" type="video/mp4">
+            <track kind="captions" src="/markov-engine/static/walkthroughs/find-angles.vtt" srclang="en" label="English instructions" default>
+            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/find-angles.mp4">Download the video</a> or read the walkthrough below.</p>
+          </video>
+          </div>
+          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
+          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Choose a sample conversation in the guest studio.</li><li>Explore the different angles and open one to see its hook and outline.</li><li>Switch between a short post, thread, and video outline.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
+        </div><div role="tabpanel" id="tour-panel-build-shortlist" aria-labelledby="tour-tab-build-shortlist" tabindex="0" data-tour-panel="build-shortlist" hidden>
+          <div class="walkthrough-media">
+          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Build your next batch walkthrough" hidden><img src="/markov-engine/static/walkthroughs/build-shortlist.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
+          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/build-shortlist.webp" aria-label="Build your next batch — captioned guest studio recording">
+            <source src="/markov-engine/static/walkthroughs/build-shortlist.mp4" type="video/mp4">
+            <track kind="captions" src="/markov-engine/static/walkthroughs/build-shortlist.vtt" srclang="en" label="English instructions" default>
+            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/build-shortlist.mp4">Download the video</a> or read the walkthrough below.</p>
+          </video>
+          </div>
+          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
+          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Tap plus on an idea to add it to your shortlist.</li><li>Switch conversations and save another angle.</li><li>Open Your shortlist to see them together, then export the batch as Markdown.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
+        </div><div role="tabpanel" id="tour-panel-shape-draft" aria-labelledby="tour-tab-shape-draft" tabindex="0" data-tour-panel="shape-draft" hidden>
+          <div class="walkthrough-media">
+          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play Make the draft yours walkthrough" hidden><img src="/markov-engine/static/walkthroughs/shape-draft.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
+          <video controls playsinline preload="none" width="1440" height="900" poster="/markov-engine/static/walkthroughs/shape-draft.webp" aria-label="Make the draft yours — captioned guest studio recording">
+            <source src="/markov-engine/static/walkthroughs/shape-draft.mp4" type="video/mp4">
+            <track kind="captions" src="/markov-engine/static/walkthroughs/shape-draft.vtt" srclang="en" label="English instructions" default>
+            <p>Your browser cannot play this recording. <a href="/markov-engine/static/walkthroughs/shape-draft.mp4">Download the video</a> or read the walkthrough below.</p>
+          </video>
+          </div>
+          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
+          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol><li>Open an angle and edit its working outline.</li><li>Choose Save draft, then open Your drafts from the sidebar.</li><li>Continue writing or export your saved draft. Nothing is posted automatically.</li></ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
+        </div>
+        <noscript><p class="walkthrough-noscript">More recordings: <a href="/markov-engine/static/walkthroughs/build-shortlist.mp4">Build your next batch</a> · <a href="/markov-engine/static/walkthroughs/shape-draft.mp4">Make the draft yours</a>. Their caption files accompany each recording.</p></noscript>
+      </div>
+    </div>
+  </div>
+</section>
+    <section class="creator-finale"><p class="eyebrow">For the people who post again tomorrow</p><h2>A little less “what should I post?”</h2><p>For creators, social teams, personal brands, and agencies. Make finding your next idea part of your everyday rhythm.</p><a class="mk-button mk-button-primary" href="/markov-engine/demo/">Try without an account<span aria-hidden="true">↗</span></a></section>
   </main>
   <footer class="mk-public-footer">
   <div>
@@ -86,10 +131,10 @@
   </div>
   <nav aria-label="Footer navigation">
     <a href="/markov-engine/#unfold">How it works</a>
-    <a href="/markov-engine/sample/">Idea studio</a>
+    <a href="/markov-engine/demo/">Idea studio</a>
     <a href="/markov-engine/pricing/">Pricing</a>
     <a href="/markov-engine/developers/">API</a>
-    <a href="/markov-engine/sample/">Product demo</a>
+    <a href="/markov-engine/demo/">Guest studio</a>
   </nav>
   <p class="mk-footer-note">Bring a topic. Find fresh angles. Make them yours. Direct social publishing and live trend discovery are not connected in this build.</p>
 </footer>
