@@ -70,6 +70,8 @@ async def plan_story_questions(
         for name in ("question", "why_it_matters", "query", "challenge_query")
     }
     properties["claim_id"] = {"type": "integer"}
+    lenses = {"event_mechanism", "overlooked_context", "downstream_consequence"}
+    properties["lens"] = {"type": "string", "enum": sorted(lenses)}
     schema = {"type": "object", "properties": {"questions": {
         "type": "array", "maxItems": 3,
         "items": {"type": "object", "properties": properties,
@@ -86,8 +88,14 @@ async def plan_story_questions(
             "Find up to three genuinely different nonfiction story questions. "
             "Do not summarize the seed or rephrase its headline. Look for concrete "
             "people, events, mechanisms, missing context, and consequences that "
-            "could change how an audience understands it. Do not assume any "
-            "proposed connection is true. Anchor each question to a supplied "
+            "could change how an audience understands it. "
+            "Choose different lenses, at most one question per lens: event_mechanism "
+            "examines the focal event; overlooked_context follows an actor's work, "
+            "institution, or conditions already underway before it; "
+            "downstream_consequence follows what changed for affected people or "
+            "institutions afterward. Do not spend every question on competing "
+            "versions of the focal event. Only choose lenses grounded in the seed. "
+            "Do not assume a proposed connection is true. Anchor each question to a supplied "
             "claim_id. Write a concise web query, not a whole quoted claim; "
             "also write a distinct challenge_query seeking contrary evidence or "
             "an alternative explanation. Avoid leading searches that assume a "
@@ -99,11 +107,13 @@ async def plan_story_questions(
             + json.dumps(context, ensure_ascii=False)
         ),
     )
-    questions, seen = [], set()
+    questions, seen, seen_lenses = [], set(), set()
     for item in result.get("questions") or []:
         if not isinstance(item, dict) or type(item.get("claim_id")) is not int:
             continue
         if item["claim_id"] not in valid_ids:
+            continue
+        if item.get("lens") not in lenses or item["lens"] in seen_lenses:
             continue
         clean = {key: " ".join(str(item.get(key) or "").split())[:500]
                  for key in properties if key != "claim_id"}
@@ -114,6 +124,7 @@ async def plan_story_questions(
             continue
         questions.append({**clean, "claim_id": item["claim_id"]})
         seen.add(key)
+        seen_lenses.add(item["lens"])
         if len(questions) == 3:
             break
     return questions
