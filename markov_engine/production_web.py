@@ -1,7 +1,7 @@
 """Production queue and paid series routes using the existing session boundary."""
-from urllib.parse import urlencode, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from markov_engine.billing import credit_cost
 
@@ -38,5 +38,15 @@ async def queue_context(store, owner_id, request, settings):
 
 def create_production_router(*, settings, owner, render):
     router = APIRouter()
+
+    async def form(request):
+        origin = request.headers.get('origin')
+        if origin and origin.rstrip('/') != str(request.base_url).rstrip('/'):
+            raise HTTPException(403, 'Cross-origin changes are not accepted.')
+        raw = await request.body()
+        if len(raw) > 32_000:
+            raise HTTPException(413, 'This selection is too large.')
+        return parse_qs(raw.decode('utf-8', errors='replace'))
+
 
     return router
