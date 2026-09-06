@@ -264,7 +264,7 @@ async def extract_claims(
     segments: list[SourceSegmentRec],
     *,
     model: str | None = None,
-    max_chars: int = 7000,
+    max_chars: int = 4000,
     overlap: int = 2,
 ) -> tuple[list[dict], list[dict], float]:
     """Extract and deduplicate atomic claims from every source segment."""
@@ -272,15 +272,11 @@ async def extract_claims(
     all_gaps: list[dict] = []
     total_cost = 0.0
     for chunk in chunk_segments(segments, max_chars=max_chars, overlap=overlap):
-        data, cost = await complete_json(
-            _PROMPT.format(segments=chunk.text),
-            schema=_CLAIM_SCHEMA,
-            model=model or _settings.model_extraction,
-            max_tokens=2048,
-            task="claim_extraction",
-        )
-        if not isinstance(data, dict):
-            raise ValueError("Claim extraction returned a non-object result")
+        try:
+            data, cost = await _extract_chunk(chunk, model or _settings.model_extraction)
+        except ModelResponseError as exc:
+            exc.cost += total_cost
+            raise
         valid_ids = {segment.id for segment in chunk.segments}
         all_claims.extend(_coerce_claims(data.get("claims"), valid_ids))
         all_gaps.extend(_coerce_gaps(data.get("research_gaps")))
