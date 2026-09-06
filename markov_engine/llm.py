@@ -279,8 +279,18 @@ async def _openai_chat(
         r = await client.post(url, json=payload, headers=headers)
         r.raise_for_status()
         data = r.json()
-        text = (data["choices"][0]["message"].get("content") or "").strip()
-        return text, _openai_cost(selected_model, data.get("usage"))
+        cost = _openai_cost(selected_model, data.get("usage"))
+        choice = data["choices"][0]
+        reason = choice.get("finish_reason")
+        if reason not in {None, "stop"}:
+            reason = "max_output_tokens" if reason == "length" else reason
+            raise ModelResponseError(reason, cost=cost)
+        if choice["message"].get("refusal"):
+            raise ModelResponseError("refusal", cost=cost)
+        text = (choice["message"].get("content") or "").strip()
+        if not text:
+            raise ModelResponseError("empty_output", cost=cost)
+        return text, cost
 
 
 def _responses_output_text(data: dict) -> str:
