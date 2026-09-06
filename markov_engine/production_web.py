@@ -69,6 +69,39 @@ def create_production_router(*, settings, owner, render):
         owner_id = owner(request)
         return render(request, 'upgrade.html', **await common(request, owner_id))
 
+    @router.get('/app/queue/preview')
+    async def story_preview(request: Request):
+        owner_id = owner(request)
+        store = request.app.state.store
+        try:
+            rows = await store.selected_production_ideas(
+                owner_id, [request.query_params.get('item', '')],
+            )
+        except ValueError:
+            raise HTTPException(404, 'Story not found.') from None
+        row = rows[0]
+        sources = await store.list_research_case_sources(row['case_id'])
+        source_links = []
+        for source in sources:
+            source = dict(source)
+            url = source.get('url') or ''
+            parsed = urlparse(url)
+            source_links.append({
+                'title': source.get('title') or 'Untitled source',
+                'url': url if parsed.scheme in {'http', 'https'} and parsed.hostname else None,
+                'host': parsed.hostname or source.get('source_type') or 'Source material',
+                'role': source.get('case_source_role') or 'Collected source',
+            })
+        artifacts = await store.list_case_artifacts(row['case_id'])
+        return {
+            'angle': row['angle'], 'research_status': row['research_status'],
+            'sources': source_links[:12], 'source_count': len(source_links),
+            'documents': [{'title': artifact.title, 'type': artifact.artifact_type,
+                           'status': artifact.status,
+                           'url': f'/app/artifacts/{artifact.id}#output'}
+                          for artifact in sorted(artifacts, key=lambda item: item.id, reverse=True)[:8]],
+        }
+
     @router.post('/app/queue/actions')
     async def queue_action(request: Request):
         owner_id = owner(request)
