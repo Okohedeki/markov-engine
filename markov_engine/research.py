@@ -15,6 +15,7 @@ from markov_engine.connections import (
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
 from markov_engine.extract import classify_url, extract_content, segment_text
+from markov_engine.model_errors import ModelResponseError
 from markov_engine.planning import plan_research_case
 from markov_engine.renderers import RenderedArtifact, render_artifact
 from markov_engine.store.records import ArtifactRec, ResearchCaseRec
@@ -270,7 +271,14 @@ async def _ensure_claims(
             importance=1.0,
         )
         return [claim]
-    extracted, gaps, cost = await claim_extractor(segments)
+    try:
+        extracted, gaps, cost = await claim_extractor(segments)
+    except ModelResponseError as exc:
+        await store.record_cost(
+            research_case_id=case.id, provider="llm",
+            operation="claim_extraction_failed", units=0, cost=exc.cost,
+        )
+        raise
     by_id = {segment.id: segment for segment in segments}
     records = []
     for item in extracted:
