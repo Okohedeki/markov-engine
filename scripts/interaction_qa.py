@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from pathlib import Path
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -35,38 +36,88 @@ def main() -> None:
         expect(menu).to_have_attribute("aria-expanded", "false")
         checks.append("mobile navigation opens and closes with Escape")
 
-        paper = page.locator('[data-source-choice="paper"]')
-        paper.click()
-        expect(paper).to_have_attribute("aria-selected", "true")
-        expect(page.locator("[data-source-placeholder] > span")).to_have_text(
-            "Add a paper or PDF…"
-        )
-        paper.focus()
-        page.keyboard.press("ArrowRight")
-        audio = page.locator('[data-source-choice="audio"]')
-        expect(audio).to_be_focused()
-        expect(audio).to_have_attribute("aria-selected", "true")
-        checks.append("starting-source dock supports click and arrow-key selection")
+        expect(page.locator("[data-angle-grid] article")).to_have_count(6)
+        expect(page.locator("[data-download]")).to_be_disabled()
+        first = page.locator("[data-open-idea]").first
+        first_id = first.get_attribute("data-open-idea")
+        first.click()
+        dialog = page.locator("[data-idea-editor]")
+        expect(dialog).to_be_visible()
+        expect(page.locator("[data-editor-close]")).to_be_focused()
+        draft = page.locator("[data-idea-draft]")
+        draft.fill("My own opening. <script>not executable</script>")
+        page.locator("[data-idea-format]").select_option("thread")
+        assert draft.input_value().startswith("1/")
+        draft.fill("My thread version")
+        page.locator("[data-idea-format]").select_option("post")
+        expect(draft).to_have_value("My own opening. <script>not executable</script>")
+        page.locator("[data-save-idea]").click()
+        expect(page.locator("[data-editor-status]")).to_contain_text("Saved in this browser")
+        page.keyboard.press("Escape")
+        expect(dialog).not_to_be_visible()
+        expect(page.locator(f'[data-open-idea="{first_id}"]')).to_be_focused()
+        expect(page.locator("[data-saved-count]")).to_have_text("1")
+        checks.append("outline formats retain independent edits; shortlist save restores focus")
+
+        page.locator('[data-topic="creators"]').click()
+        expect(page.locator("[data-angle-grid] article")).to_have_count(6)
+        page.locator("[data-save-card]").first.click()
+        page.locator('[data-collection="saved"]').click()
+        expect(page.locator("[data-angle-grid] article")).to_have_count(2)
+        page.reload(wait_until="networkidle")
+        page.locator('[data-collection="saved"]').click()
+        expect(page.locator("[data-angle-grid] article")).to_have_count(2)
+        page.locator(f'[data-open-idea="{first_id}"]').click()
+        expect(draft).to_have_value("My own opening. <script>not executable</script>")
+        page.locator("[data-idea-format]").select_option("thread")
+        expect(draft).to_have_value("My thread version")
+        page.locator("[data-idea-format]").select_option("video")
+        assert draft.input_value().startswith("HOOK")
+        page.keyboard.press("Escape")
+        checks.append("cross-topic shortlist and saved edits survive a reload")
+
+        with page.expect_download() as download_info:
+            page.locator("[data-download]").click()
+        download = download_info.value
+        assert download.suggested_filename == "markov-shortlist.md"
+        exported = Path(download.path()).read_text(encoding="utf-8")
+        assert "My own opening." in exported and "My thread version" in exported
+        assert "Prewritten examples" in exported
+        checks.append("batch export includes saved outline variants and an example disclosure")
+        while page.locator("[data-save-card]").count():
+            page.locator("[data-save-card]").first.click()
+        expect(page.locator("[data-download]")).to_be_disabled()
+        expect(page.locator("[data-angle-grid]")).to_contain_text("Your next batch starts")
+        checks.append("removing the last idea gives an empty state and disables export")
+
+        page.locator('[data-topic="work"]').click()
+        page.locator("[data-open-idea]").first.click()
+        page.evaluate("Object.defineProperty(navigator, 'clipboard', {value: undefined, configurable: true})")
+        page.locator("[data-copy-idea]").click()
+        expect(page.locator("[data-editor-status]")).to_contain_text("copy it manually")
+        expect(draft).to_be_focused()
+        page.keyboard.press("Escape")
+        checks.append("clipboard failure offers a selected outline for manual copying")
 
         page.set_viewport_size({"width": 1440, "height": 900})
-        mandates = page.locator('[data-route-choice="mandates"]')
-        mandates.click()
-        expect(mandates).to_have_attribute("aria-selected", "true")
-        expect(page.locator("[data-route-title]")).to_contain_text(
-            "Which institution"
-        )
-        checks.append("route selection updates mechanism and weakness together")
+        page.locator("[data-open-idea]").first.click()
+        public.grant_permissions(["clipboard-read", "clipboard-write"])
+        page.evaluate("delete navigator.clipboard")
+        page.locator("[data-copy-idea]").click()
+        expect(page.locator("[data-editor-status]")).to_contain_text("Outline copied")
+        copied = page.evaluate("navigator.clipboard.readText()")
+        assert copied.replace("\r\n", "\n") == draft.input_value()
+        page.keyboard.press("Escape")
+        checks.append("desktop copy produces the exact working outline")
 
-        script = page.locator('[data-output-choice="script"]')
-        script.click()
-        expect(script).to_have_attribute("aria-selected", "true")
-        expect(page.locator("[data-output-label]")).to_have_text("Factual script")
-        script.focus()
-        page.keyboard.press("ArrowLeft")
-        research = page.locator('[data-output-choice="research"]')
-        expect(research).to_be_focused()
-        expect(research).to_have_attribute("aria-selected", "true")
-        checks.append("output views support click and arrow-key selection")
+        page.evaluate("localStorage.setItem('markov-creator-example-v1', 'broken json')")
+        page.reload(wait_until="networkidle")
+        expect(page.locator("[data-angle-grid] article")).to_have_count(6)
+        page.evaluate("Object.defineProperty(window, 'localStorage', {get() {throw new Error('blocked')}})")
+        page.locator("[data-save-card]").first.click()
+        expect(page.locator("[data-playground-status]")).to_contain_text("Storage unavailable")
+        expect(page.locator("[data-download]")).to_be_enabled()
+        checks.append("invalid or blocked browser storage does not prevent exploring and exporting")
         public.close()
 
         qa_key = os.environ.get("MARKOV_QA_KEY")
@@ -88,17 +139,27 @@ def main() -> None:
             expect(nav_button).to_have_attribute("aria-expanded", "false")
             checks.append("mobile workspace navigation opens without covering the page permanently")
 
-            question = app_page.locator("[data-signal-type]").get_by_text(
-                "Question", exact=True
+            expect(nav_button).to_be_focused()
+            assert app_page.locator("[data-app-sidebar]").evaluate("node => node.inert")
+            nav_button.click()
+            expect(app_page.locator("[data-app-nav-close]")).to_be_focused()
+            app_page.locator('[data-app-sidebar] a').last.focus()
+            app_page.keyboard.press("Tab")
+            expect(app_page.locator('[data-app-sidebar] a').first).to_be_focused()
+            app_page.keyboard.press("Escape")
+            checks.append("mobile studio drawer traps focus and makes its closed links inert")
+
+            app_page.goto(f"{args.base_url}/app/onboarding", wait_until="networkidle")
+            app_page.locator('[name="audience"]').fill("Independent designers")
+            app_page.locator('[name="tone"]').fill("Direct and practical")
+            app_page.locator('button[type="submit"]').click()
+            app_page.wait_for_load_state("networkidle")
+            expect(app_page.locator('#creator-audience')).to_have_value("Independent designers")
+            expect(app_page.locator('#creator-tone')).to_have_value("Direct and practical")
+            expect(app_page.locator('input[name="focus"]')).to_have_value(
+                "Develop distinct posting angles from this discussion: a practical takeaway, a counterpoint, an unexpected connection, an explainer, and an open question. Avoid repeating the same thesis. Keep claims grounded in available sources and make uncertainty clear."
             )
-            question.click()
-            signal_input = app_page.locator("[data-signal-input]")
-            expect(question).to_have_attribute("aria-pressed", "true")
-            expect(signal_input).to_be_focused()
-            expect(signal_input).to_have_attribute(
-                "placeholder", "Ask the question you want to investigate…"
-            )
-            checks.append("capture type changes its prompt and restores input focus")
+            checks.append("audience and voice flow into real topic intake fields")
 
             app_page.goto(
                 f"{args.base_url}{args.artifact_path}#explore", wait_until="networkidle"
@@ -113,7 +174,7 @@ def main() -> None:
                 sources = app_page.locator('[data-case-view-tab="sources"]')
                 expect(sources).to_be_focused()
                 expect(sources).to_have_attribute("aria-selected", "true")
-                checks.append("case views expose Explore, Output, and Sources by keyboard")
+                checks.append("topic views expose Angles, Draft, and Sources by keyboard")
 
                 develop = app_page.locator("[data-open-composer]").first
                 if develop.count():
