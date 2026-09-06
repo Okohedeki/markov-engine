@@ -127,5 +127,19 @@ def create_production_router(*, settings, owner, render):
         return render(request, 'series.html', series=await request.app.state.store.story_series(owner_id),
                       selected=[], **await common(request, owner_id))
 
+    @router.post('/app/series')
+    async def create_series(request: Request):
+        owner_id = owner(request)
+        values = await form(request)
+        try:
+            paid(owner_id, 'story_mode')
+            series_id = await request.app.state.store.create_story_series(owner_id, values.get('item', []),
+                values.get('title', [''])[0], values.get('premise', [''])[0])
+        except ValueError as exc:
+            if 'paid feature' in str(exc):
+                return RedirectResponse('/app/upgrade', 303)
+            return error(request, str(exc))
+        return RedirectResponse(f'/app/series/{series_id}', 303)
+
 
     return router
