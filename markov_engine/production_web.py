@@ -154,7 +154,15 @@ def create_production_router(*, settings, owner, render):
             if 'paid feature' in str(exc):
                 return RedirectResponse('/app/upgrade', 303)
             return error(request, str(exc))
-        return RedirectResponse('/app?' + urlencode({'notice': notice}), 303)
+        view = values.get('view', ['all'])[0]
+        view = view if view in STATUSES else 'all'
+        try:
+            page = max(1, int(values.get('page', ['1'])[0]))
+        except ValueError:
+            page = 1
+        return RedirectResponse('/app?' + urlencode({
+            'notice': notice, 'status': view, 'q': values.get('q', [''])[0][:200], 'page': page,
+        }), 303)
 
     @router.get('/app/series')
     async def series_list(request: Request):
