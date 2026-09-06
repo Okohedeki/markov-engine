@@ -407,8 +407,8 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             assert "Evidence margin" in artifact.text
             assert "Claims to inspect" in artifact.text
             assert "Saving creates a new version" in artifact.text
-            assert "Develop this idea" in artifact.text
-            assert "Turn this angle into a draft" in artifact.text
+            assert 'data-output-composer' in artifact.text
+            assert 'data-composer-context' in artifact.text
             assert "Export JSON" in artifact.text
             assert "<script>alert('unsafe')</script>" not in artifact.text
 
