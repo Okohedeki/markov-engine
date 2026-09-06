@@ -89,6 +89,7 @@ def create_production_router(*, settings, owner, render):
                     sources = await store.list_research_case_sources(row['case_id'])
                     linked = False
                     for source in sources:
+                        source = dict(source)
                         if urlparse(source.get('url') or '').scheme in {'http', 'https'}:
                             lines.append(f"- {source.get('title') or 'Original source'}: {source['url']}")
                             linked = True
