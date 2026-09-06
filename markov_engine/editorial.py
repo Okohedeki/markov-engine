@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import urlsplit
 
 from markov_engine.config import get_settings
+from markov_engine.evidence import _persist_evidence_source, select_relevant_segments
+from markov_engine.extract import extract_content
 from markov_engine.llm import complete_json
 from markov_engine.model_errors import ModelResponseError
 from markov_engine.store.sqlite import SqliteStore
@@ -109,3 +112,58 @@ async def plan_story_questions(
         if len(questions) == 3:
             break
     return questions
+
+
+async def read_story_source(
+    store: SqliteStore, *, case_id: int, question: dict, url: str,
+    extractor=extract_content,
+) -> list[dict]:
+    """Keep inspected external context without treating it as claim verification."""
+    parsed = urlsplit(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        return []
+    if parsed.username or parsed.password:
+        return []
+    url = parsed._replace(fragment="").geturl()
+    claim = await store.get_claim(question["claim_id"])
+    if claim is None or claim.research_case_id != case_id:
+        raise ValueError("Story question refers to a claim outside this case")
+    seed_ids = set()
+    for row in await store.list_research_case_sources(case_id):
+        if row["case_source_role"] == "seed":
+            seed_ids.add(row["id"])
+            if row["url"] and urlsplit(row["url"])._replace(fragment="").geturl() == url:
+                return []
+    source, segments, quality = await _persist_evidence_source(
+        store, case_id=case_id, url=url, extractor=extractor,
+    )
+    if source is None or source.id in seed_ids:
+        return []
+    selected = select_relevant_segments(
+        question["question"] + " " + question["query"], segments, limit=2,
+    )
+    if not selected:
+        return []
+    await store.add_research_case_source(
+        research_case_id=case_id, source_id=source.id, source_role="evidence",
+    )
+    findings = []
+    for segment in selected:
+        evidence = await store.add_evidence_passage(
+            source_id=source.id, passage_text=segment.text[:2400],
+            start_seconds=segment.start_seconds, end_seconds=segment.end_seconds,
+            page_number=segment.page_number, section_title=segment.section_title,
+            source_quality=quality,
+        )
+        await store.link_claim_evidence(
+            claim_id=claim.id, evidence_passage_id=evidence.id,
+            stance="context_only", strength=0.0, model_confidence=0.0,
+            rationale="Editorial context to investigate: " + question["question"],
+        )
+        findings.append({
+            "evidence_id": evidence.id, "source_id": source.id,
+            "claim_id": claim.id, "url": source.url, "title": source.title,
+            "locator": segment.locator, "passage": evidence.passage_text,
+            "question": question["question"],
+        })
+    return findings
