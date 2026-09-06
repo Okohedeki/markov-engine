@@ -26,6 +26,7 @@ import httpx
 
 from markov_engine._local import get_llama, parse_json_loose
 from markov_engine.config import get_settings
+from markov_engine.model_errors import ModelResponseError
 
 logger = logging.getLogger(__name__)
 _settings = get_settings()
@@ -338,10 +339,17 @@ async def _openai_responses(
         response = await client.post(url, json=payload, headers=headers)
         response.raise_for_status()
         data = response.json()
+    cost = _openai_cost(selected_model, data.get("usage"))
+    if data.get("status") not in {None, "completed"} or data.get("error"):
+        reason = (data.get("incomplete_details") or {}).get("reason")
+        raise ModelResponseError(reason or data.get("status") or "provider_error", cost=cost)
+    if any(part.get("type") == "refusal" for item in data.get("output", [])
+           for part in item.get("content", [])):
+        raise ModelResponseError("refusal", cost=cost)
     text = _responses_output_text(data)
     if not text:
-        raise RuntimeError("OpenAI Responses API returned no output text")
-    return text, _openai_cost(selected_model, data.get("usage"))
+        raise ModelResponseError("empty_output", cost=cost)
+    return text, cost
 
 
 # ── in-process llama-cpp chat ─────────────────────────────────────
