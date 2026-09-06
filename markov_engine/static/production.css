@@ -73,6 +73,7 @@
 .production-preview button { min-height:44px; padding:10px 14px; margin-top:10px; background:#edf1f5; border-radius:7px; }
 @media(max-width:1000px) {
  .production-preview-columns { grid-template-columns:minmax(0,1fr); gap:24px; }
+ .production-preview-columns > section:last-child { order:-1; }
 }
 .production-paid-actions { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:17px 20px; margin-top:16px; background:#f0f3f7; border:1px solid #dce2e8; border-radius:10px; }
 [data-batch-form]:not(:has(input[name="item"]:checked)) .production-paid-actions,
