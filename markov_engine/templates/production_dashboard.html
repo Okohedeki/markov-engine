@@ -19,7 +19,19 @@
     <input type="hidden" name="view" value="{{ state }}"><input type="hidden" name="q" value="{{ query }}"><input type="hidden" name="page" value="{{ page }}">
     <div class="production-batch"><label><input type="checkbox" data-select-all hidden><span data-selected-count>Select stories below</span></label><div><label class="production-search-label" for="batch-status">Move selected stories to</label><select id="batch-status" name="status">{% for key in ['shortlisted', 'ready', 'recorded', 'ideas'] %}<option value="{{ key }}">{{ statuses[key] }}</option>{% endfor %}</select><button type="submit" name="action" value="move">Move selected</button><button type="submit" name="action" value="export">Export ideas ↓</button></div></div>
     <div class="production-list">{% for item in items %}
-      <article class="production-row" data-production-row><label class="production-select"><input type="checkbox" name="item" value="{{ item.item_key }}" aria-label="Select {{ item.title }}"></label><div class="production-story"><div class="production-row-meta"><span>{{ item.source_host }}</span><span>{{ item.source_count }} sources</span></div><h3><a href="{{ item.destination }}">{{ item.title }}</a></h3><p>{{ item.angle | truncate(220) }}</p></div><div class="production-row-end"><span class="production-status status-{{ item.status }}">{{ statuses[item.status] }}</span><a href="{{ item.destination }}">Explore source trail ↗</a></div></article>
+      <article class="production-row" data-production-row>
+        <label class="production-select"><input type="checkbox" name="item" value="{{ item.item_key }}" aria-label="Select {{ item.title }}"></label>
+        <div class="production-story">
+          <div class="production-row-meta"><span>{{ item.source_host }}</span><span>{{ item.source_count }} collected source{{ '' if item.source_count == 1 else 's' }}</span>{% if item.research_status != 'completed' %}<span>Research: {{ item.research_status | humanize }}</span>{% endif %}</div>
+          <h3><a href="{{ item.destination }}">{{ item.title }}</a></h3><p>{{ item.angle | truncate(220) }}</p>
+        <details class="production-preview" data-story-preview data-item="{{ item.item_key }}">
+          <summary>Sources & writing <span class="production-search-label">for {{ item.title }}</span></summary>
+          <div data-preview-content><p>Inspect the collected material and saved documents for this topic.</p></div>
+          <a class="production-preview-fallback" href="{{ item.destination }}{% if item.artifact_id %}#sources{% endif %}">Open the full source trail →</a>
+        </details>
+        </div>
+        <div class="production-row-end"><span class="production-status status-{{ item.status }}">{{ statuses[item.status] }}</span><a href="{{ item.destination }}">Open story ↗</a></div>
+      </article>
     {% else %}<div class="production-empty"><span aria-hidden="true">↳</span><h3>{{ 'No stories match this view.' if counts.all else 'One link can start your whole batch.' }}</h3><p>{{ 'Try a different status or a broader search.' if counts.all else 'Add a source above. Related stories will appear here, ready to shortlist and develop.' }}</p><a href="{{ '/app' if counts.all else '/#how-it-works' }}">{{ 'Clear filters' if counts.all else 'See the source-to-story example' }} →</a></div>{% endfor %}</div>
     {% if items %}<div class="production-paid-actions"><div><strong>Take your selection further.</strong><p data-batch-cost>Talking points: up to {{ talking_point_cost | number }} credits per new output. Series plans are included with Plus/Pro.</p></div><div>{% if entitlements.talking_points %}<button type="submit" name="action" value="talking_points" data-unit-cost="{{ talking_point_cost }}">Develop talking points <span class="paid-label">Paid</span></button><button type="submit" name="action" value="series">Build a series ↗</button>{% else %}<a href="/app/upgrade">Unlock talking points & Story Mode ↗</a>{% endif %}</div></div>{% endif %}
     <p class="production-feedback" role="status" data-queue-status></p>
