@@ -14,11 +14,32 @@
 .public-legal-links { display:flex; flex-wrap:wrap; gap:10px 24px; width:100%; border-top:1px solid #e0e5e9; padding-top:15px; margin-top:10px; font-size:11px; color:#626f7a; }
 .public-legal-links a { display:inline-flex; align-items:center; min-height:40px; }
 .public-legal-links > span { margin-right:auto; align-self:center; }
+.customer-journey, .customer-faq { width:var(--page); margin:90px auto 0; }
+.customer-journey h2, .customer-faq h2 { font-size:clamp(30px,3vw,42px); font-weight:500; letter-spacing:-.045em; margin:16px 0 35px; max-width:660px; }
+.customer-journey ol { display:grid; grid-template-columns:repeat(4,1fr); list-style:none; gap:30px; padding:0; }
+.customer-journey li { border-top:1px solid #cfd9e2; padding-top:22px; }
+.customer-journey li > span { font-size:12px; color:#a34a27; }
+.customer-journey h3 { font-size:21px; font-weight:500; margin:18px 0 12px; }
+.customer-journey p { font-size:14px; color:#65727e; line-height:1.7; }
+.customer-journey > footer { display:flex; align-items:center; flex-wrap:wrap; gap:16px 35px; margin-top:35px; padding-top:24px; border-top:1px solid #dce3e9; }
+.customer-journey > footer p { flex:1; min-width:250px; }
+.customer-journey > footer a { color:#963f1d; font-size:13px; text-decoration:underline; text-underline-offset:4px; }
+.customer-faq { display:grid; grid-template-columns:.8fr 1.2fr; gap:65px; }
+.customer-faq details { border-bottom:1px solid #dce3e9; }
+.customer-faq summary { font-size:16px; font-weight:500; padding:22px 0; }
+.customer-faq details p { font-size:14px; color:#65727e; line-height:1.8; padding-bottom:22px; }
+.customer-faq a { text-decoration:underline; text-underline-offset:3px; }
+.trail-paid-note { padding:14px 0; font-size:12px; color:#65727e; }
+.trail-paid-note a { color:#9b441f; text-decoration:underline; text-underline-offset:3px; }
+@media(max-width:900px) { .customer-journey ol { grid-template-columns:1fr 1fr; } .customer-faq { grid-template-columns:1fr; gap:0; } }
 @media(max-width:700px) {
  .legal-shell { width:calc(100% - 40px); margin-top:45px; }
  .legal-layout { grid-template-columns:1fr; gap:30px; }
  .legal-layout nav { flex-direction:row; flex-wrap:wrap; gap:5px 20px; }
  .legal-intro { font-size:18px; }
  .legal-shell h1 { font-size:40px; }
+ .customer-journey, .customer-faq { margin-top:60px; padding-inline:8px; }
+ .customer-journey ol { grid-template-columns:1fr; gap:24px; }
+ .customer-journey h3 { margin-top:12px; }
  .public-legal-links > span { width:100%; }
 }
