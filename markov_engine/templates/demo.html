@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Guest studio — Markov{% endblock %}
+{% block description %}Try Markov without an account. Explore example conversations, collect posting ideas, and edit and export your own working drafts.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/workspace.css"><link rel="stylesheet" href="{{ site_base }}/static/playground.css"><link rel="stylesheet" href="{{ site_base }}/static/guest-studio.css">{% endblock %}
+{% block scripts %}<script defer src="{{ site_base }}/static/studio-examples.js"></script><script defer src="{{ site_base }}/static/playground.js"></script><script defer src="{{ site_base }}/static/guest-studio.js"></script>{% endblock %}
+{% block body_class %}mk-app-page guest-page{% endblock %}
+{% block body %}
+  <aside class="mk-app-sidebar" id="mk-app-sidebar" data-app-sidebar>
+    <div class="mk-app-brand-row"><a class="mk-wordmark" href="{{ site_base }}/" aria-label="Markov home"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><button type="button" aria-label="Close workspace navigation" data-app-nav-close>×</button></div>
+    <p class="mk-workspace-label">YOUR GUEST WORKSPACE</p>
+    <nav class="mk-app-nav" aria-label="Guest workspace">
+      <a href="#studio" data-guest-view="studio" aria-current="page"><span aria-hidden="true">⑂</span><strong>Find ideas</strong></a>
+      <a href="#shortlist" data-guest-view="shortlist"><span aria-hidden="true">＋</span><strong>Your shortlist</strong><small data-guest-saved-count>0</small></a>
+      <a href="#drafts" data-guest-view="drafts"><span aria-hidden="true">▤</span><strong>Your drafts</strong><small data-guest-draft-count>0</small></a>
+    </nav>
+    <div class="guest-sidebar-help"><p>Take it for a spin.</p><span>Pick an angle, add your perspective, and leave with a draft.</span><a href="{{ site_base }}/#walkthroughs">Watch the walkthroughs <span aria-hidden="true">↗</span></a></div>
+    <nav class="mk-app-secondary" aria-label="Guest workspace options"><a href="{{ site_base }}/">Back to Markov <span aria-hidden="true">↗</span></a>{% if not static_preview %}<a href="{{ workspace_url }}">Sign in to your workspace</a>{% endif %}<button type="button" data-guest-reset>Reset guest workspace</button></nav>
+  </aside>
+  <div class="mk-app-scrim" data-app-scrim hidden></div>
+  <main class="mk-app-main" id="main-content">
+    <div class="mk-mobile-appbar"><button type="button" data-app-nav-open aria-label="Open workspace navigation" aria-controls="mk-app-sidebar" aria-expanded="false"><span></span><span></span><span></span></button><a class="mk-wordmark" href="{{ site_base }}/">Markov</a><span>Guest mode</span></div>
+    <div class="guest-shell">
+      <div class="guest-notice"><span><i aria-hidden="true"></i>Guest mode</span><p>Example content. Real editing. Saved on this device.</p><a href="{{ site_base }}/#walkthroughs">Quick tour <span aria-hidden="true">↗</span></a></div>
+      <header class="guest-heading"><div><p class="eyebrow" data-guest-eyebrow>A conversation is just the beginning</p><h1 tabindex="-1" data-guest-title>Find your next batch of ideas.</h1><p data-guest-description>Choose a conversation below. Explore different angles, then keep the ones that feel like you.</p></div><span class="guest-no-account">No account. No credit card.</span></header>
+      {% set guest_demo = true %}{% include "partials/idea_playground.html" %}
+      <p class="guest-boundary">This is a hands-on showcase using three prewritten example conversations. It does not run live AI research or publish to social accounts. Your guest work is separate from any signed-in workspace.</p>
+    </div>
+  </main>
+  <dialog class="guest-reset-dialog" data-guest-reset-dialog aria-labelledby="guest-reset-title"><h2 id="guest-reset-title">Start fresh?</h2><p>This removes the shortlist and drafts in this guest workspace from this browser. Export anything you want to keep first. Your signed-in work is not affected.</p><div><button class="mk-button mk-button-quiet" type="button" data-guest-reset-cancel>Keep my work</button><button class="mk-button mk-button-dark" type="button" data-guest-reset-confirm>Reset guest workspace</button></div></dialog>
+{% endblock %}

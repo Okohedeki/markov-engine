@@ -1,8 +1,9 @@
-<section class="idea-playground" data-idea-playground aria-label="Interactive posting ideas example">
+<section class="idea-playground" data-idea-playground {% if guest_demo %}data-storage-key="markov-guest-studio-v1"{% endif %} aria-label="Interactive posting ideas example">
   <header class="playground-topbar">
     <div><span class="studio-dot" aria-hidden="true"></span><strong>One conversation. More possibilities.</strong></div>
     <span class="example-label">Interactive example</span>
   </header>
+  {% if guest_demo %}<section class="guest-drafts" data-guest-drafts aria-label="Saved working drafts" hidden></section>{% endif %}
   <div class="playground-body">
     <aside class="topic-rail">
       <p class="rail-label">Start with a conversation</p>
@@ -33,9 +34,9 @@
     <label for="idea-format">Shape this as</label>
     <select id="idea-format" data-idea-format><option value="post">Short post</option><option value="thread">Thread</option><option value="video">Video outline</option></select>
     <label for="idea-draft">Your working outline</label>
-    <textarea id="idea-draft" data-idea-draft rows="10"></textarea>
+    <textarea id="idea-draft" data-idea-draft rows="10" maxlength="20000"></textarea>
     <p class="editor-note">Example outline. Add your perspective and verify factual claims before posting. Edits are saved in this browser when you shortlist the idea.</p>
-    <footer><button class="mk-button mk-button-quiet" type="button" data-copy-idea>Copy outline</button><button class="mk-button mk-button-primary" type="button" data-save-idea>Save to shortlist <span aria-hidden="true">＋</span></button></footer>
+    <footer><button class="mk-button mk-button-quiet" type="button" data-copy-idea>Copy outline</button><button class="mk-button {% if guest_demo %}mk-button-quiet{% else %}mk-button-primary{% endif %}" type="button" data-save-idea>Save to shortlist <span aria-hidden="true">＋</span></button>{% if guest_demo %}<button class="mk-button mk-button-primary" type="button" data-save-draft>Save draft <span aria-hidden="true">↗</span></button>{% endif %}</footer>
     <p role="status" aria-live="polite" data-editor-status></p>
   </dialog>
 </section>

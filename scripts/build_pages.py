@@ -20,6 +20,7 @@ PAGES = {
     "pricing.html": OUTPUT / "pricing" / "index.html",
     "developers.html": OUTPUT / "developers" / "index.html",
     "sample.html": OUTPUT / "sample" / "index.html",
+    "demo.html": OUTPUT / "demo" / "index.html",
 }
 
 PRODUCTS = [

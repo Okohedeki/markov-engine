@@ -371,6 +371,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def sample(request: Request):
         return _render(request, "sample.html")
 
+    @router.get("/demo")
+    @router.get("/demo/")
+    async def guest_demo(request: Request):
+        return _render(request, "demo.html", guest_demo=True)
+
     @router.get("/app/login")
     async def login_page(request: Request):
         return _render(request, "login.html", error=None)
