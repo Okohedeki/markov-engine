@@ -39,3 +39,37 @@ be presented as evidence supporting every lead. No new generation or storage sys
 Review actual desktop and mobile renders with populated, empty and filtered views.
 Exercise selection, status persistence, source loading/retry, editor links and
 keyboard access through direct browser checks; do not add or run test suites.
+
+## Implemented and reviewed — 2026-09-06
+
+- Compact queue, four core navigation destinations and contextual batch actions.
+- Owner-checked, read-only source/document previews loaded on demand; no model call
+  or generation charge when opening one. Failed loads have a retry and full-page fallback.
+- Format-neutral manual progress; filters survive bulk moves and writing revisions.
+- Source links beside the desktop editor; direct source access and saved/unsaved
+  feedback on mobile. Revision history is collapsed until needed.
+- Existing script-generation and Story Mode paid gates remain unchanged.
+
+Browser review used isolated copies of local data, including the saved MLK research;
+the original databases were not modified. Research notes in that preview were
+rendered from stored findings, not newly generated scripts. A separate preview
+owner had 31 explicitly labeled layout fixtures for pagination and batch checks.
+
+Verified through direct Chromium interactions:
+
+- Queue and writing at 1440, 1024 and 390px; additional 320px editor check exposed
+  a tab overflow that was fixed and rechecked.
+- Keyboard disclosure, on-demand fetch/reopen without refetch, source links,
+  writing entry and filtered return, source-tab editing continuity and saving.
+- Failed source request and successful retry; mobile navigation focus restoration.
+- Empty workspace, empty search, 30-row selection, next-page navigation and persisted
+  bulk progress with the original search retained.
+- Cross-owner preview denial, cross-origin mutation denial, free-account script
+  and series upgrade redirects. No paid generation was triggered.
+- Series library/detail desktop, tablet and mobile renders; no reported page errors
+  or document overflow. Modified Python modules pass syntax and Ruff checks.
+
+No test suites were added or run. This was not a concurrency/load benchmark.
+Discovery angles still live inside their source-topic research document; this pass
+does not make those angles independently selectable/tracked queue records. Sources
+in the preview belong to the whole topic, not necessarily to each individual claim.
