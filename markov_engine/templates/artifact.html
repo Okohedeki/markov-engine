@@ -47,7 +47,7 @@
                       <span class="mk-route-open" aria-hidden="true">＋</span>
                     </button>
                       <footer class="mk-route-actions">
-                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">Develop this idea <span aria-hidden="true">→</span></button>
+                        <button class="mk-button mk-button-primary" type="button" data-open-composer data-topic-id="{{ row.topic.id }}" data-topic-title="{{ row.topic.title }}" data-topic-focus="{{ row.topic.focus }}">{{ 'Develop talking points' if entitlements.talking_points else 'Explore this angle' }} <span aria-hidden="true">→</span></button>
                         {% if primary_claim %}<form method="post" action="/app/claims/{{ primary_claim.id }}/deepen"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Dig deeper</button></form>{% endif %}
                         {% if primary_connection %}<form method="post" action="/app/connections/{{ primary_connection.id }}/actions"><input type="hidden" name="action" value="save"><input type="hidden" name="return_artifact" value="{{ artifact.id }}"><button class="mk-button mk-button-quiet" type="submit">Save</button></form><button class="mk-button mk-button-quiet" type="button" data-reject-opportunity>Not relevant</button>{% endif %}
                       </footer>
@@ -113,10 +113,11 @@
 
   <dialog class="mk-composer" data-output-composer aria-labelledby="composer-title">
     <form method="post" action="/app/cases/{{ case.id }}/convert">
-      <header><div><p class="mk-kicker">Develop this idea</p><h2 id="composer-title">Turn this angle into a draft.</h2><p data-composer-context>Choose an angle, a format, and something you want the audience to take away.</p></div><button type="button" data-close-composer aria-label="Close draft composer">×</button></header>
+      <header><div><p class="mk-kicker">{{ 'Paid creator tools' if entitlements.talking_points else 'Explore the source context' }}</p><h2 id="composer-title">{{ 'Develop this story.' if entitlements.talking_points else 'Research this direction.' }}</h2><p data-composer-context>Choose the question you want to explore and what your audience should understand.</p></div><button type="button" data-close-composer aria-label="Close draft composer">×</button></header>
+      {% if not entitlements.talking_points %}<p>Full talking points and Story Mode require paid access. <a href="/app/upgrade">Compare creator tools →</a></p>{% endif %}
       <input type="hidden" name="selected_topic_id" value="" data-composer-topic><input type="hidden" name="review_level" value="instant">
       <div class="mk-composer-fields">
-        <label><span>Draft type</span><select name="mode"><option value="brief">Brief</option><option value="research">Research report</option><option value="script" selected>Factual script</option></select></label>
+        <label><span>Output type</span><select name="mode"><option value="brief">Source brief</option><option value="research" {% if not entitlements.talking_points %}selected{% endif %}>Research context</option>{% if entitlements.talking_points %}<option value="script" selected>Talking points / script · Paid</option>{% endif %}</select></label>
         <label><span>Audience</span><input name="audience" placeholder="Who needs this and what do they already know?"></label>
         <label class="is-wide"><span>Working angle or question</span><textarea name="angle" rows="3" required data-composer-angle placeholder="What should this route test or explain?"></textarea><small>Markov treats this as a direction to test, not a conclusion to endorse.</small></label>
         <label><span>Format</span><select name="delivery_format"><option>Short video</option><option>Social post</option><option>Article</option><option>Newsletter essay</option><option>Podcast episode</option><option>YouTube essay</option></select></label>
