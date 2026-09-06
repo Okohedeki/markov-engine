@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from markov_engine.renderers import render_artifact
+from markov_engine.entitlements import require_paid_feature
 from markov_engine.research import persist_rendered_artifact
 from markov_engine.store.records import ArtifactRec, UserBranchDecisionRec
 from markov_engine.store.sqlite import SqliteStore
@@ -55,8 +56,10 @@ async def follow_connection_into_script(
     owner_id: str,
     artifact_id: int | None = None,
     constraints: dict | None = None,
+    settings=None,
 ) -> tuple[UserBranchDecisionRec, ArtifactRec]:
     """Follow one edge into its own provenance-preserving Script artifact."""
+    require_paid_feature(owner_id, "talking_points", settings=settings)
     connection = await store.get_connection(connection_id, owner_id=owner_id)
     if connection is None or connection.validation_status != "validated":
         raise ValueError("Validated connection not found")

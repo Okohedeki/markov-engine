@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass
 import httpx
 
 from markov_engine.config import Settings, get_settings
-from markov_engine.entitlements import resolve_entitlements
+from markov_engine.entitlements import require_paid_feature, resolve_entitlements
 from markov_engine.store.sqlite import SqliteStore
 
 PRODUCT_VARIANTS = {
@@ -85,6 +85,8 @@ async def reserve_job_credits(
     settings = settings or get_settings()
     variant = product_variant(mode, review_level)
     entitlements = resolve_entitlements(owner_id, settings=settings)
+    if mode == "script":
+        require_paid_feature(owner_id, "talking_points", settings=settings)
     if not entitlements.metered_credits:
         await store.record_usage_event(
             owner_id=owner_id,

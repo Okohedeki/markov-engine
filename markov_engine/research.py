@@ -427,7 +427,10 @@ async def convert_case_artifact(
 ) -> tuple[ArtifactRec, bool]:
     """Create another sellable output from existing research without rerunning it."""
     from markov_engine.billing import refund_job_credits, reserve_job_credits
+    from markov_engine.entitlements import require_paid_feature
 
+    if mode == "script":
+        require_paid_feature(owner_id, "talking_points", settings=settings)
     if mode not in MODE_TO_ARTIFACT:
         raise ValueError(f"Unsupported mode: {mode}")
     case = await store.get_research_case(case_id, owner_id=owner_id)

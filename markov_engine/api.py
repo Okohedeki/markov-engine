@@ -691,6 +691,7 @@ def create_app(
                 owner_id=owner_id,
                 artifact_id=payload.artifact_id,
                 constraints=payload.options,
+                settings=settings,
             )
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc

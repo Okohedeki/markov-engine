@@ -875,6 +875,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                     connection_id=connection_id,
                     owner_id=owner_id,
                     artifact_id=script_id,
+                    settings=settings,
                 )
                 return RedirectResponse(
                     f"/app/artifacts/{artifact.id}", status_code=303

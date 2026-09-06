@@ -40,7 +40,7 @@ async def test_community_is_unmetered_but_still_records_the_operation():
             store,
             owner_id="self-hosted",
             job_id="job-community",
-            mode="script",
+            mode="brief",
             review_level="instant",
             settings=settings,
         )

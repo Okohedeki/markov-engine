@@ -189,7 +189,7 @@ class Settings(BaseSettings):
         0.25, alias="MARKOV_CONNECTION_MIN_SCORE"
     )
     default_entitlement_profile: str = Field(
-        "cloud_pro", alias="MARKOV_DEFAULT_ENTITLEMENT_PROFILE"
+        "cloud_free", alias="MARKOV_DEFAULT_ENTITLEMENT_PROFILE"
     )
     owner_entitlement_profiles: dict[str, str] = Field(
         default_factory=dict,

@@ -18,6 +18,8 @@ class Entitlements:
     max_connections: int | None
     max_connection_depth: int | None
     export_formats: tuple[str, ...]
+    talking_points: bool = False
+    story_mode: bool = False
     citations: bool = True
     accuracy_controls: bool = True
     uncertainty_labels: bool = True
@@ -54,6 +56,8 @@ PROFILES = {
     ),
     "cloud_plus": Entitlements(
         profile="cloud_plus",
+        talking_points=True,
+        story_mode=True,
         api_access=True,
         human_review=False,
         metered_credits=True,
@@ -65,6 +69,8 @@ PROFILES = {
     ),
     "cloud_pro": Entitlements(
         profile="cloud_pro",
+        talking_points=True,
+        story_mode=True,
         api_access=True,
         human_review=True,
         metered_credits=True,
@@ -76,6 +82,8 @@ PROFILES = {
     ),
     "verified_add_on": Entitlements(
         profile="verified_add_on",
+        talking_points=True,
+        story_mode=True,
         api_access=True,
         human_review=True,
         metered_credits=True,
@@ -130,3 +138,10 @@ def require_capability(entitlements: Entitlements, capability: str) -> None:
         raise ValueError(
             f"The {entitlements.profile} profile does not include {capability.replace('_', ' ')}"
         )
+
+
+def require_paid_feature(owner_id: str, feature: str, *, settings=None) -> None:
+    if feature not in {"talking_points", "story_mode"}:
+        raise ValueError(f"Unknown paid feature: {feature}")
+    if not getattr(resolve_entitlements(owner_id, settings=settings), feature):
+        raise ValueError(f"{feature.replace('_', ' ').title()} is a paid feature. Choose Plus or Pro to continue.")

@@ -14,7 +14,7 @@ import httpx
 
 from markov_engine.billing import refund_job_credits, reserve_job_credits
 from markov_engine.config import Settings, get_settings
-from markov_engine.entitlements import require_capability, resolve_entitlements
+from markov_engine.entitlements import require_capability, require_paid_feature, resolve_entitlements
 from markov_engine.research import create_research_case, process_research_case
 from markov_engine.store.records import JobRec
 from markov_engine.store.sqlite import SqliteStore
@@ -52,6 +52,8 @@ async def submit_job(
 ) -> tuple[JobRec, bool]:
     """Create a billed, isolated job. Returns ``(job, created)``."""
     settings = settings or get_settings()
+    if mode == "script":
+        require_paid_feature(owner_id, "talking_points", settings=settings)
     if idempotency_key:
         existing = await store.get_job_by_idempotency(
             owner_id=owner_id, idempotency_key=idempotency_key
