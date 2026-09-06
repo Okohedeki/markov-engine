@@ -18,21 +18,24 @@ from markov_engine.store.sqlite import SqliteStore
 
 async def test_store_roundtrips_metadata():
     store = await SqliteStore.open(":memory:")
-    src = await store.add_source(
-        url="https://tiktok.com/@creator/video/1",
-        title="Dense clip",
-        source_type="tiktok",
-        content_text="transcript...",
-        summary="a summary",
-        metadata={"uploader": "@creator", "thumbnail": "https://img/1.jpg", "duration": 42},
-    )
-    fetched = await store.get_source(src.id)
-    assert fetched is not None
-    assert fetched.metadata == {
-        "uploader": "@creator",
-        "thumbnail": "https://img/1.jpg",
-        "duration": 42,
-    }
+    try:
+        src = await store.add_source(
+            url="https://tiktok.com/@creator/video/1",
+            title="Dense clip",
+            source_type="tiktok",
+            content_text="transcript...",
+            summary="a summary",
+            metadata={"uploader": "@creator", "thumbnail": "https://img/1.jpg", "duration": 42},
+        )
+        fetched = await store.get_source(src.id)
+        assert fetched is not None
+        assert fetched.metadata == {
+            "uploader": "@creator",
+            "thumbnail": "https://img/1.jpg",
+            "duration": 42,
+        }
+    finally:
+        await store.close()
 
 
 async def test_store_null_metadata_stays_none():
