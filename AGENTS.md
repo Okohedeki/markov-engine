@@ -2,6 +2,9 @@
 
 ## UI and frontend work
 
+The current customer and UI direction is `docs/v10-creator-studio.md`.
+It supersedes older positioning that excludes frequent or volume posting.
+
 For any request involving UI, UX, frontend styling, landing pages, product pages, dashboards, application screens, screenshots, responsive behavior, or visual review, read and apply these repository skills before implementation:
 
 - `.agents/skills/frontend-art-direction/SKILL.md`
