@@ -279,7 +279,7 @@ async def test_web_login_and_focused_intake_page():
             for path, heading in (
                 ("/app/signals", "Bring in a conversation"),
                 ("/app/ideas", "Explore different angles"),
-                ("/app/plans", "Pick up a draft, add your voice"),
+                ("/app/plans", "Talking points"),
                 ("/app/published", "Take a finished draft to your channel"),
                 ("/app/search?q=Japanese", "Find the topic or idea"),
             ):
