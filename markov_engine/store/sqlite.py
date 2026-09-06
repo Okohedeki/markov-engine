@@ -19,6 +19,7 @@ import aiosqlite
 
 from markov_engine.store.migrations import apply_migrations
 from markov_engine.store.research_sqlite import ResearchSqliteMixin
+from markov_engine.store.production_sqlite import ProductionSqliteMixin
 from markov_engine.store.base import Store
 from markov_engine.store.records import (
     ArtifactRec,
@@ -150,7 +151,7 @@ def _ts(raw: str | None) -> dt.datetime | None:
         return None
 
 
-class SqliteStore(ResearchSqliteMixin, Store):
+class SqliteStore(ProductionSqliteMixin, ResearchSqliteMixin, Store):
     def __init__(self, conn: aiosqlite.Connection):
         self._conn = conn
         self._credit_lock = asyncio.Lock()

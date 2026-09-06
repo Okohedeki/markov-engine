@@ -41,6 +41,7 @@ async def test_legacy_database_gains_new_columns_and_remains_writable(tmp_path):
                     (2, "connection_graph_v2"),
                     (3, "focused_research_plan_v2"),
                     (4, "branched_artifacts_v2"),
+                    (5, "production_queue_and_series"),
                 ]
     finally:
         await store.close()
@@ -52,6 +53,6 @@ async def test_legacy_database_gains_new_columns_and_remains_writable(tmp_path):
         async with reopened._conn.execute(
             "SELECT COUNT(*) FROM schema_migrations"
         ) as cur:
-            assert (await cur.fetchone())[0] == 4
+            assert (await cur.fetchone())[0] == 5
     finally:
         await reopened.close()

@@ -415,11 +415,17 @@ async def _migration_4(conn: aiosqlite.Connection) -> None:
     )
 
 
+async def _migration_5(conn: aiosqlite.Connection) -> None:
+    from markov_engine.store.production_sqlite import PRODUCTION_SCHEMA
+    await conn.executescript(PRODUCTION_SCHEMA)
+
+
 _MIGRATIONS = (
     (1, "research_case_v1", _migration_1),
     (2, "connection_graph_v2", _migration_2),
     (3, "focused_research_plan_v2", _migration_3),
     (4, "branched_artifacts_v2", _migration_4),
+    (5, "production_queue_and_series", _migration_5),
 )
 
 
