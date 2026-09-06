@@ -401,3 +401,51 @@ async def discover_story_angles(
         event_type="editorial_discovery", metadata=result,
     )
     return result
+
+
+async def story_angle_sections(
+    store: SqliteStore, *, case_id: int, claim_ids: set[int] | None = None,
+) -> list[dict]:
+    """Expose inspected angle briefs in existing research exports."""
+    event = await store.latest_case_event(case_id=case_id, event_type="editorial_discovery")
+    if event is None:
+        return []
+    result = event.metadata
+    findings = {item["evidence_id"]: item for item in result.get("findings", [])}
+    sections = [{
+        "id": "editorial-discovery", "title": "Editorial discovery",
+        "statement_type": "research_status",
+        "content": (
+            f"Research status: {result['status']}. "
+            f"Inspected {result.get('source_count', 0)} external sources. "
+            "These are story leads, not verified scripts; novelty is relative to the seed."
+        ),
+    }]
+    for index, angle in enumerate(result.get("angles", []), 1):
+        evidence_ids = list(dict.fromkeys(
+            [item["evidence_id"] for item in angle["support"]]
+            + angle["challenge_evidence_ids"]
+        ))
+        anchors = {findings[eid]["claim_id"] for eid in evidence_ids if eid in findings}
+        if claim_ids is not None and not anchors.intersection(claim_ids):
+            continue
+        lines = [
+            f"**{label}:** {angle[key]}" for label, key in (
+                ("Question", "question"), ("What this adds", "new_information"),
+                ("Why it matters", "why_it_matters"), ("Beyond the seed", "novelty_basis"),
+                ("Limitations", "uncertainty"), ("Next question", "next_question"),
+            )
+        ]
+        lines.append("**Evidence status:** " + angle["evidence_status"].replace("_", " "))
+        lines.extend(
+            f"- [E{eid}] {findings[eid]['url']} — {findings[eid]['locator']}"
+            for eid in evidence_ids if eid in findings
+        )
+        sections.append({
+            "id": f"story-angle-{index}", "title": angle["title"],
+            "content": "\n\n".join(lines), "evidence_ids": evidence_ids,
+            "claim_ids": sorted(anchors), "statement_type": "editorial_lead",
+        })
+    if len(sections) == 1:
+        sections[0]["content"] += " No additional supported angle is available for this selection."
+    return sections
