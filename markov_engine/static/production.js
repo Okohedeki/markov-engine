@@ -41,6 +41,14 @@
 
 // Read stored material only: opening a story never starts research or generation.
 (() => {
+  const queueLink = path => {
+    const url = new URL(path, location.origin);
+    url.searchParams.set('queue', location.search.slice(1));
+    return url.pathname + url.search + url.hash;
+  };
+  document.querySelectorAll('.production-row a[href^="/app/artifacts/"]').forEach(link => {
+    link.href = queueLink(link.getAttribute('href'));
+  });
   const add = (parent, tag, text, className) => {
     const node = document.createElement(tag);
     node.textContent = text;
@@ -95,7 +103,7 @@
         data.documents.forEach(doc => {
           const item = add(documentList, 'li', '');
           const link = add(item, 'a', labels[doc.type] || doc.type.replaceAll('_', ' '));
-          link.href = doc.url;
+          link.href = queueLink(doc.url);
           add(item, 'small', `${doc.status.replaceAll('_', ' ')} · ${doc.title}`);
         });
         if (!data.documents.length) add(documents, 'p', `No saved document yet. Research status: ${data.research_status.replaceAll('_', ' ')}.`);
