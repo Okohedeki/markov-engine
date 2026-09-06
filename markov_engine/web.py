@@ -1095,4 +1095,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def terms(request: Request):
         return _render(request, "terms.html")
 
+    @router.get("/copyright")
+    async def copyright_page(request: Request):
+        return _render(request, "copyright.html")
+
     return router
