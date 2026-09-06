@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import hmac
 import json
+import sqlite3
 
 import pytest
 
@@ -130,5 +131,33 @@ async def test_concurrent_credit_debits_cannot_overspend():
         assert sum(not isinstance(item, Exception) for item in results) == 1
         assert sum(isinstance(item, ValueError) for item in results) == 1
         assert (await store.get_credit_account("owner-1")).balance == 4
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_credit_write_failure_cannot_split_balance_from_ledger():
+    store = await SqliteStore.open(":memory:")
+    try:
+        await store.ensure_credit_account("owner-1", opening_balance=10)
+        await store._conn.execute(
+            "CREATE TEMP TRIGGER fail_balance AFTER UPDATE ON credit_accounts "
+            "BEGIN SELECT RAISE(ABORT, 'fixture balance failure'); END"
+        )
+        with pytest.raises(sqlite3.IntegrityError, match="fixture balance failure"):
+            await store.apply_credit_transaction(
+                owner_id="owner-1", amount=-4, reason="fixture",
+                idempotency_key="retryable-reservation",
+            )
+        assert (await store.get_credit_account("owner-1")).balance == 10
+        assert not await store.has_credit_transaction(
+            owner_id="owner-1", idempotency_key="retryable-reservation"
+        )
+        await store._conn.execute("DROP TRIGGER fail_balance")
+        retried = await store.apply_credit_transaction(
+            owner_id="owner-1", amount=-4, reason="fixture",
+            idempotency_key="retryable-reservation",
+        )
+        assert retried.balance == 6
     finally:
         await store.close()
