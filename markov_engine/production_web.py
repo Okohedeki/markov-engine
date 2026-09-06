@@ -52,5 +52,10 @@ def create_production_router(*, settings, owner, render):
     def paid(owner_id, feature):
         require_paid_feature(owner_id, feature, settings=settings)
 
+    def error(request, message):
+        result = render(request, 'error.html', title='Could not update your production queue', message=message)
+        result.status_code = 400
+        return result
+
 
     return router
