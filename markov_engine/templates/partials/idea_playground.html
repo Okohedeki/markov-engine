@@ -1,0 +1,40 @@
+<section class="idea-playground" data-idea-playground aria-label="Interactive posting ideas example">
+  <header class="playground-topbar">
+    <div><span class="studio-dot" aria-hidden="true"></span><strong>One conversation. More possibilities.</strong></div>
+    <span class="example-label">Interactive example</span>
+  </header>
+  <div class="playground-body">
+    <aside class="topic-rail">
+      <p class="rail-label">Start with a conversation</p>
+      <div class="topic-buttons" role="group" aria-label="Example conversations">
+        <button type="button" data-topic="agents" aria-pressed="true"><span>01</span><span><small>Technology</small><strong>The AI agent rush</strong></span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-topic="creators" aria-pressed="false"><span>02</span><span><small>Creator economy</small><strong>Standing out in the feed</strong></span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-topic="work" aria-pressed="false"><span>03</span><span><small>Work & culture</small><strong>Life after the meeting</strong></span><b aria-hidden="true">↗</b></button>
+      </div>
+      <p class="example-note">Sample discussions and prewritten angles. Live trend discovery is not connected.</p>
+      <a class="rail-cta" href="{{ workspace_url }}">{% if static_preview %}Explore the studio{% else %}Bring your own topic{% endif %}<span aria-hidden="true">→</span></a>
+    </aside>
+    <div class="angle-workspace">
+      <header class="angle-heading"><p data-topic-category>Technology</p><h2 data-topic-title>Everyone is building an AI agent. What actually needs one?</h2><p data-topic-context>The conversation: tools that can take actions, and the work people would trust them to do.</p></header>
+      <div class="angle-toolbar">
+        <div role="group" aria-label="Idea collection view"><button type="button" data-collection="all" aria-pressed="true">The angles <span data-angle-count>6</span></button><button type="button" data-collection="saved" aria-pressed="false">Shortlist <span data-saved-count>0</span></button></div>
+        <button type="button" class="download-ideas" data-download disabled>Export shortlist <span aria-hidden="true">↓</span></button>
+      </div>
+      <div class="angle-grid" data-angle-grid></div>
+      <noscript><p class="playground-empty">Turn on JavaScript to explore the example, or <a href="{{ workspace_url }}">open your studio</a> to work with your own topic.</p></noscript>
+      <p class="playground-status" role="status" aria-live="polite" data-playground-status>Choose an angle to see its hook and outline.</p>
+    </div>
+  </div>
+  <dialog class="idea-editor" data-idea-editor aria-labelledby="idea-editor-title">
+    <header><p class="eyebrow">Make it your own</p><button type="button" data-editor-close aria-label="Close idea">×</button></header>
+    <h2 id="idea-editor-title" data-editor-title></h2>
+    <p class="editor-origin" data-editor-origin></p>
+    <label for="idea-format">Shape this as</label>
+    <select id="idea-format" data-idea-format><option value="post">Short post</option><option value="thread">Thread</option><option value="video">Video outline</option></select>
+    <label for="idea-draft">Your working outline</label>
+    <textarea id="idea-draft" data-idea-draft rows="10"></textarea>
+    <p class="editor-note">Example outline. Add your perspective and verify factual claims before posting. Edits are saved in this browser when you shortlist the idea.</p>
+    <footer><button class="mk-button mk-button-quiet" type="button" data-copy-idea>Copy outline</button><button class="mk-button mk-button-primary" type="button" data-save-idea>Save to shortlist <span aria-hidden="true">＋</span></button></footer>
+    <p role="status" aria-live="polite" data-editor-status></p>
+  </dialog>
+</section>

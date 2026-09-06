@@ -1,0 +1,95 @@
+/* The discussion-to-angle collection is the main product demonstration. */
+.idea-playground { overflow: clip; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.playground-topbar { min-height: 62px; padding: 16px 25px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+.playground-topbar > div { display: flex; align-items: center; gap: 11px; font-size: 13px; }
+.playground-topbar strong { font-weight: 550; }
+.studio-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+.example-label { color: var(--muted); font-size: 11px; }
+.playground-body { display: grid; grid-template-columns: 250px minmax(0,1fr); }
+.topic-rail { padding: 28px 18px; background: #f8f8f3; border-right: 1px solid var(--line); }
+.rail-label { padding: 0 10px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.topic-buttons { margin: 23px 0 28px; }
+.topic-buttons button { width: 100%; display: grid; grid-template-columns: 19px minmax(0,1fr) 14px; gap: 9px; align-items: center; background: transparent; padding: 17px 10px; border-radius: 8px; text-align: left; }
+.topic-buttons button > span:first-child { color: var(--muted); font-size: 10px; }
+.topic-buttons button small, .topic-buttons button strong { display: block; }
+.topic-buttons button small { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+.topic-buttons button strong { font-size: 12px; font-weight: 550; }
+.topic-buttons button b { color: var(--accent); font-weight: 400; opacity: 0; }
+.topic-buttons button[aria-pressed=true] { background: #fff; box-shadow: 0 3px 10px #23241f06; }
+.topic-buttons button[aria-pressed=true] b { opacity: 1; }
+.topic-buttons button:hover { background: #fff; }
+.example-note { padding: 0 10px; font-size: 11px; color: var(--muted); line-height: 1.65; }
+.rail-cta { display: flex; justify-content: space-between; gap: 14px; margin: 30px 10px 0; padding-top: 17px; border-top: 1px solid var(--line); font-size: 12px; color: var(--accent); }
+.angle-workspace { min-width: 0; padding: 29px 30px 15px; }
+.angle-heading > p:first-child { font-size: 11px; color: var(--accent); }
+.angle-heading h2 { max-width: 780px; margin: 10px 0 13px; font-size: clamp(24px,2.7vw,37px); font-weight: 520; letter-spacing: -.035em; }
+.angle-heading > p:last-child { max-width: 720px; color: var(--muted); font-size: 12px; }
+.angle-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 28px; border-bottom: 1px solid var(--line); }
+.angle-toolbar > div { display: flex; gap: 25px; }
+.angle-toolbar button { min-height: 46px; padding: 10px 0; background: transparent; color: var(--muted); font-size: 12px; }
+.angle-toolbar button[aria-pressed=true] { color: var(--ink); box-shadow: 0 2px var(--accent); }
+.angle-toolbar button span { margin-left: 6px; font-size: 10px; color: var(--muted); }
+.angle-toolbar .download-ideas { font-size: 11px; }
+.angle-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px 20px; padding: 25px 0 13px; }
+.angle-card { min-width: 0; position: relative; display: flex; flex-direction: column; }
+.angle-card > button:first-child { flex: 1; display: flex; flex-direction: column; width: 100%; text-align: left; min-height: 195px; padding: 21px 19px; background: var(--mint); border-radius: 8px; transition: transform 170ms var(--ease), background-color 170ms var(--ease); }
+.angle-card:nth-child(3n+2) > button:first-child { background: var(--peach); }
+.angle-card:nth-child(3n+3) > button:first-child { background: var(--lilac); }
+.angle-card:nth-child(6n) > button:first-child { background: var(--yellow); }
+.angle-card > button:first-child:hover { transform: translateY(-4px); }
+.angle-card > button:first-child > span { color: #5d6456; font-size: 10px; }
+.angle-card h3 { margin-top: 23px; font-size: clamp(16px,1.55vw,23px); line-height: 1.24; letter-spacing: -.035em; font-weight: 550; }
+.angle-card > button:first-child > small { padding-top: 22px; margin-top: auto; font-size: 10px; color: #5b6056; }
+.angle-card > footer { min-height: 41px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.angle-card > footer > span { font-size: 10px; color: var(--muted); }
+.angle-card > footer button { min-width: 40px; min-height: 40px; padding: 7px; background: transparent; font-size: 18px; }
+.angle-card > footer button[aria-pressed=true] { color: var(--accent); }
+.playground-status { min-height: 29px; color: var(--muted); font-size: 11px; }
+.playground-empty { grid-column: 1/-1; padding: 60px 25px; text-align: center; color: var(--muted); font-size: 14px; }
+.playground-empty strong { display: block; margin-bottom: 12px; color: var(--ink); font-size: 20px; font-weight: 550; }
+.idea-editor { width: min(610px,calc(100% - 30px)); max-height: calc(100dvh - 40px); padding: 30px; overflow-y: auto; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 30px 100px #23241f26; }
+.idea-editor::backdrop { background: #23241f66; }
+.idea-editor > header { display: flex; justify-content: space-between; align-items: center; }
+.idea-editor > header button { width: 40px; height: 40px; border-radius: 50%; background: #f4f4ee; font-size: 25px; }
+.idea-editor h2 { margin-top: 15px; font-size: 33px; line-height: 1.16; }
+.editor-origin { margin: 15px 0 26px; color: var(--muted); font-size: 12px; }
+.idea-editor label { display: block; margin: 20px 0 9px; font-size: 12px; font-weight: 600; }
+.idea-editor select { width: 100%; padding: 12px; background: #f8f8f3; border: 1px solid var(--line); border-radius: 7px; font-size: 14px; }
+.idea-editor textarea { display: block; width: 100%; min-height: 230px; padding: 16px; resize: vertical; background: #fcfcf9; border: 1px solid var(--line); border-radius: 7px; font-size: 14px; line-height: 1.65; }
+.editor-note { margin-top: 12px; color: var(--muted); font-size: 11px; }
+.idea-editor > footer { margin-top: 24px; display: flex; justify-content: space-between; gap: 14px; }
+.idea-editor [data-editor-status] { min-height: 20px; margin-top: 15px; font-size: 12px; color: var(--green); }
+@media(max-width:1100px) {
+  .playground-body { grid-template-columns: 210px minmax(0,1fr); }
+  .angle-workspace { padding-inline: 22px; }
+  .angle-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .angle-card h3 { font-size: 22px; }
+}
+@media(max-width:700px) {
+  .playground-topbar { padding: 16px; gap: 15px; }
+  .playground-topbar > div { font-size: 11px; max-width: 190px; }
+  .example-label { font-size: 10px; }
+  .playground-body { grid-template-columns: 1fr; }
+  .topic-rail { padding: 18px 15px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .rail-label { padding: 0; }
+  .topic-buttons { display: flex; gap: 8px; overflow-x: auto; margin: 14px -5px 0; padding: 5px; }
+  .topic-buttons button { flex: 0 0 168px; padding: 12px; grid-template-columns: minmax(0,1fr) 12px; }
+  .topic-buttons button > span:first-child { display: none; }
+  .topic-buttons button small { font-size: 10px; }
+  .topic-buttons button strong { font-size: 12px; }
+  .topic-rail .example-note { margin-top: 14px; padding: 0; font-size: 10px; }
+  .topic-rail .rail-cta { display: none; }
+  .angle-workspace { padding: 23px 15px 12px; }
+  .angle-heading h2 { font-size: 27px; }
+  .angle-heading > p:last-child { font-size: 11px; }
+  .angle-toolbar { gap: 15px; flex-wrap: wrap; margin-top: 19px; }
+  .angle-toolbar > div { gap: 22px; }
+  .angle-toolbar .download-ideas { min-height: 35px; font-size: 10px; }
+  .angle-grid { gap: 18px 13px; }
+  .angle-card > button:first-child { min-height: 198px; padding: 16px 13px; }
+  .angle-card h3 { font-size: 18px; margin-top: 20px; }
+  .angle-card > button:first-child > span { font-size: 9px; }
+  .idea-editor { padding: 22px; }
+  .idea-editor h2 { font-size: 27px; }
+  .idea-editor > footer { flex-direction: column; }
+}
