@@ -37,6 +37,24 @@ class _FakeClient:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('status,reason', [('incomplete', 'max_output_tokens'),
+                                         ('incomplete', 'content_filter'), ('failed', 'failed')])
+async def test_responses_rejects_unfinished_output_and_preserves_cost(monkeypatch, status, reason):
+    from markov_engine.model_errors import ModelResponseError
+
+    monkeypatch.setattr(llm.httpx, 'AsyncClient', _FakeClient)
+    _FakeClient.response_data = {
+        'status': status, 'incomplete_details': {'reason': reason},
+        'output': [{'type': 'message', 'content': [{'type': 'output_text', 'text': '{"claims":['}]}],
+        'usage': {'input_tokens': 1000, 'output_tokens': 100},
+    }
+    with pytest.raises(ModelResponseError) as error:
+        await llm._openai_responses([], max_tokens=2048, model='gpt-5.6-luna')
+    assert error.value.reason == reason
+    assert error.value.cost == pytest.approx(0.00032)
+
+
+@pytest.mark.asyncio
 async def test_official_openai_uses_responses_structured_outputs_and_tracks_cost(
     monkeypatch,
 ):
