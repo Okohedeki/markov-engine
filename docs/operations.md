@@ -14,10 +14,20 @@ credit, and usage relationships stay intact.
 
 `POST /v2/jobs` writes the entitlement-aware credit reservation, research case,
 job, and queued event before scheduling work. Background work runs in the
-FastAPI process.
+FastAPI process. One instance can serve multiple authenticated customers; their
+cases, jobs, and credits remain owner-scoped. `MARKOV_JOB_CONCURRENCY` defaults to
+`2` (minimum `1`) and bounds simultaneous initial research jobs across V1, V2,
+and dashboard submissions. Additional jobs stay `queued` until a slot opens.
+Set this value before starting the process. This is a small in-process limit,
+not a new queue service or a promise of a particular requests-per-second rate.
+Follow-up conversions and deepening are separate synchronous operations and are
+not covered by this initial-job limit.
 Stage events are durable, but the task itself is not recovered automatically if
 the process stops. A stopped `running` job must be inspected and retried by an
-operator. Credit reservations are idempotent and failed jobs are refunded once.
+operator. Queued jobs also need operator attention after a restart; there is no
+automatic replay. Credit reservations are idempotent and failed jobs are refunded
+once. Migration 6 couples ledger inserts to balance updates atomically, avoiding
+overlapping explicit credit transactions on the shared SQLite connection.
 
 Run one application process against a SQLite file:
 
