@@ -38,3 +38,80 @@
   window.addEventListener('pageshow', () => { delete form.dataset.submitting; paidButton?.removeAttribute('aria-disabled'); update(); });
   update();
 })();
+
+// Read stored material only: opening a story never starts research or generation.
+(() => {
+  const add = (parent, tag, text, className) => {
+    const node = document.createElement(tag);
+    node.textContent = text;
+    if (className) node.className = className;
+    parent.append(node);
+    return node;
+  };
+  document.querySelectorAll('[data-story-preview]').forEach(details => {
+    const content = details.querySelector('[data-preview-content]');
+    const load = async () => {
+      if (!details.open || details.dataset.loaded || details.dataset.loading) return;
+      details.dataset.loading = 'true';
+      content.replaceChildren();
+      add(content, 'p', 'Loading saved sources and documents…').setAttribute('role', 'status');
+      content.setAttribute('aria-busy', 'true');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      try {
+        const response = await fetch(`/app/queue/preview?item=${encodeURIComponent(details.dataset.item)}`, {
+          signal: controller.signal, headers: { Accept: 'application/json' }, cache: 'no-store',
+        });
+        if (!response.ok) throw new Error('Source preview unavailable');
+        const data = await response.json();
+        content.replaceChildren();
+        add(content, 'p', data.angle, 'production-preview-angle');
+        add(content, 'p', 'Collected for this topic, not proof of every story angle. Check the original passages before writing.', 'production-preview-note');
+        const columns = add(content, 'div', '', 'production-preview-columns');
+        const sources = add(columns, 'section', '');
+        add(sources, 'h4', `Source material · ${data.source_count}`);
+        const sourceList = add(sources, 'ul', '');
+        data.sources.forEach(source => {
+          const item = add(sourceList, 'li', '');
+          const title = add(item, source.url ? 'a' : 'strong', source.title);
+          if (source.url) {
+            const url = new URL(source.url);
+            if (['https:', 'http:'].includes(url.protocol)) {
+              title.href = url.href;
+              title.target = '_blank';
+              title.rel = 'noopener noreferrer';
+              title.setAttribute('aria-label', `${source.title} (opens in a new tab)`);
+            }
+          }
+          add(item, 'small', `${source.host} · ${source.role.replaceAll('_', ' ')}`);
+        });
+        if (!data.sources.length) add(sources, 'p', 'No source material is attached yet.');
+        if (data.source_count > data.sources.length) add(sources, 'p', 'Showing the first 12 sources. Open the full trail below for all material.');
+        const documents = add(columns, 'section', '');
+        add(documents, 'h4', 'Writing & research');
+        add(documents, 'p', 'Saved documents for this topic.');
+        const documentList = add(documents, 'ul', '');
+        const labels = { script: 'Script / talking points', brief: 'Source brief', research_report: 'Research notes' };
+        data.documents.forEach(doc => {
+          const item = add(documentList, 'li', '');
+          const link = add(item, 'a', labels[doc.type] || doc.type.replaceAll('_', ' '));
+          link.href = doc.url;
+          add(item, 'small', `${doc.status.replaceAll('_', ' ')} · ${doc.title}`);
+        });
+        if (!data.documents.length) add(documents, 'p', `No saved document yet. Research status: ${data.research_status.replaceAll('_', ' ')}.`);
+        details.dataset.loaded = 'true';
+      } catch {
+        content.replaceChildren();
+        add(content, 'p', 'Could not load this story. Retry, or open the full source trail below.').setAttribute('role', 'status');
+        const retry = add(content, 'button', 'Retry loading');
+        retry.type = 'button';
+        retry.addEventListener('click', load);
+      } finally {
+        clearTimeout(timeout);
+        delete details.dataset.loading;
+        content.removeAttribute('aria-busy');
+      }
+    };
+    details.addEventListener('toggle', load);
+  });
+})();
