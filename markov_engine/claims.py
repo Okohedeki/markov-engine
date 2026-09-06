@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from markov_engine.config import get_settings
 from markov_engine.llm import complete_json
+from markov_engine.model_errors import ModelResponseError
 from markov_engine.store.records import SourceSegmentRec
 
 _settings = get_settings()
@@ -233,6 +234,30 @@ def _merge_claims(claims: list[dict]) -> list[dict]:
             )
         )
     return sorted(merged, key=lambda claim: claim["importance"], reverse=True)
+
+
+async def _extract_chunk(chunk: SegmentChunk, model: str) -> tuple[dict, float]:
+    """At most three calls per chunk; retry truncation, never refusals or outages."""
+    total_cost = 0.0
+    for allowance in (2048, 4096, 8192):
+        try:
+            data, cost = await complete_json(
+                _PROMPT.format(segments=chunk.text), schema=_CLAIM_SCHEMA,
+                model=model, max_tokens=allowance, task="claim_extraction",
+            )
+        except ModelResponseError as exc:
+            total_cost += exc.cost
+            if exc.reason != "max_output_tokens" or allowance == 8192:
+                exc.cost = total_cost
+                raise
+            continue
+        total_cost += float(cost or 0)
+        if not isinstance(data, dict) or not isinstance(data.get("claims"), list):
+            raise ModelResponseError("invalid_claim_shape", cost=total_cost)
+        if not isinstance(data.get("research_gaps"), list):
+            raise ModelResponseError("invalid_gap_shape", cost=total_cost)
+        return data, total_cost
+    raise AssertionError("Exhausted bounded extraction attempts")
 
 
 async def extract_claims(
