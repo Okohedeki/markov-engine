@@ -311,7 +311,9 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
             assert landing.status_code == 200
             assert "More to post." in landing.text
             assert 'href="/app/login"' in landing.text
-            assert 'href="#product"' in landing.text
+            assert 'href="#walkthroughs"' in landing.text
+            assert 'href="/demo/"' in landing.text
+            assert 'preload="none"' in landing.text
             assert 'data-idea-story' in landing.text
             assert 'role="tablist"' in landing.text
             assert 'data-demo-idea="1"' in landing.text
@@ -607,11 +609,12 @@ def test_github_pages_export_is_static_and_project_relative():
     landing = (root / "docs" / "index.html").read_text(encoding="utf-8")
     assert 'href="/markov-engine/static/studio.css"' in landing
     assert 'src="/markov-engine/static/markov.js"' in landing
-    assert 'href="/markov-engine/sample/"' in landing
+    assert 'href="/markov-engine/demo/"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
     assert "More to post." in landing
-    assert "Try the idea studio" in landing
+    assert "Try without an account" in landing
+    assert 'href="/markov-engine/demo/"' in landing
     assert "data-idea-story" in landing
     assert "Run locally" not in landing
     assert "open-source" not in landing.lower()

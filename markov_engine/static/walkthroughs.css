@@ -1,0 +1,59 @@
+/* Native, user-controlled product footage. No autoplay or third-party player. */
+.walkthrough-section { background: #24272c; color: #fff; padding: 85px 0; }
+.walkthrough-shell { width: var(--page); margin: auto; scroll-margin-top: 30px; }
+.walkthrough-heading { display: flex; justify-content: space-between; align-items: end; gap: 60px; margin-bottom: 40px; }
+.walkthrough-heading .eyebrow { color: #ffac84; }
+.walkthrough-heading h2 { margin-top: 17px; max-width: 540px; font-size: clamp(34px,3.3vw,47px); }
+.walkthrough-heading > p { max-width: 370px; font-size: 14px; color: #d0d5de; }
+.walkthrough-heading > p > span { display: block; margin-top: 10px; font-size: 12px; color: #aeb7c4; }
+.walkthrough-layout { display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 35px; align-items: start; }
+.walkthrough-menu { display: flex; flex-direction: column; gap: 7px; }
+.walkthrough-menu > button { display: flex; align-items: start; gap: 14px; width: 100%; text-align: left; background: transparent; color: #cbd1da; padding: 19px 16px; border: 1px solid transparent; border-radius: 15px; }
+.walkthrough-menu > button > span { font-size: 11px; padding-top: 3px; color: #aeb7c4; }
+.walkthrough-menu strong { display: block; font-size: 16px; font-weight: 600; letter-spacing: -.02em; }
+.walkthrough-menu small { display: block; margin-top: 8px; font-size: 12px; font-weight: 400; line-height: 1.6; color: #aeb7c4; }
+.walkthrough-menu b { margin-left: auto; font-weight: 400; font-size: 20px; line-height: 1; }
+.walkthrough-menu > button[aria-selected=true] { border-color: #555a64; background: #34383f; color: #fff; }
+.walkthrough-menu > button[aria-selected=true] > span, .walkthrough-menu > button[aria-selected=true] b { color: #ffac84; }
+.walkthrough-menu > button:hover { background: #34383f; }
+.walkthrough-menu > a { align-self: start; margin: 25px 0 0 15px; }
+.walkthrough-section :focus-visible { outline-color: #ffac84; }
+.walkthrough-player { min-width: 0; }
+.walkthrough-media { aspect-ratio: 8/5; }
+.walkthrough-play { position: relative; display: block; width: 100%; padding: 0; border-radius: 18px; background: #f8f9fb; box-shadow: 0 8px 30px #0003; }
+.walkthrough-play > img { display: block; width: 100%; height: auto; border-radius: inherit; }
+.walkthrough-play > span { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); display: flex; align-items: center; gap: 13px; padding: 16px 21px; border-radius: 99px; background: #fff; color: var(--ink); white-space: nowrap; font-size: 13px; font-weight: 600; box-shadow: 0 3px 7px #24375215, 0 10px 35px #24375225; }
+.walkthrough-play i { color: var(--accent); font-style: normal; }
+.walkthrough-play small { padding-left: 12px; border-left: 1px solid var(--line); color: var(--muted); font-size: 11px; font-weight: 400; }
+.walkthrough-play:hover > span { background: #fff3ec; }
+.walkthrough-player-note { margin-top: 12px; color: #aeb7c4; font-size: 12px; }
+.walkthrough-player video { display: block; width: 100%; height: auto; aspect-ratio: 8/5; border-radius: 18px; background: #1a1d22; box-shadow: 0 8px 30px #0003; }
+.walkthrough-player video::cue { color: #fff; background: #171b24eb; font: 16px/1.4 var(--sans); }
+.walkthrough-transcript { margin-top: 18px; color: #cbd1da; font-size: 13px; }
+.walkthrough-transcript summary { min-height: 44px; padding: 10px 0; }
+.walkthrough-transcript ol { padding: 12px 0 0 20px; }
+.walkthrough-transcript li { padding: 0 0 12px 5px; }
+.walkthrough-transcript p { margin: 10px 0; color: #aeb7c4; font-size: 12px; }
+.walkthrough-noscript { font-size: 13px; color: #cbd1da; margin-top: 20px; }
+@media(max-width:1000px) {
+  .walkthrough-layout { grid-template-columns: 220px minmax(0,1fr); gap: 24px; }
+  .walkthrough-heading { gap: 35px; }
+  .walkthrough-menu > button { padding-inline: 12px; gap: 10px; }
+}
+@media(max-width:700px) {
+  .walkthrough-section { padding: 55px 0; }
+  .walkthrough-shell { width: calc(100% - 40px); }
+  .walkthrough-heading { flex-direction: column; align-items: start; gap: 22px; margin-bottom: 25px; }
+  .walkthrough-heading h2 { font-size: 35px; }
+  .walkthrough-layout { grid-template-columns: 1fr; gap: 24px; }
+  .walkthrough-menu { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .walkthrough-menu > button { flex: 1; flex-direction: column; gap: 8px; padding: 13px 10px; }
+  .walkthrough-menu strong { font-size: 13px; line-height: 1.3; }
+  .walkthrough-menu small, .walkthrough-menu b { display: none; }
+  .walkthrough-menu > a { margin: 8px 0 0; flex-basis: 100%; min-height: 44px; }
+  .walkthrough-player video { border-radius: 12px; }
+  .walkthrough-play { border-radius: 12px; }
+  .walkthrough-play > span { padding: 12px 17px; font-size: 12px; gap: 10px; }
+  .walkthrough-play small { display: none; }
+  .walkthrough-player video::cue { font-size: 12px; }
+}

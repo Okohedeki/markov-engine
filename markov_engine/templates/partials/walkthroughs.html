@@ -1,0 +1,31 @@
+{% set tours = [
+  {'id': 'find-angles', 'title': 'Find a fresh angle', 'summary': 'One conversation. Several ways to post about it.', 'steps': ['Choose a sample conversation in the guest studio.', 'Explore the different angles and open one to see its hook and outline.', 'Switch between a short post, thread, and video outline.']},
+  {'id': 'build-shortlist', 'title': 'Build your next batch', 'summary': 'Collect the ideas you want to come back to.', 'steps': ['Tap plus on an idea to add it to your shortlist.', 'Switch conversations and save another angle.', 'Open Your shortlist to see them together, then export the batch as Markdown.']},
+  {'id': 'shape-draft', 'title': 'Make the draft yours', 'summary': 'Add your perspective. Leave with something usable.', 'steps': ['Open an angle and edit its working outline.', 'Choose Save draft, then open Your drafts from the sidebar.', 'Continue writing or export your saved draft. Nothing is posted automatically.']}
+] %}
+<section class="walkthrough-section" id="unfold" aria-labelledby="walkthrough-title">
+  <div class="walkthrough-shell" id="walkthroughs" data-walkthroughs>
+    <header class="walkthrough-heading"><div><p class="eyebrow">A little show, then your turn</p><h2 id="walkthrough-title">See your next post take shape.</h2></div><p>Three short recordings of the guest studio. No account, no setup—just the workflow.<span>Silent videos with captions. Sample content, real interactions.</span></p></header>
+    <div class="walkthrough-layout">
+      <div class="walkthrough-menu" role="tablist" aria-label="Choose a walkthrough" aria-orientation="vertical">
+        {% for tour in tours %}<button type="button" role="tab" id="tour-tab-{{ tour.id }}" aria-controls="tour-panel-{{ tour.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}" data-tour-tab="{{ tour.id }}"><span>0{{ loop.index }}</span><div><strong>{{ tour.title }}</strong><small>{{ tour.summary }}</small></div><b aria-hidden="true">▷</b></button>{% endfor %}
+        <a class="mk-button mk-button-primary" href="{{ site_base }}/demo/">Try it yourself <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="walkthrough-player">
+        {% for tour in tours %}<div role="tabpanel" id="tour-panel-{{ tour.id }}" aria-labelledby="tour-tab-{{ tour.id }}" tabindex="0" data-tour-panel="{{ tour.id }}" {% if not loop.first %}hidden{% endif %}>
+          <div class="walkthrough-media">
+          <button class="walkthrough-play" type="button" data-tour-play aria-label="Play {{ tour.title }} walkthrough" hidden><img src="{{ site_base }}/static/walkthroughs/{{ tour.id }}.webp" width="1440" height="900" loading="lazy" alt=""><span><i aria-hidden="true">▶</i>Watch walkthrough<small>~20 seconds</small></span></button>
+          <video controls playsinline preload="none" width="1440" height="900" poster="{{ site_base }}/static/walkthroughs/{{ tour.id }}.webp" aria-label="{{ tour.title }} — captioned guest studio recording">
+            <source src="{{ site_base }}/static/walkthroughs/{{ tour.id }}.mp4" type="video/mp4">
+            <track kind="captions" src="{{ site_base }}/static/walkthroughs/{{ tour.id }}.vtt" srclang="en" label="English instructions" default>
+            <p>Your browser cannot play this recording. <a href="{{ site_base }}/static/walkthroughs/{{ tour.id }}.mp4">Download the video</a> or read the walkthrough below.</p>
+          </video>
+          </div>
+          <p class="walkthrough-player-note" data-tour-status role="status">Use full screen for a closer look.</p>
+          <details class="walkthrough-transcript"><summary>Read the walkthrough</summary><ol>{% for step in tour.steps %}<li>{{ step }}</li>{% endfor %}</ol><p>Guest conversations and outlines are prewritten examples, not live AI output. Saved work stays in this browser.</p></details>
+        </div>{% endfor %}
+        <noscript><p class="walkthrough-noscript">More recordings: <a href="{{ site_base }}/static/walkthroughs/build-shortlist.mp4">Build your next batch</a> · <a href="{{ site_base }}/static/walkthroughs/shape-draft.mp4">Make the draft yours</a>. Their caption files accompany each recording.</p></noscript>
+      </div>
+    </div>
+  </div>
+</section>
