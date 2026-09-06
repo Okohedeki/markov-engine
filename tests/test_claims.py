@@ -11,6 +11,29 @@ from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('reason,succeed,attempts', [('max_output_tokens', True, 2),
+    ('max_output_tokens', False, 3), ('refusal', False, 1), ('content_filter', False, 1)])
+async def test_chunk_recovery_is_bounded_and_accounts_for_failed_calls(monkeypatch, reason, succeed, attempts):
+    from markov_engine.model_errors import ModelResponseError
+
+    calls = []
+    async def fake_complete(*args, **kwargs):
+        calls.append(kwargs['max_tokens'])
+        if succeed and len(calls) == 2:
+            return {'claims': [], 'research_gaps': []}, 0.02
+        raise ModelResponseError(reason, cost=0.01)
+    monkeypatch.setattr(claims, 'complete_json', fake_complete)
+    if succeed:
+        _, cost = await claims._extract_chunk(claims.SegmentChunk([]), 'fixture')
+    else:
+        with pytest.raises(ModelResponseError) as error:
+            await claims._extract_chunk(claims.SegmentChunk([]), 'fixture')
+        cost = error.value.cost
+    assert calls == [2048, 4096, 8192][:attempts]
+    assert cost == pytest.approx(0.03 if succeed else attempts * 0.01)
+
+
+@pytest.mark.asyncio
 async def test_claim_extraction_processes_all_chunks_and_merges_overlap(monkeypatch):
     store = await SqliteStore.open(":memory:")
     try:
