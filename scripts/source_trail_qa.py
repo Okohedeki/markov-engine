@@ -89,6 +89,15 @@ def main() -> None:
                     overlap = first['left'] < second['right'] and first['right'] > second['left'] and first['top'] < second['bottom'] and first['bottom'] > second['top']
                     assert not overlap, (width, 'overlapping hero story titles')
             page.locator('.opening-trail').screenshot(path=args.output / f'opening-{width}.png')
+            uncovered = page.locator('.opening-trail').evaluate('''(root) => {
+                const selectors = '.opening-source strong, .opening-source small, .opening-connection strong, .opening-connection small, .opening-script strong';
+                return [...root.querySelectorAll(selectors)].every(e => {
+                    const range = document.createRange(); range.selectNodeContents(e);
+                    return [...range.getClientRects()].filter(r => r.width > 0 && r.height > 0).every(r =>
+                        document.elementFromPoint((r.left+r.right)/2, (r.top+r.bottom)/2)?.closest('a') === e.closest('a'));
+                });
+            }''')
+            assert uncovered, (width, 'a layered card covers story text or its source credit')
             for name in ['source', 'connections', 'script']:
                 page.locator(f'[data-trail-tab="{name}"]').click()
                 expect(page.locator(f'[data-trail-panel="{name}"]')).to_be_visible()

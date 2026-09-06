@@ -172,7 +172,7 @@
   .story-opening h1 { font-size: 46px; margin: 20px 0; }
   .story-opening-copy > p:not(.eyebrow) { font-size: 15px; max-width: 340px; }
   .source-types { font-size: 10px; margin-top: 19px; }
-  .opening-trail { width: min(100%,420px); margin: auto; aspect-ratio: auto; height: 475px; }
+  .opening-trail { width: min(100%,420px); margin: auto; aspect-ratio: auto; height: 500px; }
   .opening-source { left: 2%; width: 91%; border-radius: 12px; display: grid; grid-template-columns: 80px minmax(0,1fr); align-items: stretch; transform: rotate(-3deg); }
   .opening-source img { height: 171px; }
   .opening-source strong { font-size: 23px; margin: 12px 0; }
@@ -180,6 +180,7 @@
   .opening-connection { top: 203px; right: 2%; width: 88%; padding: 20px; transform: rotate(2deg); }
   .opening-connection strong { font-size: 23px; }
   .opening-connection strong br { display: none; }
+  .opening-connection > p { display: none; }
   .opening-script { padding: 16px; width: 94%; left: 3%; bottom: 0; gap: 10px; }
   .opening-script strong { font-size: 15px; }
   .opening-caption { bottom: -29px; font-size: 10px; color: #344b5c; }
