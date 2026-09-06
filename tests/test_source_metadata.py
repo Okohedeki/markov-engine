@@ -40,16 +40,19 @@ async def test_store_roundtrips_metadata():
 
 async def test_store_null_metadata_stays_none():
     store = await SqliteStore.open(":memory:")
-    src = await store.add_source(
-        url="https://example.com/article",
-        title="Just an article",
-        source_type="article",
-        content_text="body",
-        summary="s",
-    )
-    fetched = await store.get_source(src.id)
-    assert fetched is not None
-    assert fetched.metadata is None
+    try:
+        src = await store.add_source(
+            url="https://example.com/article",
+            title="Just an article",
+            source_type="article",
+            content_text="body",
+            summary="s",
+        )
+        fetched = await store.get_source(src.id)
+        assert fetched is not None
+        assert fetched.metadata is None
+    finally:
+        await store.close()
 
 
 async def test_ingest_url_forwards_metadata(monkeypatch):
