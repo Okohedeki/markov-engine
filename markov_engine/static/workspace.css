@@ -93,9 +93,9 @@
 .mk-published-empty h2 { margin-top: 15px; font-size: 36px; }
 .mk-published-empty p:not(.mk-kicker) { margin: 22px 0; color: var(--muted); }
 .mk-case-breadcrumb { display: flex; gap: 10px; color: var(--muted); font-size: 12px; }
-.mk-case-title-row { display: flex; gap: 35px; align-items: start; justify-content: space-between; margin-top: 27px; }
+.mk-case-title-row { display: flex; gap: 24px; align-items: start; justify-content: space-between; margin-top: 18px; }
 .mk-case-title-row > div:first-child { min-width: 0; max-width: 830px; }
-.mk-case-title-row h1 { font-size: clamp(29px,3.3vw,45px); margin-top: 12px; overflow-wrap: anywhere; }
+.mk-case-title-row h1 { font-size: clamp(22px,2vw,28px); line-height: 1.35; margin-top: 0; overflow-wrap: anywhere; }
 .mk-case-title-row > div > p:last-child { margin-top: 18px; max-width: 610px; color: var(--muted); font-size: 13px; }
 .mk-case-actions { min-width: 165px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: end; }
 .mk-case-actions > a { display: grid; place-items: center; min-width: 38px; min-height: 38px; background: #fff; border: 1px solid var(--line); border-radius: 12px; font-size: 12px; }
@@ -146,23 +146,26 @@
 .mk-open-route > span { color: var(--accent); font-size: 30px; }
 .mk-open-route h3 { margin-top: 10px; font-size: 23px; }
 .mk-open-route div > p:not(.mk-kicker) { margin: 14px 0; font-size: 13px; color: var(--muted); }
-.mk-output-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 20px; }
-.mk-output-toolbar h2 { font-size: 28px; margin: 9px 0; }
+.mk-output-toolbar { position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 0; background: var(--paper, #f8f9fb); border-bottom: 1px solid var(--line); }
+.mk-output-toolbar h2 { font-size: 20px; margin: 0 0 6px; }
+.mk-writing-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.mk-writing-actions .mk-button { min-height: 44px; padding: 10px 14px; font-size: 13px; }
 .mk-output-toolbar span { font-size: 12px; color: var(--muted); }
 .mk-document-layout { display: grid; grid-template-columns: 155px minmax(0,1fr); gap: 30px; margin-top: 30px; align-items: start; }
 .mk-document-layout > * { min-width: 0; }
-.mk-document-outline { position: sticky; top: 25px; }
+.mk-document-outline { position: sticky; top: 105px; max-height: calc(100dvh - 130px); overflow-y: auto; }
 .mk-document-outline nav { margin-top: 15px; }
 .mk-document-outline nav a { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
-.mk-document-outline > div { margin-top: 25px; font-size: 12px; color: var(--muted); }
-.mk-document-outline > div p { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
-.mk-document { background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+.mk-document-outline > details { margin-top: 20px; font-size: 12px; color: var(--muted); }
+.mk-document-outline > details summary { cursor: pointer; padding: 12px 0; min-height: 44px; }
+.mk-document-outline > details p { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.mk-document { background: #fff; border: 1px solid var(--line); border-radius: 12px; }
 .mk-document > header, .mk-document > footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 25px; color: var(--muted); font-size: 12px; }
-.mk-document > section { padding: 30px; border-block-start: 1px solid var(--line); }
+.mk-document > section { padding: 24px; border-block-start: 1px solid var(--line); scroll-margin-top: 130px; }
 .mk-document > section > div { display: flex; justify-content: space-between; gap: 20px; }
 .mk-document label { font-size: 22px; font-weight: 500; letter-spacing: -.035em; }
 .mk-document section small { color: var(--muted); font-size: 12px; }
-.mk-document textarea { display: block; width: 100%; margin-top: 22px; padding: 0; resize: vertical; border: 0; background: transparent; font: 14px/1.8 var(--sans); }
+.mk-document textarea { display: block; width: 100%; margin-top: 18px; padding: 4px; resize: vertical; border: 0; background: transparent; font: 16px/1.8 var(--sans); }
 .mk-claim-margin { grid-column: 2; }
 .mk-claim-margin h2 { margin: 12px 0; font-size: 24px; }
 .mk-claim-margin details { padding: 15px 0; border-top: 1px solid var(--line); font-size: 13px; }
@@ -170,6 +173,18 @@
 .mk-claim-margin blockquote { margin: 20px 0; padding-left: 16px; border-left: 2px solid var(--line); }
 .mk-claim-margin cite { display: block; margin-top: 10px; color: var(--muted); }
 .mk-claim-margin button { margin-top: 15px; background: transparent; color: var(--accent); }
+.mk-writing-sources ul { list-style: none; padding: 0; }
+.mk-writing-sources li { padding: 12px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.mk-writing-sources a { display: block; text-decoration: underline; text-underline-offset: 3px; line-height: 1.6; }
+.mk-writing-sources strong { font-weight: 500; }
+.mk-writing-sources small { display: block; margin-top: 6px; color: var(--muted); }
+.mk-writing-sources > p { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.mk-case-shell :is(a, button, textarea, summary):focus-visible { outline: 2px solid #a44923; outline-offset: 3px; }
+@media(min-width:1280px) {
+  .mk-document-layout { grid-template-columns: 125px minmax(0,1fr) 245px; gap: 22px; }
+  .mk-claim-margin { grid-column: 3; position: sticky; top: 105px; max-height: calc(100dvh - 130px); overflow-y: auto; padding-right: 8px; }
+  .mk-claim-margin h2 { font-size: 18px; }
+}
 .mk-source-table { overflow-x: auto; margin-top: 30px; }
 .mk-source-table-head, .mk-source-table article { display: grid; grid-template-columns: 130px minmax(240px,1fr) 90px 95px 40px; min-width: 650px; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
 .mk-source-table-head { color: var(--muted); font-size: 12px; }
@@ -242,14 +257,16 @@
   .mk-route-panel { padding-left: 0; }
   .mk-route-actions { margin-left: 0; }
   .mk-document-layout { grid-template-columns: minmax(0,1fr); }
-  .mk-document-outline { position: static; }
+  .mk-document-outline { position: static; max-height: none; overflow: visible; }
   .mk-document-outline nav { display: flex; overflow-x: auto; gap: 20px; }
   .mk-document-outline nav a { flex: 0 0 135px; }
   .mk-claim-margin { grid-column: 1; }
   .mk-document > section { padding: 23px; }
   .mk-document > section > div { flex-direction: column; gap: 7px; }
   .mk-document > footer { flex-direction: column; align-items: start; }
-  .mk-output-toolbar { align-items: start; flex-direction: column; }
+  .mk-output-toolbar { align-items: start; flex-direction: column; gap: 10px; }
+  .mk-writing-actions { width: 100%; }
+  .mk-writing-actions .mk-button { flex: 1; font-size: 12px; }
   .mk-composer-fields, .mk-job-grid { grid-template-columns: 1fr; }
   .mk-composer { padding: 24px; }
   .mk-composer footer { flex-direction: column; }
