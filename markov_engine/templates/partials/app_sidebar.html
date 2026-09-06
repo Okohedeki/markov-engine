@@ -7,21 +7,18 @@
   </div>
   <p class="mk-workspace-label">Creator studio</p>
   <nav class="mk-app-nav" aria-label="Workspace navigation">
-    <a href="/app" {% if active == 'home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span><strong>Production queue</strong></a>
-    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">↘</span><strong>Topics</strong></a>
-    <a href="/app/ideas" {% if active == 'ideas' %}aria-current="page"{% endif %}><span aria-hidden="true">⑂</span><strong>Ideas</strong></a>
-    <a href="/app/plans" {% if active == 'plans' %}aria-current="page"{% endif %}><span aria-hidden="true">□</span><strong>Talking points</strong></a>
+    <a href="/app" {% if active in ['home', 'ideas'] %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span><strong>Stories</strong></a>
+    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">↘</span><strong>Source topics</strong></a>
+    <a href="/app/plans" {% if active == 'plans' %}aria-current="page"{% endif %}><span aria-hidden="true">□</span><strong>Drafts</strong></a>
     <a href="/app/series" {% if active == 'series' %}aria-current="page"{% endif %}><span aria-hidden="true">↳</span><strong>Story Mode</strong></a>
-    <a href="/app/search" {% if active == 'search' %}aria-current="page"{% endif %}><span aria-hidden="true">⌕</span><strong>Search</strong></a>
   </nav>
   <div class="mk-sidebar-note">
-    <span>From one link to your next batch.</span>
-    <p>Discovery first. Talking points and Story Mode with a paid plan.</p>
-    <a href="/app/upgrade">Compare creator tools →</a>
+    <span>Sources stay with the story.</span>
+    <p>Full talking points and Story Mode require a paid plan.</p>
+    <a href="/app/upgrade">Plan & credits →</a>
   </div>
   <nav class="mk-app-secondary" aria-label="Workspace settings">
     <a href="/app/onboarding">Audience & voice</a>
-    <a href="/developers">API guide</a>
     <a href="/">Public site <span aria-hidden="true">↗</span></a>
   </nav>
 </aside>
