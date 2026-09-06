@@ -1,6 +1,7 @@
 """Production queue and paid series routes using the existing session boundary."""
 from urllib.parse import urlencode, urlparse
 
+from fastapi import APIRouter
 
 from markov_engine.billing import credit_cost
 
@@ -33,3 +34,9 @@ async def queue_context(store, owner_id, request, settings):
         previous_url=link(page=page-1), next_url=link(page=page+1),
         series_count=len(await store.story_series(owner_id)), talking_point_cost=credit_cost('script', 'instant', settings),
         notice=request.query_params.get('notice', '')[:300])
+
+
+def create_production_router(*, settings, owner, render):
+    router = APIRouter()
+
+    return router
