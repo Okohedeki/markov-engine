@@ -162,6 +162,14 @@ def rank_search_results(claim_text: str, results: list[dict]) -> list[dict]:
             str(result.get(key) or "") for key in ("title", "snippet")
         )
         matches = claim_tokens & _tokens(preview)
+        # Some search providers strip highlight tags without inserting spaces
+        # ("MemphisSanitationWorkers"). These are retrieval leads, not evidence:
+        # recover substantial query terms before the inspected-passage check.
+        joined_preview = preview.casefold()
+        matches.update(
+            token for token in claim_tokens
+            if len(token) >= 4 and token in joined_preview
+        )
         minimum = 1 if len(claim_tokens) <= 3 else 2
         if len(matches) < minimum:
             continue
