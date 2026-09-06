@@ -2,9 +2,11 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import RedirectResponse, Response
 
 from markov_engine.billing import credit_cost
 from markov_engine.entitlements import require_paid_feature, resolve_entitlements
+from markov_engine.research import convert_case_artifact
 
 STATUSES = {'all': 'All ideas', 'ideas': 'To explore', 'shortlisted': 'Shortlisted', 'ready': 'Ready to record', 'recorded': 'Recorded'}
 
@@ -65,6 +67,59 @@ def create_production_router(*, settings, owner, render):
     async def upgrade(request: Request):
         owner_id = owner(request)
         return render(request, 'upgrade.html', **await common(request, owner_id))
+
+    @router.post('/app/queue/actions')
+    async def queue_action(request: Request):
+        owner_id = owner(request)
+        values = await form(request)
+        action = values.get('action', ['move'])[0]
+        keys = values.get('item', [])
+        store = request.app.state.store
+        try:
+            if action in {'series', 'talking_points'}:
+                paid(owner_id, 'story_mode' if action == 'series' else 'talking_points')
+            rows = await store.selected_production_ideas(owner_id, keys)
+            if action == 'move':
+                await store.move_production_ideas(owner_id, keys, values.get('status', ['shortlisted'])[0])
+                notice = f'{len(rows)} ideas moved. You can change their status at any time.'
+            elif action == 'export':
+                lines = ['# Markov story shortlist', '', 'Story directions and sources, not generated talking points.']
+                for row in rows:
+                    lines.extend(['', f"## {row['title']}", row['angle'], '', 'Sources:'])
+                    sources = await store.list_research_case_sources(row['case_id'])
+                    linked = False
+                    for source in sources:
+                        if urlparse(source.get('url') or '').scheme in {'http', 'https'}:
+                            lines.append(f"- {source.get('title') or 'Original source'}: {source['url']}")
+                            linked = True
+                    if not linked:
+                        lines.append('- No linked source recorded yet; verify this idea before publishing.')
+                return Response('\n'.join(lines), media_type='text/markdown', headers={'Content-Disposition': 'attachment; filename="markov-shortlist.md"'})
+            elif action == 'series':
+                if not 2 <= len(rows) <= 30:
+                    raise ValueError('Select 2–30 ideas to build a series.')
+                return render(request, 'series.html', series=[], selected=rows, **await common(request, owner_id))
+            elif action == 'talking_points':
+                if len(rows) > 30:
+                    raise ValueError('Develop at most 30 ideas in a batch.')
+                if any(row['research_status'] != 'completed' for row in rows):
+                    raise ValueError('Wait for research to finish before developing this batch. No talking points were generated.')
+                completed = 0
+                for row in rows:
+                    try:
+                        await convert_case_artifact(store, case_id=row['case_id'], owner_id=owner_id, mode='script',
+                            constraints={'selected_topic_id': row['topic_id']} if row['topic_id'] else {}, settings=settings)
+                        completed += 1
+                    except ValueError as exc:
+                        return error(request, f'{completed} of {len(rows)} outputs completed. Existing outputs are in Talking points. Remaining ideas were not developed: {exc}')
+                return RedirectResponse('/app/plans', 303)
+            else:
+                raise ValueError('Choose a supported batch action.')
+        except ValueError as exc:
+            if 'paid feature' in str(exc):
+                return RedirectResponse('/app/upgrade', 303)
+            return error(request, str(exc))
+        return RedirectResponse('/app?' + urlencode({'notice': notice}), 303)
 
 
     return router
