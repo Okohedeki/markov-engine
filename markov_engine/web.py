@@ -472,13 +472,15 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             return RedirectResponse("/app/login", status_code=303)
         store = request.app.state.store
         snapshot = await _workspace_snapshot(store, owner_id=owner_id)
+        snapshot['outputs'] = [item for item in snapshot['outputs']
+                               if item['artifact'].artifact_type == 'script']
         return _render(
             request,
             "workspace_page.html",
             active="plans",
             page_kind="plans",
-            page_title="Your drafts",
-            page_description="Pick up a draft, add your voice, and get it ready for your channel.",
+            page_title="Talking points",
+            page_description="Your developed scripts, with sources attached. Add your voice and prepare the next video.",
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
             **snapshot,
