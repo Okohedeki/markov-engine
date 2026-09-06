@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from urllib.parse import urlsplit
 
 from markov_engine.config import get_settings
-from markov_engine.evidence import _persist_evidence_source, select_relevant_segments
+from markov_engine.evidence import (
+    _persist_evidence_source, rank_search_results, select_relevant_segments,
+)
 from markov_engine.extract import extract_content
 from markov_engine.llm import complete_json
 from markov_engine.model_errors import ModelResponseError
+from markov_engine.search import search_web
 from markov_engine.store.sqlite import SqliteStore
 
 
@@ -294,3 +298,106 @@ async def synthesize_story_angles(
     candidates = result.get("angles")
     count = len(candidates) if isinstance(candidates, list) else 0
     return {"angles": angles, "rejected_count": max(0, count - len(angles))}
+
+
+async def discover_story_angles(
+    store: SqliteStore, *, case_id: int, searcher=search_web,
+    extractor=extract_content, time_budget_s: float = 180,
+) -> dict:
+    """Run at most two research rounds and reuse the case-scoped result."""
+    case = await store.get_research_case(case_id)
+    if case is None:
+        raise ValueError("Research case not found")
+    existing = await store.latest_case_event(
+        case_id=case_id, event_type="editorial_discovery",
+    )
+    if existing:
+        return {**existing.metadata, "cached": True}
+    settings = get_settings()
+    if settings.llm_backend == "heuristic" or not settings.search_enabled:
+        return {"status": "disabled", "angles": [], "findings": []}
+    findings, questions, searches, errors = [], [], [], []
+    seen_queries, seen_urls, source_ids = set(), set(), set()
+    reads = 0
+    result = {"angles": [], "rejected_count": 0}
+    try:
+        async with asyncio.timeout(max(1, min(time_budget_s, 180))):
+            for round_number in range(1, 3):
+                planned = await plan_story_questions(
+                    store, case_id=case_id, findings=findings,
+                )
+                questions.extend({**q, "round": round_number} for q in planned)
+                for question in planned:
+                    for kind in ("query", "challenge_query"):
+                        if len(source_ids) >= 8 or reads >= 12:
+                            break
+                        query = question[kind]
+                        if query.casefold() in seen_queries:
+                            continue
+                        seen_queries.add(query.casefold())
+                        search = {"query": query, "kind": kind, "round": round_number,
+                                  "question": question["question"], "status": "started"}
+                        searches.append(search)
+                        try:
+                            async with asyncio.timeout(20):
+                                if searcher is search_web:
+                                    hits = await searcher(query, max_results=4,
+                                                          avenues=("web", "news"))
+                                else:
+                                    hits = await searcher(query, max_results=4)
+                            search["status"] = "searched"
+                            search["result_count"] = len(hits)
+                        except Exception as exc:
+                            search["status"] = type(exc).__name__
+                            errors.append({"stage": "search", "type": type(exc).__name__})
+                            continue
+                        for hit in rank_search_results(query, hits)[:3]:
+                            if reads >= 12:
+                                break
+                            url = str(hit.get("url") or "")
+                            if not url or url in seen_urls:
+                                continue
+                            seen_urls.add(url)
+                            reads += 1
+                            try:
+                                async with asyncio.timeout(20):
+                                    inspected = await read_story_source(
+                                        store, case_id=case_id, question=question,
+                                        url=url, extractor=extractor,
+                                    )
+                            except Exception as exc:
+                                errors.append({"stage": "read", "type": type(exc).__name__})
+                                continue
+                            if inspected:
+                                for passage in inspected:
+                                    passage["search_kind"] = kind
+                                findings.extend(inspected)
+                                source_ids.update(p["source_id"] for p in inspected)
+                                search["status"] = "inspected"
+                                break
+                if not planned or not findings or len(source_ids) >= 8 or reads >= 12:
+                    break
+    except Exception as exc:
+        errors.append({"stage": "discovery", "type": type(exc).__name__})
+    try:
+        async with asyncio.timeout(60):
+            result = await synthesize_story_angles(store, case_id=case_id, findings=findings)
+    except Exception as exc:
+        errors.append({"stage": "synthesis", "type": type(exc).__name__})
+    result.update({
+        "status": "partial" if errors else "complete", "version": 1,
+        "findings": findings, "questions": questions, "searches": searches,
+        "source_count": len(source_ids), "read_attempts": reads, "errors": errors,
+        "limits": {"rounds": 2, "sources": 8, "read_attempts": 12,
+                   "research_seconds": max(1, min(time_budget_s, 180)),
+                   "synthesis_seconds": 60},
+    })
+    await store.record_cost(
+        research_case_id=case_id, provider="search", operation="editorial_queries",
+        units=len(searches), cost=0,
+    )
+    await store.record_usage_event(
+        owner_id=case.owner_id, research_case_id=case_id,
+        event_type="editorial_discovery", metadata=result,
+    )
+    return result
