@@ -57,22 +57,25 @@ async def test_store_null_metadata_stays_none():
 
 async def test_ingest_url_forwards_metadata(monkeypatch):
     store = await SqliteStore.open(":memory:")
-    meta = {"uploader": "@creator", "channel": "Creator", "thumbnail": "t.jpg", "duration": 30}
+    try:
+        meta = {"uploader": "@creator", "channel": "Creator", "thumbnail": "t.jpg", "duration": 30}
 
-    async def _fake_extract(url, tmp_dir, whisper_model):
-        return ExtractedContent(
-            url=url, source_type="tiktok", title="Clip",
-            content_text="hello world transcript", metadata=meta,
-        )
+        async def _fake_extract(url, tmp_dir, whisper_model):
+            return ExtractedContent(
+                url=url, source_type="tiktok", title="Clip",
+                content_text="hello world transcript", metadata=meta,
+            )
 
-    async def _fake_entities(text, title, source_type, model=None):
-        return {"success": True, "entities": [], "relationships": [],
-                "summary": "sum", "cost_usd": 0.0}
+        async def _fake_entities(text, title, source_type, model=None):
+            return {"success": True, "entities": [], "relationships": [],
+                    "summary": "sum", "cost_usd": 0.0}
 
-    monkeypatch.setattr(ingest_mod, "extract_content", _fake_extract)
-    monkeypatch.setattr(ingest_mod, "extract_entities", _fake_entities)
+        monkeypatch.setattr(ingest_mod, "extract_content", _fake_extract)
+        monkeypatch.setattr(ingest_mod, "extract_entities", _fake_entities)
 
-    res = await ingest_mod.ingest_url(store, "https://tiktok.com/@creator/video/2", cluster=False)
-    assert res["success"] is True
-    stored = await store.get_source(res["source_id"])
-    assert stored.metadata == meta
+        res = await ingest_mod.ingest_url(store, "https://tiktok.com/@creator/video/2", cluster=False)
+        assert res["success"] is True
+        stored = await store.get_source(res["source_id"])
+        assert stored.metadata == meta
+    finally:
+        await store.close()
