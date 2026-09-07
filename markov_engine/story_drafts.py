@@ -78,3 +78,35 @@ async def request_story_draft(store, case_id, story, constraints):
             )
     except TimeoutError:
         raise ValueError('Drafting timed out. No draft was saved; try this story again.') from None
+
+
+async def render_story_draft(store, case_id, *, constraints):
+    from markov_engine.renderers import RenderedArtifact
+
+    case = await store.get_research_case(case_id)
+    stories = await store.editorial_ideas(case.owner_id, constraints['selected_story_key']) if case else []
+    if not stories or stories[0]['case_id'] != case_id:
+        raise ValueError('Selected story does not belong to this research case.')
+    story = stories[0]
+    packet = story['story_packet']
+    if not packet['findings']:
+        raise ValueError('This story needs retained source passages before drafting.')
+    result = await request_story_draft(store, case_id, story, constraints)
+    sections = validate_story_draft(result, packet)
+    sections.append({'id': 'editorial-review', 'title': 'Before you publish',
+                     'content': 'Unreviewed draft. Check each statement against its source.\n\n'
+                     + packet['uncertainty'], 'statement_type': 'editorial_caution'})
+    sources = list(dict.fromkeys(row['source_id'] for row in packet['findings']))
+    content = '# ' + story['title'] + '\n\n' + '\n\n'.join(
+        '## ' + section['title'] + '\n\n' + section['content']
+        + ('\n\n### Source notes\n\n' + section['source_notes'] if section.get('source_notes') else '')
+        for section in sections
+    )
+    return RenderedArtifact(
+        artifact_type='script', title=story['title'], content=content,
+        structured_content={'sections': sections, 'selected_story_key': story['item_key'],
+                            'story_packet': packet, 'guidance': constraints,
+                            'generation_method': 'selected-story-v1'},
+        word_count=sum(len(section['content'].split()) for section in sections),
+        source_ids=sources,
+    )
