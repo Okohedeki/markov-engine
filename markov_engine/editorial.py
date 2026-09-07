@@ -440,7 +440,12 @@ async def discover_story_angles(
                                 source_ids.update(p["source_id"] for p in inspected)
                                 search["status"] = "inspected"
                                 inspected_count += 1
-                                if inspected_count >= (2 if kind == "query" else 1):
+                                # Keep room for evidence-led follow-up when three
+                                # initial questions each have a challenge search.
+                                read_target = 2 if kind == "query" and (
+                                    round_number == 2 or len(planned) < 3
+                                ) else 1
+                                if inspected_count >= read_target:
                                     break
                 if not planned or not findings or len(source_ids) >= 8 or reads >= 12:
                     break
