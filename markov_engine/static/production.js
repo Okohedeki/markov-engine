@@ -94,7 +94,26 @@
         const data = await response.json();
         content.replaceChildren();
         add(content, 'p', data.angle, 'production-preview-angle');
-        add(content, 'p', 'Collected for this topic, not proof of every story angle. Check the original passages before writing.', 'production-preview-note');
+        const packet = data.story_packet;
+        add(content, 'p', packet ? packet.question : 'Collected for this topic, not proof of every story angle. Check the original passages before writing.', 'production-preview-note');
+        if (packet) {
+          add(content, 'p', `Why follow it: ${packet.why_it_matters || packet.novelty_basis}`);
+          add(content, 'p', `Still unresolved: ${packet.uncertainty}`, 'production-preview-note');
+          const evidence = add(content, 'details', '', 'production-evidence');
+          add(evidence, 'summary', `Read retained passages · ${packet.findings.length}`);
+          packet.findings.forEach(finding => {
+            const challenge = (packet.challenge_evidence_ids || []).includes(finding.evidence_id);
+            add(evidence, 'h4', `${challenge ? 'Challenge / context' : 'Supporting material'} · E${finding.evidence_id}`);
+            add(evidence, 'blockquote', finding.passage);
+            const source = add(evidence, 'a', `${finding.title} · ${finding.locator || 'Retained passage'} ↗`);
+            const url = new URL(finding.url, location.origin);
+            if (['http:', 'https:'].includes(url.protocol)) {
+              source.href = url.href;
+              source.target = '_blank';
+              source.rel = 'noopener noreferrer';
+            }
+          });
+        }
         const columns = add(content, 'div', '', 'production-preview-columns');
         const sources = add(columns, 'section', '');
         add(sources, 'h4', `Source material · ${data.source_count}`);
@@ -117,7 +136,7 @@
         if (data.source_count > data.sources.length) add(sources, 'p', 'Showing the first 12 sources. Open the full trail below for all material.');
         const documents = add(columns, 'section', '');
         add(documents, 'h4', 'Writing & research');
-        add(documents, 'p', 'Saved documents for this topic.');
+        add(documents, 'p', packet ? 'This story’s draft and the original research context.' : 'Saved documents for this topic.');
         const documentList = add(documents, 'ul', '');
         const labels = { script: 'Script / talking points', brief: 'Source brief', research_report: 'Research notes' };
         data.documents.forEach(doc => {
