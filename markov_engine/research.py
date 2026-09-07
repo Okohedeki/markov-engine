@@ -17,7 +17,7 @@ from markov_engine.connections import (
 from markov_engine.config import get_settings
 from markov_engine.evidence import research_claim
 from markov_engine.editorial import discover_story_angles
-from markov_engine.extract import classify_url, extract_content, segment_text
+from markov_engine.extract import classify_url, extract_content, media_cache_error, segment_text
 from markov_engine.model_errors import ModelResponseError
 from markov_engine.planning import plan_research_case
 from markov_engine.renderers import RenderedArtifact, render_artifact
@@ -107,6 +107,8 @@ async def _ensure_seed_source(
         source = await store.get_source(seed_row["id"])
         segments = await store.list_source_segments(seed_row["id"])
         if source is not None and segments:
+            if error := media_cache_error(source):
+                raise RuntimeError(error)
             return source, segments
 
     if case.input_type in {"topic", "question"}:
@@ -191,6 +193,9 @@ async def _ensure_seed_source(
         )
         return source, segments
 
+    source = await store.get_source_by_url(case.original_input)
+    if source is not None and (error := media_cache_error(source)):
+        raise RuntimeError(error)
     content = await extractor(
         case.original_input,
         _settings.tmp_dir,
@@ -200,7 +205,6 @@ async def _ensure_seed_source(
         raise RuntimeError(content.error or "Source could not be extracted")
     if not content.segments:
         raise RuntimeError("Source extraction returned no stable segments")
-    source = await store.get_source_by_url(case.original_input)
     if source is None:
         source = await store.add_source(
             url=case.original_input,
