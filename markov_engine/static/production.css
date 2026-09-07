@@ -112,6 +112,11 @@
 .series-episodes { list-style:none; padding:0; margin-top:30px; }
 .series-episodes > li { display:grid; grid-template-columns:45px minmax(0,1fr); gap:20px; padding:30px 0; border-bottom:1px solid #dce3e8; scroll-margin-top:20px; }
 .episode-number { font-size:24px; color:#8b99a5; }
+.production-evidence { margin-block:18px 24px; }
+.production-evidence summary { cursor:pointer; min-height:44px; display:list-item; }
+.production-evidence h4 { margin:20px 0 8px; font-size:13px; }
+.production-evidence blockquote { border-left:2px solid #dce3e8; margin:0 0 10px; padding-left:16px; font-size:14px; line-height:1.65; overflow-wrap:anywhere; }
+.production-evidence > a { display:block; font-size:12px; text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; }
 .series-episodes h2 { font-size:25px; font-weight:500; margin:14px 0 10px; }
 .series-episodes p { color:#63717d; font-size:14px; max-width:780px; }
 .episode-actions { display:flex; flex-wrap:wrap; align-items:center; gap:15px; margin-top:22px; }
