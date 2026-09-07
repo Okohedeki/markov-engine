@@ -1,11 +1,13 @@
 {% extends "production_base.html" %}
-{% block title %}Stories — Markov{% endblock %}
+{% block title %}Production desk — Markov{% endblock %}
 {% block production %}
-<header class="production-head"><div><h1>Your stories</h1><p>Find the angle. Follow the sources. Make it yours.</p></div><a class="production-secondary" href="/app/plans">Open drafts ↗</a></header>
-<details class="production-source" id="new-topic" {% if not counts.all %}open{% endif %}>
-<summary>Find stories from a new link <span aria-hidden="true">＋</span></summary>
+<header class="production-head"><div><h1>Your production desk</h1><p>Turn what you find into stories worth making.</p></div><a class="production-secondary" href="/app/plans">Open drafts ↗</a></header>
+<details class="production-source" id="new-topic" open>
+<summary>Start with a link <span aria-hidden="true">＋</span></summary>
 <form class="production-intake" method="post" action="/app/jobs">
-  <label for="signal-input">What caught your attention?</label><div><input id="signal-input" name="value" placeholder="Paste a video, article, podcast or post link…" required maxlength="4000"><button class="mk-button mk-button-primary" type="submit">Find connected stories ↗</button></div>
+  <label for="signal-input">What caught your attention?</label><div><input id="signal-input" name="value" placeholder="Paste a link or source text…" aria-describedby="desk-source-types desk-source-limits" required maxlength="4000"><button class="mk-button mk-button-primary" type="submit">Find connected stories ↗</button></div>
+  <p id="desk-source-types" class="production-source-types">TikTok · Instagram · YouTube · Podcasts · Articles · PDFs</p>
+  <p id="desk-source-limits">Use a public link. If a platform blocks access, paste the relevant text or transcript instead.</p>
   <input type="hidden" name="mode" value="research"><input type="hidden" name="review_level" value="instant"><input type="hidden" name="focus" value="Find distinct, non-obvious story ideas and related articles beyond the seed link. Explain why each connection matters. Do not write scripts, narration or complete talking points. Keep source links and uncertainty visible.">
   <details><summary>Audience & voice</summary><div class="production-preferences"><label>Your audience<input name="audience" placeholder="Who are you creating for?" maxlength="250"></label><label>Your voice<input name="tone" placeholder="e.g. curious, direct, conversational" maxlength="250"></label></div></details>
   <p>Bring a source, not a blank prompt. Discovery uses your available credits; nothing is posted automatically.</p>
