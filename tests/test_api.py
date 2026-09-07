@@ -353,9 +353,9 @@ async def test_web_login_and_focused_intake_page():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "Find your next thirty." in signed_in.text
+            assert "Your stories" in signed_in.text
             assert "Find connected stories" in signed_in.text
-            assert "Your story queue" in signed_in.text
+            assert 'id="queue-title"' in signed_in.text
             assert 'name="focus"' in signed_in.text
             assert "nothing is posted automatically" in signed_in.text
             assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
@@ -363,14 +363,14 @@ async def test_web_login_and_focused_intake_page():
             assert "knowledge graph" not in signed_in.text.lower()
             assert "owner-1" not in signed_in.text
             assert 'href="/app/signals"' in signed_in.text
-            assert 'href="/app/ideas"' in signed_in.text
+            assert 'href="/app/series"' in signed_in.text
             assert 'href="/app/plans"' in signed_in.text
-            assert 'href="/app/search"' in signed_in.text
+            assert 'name="q"' in signed_in.text
 
             for path, heading in (
                 ("/app/signals", "Bring in a conversation"),
                 ("/app/ideas", "Explore different angles"),
-                ("/app/plans", "Talking points"),
+                ("/app/plans", "Drafts"),
                 ("/app/published", "Take a finished draft to your channel"),
                 ("/app/search?q=Japanese", "Find the topic or idea"),
             ):
