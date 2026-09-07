@@ -1,0 +1,34 @@
+{% extends "production_base.html" %}
+{% block title %}{{ case.title }} — Markov{% endblock %}
+{% block production %}
+<a class="guide-text-link" href="/app/signals">← Saved articles</a>
+<div class="guide-result">
+  <aside class="guide-origin" aria-label="Your original source">
+    <p class="guide-eyebrow">Your starting point</p>
+    <span class="guide-source-type">{{ (seed.source_type if seed else case.input_type) | humanize }}</span>
+    <h2>{{ seed.title if seed and seed.title else case.title }}</h2>
+    {% if seed and seed.safe_url %}<a href="{{ seed.safe_url }}" target="_blank" rel="noopener noreferrer">{{ seed.host }} ↗</a>{% endif %}
+    <p>This is the source you brought in. Related research stays attached to each idea.</p>
+    <nav aria-label="Your next steps">
+      <a href="#rundown"><span>01</span> Get the rundown</a>
+      <a href="#script-ideas"><span>02</span> Choose an angle</a>
+      <a href="/app"><span>03</span> Continue in Scripts</a>
+    </nav>
+  </aside>
+  <div class="guide-reading">
+    <section class="guide-rundown" id="rundown" aria-labelledby="rundown-title">
+      <p class="guide-eyebrow">01 / Understand the source</p>
+      <h1 id="rundown-title">The rundown.</h1>
+      {% if seed and seed.summary %}<p class="guide-deck">{{ seed.summary }}</p>
+      {% elif claims %}<ul class="guide-facts">{% for claim in claims[:3] %}<li>{{ claim.research_text }}</li>{% endfor %}</ul>
+      {% else %}<p class="guide-deck">A rundown isn't available for this source yet. {{ 'Research is still in progress.' if case.status not in ['completed', 'failed'] else 'The retained source has no summary.' }}</p>{% endif %}
+      <p class="guide-help">A source rundown, not independent verification. Check the original material before publishing.</p>
+      <a class="guide-text-link" href="#script-ideas">Now find something worth saying <span aria-hidden="true">↓</span></a>
+    </section>
+    <section id="script-ideas" class="guide-ideas" aria-labelledby="ideas-title">
+      <header><p class="guide-eyebrow">02 / Go beyond the source</p><h2 id="ideas-title">Where could you take this?</h2><p>Choose an angle that interests you. Open its evidence to see what supports it—and what still needs checking.</p></header>
+      <a class="guide-text-link" href="/app">Explore your script ideas →</a>
+    </section>
+  </div>
+</div>
+{% endblock %}
