@@ -96,7 +96,8 @@ def create_production_router(*, settings, owner, render):
         claims = [claim for claim in await store.list_claims(case_id)
                   if seed and claim.seed_source_id == seed['id']]
         claims.sort(key=lambda claim: claim.importance, reverse=True)
-        ideas = [row for row in await store.production_ideas(owner_id) if row['case_id'] == case_id]
+        ideas = [row for row in await store.production_ideas(owner_id)
+                 if row['case_id'] == case_id and (row.get('story_packet') or row['topic_id'] is not None)]
         for item in ideas:
             for finding in (item.get('story_packet') or {}).get('findings', []):
                 parsed = urlparse(finding.get('url') or '')
