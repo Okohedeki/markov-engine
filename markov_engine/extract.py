@@ -143,6 +143,50 @@ async def extract_content(
         return await _extract_article(url)
 
 
+async def _read_downloaded_media(
+    url: str, source_type: str, tmp_dir: str, whisper_model: str | None,
+) -> tuple[dict, list[ExtractedSegment]]:
+    """Keep media until its worker finishes, including after caller cancellation."""
+    import tempfile
+
+    os.makedirs(tmp_dir, exist_ok=True)
+    workspace = tempfile.TemporaryDirectory(prefix="markov_media_", dir=tmp_dir)
+    worker = asyncio.get_running_loop().run_in_executor(
+        None, _download_media_sync, url, workspace.name, source_type,
+    )
+
+    def cleanup(completed):
+        # Retrieve background errors, but leave their reporting to the caller.
+        if not completed.cancelled():
+            completed.exception()
+        workspace.cleanup()
+
+    try:
+        info, path = await asyncio.shield(worker)
+        segments = await _extract_caption_segments(info)
+        if not segments:
+            if not whisper_model:
+                raise RuntimeError("Media downloaded but no captions are available and transcription is disabled")
+            worker = asyncio.create_task(transcribe_segments(path, model_size=whisper_model))
+            transcript = await asyncio.shield(worker)
+            segments = _with_character_offsets([
+                ExtractedSegment(
+                    ordinal=index, text=segment.text,
+                    start_seconds=segment.start_seconds, end_seconds=segment.end_seconds,
+                    speaker=segment.speaker, caption_source=f"whisper:{whisper_model}",
+                )
+                for index, segment in enumerate(transcript) if segment.text.strip()
+            ])
+        if not segments or not any(segment.text.strip() for segment in segments):
+            raise RuntimeError("Media downloaded but no usable spoken content or captions were extracted")
+        return info, segments
+    finally:
+        if worker.done():
+            cleanup(worker)
+        else:
+            worker.add_done_callback(cleanup)
+
+
 async def _extract_media(
     url: str, source_type: str, tmp_dir: str, whisper_model: str
 ) -> ExtractedContent:
