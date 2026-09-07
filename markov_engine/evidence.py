@@ -8,7 +8,7 @@ import re
 from urllib.parse import urlparse
 
 from markov_engine.config import get_settings
-from markov_engine.extract import extract_content
+from markov_engine.extract import extract_content, media_cache_error
 from markov_engine.llm import complete_json
 from markov_engine.search import _platform, search_web
 from markov_engine.store.records import ClaimRec, SourceSegmentRec
@@ -420,6 +420,8 @@ async def _persist_evidence_source(
     extractor,
 ) -> tuple[object | None, list[SourceSegmentRec], str]:
     existing = await store.get_source_by_url(url)
+    if existing is not None and media_cache_error(existing):
+        return None, [], "unverified_lead"
     content = None
     if existing is None:
         content = await extractor(
