@@ -862,9 +862,7 @@ async def _extract_reddit(
 
         is_video = post_data.get("is_video", False)
         if is_video:
-            transcript = await _download_and_transcribe(url, tmp_dir, whisper_model)
-            if transcript:
-                parts.append(f"\n--- Video Transcript ---\n{transcript}")
+            return await _extract_media(url, "reddit", tmp_dir, whisper_model)
 
         if len(data) > 1:
             comments = data[1]["data"]["children"]
