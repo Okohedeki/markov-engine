@@ -44,6 +44,12 @@
             <details class="guide-passage"><summary>{{ finding.title }}</summary><blockquote>{{ finding.passage }}</blockquote>{% if finding.safe_url %}<a href="{{ finding.safe_url }}" target="_blank" rel="noopener noreferrer">Read the original · {{ finding.locator or 'Retained passage' }} ↗</a>{% endif %}</details>
             {% endfor %}
             {% else %}<p>This earlier research has no angle-specific evidence packet. Review its source trail before writing.</p>{% if item.artifact_id %}<a class="guide-text-link" href="/app/artifacts/{{ item.artifact_id }}#sources">Inspect the source trail →</a>{% endif %}{% endif %}
+            <div class="guide-develop">
+              <p>Next: save this idea to your scripts, or develop it into a draft.</p>
+              <form method="post" action="/app/queue/actions"><input type="hidden" name="item" value="{{ item.item_key }}"><input type="hidden" name="status" value="shortlisted"><button class="mk-button mk-button-quiet" name="action" value="move" type="submit">Save idea to Scripts →</button></form>
+              {% if entitlements.talking_points %}<form method="post" action="/app/queue/actions"><input type="hidden" name="item" value="{{ item.item_key }}"><p class="guide-help">New draft: up to {{ talking_point_cost | number }} credits. Existing drafts reopen without a new charge.</p><button class="mk-button mk-button-primary" name="action" value="talking_points" type="submit" {% if case.status != 'completed' %}disabled{% endif %}>Develop this script →</button></form>
+              {% else %}<a class="guide-text-link" href="/app/upgrade">Full script writing is paid · View plans →</a>{% endif %}
+            </div>
           </details>
         </div>
       </article>
