@@ -825,6 +825,7 @@ async def _extract_twitter(
             title=title,
             content_text=content_text,
             metadata={
+                "content_kind": "text_post",
                 "author": author_handle,
                 "likes": tweet.get("likes", 0),
                 "retweets": tweet.get("retweets", 0),
