@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 _DOMAIN_MAP = {
     "youtube.com": "youtube",
     "youtu.be": "youtube",
+    "vimeo.com": "media",
+    "rumble.com": "media",
+    "twitch.tv": "media",
     "tiktok.com": "tiktok",
     "instagram.com": "instagram",
     "twitter.com": "twitter",
