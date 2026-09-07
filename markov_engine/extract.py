@@ -690,25 +690,6 @@ def _download_media_sync(url: str, work_dir: str, source_type: str) -> tuple[dic
     return info, str(path)
 
 
-def _ytdlp_download_audio_sync(url: str, output_path: str) -> str | None:
-    """Download audio-only via yt-dlp. Returns path to downloaded file."""
-    import yt_dlp
-
-    ydl_opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "format": "bestaudio/best",
-        "outtmpl": output_path + ".%(ext)s",
-        "max_filesize": 100 * 1024 * 1024,  # 100MB limit
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        if info:
-            ext = info.get("ext", "opus")
-            return f"{output_path}.{ext}"
-    return None
-
-
 async def _extract_twitter(
     url: str, tmp_dir: str, whisper_model: str
 ) -> ExtractedContent:
