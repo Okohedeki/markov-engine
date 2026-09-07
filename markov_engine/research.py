@@ -451,6 +451,15 @@ async def convert_case_artifact(
         raise ValueError("Research case not found")
     artifact_type = MODE_TO_ARTIFACT[mode]
     constraints = constraints or {}
+    selected_story_key = constraints.get('selected_story_key')
+    if selected_story_key:
+        if mode != 'script' or constraints.get('selected_insight_id') or constraints.get('selected_topic_id'):
+            raise ValueError('Choose one story for a talking-points draft.')
+        stories = await store.editorial_ideas(owner_id, str(selected_story_key))
+        if not stories or stories[0]['case_id'] != case.id:
+            raise ValueError('Selected story does not belong to this research case.')
+        if case.status != 'completed':
+            raise ValueError('Wait for research to finish before developing this story.')
     try:
         selected_insight_id = int(constraints.get("selected_insight_id"))
     except (TypeError, ValueError):
@@ -461,7 +470,7 @@ async def convert_case_artifact(
         selected_topic_id = None
     if selected_insight_id is not None and selected_topic_id is not None:
         raise ValueError("Choose either an insight or a topic for one artifact branch")
-    branch_key = (
+    branch_key = selected_story_key or (
         f"insight:{selected_insight_id}"
         if selected_insight_id is not None
         else f"topic:{selected_topic_id}"
