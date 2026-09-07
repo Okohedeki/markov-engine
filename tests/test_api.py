@@ -354,15 +354,17 @@ async def test_web_login_and_focused_intake_page():
             )
             assert signed_in.status_code == 200
             assert "Your production desk" in signed_in.text
+            assert '<h1>Scripts</h1>' in signed_in.text
+            intake = await client.get('/app/links')
             for source_type in ('TikTok', 'Instagram', 'YouTube', 'Podcasts', 'Articles', 'PDFs'):
-                assert source_type in signed_in.text
-            assert '<details class="production-source" id="new-topic" open>' in signed_in.text
-            assert "Find connected stories" in signed_in.text
+                assert source_type in intake.text
+            assert 'name="value"' in intake.text and 'name="focus"' in intake.text
+            assert 'Find script ideas' in intake.text
+            assert 'Audience &amp; voice' not in intake.text
+            assert 'name="value"' not in signed_in.text
             assert 'id="queue-title"' in signed_in.text
-            assert 'name="focus"' in signed_in.text
-            assert "nothing is posted automatically" in signed_in.text
             assert "Why would Japanese investors sell U.S. Treasuries?" in signed_in.text
-            assert f'href="/app/artifacts/{artifact.id}"' in signed_in.text
+            assert f'href="/app/sources/{research_case.id}#case-{research_case.id}"' in signed_in.text
             assert "knowledge graph" not in signed_in.text.lower()
             assert "owner-1" not in signed_in.text
             assert 'href="/app/signals"' in signed_in.text
@@ -371,7 +373,8 @@ async def test_web_login_and_focused_intake_page():
             assert 'name="q"' in signed_in.text
 
             for path, heading in (
-                ("/app/signals", "Bring in a conversation"),
+                ("/app/signals", "Saved articles"),
+                (f"/app/sources/{research_case.id}", "The rundown"),
                 ("/app/ideas", "Explore different angles"),
                 ("/app/plans", "Drafts"),
                 ("/app/published", "Take a finished draft to your channel"),
