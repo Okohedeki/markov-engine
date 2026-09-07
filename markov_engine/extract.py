@@ -702,6 +702,51 @@ async def _download_and_transcribe_segments(
                     pass
 
 
+def _download_media_sync(url: str, work_dir: str, source_type: str) -> tuple[dict, str]:
+    """Download and inspect a real media file, never a description or audio proxy."""
+    import hashlib
+    from pathlib import Path
+
+    import av
+    import yt_dlp
+
+    limit = 100 * 1024 * 1024
+
+    def check_size(progress):
+        if progress.get("downloaded_bytes", 0) > limit:
+            raise RuntimeError("Media exceeds the 100 MB processing limit")
+
+    options = {
+        "quiet": True, "no_warnings": True, "noplaylist": True,
+        "format": "bestaudio/best" if source_type == "audio" else "bv[height<=?720]+ba/b[height<=?720]/b",
+        "outtmpl": os.path.join(work_dir, "media.%(ext)s"),
+        "merge_output_format": "mp4", "max_filesize": limit,
+        "socket_timeout": 30, "retries": 2, "fragment_retries": 2,
+        "progress_hooks": [check_size],
+    }
+    with yt_dlp.YoutubeDL(options) as downloader:
+        info = downloader.extract_info(url, download=True)
+        if not info or info.get("_type") in {"playlist", "multi_video"}:
+            raise RuntimeError("A single downloadable media item is required")
+        path = Path(info.get("filepath") or downloader.prepare_filename(info)).resolve()
+    if not path.is_relative_to(Path(work_dir).resolve()) or not path.is_file():
+        raise RuntimeError("Media download did not produce a complete file")
+    if not 0 < path.stat().st_size <= limit:
+        raise RuntimeError("Media is empty or exceeds the 100 MB processing limit")
+    with av.open(str(path)) as container:
+        if source_type == "audio" and not container.streams.audio:
+            raise RuntimeError("Downloaded file has no audio stream")
+        if source_type != "audio" and not container.streams.video:
+            raise RuntimeError("Downloaded file has no video stream")
+    with path.open("rb") as media:
+        fingerprint = hashlib.file_digest(media, "sha256").hexdigest()
+    info["download_proof"] = {
+        "media_downloaded": True, "media_bytes": path.stat().st_size,
+        "media_sha256": fingerprint, "media_kind": "audio" if source_type == "audio" else "video",
+    }
+    return info, str(path)
+
+
 def _ytdlp_download_audio_sync(url: str, output_path: str) -> str | None:
     """Download audio-only via yt-dlp. Returns path to downloaded file."""
     import yt_dlp
