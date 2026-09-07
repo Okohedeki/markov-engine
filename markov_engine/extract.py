@@ -795,9 +795,7 @@ async def _extract_twitter(
         media = tweet.get("media", {})
         videos = media.get("videos") or []
         if videos or media.get("video"):
-            transcript = await _download_and_transcribe(url, tmp_dir, whisper_model)
-            if transcript:
-                parts.append(f"\n--- Video Transcript ---\n{transcript}")
+            return await _extract_media(url, "twitter", tmp_dir, whisper_model)
 
         title = f"@{author_handle}: {text[:80]}{'...' if len(text) > 80 else ''}"
 
