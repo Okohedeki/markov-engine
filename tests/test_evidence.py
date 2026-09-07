@@ -74,10 +74,10 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
                 url=url,
                 source_type="article",
                 title="Official measurement",
-                content_text="The official table reports a measured value of 42.",
+                content_text="The official table reports a measured value of 42 following independent laboratory calibration procedures.",
                 segments=[ExtractedSegment(
                     ordinal=0,
-                    text="The official table reports a measured value of 42.",
+                    text="The official table reports a measured value of 42 following independent laboratory calibration procedures.",
                     section_title="Results",
                 )],
             )
@@ -104,7 +104,7 @@ async def test_research_uses_extracted_passage_not_search_snippet(monkeypatch):
         links = await store.list_claim_evidence(claim.id)
         assert result["status"] == "supported"
         assert links[0].evidence.passage_text == (
-            "The official table reports a measured value of 42."
+            "The official table reports a measured value of 42 following independent laboratory calibration procedures."
         )
         assert "SEARCH SNIPPET" not in links[0].evidence.passage_text
         assert links[0].evidence.section_title == "Results"
