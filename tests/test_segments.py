@@ -97,25 +97,26 @@ async def test_media_prefers_structured_captions(monkeypatch, tmp_path):
         "subtitles": {"en": [{"ext": "json3", "data": caption_data}]},
         "download_proof": {"media_downloaded": True, "media_kind": "video"},
     }
-
-    async def fake_info(url):
-        return info
+    downloads = []
 
     def fake_download(url, directory, source_type):
+        downloads.append(url)
         return info, str(Path(directory) / "fixture.mp4")
 
     async def fail_transcription(*args, **kwargs):
         raise AssertionError("captions should avoid transcription")
 
-    monkeypatch.setattr(extract, "_ytdlp_extract_info", fake_info)
     monkeypatch.setattr(extract, "_download_media_sync", fake_download)
     monkeypatch.setattr(extract, "transcribe_segments", fail_transcription)
-    monkeypatch.setattr(extract, "_download_and_transcribe_segments", fail_transcription)
 
     result = await extract._extract_media(
         "https://youtube.com/watch?v=fixture", "youtube", str(tmp_path), "base"
     )
     assert result.success is True
+    assert downloads == ["https://youtube.com/watch?v=fixture"]
+    assert result.metadata["media_downloaded"] is True
+    assert "Description" not in result.content_text
+    assert not list(tmp_path.iterdir())
     assert len(result.segments) == 4
     assert result.segments[3].start_seconds == pytest.approx(8)
     assert "The first factual claim" in result.content_text
