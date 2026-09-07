@@ -7,7 +7,7 @@ import logging
 
 from markov_engine.config import get_settings
 from markov_engine.entities import extract_entities
-from markov_engine.extract import extract_content
+from markov_engine.extract import extract_content, media_cache_error
 from markov_engine.store.base import Store
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,8 @@ async def ingest_url(
     try:
         existing = await store.get_source_by_url(url)
         if existing:
+            if error := media_cache_error(existing):
+                return {"success": False, "error": error}
             return {
                 "success": True,
                 "source_id": existing.id,
