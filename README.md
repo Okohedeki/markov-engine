@@ -76,7 +76,10 @@ V1 audit remains in [`docs/markov-v1-architecture.md`](docs/markov-v1-architectu
 
 ## Local setup
 
-Requirements: Python 3.11+ and FFmpeg when Whisper transcription is needed.
+Requirements: Python 3.11+ and FFmpeg for merging separate video/audio streams.
+Run the API and CLI from the activated project environment below. Reinstall
+dependencies and restart existing servers after upgrading: the speech runtime
+requires CTranslate2 4.8.2+ to avoid the obsolete `pkg_resources` dependency.
 
 ```bash
 python -m venv .venv
