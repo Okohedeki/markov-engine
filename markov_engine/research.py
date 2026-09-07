@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import re
 import uuid
 from urllib.parse import urlparse
+from weakref import WeakValueDictionary
 
 from markov_engine.claims import extract_claims
 from markov_engine.connections import (
@@ -31,6 +33,7 @@ MODE_TO_ARTIFACT = {
     "script": "script",
 }
 REVIEW_LEVELS = {"instant", "verified"}
+_conversion_locks = WeakValueDictionary()
 
 
 def classify_input(value: str) -> str:
@@ -430,6 +433,20 @@ async def generate_case_artifact(
 
 
 async def convert_case_artifact(
+    store: SqliteStore, *, case_id: int, owner_id: str, mode: str,
+    review_level: str = 'instant', constraints: dict | None = None, settings=None,
+) -> tuple[ArtifactRec, bool]:
+    """Serialize repeat clicks per case in the single-process v1 server."""
+    key = (id(store), owner_id, case_id)
+    lock = _conversion_locks.setdefault(key, asyncio.Lock())
+    async with lock:
+        return await _convert_case_artifact_unlocked(
+            store, case_id=case_id, owner_id=owner_id, mode=mode,
+            review_level=review_level, constraints=constraints, settings=settings,
+        )
+
+
+async def _convert_case_artifact_unlocked(
     store: SqliteStore,
     *,
     case_id: int,
