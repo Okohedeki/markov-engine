@@ -7,7 +7,8 @@
     <main class="mk-app-main" id="main-content">
       <header class="mk-mobile-appbar"><button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button><a class="mk-wordmark" href="/app"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a><a href="/app">Create</a></header>
       <div class="mk-library-shell">
-        <header class="mk-library-head"><div><p class="mk-kicker">Creator studio</p><h1>{{ page_title }}</h1><p>{{ page_description }}</p></div>{% if page_kind != 'search' %}<a class="mk-button mk-button-primary" href="/app#new-topic">New topic <span aria-hidden="true">＋</span></a>{% endif %}</header>
+        <header class="mk-library-head"><div><p class="mk-kicker">Your production desk</p><h1>{{ 'Saved drafts' if page_kind == 'plans' else page_title }}</h1><p>{{ page_description }}</p></div>{% if page_kind != 'search' %}<a class="mk-button mk-button-primary" href="/app/links">Add a link <span aria-hidden="true">＋</span></a>{% endif %}</header>
+        {% if page_kind == 'plans' %}<nav class="guide-script-views" aria-label="Script workspace"><a href="/app">Ideas & progress</a><a href="/app/plans" aria-current="page">Saved drafts</a><a href="/app/series">Series</a></nav>{% endif %}
 
         {% if page_kind == 'signals' %}
           <form class="studio-intake" id="add-signal" method="post" action="/app/jobs">
