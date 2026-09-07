@@ -10,6 +10,31 @@ from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
+async def test_keyless_preview_is_explicit_and_loopback_only():
+    store = await SqliteStore.open(':memory:')
+    try:
+        for enabled, peer, host, allowed in [
+            ('', '127.0.0.1', '127.0.0.1', False),
+            ('owner', '127.0.0.1', '127.0.0.1', True),
+            ('owner', '127.0.0.1', 'localhost', True),
+            ('owner', '192.0.2.1', '127.0.0.1', False),
+            ('owner', '127.0.0.1', 'public.example', False),
+        ]:
+            settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'owner'},
+                MARKOV_WEB_SESSION_SECRET='preview-test', MARKOV_LOCAL_PREVIEW_OWNER=enabled)
+            app = create_app(store=store, settings=settings)
+            transport = httpx.ASGITransport(app=app, client=(peer, 1234))
+            async with httpx.AsyncClient(transport=transport, base_url=f'http://{host}') as client:
+                response = await client.get('/app', headers={'X-Forwarded-For': '127.0.0.1'})
+                assert response.status_code == (200 if allowed else 303)
+                login = await client.get('/app/login')
+                assert login.status_code == (303 if allowed else 200)
+                assert (await client.get('/v1/jobs')).status_code == 401
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
 async def test_queue_to_series_journey_and_free_gates():
     store = await SqliteStore.open(':memory:')
     settings = Settings(MARKOV_API_KEYS={'plus-key': 'plus', 'free-key': 'free'},
