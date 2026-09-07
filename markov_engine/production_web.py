@@ -128,6 +128,16 @@ def create_production_router(*, settings, owner, render):
                 lines = ['# Markov story shortlist', '', 'Story directions and sources, not generated talking points.']
                 for row in rows:
                     lines.extend(['', f"## {row['title']}", row['angle'], '', 'Sources:'])
+                    packet = row.get('story_packet')
+                    if packet:
+                        lines.extend(['', 'Research question: ' + packet['question'],
+                                      'Limit: ' + packet['uncertainty']])
+                        challenges = packet.get('challenge_evidence_ids', [])
+                        for finding in packet['findings']:
+                            role = 'Challenge / context' if finding['evidence_id'] in challenges else 'Supporting passage'
+                            lines.extend(['', f"{role} [E{finding['evidence_id']}]: {finding['url']}",
+                                          '> ' + finding['passage'].replace('\n', '\n> ')])
+                        continue
                     sources = await store.list_research_case_sources(row['case_id'])
                     linked = False
                     for source in sources:
@@ -151,7 +161,8 @@ def create_production_router(*, settings, owner, render):
                 for row in rows:
                     try:
                         await convert_case_artifact(store, case_id=row['case_id'], owner_id=owner_id, mode='script',
-                            constraints={'selected_topic_id': row['topic_id']} if row['topic_id'] else {}, settings=settings)
+                            constraints={'selected_story_key': row['item_key']} if row.get('story_packet') else
+                            {'selected_topic_id': row['topic_id']} if row['topic_id'] else {}, settings=settings)
                         completed += 1
                     except ValueError as exc:
                         return error(request, f'{completed} of {len(rows)} outputs completed. Existing outputs are in Talking points. Remaining ideas were not developed: {exc}')
