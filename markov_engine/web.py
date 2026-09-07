@@ -804,6 +804,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         owner_id = owner(request)
         values = await _form(request)
         constraint_fields = (
+            "selected_story_key",
             "selected_topic_id",
             "selected_insight_id",
             "angle",
@@ -837,7 +838,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 title="Could not convert the case",
                 message=str(exc),
             )
-        return RedirectResponse(f"/app/artifacts/{artifact.id}", status_code=303)
+        return RedirectResponse(f"/app/artifacts/{artifact.id}#output", status_code=303)
 
     @router.post("/app/claims/{claim_id}/deepen")
     async def deepen_page(claim_id: int, request: Request):
