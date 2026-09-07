@@ -98,3 +98,23 @@ provenance, media-diverse selection, case-scoped persistence and cached reuse.
 The existing 132-test suite passed. No new permanent test suite or service was
 introduced. Native restricted-platform access, the original runtime stall and
 consistent valuable connection discovery remain unfinished.
+
+### Download-first TikTok retest
+
+The supplied TikTok short link `https://www.tiktok.com/t/ZTUhAPacY` downloaded a
+26,622,649-byte video with an inspected video stream. An isolated extraction
+produced 21 timed Whisper segments in 14.7 seconds, about Arendt, Eichmann and
+radicalization, not the generic themes of its description. Speech recognition
+still makes wording and proper-name errors; this is not a reviewed transcript.
+
+The subsequent full engine run retained 14 located claims and four external
+sources, including another downloaded TikTok transcript. It returned zero
+accepted angles (one rejected), with two source-read timeouts and partial
+coverage. The model cost ledger recorded $0.0249626; this excludes unmetered
+download/CPU work. Source processing now works on this example, but investigative
+quality is not established. Records: `.tmp/tiktok-download-first-20260907.db`.
+
+Verification used the project `.venv` with CTranslate2 4.8.2, fixing the prior
+`pkg_resources` import crash without modifying shared Python. The existing
+preview process was not restarted into this environment. Old description-based
+records were preserved, not upgraded or presented as transcript-based results.
