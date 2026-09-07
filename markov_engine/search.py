@@ -19,6 +19,7 @@ import os
 import random
 import re
 import time
+from urllib.parse import urlsplit
 
 logger = logging.getLogger(__name__)
 
@@ -188,18 +189,16 @@ def _ddg_videos(query: str, n: int) -> list[dict]:
 
 
 def _ddg_site(query: str, site: str, n: int) -> list[dict]:
-    """Target a social platform directly — where follow-up stories actually live."""
+    """Find indexed platform pages; propagate failures, not false empty searches."""
     from ddgs import DDGS
     out = []
-    try:
-        for r in DDGS().text(f"{query} site:{site}", max_results=n):
-            url = r.get("href") or r.get("url") or ""
-            if url:
-                out.append({"url": url, "title": r.get("title") or "",
-                            "snippet": r.get("body") or "",
-                            "kind": "social", "platform": _platform(url), "date": None})
-    except Exception as e:  # noqa: BLE001
-        logger.debug("site:%s search %r failed: %s", site, query, e)
+    for r in DDGS(timeout=8).text(f"{query} site:{site}", max_results=n):
+        url = r.get("href") or r.get("url") or ""
+        host = (urlsplit(url).hostname or "").lower()
+        if host == site or host.endswith("." + site):
+            out.append({"url": url, "title": r.get("title") or "",
+                        "snippet": r.get("body") or "",
+                        "kind": "social", "platform": _platform(url), "date": None})
     return out
 
 
