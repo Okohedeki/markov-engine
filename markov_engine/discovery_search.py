@@ -68,3 +68,31 @@ async def search_route(route: dict, timeout_s: float = 18) -> dict:
         coverage["error_type"] = type(exc).__name__
     coverage["result_count"] = len(hits)
     return {"hits": hits, "coverage": coverage}
+
+
+async def search_across_platforms(
+    query: str, max_results: int = 4, *, timeout_s: float = 18,
+) -> dict:
+    """Merge bounded public discovery, retaining every route's coverage record."""
+    if not query.strip():
+        return {"hits": [], "coverage": [], "status": "not_searched"}
+    reports = await asyncio.gather(*(
+        search_route(route, timeout_s=timeout_s)
+        for route in discovery_routes(query, max_results)
+    ))
+    merged = {}
+    for report in reports:
+        for hit in report["hits"]:
+            parsed = urlsplit(hit["url"])
+            # Paths and query values can be case-sensitive; never lowercase them.
+            key = (parsed.scheme, parsed.netloc.lower(), parsed.path, parsed.query)
+            route = report["coverage"]
+            provenance = {key: route[key] for key in ("platform", "method", "provider")}
+            if key not in merged:
+                merged[key] = {**hit, "discovered_via": []}
+            if provenance not in merged[key]["discovered_via"]:
+                merged[key]["discovered_via"].append(provenance)
+    coverage = [report["coverage"] for report in reports]
+    successful = sum(row["status"] in {"results", "empty"} for row in coverage)
+    status = "searched" if successful == len(coverage) else "partial" if successful else "failed"
+    return {"hits": list(merged.values()), "coverage": coverage, "status": status}
