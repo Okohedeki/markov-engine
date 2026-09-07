@@ -69,6 +69,15 @@ def create_production_router(*, settings, owner, render):
         owner_id = owner(request)
         return render(request, 'upgrade.html', **await common(request, owner_id))
 
+    @router.get('/app/links')
+    async def source_entry(request: Request):
+        try:
+            owner_id = owner(request)
+        except HTTPException:
+            return RedirectResponse('/app/login', 303)
+        context = await common(request, owner_id)
+        return render(request, 'source_entry.html', **{**context, 'active': 'links'})
+
     @router.get('/app/queue/preview')
     async def story_preview(request: Request):
         owner_id = owner(request)
