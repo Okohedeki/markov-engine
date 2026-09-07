@@ -112,8 +112,8 @@ class Settings(BaseSettings):
 
     # ── Content extraction ──────────────────────────────────────────
     whisper_model: str = Field("base", alias="WHISPER_MODEL")
-    # When False, video/social sources ingest from metadata + captions only
-    # (no audio download + Whisper) — much faster, plenty for headlines/clustering.
+    # Downloads remain mandatory when False; use actual captions or fail.
+    # This flag disables local speech transcription, never enables description fallback.
     transcribe_media: bool = Field(True, alias="TRANSCRIBE_MEDIA")
     search_enabled: bool = Field(True, alias="SEARCH_ENABLED")
     tmp_dir: str = Field("data/tmp", alias="TMP_DIR")
