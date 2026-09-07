@@ -170,3 +170,27 @@ async def test_selected_story_web_journey_preserves_evidence(monkeypatch):
             assert locked.headers['location'] == '/app/upgrade'
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_failed_story_draft_refunds_without_saving(monkeypatch):
+    import markov_engine.story_drafts as drafts
+    from markov_engine.config import Settings
+    from markov_engine.research import convert_case_artifact
+    from markov_engine.model_errors import ModelResponseError
+
+    async def fail(*args, **kwargs):
+        raise ModelResponseError('invalid provider response')
+
+    monkeypatch.setattr(drafts, '_editorial_completion', fail)
+    settings = Settings(_env_file=None, MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus', MARKOV_OPENING_CREDITS=100)
+    store = await SqliteStore.open(':memory:')
+    try:
+        case, event = await seed_angles(store)
+        with pytest.raises(ValueError, match='could not return a usable draft'):
+            await convert_case_artifact(store, case_id=case.id, owner_id='creator', mode='script',
+                constraints={'selected_story_key': f'angle:{event.id}:0'}, settings=settings)
+        assert (await store.get_credit_account('creator')).balance == 100
+        assert await store.list_case_artifacts(case.id) == []
+    finally:
+        await store.close()
