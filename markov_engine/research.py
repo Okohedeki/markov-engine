@@ -407,9 +407,13 @@ async def generate_case_artifact(
         )
         if existing is not None:
             return existing
-    rendered = await render_artifact(
-        store, case_id, artifact_type, constraints=constraints
-    )
+    if artifact_type == 'script' and (constraints or {}).get('selected_story_key'):
+        from markov_engine.story_drafts import render_story_draft
+        rendered = await render_story_draft(store, case_id, constraints=constraints)
+    else:
+        rendered = await render_artifact(
+            store, case_id, artifact_type, constraints=constraints
+        )
     artifact = await persist_rendered_artifact(
         store,
         case=case,
