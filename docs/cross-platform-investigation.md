@@ -22,13 +22,31 @@ Full writing remains an optional paid continuation; this work changes discovery.
   directories on major social platforms are excluded from passage-reading slots.
 - Investigations retain selected candidates and read outcomes. Search previews
   are leads; evidence must come from separately extracted, located passages.
-- Findings distinguish transcript, description-only, post text and page text.
+- Findings distinguish downloaded-media transcripts, post text and page text.
   A post proves what its author wrote, not that every claim in it is true.
 - Queries follow evidence-led entity/relationship bridges and seek challenges.
   Eight source slots, twelve read attempts and the existing two-round deadline
   remain bounded. Initial three-question plans reserve slots for follow-up.
 - Saved cases retain coverage and findings without rerunning discovery. Existing
   completed cases, drafts, entitlements and customer records are not rewritten.
+
+## Required media-first ingestion
+
+Video ingestion must download a real video file before using its timed captions
+or transcribing its speech. Podcast ingestion downloads audio. Descriptions and
+titles are never substitutes for media content, and failed media reads must not
+fall back to article extraction. No usable transcript means an explicit failure,
+not a description-based investigation. Disabling transcription does not disable
+the required download; captionless media then fails.
+
+Downloads use isolated temporary directories and a 100 MB file limit. The
+transcript retains timestamps, caption/transcription provenance, downloaded byte
+count and a SHA-256 fingerprint. Files are temporary, not a permanent video
+archive. Visual frame analysis and on-screen text recognition are not implemented.
+
+Legacy media records without download provenance are not reusable as new seeds
+or inspected evidence. Existing cases remain unchanged; automatic historical
+reprocessing is not implemented. Genuine text-only posts remain valid sources.
 
 ## Access and quality boundaries
 
