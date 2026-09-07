@@ -194,3 +194,38 @@ async def test_failed_story_draft_refunds_without_saving(monkeypatch):
         assert await store.list_case_artifacts(case.id) == []
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_different_creators_can_draft_concurrently(monkeypatch):
+    import asyncio
+    import markov_engine.story_drafts as drafts
+    from markov_engine.config import Settings
+    from markov_engine.research import convert_case_artifact
+
+    arrived = set()
+    both_running = asyncio.Event()
+    async def writer(store, case_id, story, constraints):
+        arrived.add(case_id)
+        if len(arrived) == 2:
+            both_running.set()
+        await asyncio.wait_for(both_running.wait(), 2)
+        return {'beats': [{'heading': heading, 'text': story['title'], 'citations': [
+            {'evidence_id': 1, 'quote': 'A retained passage for story 1.'}]
+        } for heading in ('Opening', 'Development', 'Close')]}
+
+    monkeypatch.setattr(drafts, 'request_story_draft', writer)
+    settings = Settings(_env_file=None, MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus', MARKOV_OPENING_CREDITS=100)
+    store = await SqliteStore.open(':memory:')
+    try:
+        cases = [await seed_angles(store, owner) for owner in ('one', 'two')]
+        outputs = await asyncio.gather(*[
+            convert_case_artifact(store, case_id=case.id, owner_id=owner, mode='script',
+                constraints={'selected_story_key': f'angle:{event.id}:0'}, settings=settings)
+            for owner, (case, event) in zip(('one', 'two'), cases)
+        ])
+        assert len(arrived) == 2 and all(created for _, created in outputs)
+        assert await store.get_artifact(outputs[0][0].id, owner_id='two') is None
+        assert (await store.get_credit_account('one')).balance == (await store.get_credit_account('two')).balance
+    finally:
+        await store.close()
