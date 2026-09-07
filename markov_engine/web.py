@@ -332,6 +332,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         identity = _unsigned(
             request.cookies.get("markov_session"), settings.web_session_secret
         )
+        if not identity and settings.local_preview_owner:
+            loopback = {'127.0.0.1', '::1', 'localhost'}
+            if (request.client and request.client.host in loopback
+                    and request.url.hostname in loopback):
+                identity = settings.local_preview_owner
         if not identity or identity not in set(settings.api_keys.values()):
             raise HTTPException(status_code=401, detail="Sign in at /app/login")
         return identity
