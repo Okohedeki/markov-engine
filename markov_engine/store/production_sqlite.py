@@ -94,6 +94,11 @@ class ProductionSqliteMixin:
           COALESCE(c.idea_title,c.title) AS title, COALESCE(c.focus,'Open the source trail to choose a story direction.') AS angle,
           c.title AS source_title, c.original_input, c.status AS research_status,
           COALESCE(p.status,'ideas') AS status,
+          (p.item_key IS NOT NULL OR EXISTS(
+            SELECT 1 FROM story_episodes ep JOIN story_series sr ON sr.id=ep.series_id
+            WHERE sr.owner_id=c.owner_id AND ep.item_key=
+              CASE WHEN c.topic_id IS NULL THEN 'case:' || c.id ELSE 'topic:' || c.topic_id END
+          )) AS tracked,
           (SELECT COUNT(*) FROM research_case_sources s WHERE s.research_case_id=c.id) AS source_count,
           (SELECT a.id FROM artifacts a WHERE a.research_case_id=c.id ORDER BY a.id DESC LIMIT 1) AS artifact_id
         FROM candidates c
@@ -102,7 +107,11 @@ class ProductionSqliteMixin:
         ORDER BY c.id DESC, c.importance DESC, c.topic_id
         """
         async with self._conn.execute(query, (owner_id,)) as cursor:
-            return [dict(row) for row in await cursor.fetchall()]
+            legacy = [dict(row) for row in await cursor.fetchall()]
+        angles = await self.editorial_ideas(owner_id)
+        discovered_cases = {row['case_id'] for row in angles}
+        return angles + [row for row in legacy
+                         if row['tracked'] or row['case_id'] not in discovered_cases]
 
     async def selected_production_ideas(self, owner_id: str, keys: list[str]) -> list[dict]:
         keys = list(dict.fromkeys(keys))
