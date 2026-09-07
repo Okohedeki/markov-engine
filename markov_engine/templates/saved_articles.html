@@ -1,0 +1,16 @@
+{% extends "production_base.html" %}
+{% block title %}Saved articles — Markov{% endblock %}
+{% block production %}
+<header class="production-head"><div><h1>Saved articles</h1><p>Your starting points—including videos, podcasts, and posts. Open one to revisit its rundown and script ideas.</p></div><a class="mk-button mk-button-primary" href="/app/links">Add a link ＋</a></header>
+<div class="guide-library">
+  {% for row in cases %}
+  <article>
+    <span class="guide-source-type">{{ row.source_label }}</span>
+    {% set destination = '/app/jobs/' ~ row.latest_job.id if row.latest_job and (row.is_processing or row.latest_job.status in ['failed', 'awaiting_review']) else '/app/sources/' ~ row.case.id %}
+    <h2><a href="{{ destination }}">{{ row.case.title }}</a></h2>
+    <p>{{ row.finding }}</p>
+    <footer><span>{{ row.source_count }} collected source{{ '' if row.source_count == 1 else 's' }} · {{ row.case.status | humanize }}</span><a href="{{ destination }}">{{ 'Check progress' if row.is_processing else 'Review source' if row.case.status == 'failed' else 'Rundown & ideas' }} →</a></footer>
+  </article>
+  {% else %}<div class="guide-no-ideas"><h2>Keep the interesting things.</h2><p>Bring a link from TikTok, Instagram, YouTube, a podcast, or an article. Its rundown and related ideas will stay together here.</p><a class="guide-text-link" href="/app/links">Add your first source →</a></div>{% endfor %}
+</div>
+{% endblock %}
