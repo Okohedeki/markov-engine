@@ -80,7 +80,11 @@ def create_production_router(*, settings, owner, render):
         except ValueError:
             raise HTTPException(404, 'Story not found.') from None
         row = rows[0]
+        packet = row.get('story_packet')
         sources = await store.list_research_case_sources(row['case_id'])
+        if packet:
+            source_ids = {finding['source_id'] for finding in packet['findings']}
+            sources = [source for source in sources if source['id'] in source_ids]
         source_links = []
         for source in sources:
             source = dict(source)
@@ -93,8 +97,12 @@ def create_production_router(*, settings, owner, render):
                 'role': source.get('case_source_role') or 'Collected source',
             })
         artifacts = await store.list_case_artifacts(row['case_id'])
+        if packet:
+            artifacts = [artifact for artifact in artifacts if artifact.branch_key == row['item_key']
+                         or (artifact.branch_key is None and artifact.artifact_type != 'script')]
         return {
             'angle': row['angle'], 'research_status': row['research_status'],
+            'story_packet': packet,
             'sources': source_links[:12], 'source_count': len(source_links),
             'documents': [{'title': artifact.title, 'type': artifact.artifact_type,
                            'status': artifact.status,
