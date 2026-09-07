@@ -2,8 +2,10 @@
 
 ## UI and frontend work
 
-The current customer and UI direction is `docs/v11-soft-studio.md`.
-It supersedes older positioning that excludes frequent or volume posting.
+The current application direction is `docs/guided-source-direction.md`:
+Add a link, Saved articles, Scripts; guided rundown → angles → sourced writing.
+The public-site direction remains `docs/v11-soft-studio.md`.
+Both supersede older positioning that excludes frequent or volume posting.
 
 For any request involving UI, UX, frontend styling, landing pages, product pages, dashboards, application screens, screenshots, responsive behavior, or visual review, read and apply these repository skills before implementation:
 
