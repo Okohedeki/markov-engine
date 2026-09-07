@@ -41,7 +41,10 @@
 
 (() => {
   const intake = document.getElementById('new-topic');
-  if (!intake) return;
+  if (!intake) {
+    if (location.pathname === '/app' && location.hash === '#new-topic') location.replace('/app/links');
+    return;
+  }
   const reveal = () => {
     intake.open = true;
     intake.querySelector('input[name="value"]')?.focus();
