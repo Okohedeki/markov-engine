@@ -157,7 +157,7 @@ async def test_context_only_result_does_not_consume_evidence_budget(monkeypatch)
             text = (
                 "The measured value 42 appears in the search topic, but no result is given."
                 if url.endswith("context")
-                else "The official table reports that the measured value was 42."
+                else "The official table reports that the measured value was 42 following independent laboratory calibration procedures."
             )
             return ExtractedContent(
                 url=url,
