@@ -16,6 +16,8 @@ from markov_engine.store.sqlite import SqliteStore
 
 def _settings() -> Settings:
     return Settings(
+        _env_file=None,
+        MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_pro',
         MARKOV_API_KEYS={"customer-key": "owner-1", "other-key": "owner-2"},
         MARKOV_INTERNAL_API_KEYS={"review-key": "reviewer-1"},
         MARKOV_WEB_SESSION_SECRET="fixture-session-secret",
