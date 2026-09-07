@@ -84,6 +84,25 @@
 .guide-no-ideas { padding: 32px 0; }
 .guide-no-ideas h3 { font-size: 22px; font-weight: 500; }
 .guide-no-ideas p { color: var(--muted); font-size: 15px; line-height: 1.7; margin-top: 12px; }
+.guide-library { max-width: 980px; margin-top: 35px; }
+.guide-library > article { padding: 26px 0; border-bottom: 1px solid var(--line); }
+.guide-library h2 { font-size: 26px; line-height: 1.35; font-weight: 500; letter-spacing: -.025em; margin: 13px 0; }
+.guide-library h2 a:hover { color: var(--accent); }
+.guide-library article > p { font-size: 15px; line-height: 1.7; color: var(--muted); max-width: 760px; }
+.guide-library footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 16px; font-size: 13px; }
+.guide-library footer span { color: var(--muted); }
+.guide-library footer a { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent); }
+.guide-script-views { display: flex; flex-wrap: wrap; gap: 24px; border-bottom: 1px solid var(--line); margin: 24px 0 30px; }
+.guide-script-views a { display: inline-flex; align-items: center; min-height: 48px; border-bottom: 2px solid transparent; font-size: 14px; color: var(--muted); }
+.guide-script-views a[aria-current] { color: var(--ink); border-color: var(--accent); }
+.production-head h1 { font-size: 36px; }
+.production-head .mk-button { flex-shrink: 0; border-radius: 6px; }
+.production-row { padding: 23px 8px; background: transparent; }
+.production-story h3 { font-size: 21px; font-weight: 550; }
+.production-story > p { font-size: 14px; line-height: 1.6; white-space: normal; margin-top: 10px; }
+.production-row-end a { font-size: 13px; min-height: 44px; display: inline-flex; align-items: center; }
+.production-status { border-radius: 3px; font-size: 12px; }
+.production-batch { background: transparent; padding-left: 8px; }
 @media (max-width: 1050px) {
   .guide-result { grid-template-columns: minmax(0, 1fr); }
   .guide-origin { position: static; border-right: 0; padding: 0 0 24px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
@@ -91,6 +110,13 @@
   .guide-origin > p:last-of-type { display: none; }
 }
 @media (max-width: 700px) {
+  .guide-library h2 { font-size: 23px; }
+  .guide-library footer { align-items: start; flex-direction: column; gap: 4px; }
+  .production-head { flex-wrap: wrap; }
+  .production-head h1 { font-size: 32px; }
+  .production-head p:not(.mk-kicker) { font-size: 14px; }
+  .production-story h3 { font-size: 20px; }
+  .guide-script-views { gap: 20px; margin-bottom: 22px; }
   .guide-angle { grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding-block: 26px; }
   .guide-angle h3 { font-size: 23px; }
   .guide-angle-context { font-size: 15px; }
