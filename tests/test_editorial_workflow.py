@@ -47,3 +47,26 @@ async def test_stories_keep_identity_progress_and_series_across_discovery(tmp_pa
         assert [e['item_key'] for e in (await store.story_series('creator', series_id))[0]['episodes']] == keys
     finally:
         await store.close()
+
+
+def test_draft_requires_retained_citations():
+    from copy import deepcopy
+    from markov_engine.story_drafts import validate_story_draft
+
+    passage = 'A retained passage that explains the labor dispute.'
+    packet = {'findings': [{'evidence_id': 1, 'passage': passage,
+                            'url': 'https://example.invalid/labor'}]}
+    result = {'beats': [{'heading': heading, 'text': 'Draft text needs editorial review.',
+                        'citations': [{'evidence_id': 1, 'quote': passage}]}
+                       for heading in ('Opening', 'Development', 'Close')]}
+    sections = validate_story_draft(result, packet)
+    assert len(sections) == 3
+    assert all(s['statement_type'] == 'unreviewed_draft' for s in sections)
+    assert all(s['evidence_ids'] == [1] and passage in s['source_notes'] for s in sections)
+    for field, invalid in [('evidence_id', 99), ('quote', 'An invented quotation not in the source.')]:
+        broken = deepcopy(result)
+        broken['beats'][0]['citations'][0][field] = invalid
+        with pytest.raises(ValueError):
+            validate_story_draft(broken, packet)
+    with pytest.raises(ValueError):
+        validate_story_draft({'beats': []}, packet)
