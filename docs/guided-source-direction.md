@@ -52,3 +52,29 @@ Prove entry, saved-source navigation, a real retained research result, evidence
 disclosure, script selection, paid boundaries, and desktop/mobile rendering.
 Preserve ownership checks, existing drafts, research, exports, and series data.
 No new research is needed just to preview this UI.
+
+## Verified first slice
+
+- `/app/links`: dedicated universal input, platform names, three next steps,
+  native required-input validation, and an explicit paid-writing boundary.
+- `/app/signals`: saved starting sources, separate from script work.
+- `/app/sources/{id}`: owner-scoped rundown, real retained angle briefs,
+  original passages and caveats, save-to-Scripts and paid development.
+- `/app`: script ideas and progress. Saved drafts and series stay within the
+  same script navigation. The paid editor itself is preserved, not rebuilt.
+- Completed research opens its guided result. Old intake anchors still work.
+- Inspected desktop at 1440×900 and mobile at 390×844 and 320×844; checked
+  all four core routes for horizontal overflow at 760, 390, and 320px.
+- Exercised angle disclosure, original-source links, empty intake validation,
+  saving a preview angle, and restoring its original progress state.
+- Checked mobile navigation open/Escape, browser console errors, and source
+  access isolation. No cross-owner result was exposed.
+- Corrected mobile word spacing and percentage-based vertical gaps during
+  rendered review; versioned new assets so returning browsers get those fixes.
+- Existing suite: `python -m pytest -q --tb=short` passed all 132 checks.
+  Additional isolated checks exercised the new routes and empty results.
+- No fresh model generation or provider spending in this UI verification.
+  No Lighthouse, full accessibility audit, or new throughput benchmark run.
+- The rundown uses the retained source summary, or its highest-importance
+  extracted claims when no summary exists. It is not a new editorial synthesis.
+- The public site, original research data, drafts, and series were preserved.
