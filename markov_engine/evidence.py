@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from markov_engine.config import get_settings
 from markov_engine.extract import extract_content
 from markov_engine.llm import complete_json
-from markov_engine.search import search_web
+from markov_engine.search import _platform, search_web
 from markov_engine.store.records import ClaimRec, SourceSegmentRec
 from markov_engine.store.sqlite import SqliteStore
 
@@ -129,7 +129,9 @@ def classify_source(
         return "academic_research", "Academic paper or scholarly index domain."
     if any(domain in host for domain in ("reuters.com", "apnews.com", "bbc.com")):
         return "high_quality_reporting", "Established reporting organization."
-    if source_type in {"twitter", "reddit", "tiktok", "instagram"}:
+    if source_type in {"twitter", "reddit", "tiktok", "instagram", "bluesky"} or _platform(url) in {
+        "x", "reddit", "tiktok", "instagram", "bluesky", "threads", "facebook", "linkedin",
+    }:
         return "social_lead", "Social content is a lead, not independent verification."
     if source_type in {"youtube", "audio"}:
         publisher = metadata.get("channel") or metadata.get("uploader")
