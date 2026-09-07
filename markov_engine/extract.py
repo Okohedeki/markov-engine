@@ -645,58 +645,6 @@ def _extract_metadata(info: dict) -> dict:
     return {k: info[k] for k in keys if k in info and info[k] is not None}
 
 
-async def _download_and_transcribe_segments(
-    url: str, tmp_dir: str, whisper_model: str
-) -> list[ExtractedSegment]:
-    """Download audio and preserve every Whisper segment boundary."""
-    if not whisper_model:
-        return []
-    os.makedirs(tmp_dir, exist_ok=True)
-    import tempfile
-
-    handle, audio_path = tempfile.mkstemp(prefix="markov_audio_", dir=tmp_dir)
-    os.close(handle)
-    try:
-        os.remove(audio_path)
-    except OSError:
-        pass
-
-    try:
-        loop = asyncio.get_running_loop()
-        actual_path = await loop.run_in_executor(
-            None, _ytdlp_download_audio_sync, url, audio_path
-        )
-        if actual_path and os.path.exists(actual_path):
-            transcript = await transcribe_segments(
-                actual_path, model_size=whisper_model
-            )
-            return _with_character_offsets(
-                [
-                    ExtractedSegment(
-                        ordinal=index,
-                        text=segment.text,
-                        start_seconds=segment.start_seconds,
-                        end_seconds=segment.end_seconds,
-                        speaker=segment.speaker,
-                        caption_source=f"whisper:{whisper_model}",
-                    )
-                    for index, segment in enumerate(transcript)
-                ]
-            )
-        return []
-    except Exception as e:
-        logger.warning("Download+transcribe failed for %s: %s", url, e)
-        return []
-    finally:
-        for ext in ("", ".opus", ".m4a", ".webm", ".mp3", ".wav", ".ogg"):
-            p = audio_path + ext
-            if os.path.exists(p):
-                try:
-                    os.remove(p)
-                except OSError:
-                    pass
-
-
 def _download_media_sync(url: str, work_dir: str, source_type: str) -> tuple[dict, str]:
     """Download and inspect a real media file, never a description or audio proxy."""
     import hashlib
