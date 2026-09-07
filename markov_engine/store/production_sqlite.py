@@ -1,6 +1,8 @@
 """Owner-scoped production state; research and original sources remain intact."""
 from __future__ import annotations
 
+import json
+
 PRODUCTION_SCHEMA = """
 CREATE TABLE IF NOT EXISTS production_items (
     owner_id TEXT NOT NULL,
@@ -27,6 +29,52 @@ CREATE TABLE IF NOT EXISTS story_episodes (
 
 
 class ProductionSqliteMixin:
+    async def editorial_ideas(self, owner_id: str, item_key: str | None = None) -> list[dict]:
+        """Project immutable discovery snapshots into independently tracked stories."""
+        query = """
+        WITH discoveries AS (
+          SELECT e.id AS event_id,c.id AS case_id,c.title AS source_title,
+            c.original_input,c.status AS research_status,
+            CASE WHEN json_valid(e.metadata) THEN e.metadata ELSE '{}' END AS packet
+          FROM usage_events e JOIN research_cases c
+            ON c.id=e.research_case_id AND c.owner_id=e.owner_id
+          WHERE c.owner_id=? AND e.event_type='editorial_discovery'
+        ), angles AS (
+          SELECT d.*, 'angle:' || d.event_id || ':' || j.key AS item_key,
+            j.value AS story_packet FROM discoveries d, json_each(d.packet,'$.angles') j
+          WHERE j.type='object' AND json_type(d.packet,'$.angles')='array'
+        )
+        SELECT a.*,COALESCE(p.status,'ideas') AS status,
+          (SELECT id FROM artifacts art WHERE art.research_case_id=a.case_id
+            AND (art.branch_key=a.item_key OR
+              (art.branch_key IS NULL AND art.artifact_type!='script'))
+            ORDER BY (art.branch_key IS NOT NULL) DESC,art.id DESC LIMIT 1) AS artifact_id
+        FROM angles a LEFT JOIN production_items p ON p.owner_id=? AND p.item_key=a.item_key
+        WHERE (? IS NULL OR a.item_key=?) ORDER BY a.event_id DESC,a.item_key
+        """
+        async with self._conn.execute(query, (owner_id, owner_id, item_key, item_key)) as cursor:
+            rows = await cursor.fetchall()
+        result = []
+        for stored in rows:
+            row = dict(stored)
+            packet = json.loads(row.pop('story_packet'))
+            discovery = json.loads(row.pop('packet'))
+            if not all(isinstance(packet.get(key), str) and packet[key].strip()
+                       for key in ('title', 'question', 'new_information', 'uncertainty')):
+                continue
+            support = packet.get('support', [])
+            if not isinstance(support, list) or not support:
+                continue
+            ids = {s.get('evidence_id') for s in support if isinstance(s, dict)}
+            ids.update(packet.get('challenge_evidence_ids', []))
+            findings = [f for f in discovery.get('findings', [])
+                        if isinstance(f, dict) and f.get('evidence_id') in ids]
+            row.update(title=packet['title'], angle=packet['new_information'], topic_id=None,
+                       story_packet={**packet, 'findings': findings},
+                       source_count=len({f['source_id'] for f in findings}))
+            result.append(row)
+        return result
+
     async def production_ideas(self, owner_id: str) -> list[dict]:
         # One query, including all topics rather than truncating to four cases.
         query = """
