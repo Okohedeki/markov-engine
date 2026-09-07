@@ -28,7 +28,7 @@ async def queue_context(store, owner_id, request, settings):
     for row in filtered:
         parsed = urlparse(row['original_input'])
         row['source_host'] = parsed.hostname if parsed.scheme in {'http', 'https'} else 'Your source'
-        row['destination'] = f"/app/artifacts/{row['artifact_id']}" if row['artifact_id'] else '/app/signals'
+        row['destination'] = f"/app/sources/{row['case_id']}#{row['item_key'].replace(':', '-')}"
     def link(**values):
         return '/app?' + urlencode({'status': state, 'q': query, **values})
     return dict(items=filtered[(page-1)*30:page*30], counts=counts, statuses=STATUSES,
