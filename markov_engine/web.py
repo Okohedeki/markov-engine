@@ -609,6 +609,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         job = await store.get_job(job_id, owner_id=owner_id)
         if job is None:
             raise HTTPException(status_code=404, detail="Job not found")
+        if job.status == "completed" and job.mode == "research" and job.research_case_id:
+            return RedirectResponse(f"/app/sources/{job.research_case_id}", status_code=303)
         stage_title, stage_description = _job_language(job)
         return _render(
             request,
