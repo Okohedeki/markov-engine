@@ -1,5 +1,5 @@
 {% extends "base.html" %}
 {% block body_class %}mk-app-page production-page{% endblock %}
 {% block styles %}{{ super() }}<link rel="stylesheet" href="/static/production.css">{% endblock %}
-{% block scripts %}<script defer src="/static/production.js"></script>{% endblock %}
+{% block scripts %}<script defer src="/static/production.js?v=guided-source-1"></script>{% endblock %}
 {% block body %}<div class="mk-app-frame">{% include "partials/app_sidebar.html" %}<main class="mk-app-main" id="main-content"><header class="mk-mobile-appbar"><button type="button" aria-label="Open workspace navigation" aria-expanded="false" aria-controls="mk-app-sidebar" data-app-nav-open><span></span><span></span></button><a class="mk-wordmark" href="/app">Markov</a><a href="/app/links">Add a link ＋</a></header><div class="production-shell">{% block production %}{% endblock %}<footer class="production-footer"><span>EyeQ enterprises · Markov</span><nav aria-label="Workspace legal links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/copyright">Copyright</a></nav></footer></div></main></div>{% endblock %}
