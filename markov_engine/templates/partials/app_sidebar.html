@@ -5,12 +5,11 @@
     </a>
     <button type="button" aria-label="Close workspace navigation" data-app-nav-close>×</button>
   </div>
-  <p class="mk-workspace-label">Creator studio</p>
+  <p class="mk-workspace-label">Your production desk</p>
   <nav class="mk-app-nav" aria-label="Workspace navigation">
-    <a href="/app" {% if active in ['home', 'ideas'] %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span><strong>Stories</strong></a>
-    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">↘</span><strong>Source topics</strong></a>
-    <a href="/app/plans" {% if active == 'plans' %}aria-current="page"{% endif %}><span aria-hidden="true">□</span><strong>Drafts</strong></a>
-    <a href="/app/series" {% if active == 'series' %}aria-current="page"{% endif %}><span aria-hidden="true">↳</span><strong>Story Mode</strong></a>
+    <a href="/app/links" {% if active == 'links' %}aria-current="page"{% endif %}><span aria-hidden="true">＋</span><strong>Add a link</strong></a>
+    <a href="/app/signals" {% if active == 'signals' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span><strong>Saved articles</strong></a>
+    <a href="/app" {% if active in ['home', 'ideas', 'plans', 'series'] %}aria-current="page"{% endif %}><span aria-hidden="true">▱</span><strong>Scripts</strong></a>
   </nav>
   <div class="mk-sidebar-note">
     <span>Sources stay with the story.</span>
@@ -18,7 +17,6 @@
     <a href="/app/upgrade">Plan & credits →</a>
   </div>
   <nav class="mk-app-secondary" aria-label="Workspace settings">
-    <a href="/app/onboarding">Audience & voice</a>
     <a href="/">Public site <span aria-hidden="true">↗</span></a>
   </nav>
 </aside>
