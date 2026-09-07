@@ -207,22 +207,25 @@ def _yt_search(query: str, n: int) -> list[dict]:
     from yt_dlp import YoutubeDL
     out = []
     opts = {"quiet": True, "no_warnings": True, "extract_flat": True,
-            "skip_download": True, "noplaylist": True}
-    try:
-        with YoutubeDL(opts) as y:
-            info = y.extract_info(f"ytsearch{n}:{query}", download=False)
-        for e in (info or {}).get("entries", []) or []:
-            vid = e.get("id")
-            url = e.get("url") or e.get("webpage_url") or (
-                f"https://www.youtube.com/watch?v={vid}" if vid else "")
-            if url and not url.startswith("http"):
-                url = f"https://www.youtube.com/watch?v={url}"
-            if url:
-                out.append({"url": url, "title": e.get("title") or "",
-                            "snippet": e.get("description") or e.get("uploader") or "",
-                            "kind": "video", "platform": "youtube", "date": None})
-    except Exception as e:  # noqa: BLE001
-        logger.debug("yt search %r failed: %s", query, e)
+            "skip_download": True, "noplaylist": True,
+            "socket_timeout": 8, "retries": 0, "extractor_retries": 0}
+    with YoutubeDL(opts) as y:
+        info = y.extract_info(f"ytsearch{n}:{query}", download=False)
+    if info is None:
+        raise RuntimeError("YouTube search returned no response")
+    for e in info.get("entries", []) or []:
+        if not isinstance(e, dict):
+            continue
+        vid = e.get("id")
+        url = e.get("url") or e.get("webpage_url") or (
+            f"https://www.youtube.com/watch?v={vid}" if vid else "")
+        if url and not url.startswith("http"):
+            url = f"https://www.youtube.com/watch?v={url}"
+        if url:
+            out.append({"url": url, "title": e.get("title") or "",
+                        "snippet": e.get("description") or e.get("uploader") or "",
+                        "kind": "video", "platform": "youtube",
+                        "date": e.get("upload_date")})
     return out
 
 
