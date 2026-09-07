@@ -180,6 +180,7 @@ async def test_topic_guidance_creates_a_scoped_artifact_branch():
             claim_ids=[prediction.id],
         )
         settings = Settings(
+            _env_file=None, MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus',
             MARKOV_OPENING_CREDITS=20,
             MARKOV_PRODUCT_CREDIT_COSTS={"script_instant": 1},
         )
