@@ -11,7 +11,9 @@ from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
-async def test_followed_connection_becomes_the_angle_in_a_separate_script():
+async def test_followed_connection_becomes_the_angle_in_a_separate_script(monkeypatch):
+    from markov_engine.config import get_settings
+    monkeypatch.setattr(get_settings(), 'default_entitlement_profile', 'cloud_plus')
     store = await SqliteStore.open(":memory:")
     try:
         case = await store.create_research_case(
