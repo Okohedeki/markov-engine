@@ -1,6 +1,7 @@
 """Cross-medium discovery with explicit native versus web-index coverage."""
 
 import asyncio
+import re
 from urllib.parse import urlsplit
 
 from markov_engine import search
@@ -96,3 +97,32 @@ async def search_across_platforms(
     successful = sum(row["status"] in {"results", "empty"} for row in coverage)
     status = "searched" if successful == len(coverage) else "partial" if successful else "failed"
     return {"hits": list(merged.values()), "coverage": coverage, "status": status}
+
+
+def rank_discovery_results(
+    query: str, hits: list[dict], *, platform_counts: dict | None = None, limit: int = 4,
+) -> list[dict]:
+    """Prefer relevant content across media, not profiles or endless article rows."""
+    from markov_engine.evidence import rank_search_results
+
+    content_paths = {
+        "tiktok": r"/(?:video|photo)/", "instagram": r"/(?:p|reels?|tv)/",
+        "x": r"/status/", "reddit": r"/comments/", "bluesky": r"/post/",
+        "threads": r"/post/", "linkedin": r"/(?:posts|pulse|feed/update)/",
+        "spotify": r"/episode/", "twitch": r"/(?:videos|clip)/",
+    }
+    pool = []
+    for hit in rank_search_results(query, hits):
+        platform = search._platform(hit["url"])
+        path = urlsplit(hit["url"]).path
+        if platform in content_paths and not re.search(content_paths[platform], path):
+            continue
+        pool.append({**hit, "platform": platform})
+    counts, selected = dict(platform_counts or {}), []
+    while pool and len(selected) < max(0, min(limit, 10)):
+        # Relevance ranks within each exposure count; platforms are not truth scores.
+        index = min(range(len(pool)), key=lambda i: (counts.get(pool[i]["platform"], 0), i))
+        hit = pool.pop(index)
+        selected.append(hit)
+        counts[hit["platform"]] = counts.get(hit["platform"], 0) + 1
+    return selected
