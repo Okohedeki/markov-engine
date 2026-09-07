@@ -5,11 +5,13 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+from collections import Counter
 from urllib.parse import urlsplit
 
 from markov_engine.config import get_settings
+from markov_engine.discovery_search import rank_discovery_results, search_across_platforms
 from markov_engine.evidence import (
-    _persist_evidence_source, rank_search_results, select_relevant_segments,
+    _persist_evidence_source, select_relevant_segments,
 )
 from markov_engine.extract import extract_content
 from markov_engine.llm import complete_json
@@ -364,8 +366,10 @@ async def discover_story_angles(
                         try:
                             async with asyncio.timeout(20):
                                 if searcher is search_web:
-                                    hits = await searcher(query, max_results=4,
-                                                          avenues=("web", "news"))
+                                    report = await search_across_platforms(query, max_results=4)
+                                    hits = report["hits"]
+                                    search["coverage"] = report["coverage"]
+                                    search["retrieval_status"] = report["status"]
                                 else:
                                     hits = await searcher(query, max_results=4)
                             search["status"] = "searched"
@@ -374,14 +378,27 @@ async def discover_story_angles(
                             search["status"] = type(exc).__name__
                             errors.append({"stage": "search", "type": type(exc).__name__})
                             continue
-                        for hit in rank_search_results(query, hits)[:3]:
-                            if reads >= 12:
+                        candidates = rank_discovery_results(
+                            query, hits, platform_counts=Counter(
+                                p.get("platform", "web") for p in findings
+                            ), limit=4,
+                        )
+                        search["candidates"] = [
+                            {key: hit.get(key) for key in ("url", "title", "platform", "discovered_via")}
+                            for hit in candidates
+                        ]
+                        search["inspections"] = []
+                        inspected_count = 0
+                        for hit in candidates:
+                            if reads >= 12 or len(source_ids) >= 8:
                                 break
                             url = str(hit.get("url") or "")
                             if not url or url in seen_urls:
                                 continue
                             seen_urls.add(url)
                             reads += 1
+                            inspection = {"url": url, "platform": hit["platform"], "status": "started"}
+                            search["inspections"].append(inspection)
                             try:
                                 async with asyncio.timeout(20):
                                     inspected = await read_story_source(
@@ -389,15 +406,21 @@ async def discover_story_angles(
                                         url=url, extractor=extractor,
                                     )
                             except Exception as exc:
+                                inspection["status"] = type(exc).__name__
                                 errors.append({"stage": "read", "type": type(exc).__name__})
                                 continue
+                            inspection["status"] = "inspected" if inspected else "no_usable_passages"
                             if inspected:
                                 for passage in inspected:
                                     passage["search_kind"] = kind
+                                    passage["platform"] = hit["platform"]
+                                    passage["discovered_via"] = hit.get("discovered_via", [])
                                 findings.extend(inspected)
                                 source_ids.update(p["source_id"] for p in inspected)
                                 search["status"] = "inspected"
-                                break
+                                inspected_count += 1
+                                if inspected_count >= (2 if kind == "query" else 1):
+                                    break
                 if not planned or not findings or len(source_ids) >= 8 or reads >= 12:
                     break
     except Exception as exc:
@@ -408,7 +431,9 @@ async def discover_story_angles(
     except Exception as exc:
         errors.append({"stage": "synthesis", "type": type(exc).__name__})
     result.update({
-        "status": "partial" if errors else "complete", "version": 1,
+        "status": "partial" if errors or any(
+            row.get("retrieval_status") in {"partial", "failed"} for row in searches
+        ) else "complete", "version": 2,
         "findings": findings, "questions": questions, "searches": searches,
         "source_count": len(source_ids), "read_attempts": reads, "errors": errors,
         "limits": {"rounds": 2, "sources": 8, "read_attempts": 12,
