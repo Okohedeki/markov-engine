@@ -49,3 +49,34 @@ More retrieved platforms do not prove novel connections, independent
 corroboration, publication readiness or a time-to-insight promise. Measure those
 on real investigations. General claim verification still has its separate
 authority-focused web/news pass; the editorial investigation runs across media.
+
+## Live development observations — September 7, 2026
+
+These are diagnostic observations, not a quality benchmark or a launch claim.
+
+- A public discovery probe for `bioscience organoids` returned in 12.3 seconds.
+  It attempted 22 routes and returned candidate links across media. The native
+  Bluesky route was denied; indexed coverage remained explicitly partial.
+- The probe also returned profiles, directories and irrelevant hits, motivating
+  relevance and content-path filtering before platform-diverse source selection.
+- A real investigation started from Crown Bioscience's organoid product page,
+  with no preferred story supplied. The local model was unavailable; configured
+  cloud fallback extracted 68 claims. That preliminary stage took about 97 seconds.
+- The initial investigation stalled without saving external evidence and was
+  stopped. Its cause was not established; a successful retry does not resolve it.
+- A traced retry reused the isolated source/claims with a 90-second research
+  budget. It inspected six sources: LinkedIn, a preprint, Substack, TikTok, X and
+  SoundCloud. Some media supplied description text, not transcripts. Spotify
+  reads failed; no access control or DRM was bypassed.
+- That retry exhausted its research budget. One proposed angle failed existing
+  validation, leaving **zero accepted leads**. More coverage has not yet proved
+  the product's promised discovery quality, latency or reliability.
+- Records remain in the local temporary database
+  `.tmp/cross-platform-live-cb77b4e6.db`; no customer case was overwritten.
+
+Deterministic checks covered coverage failures versus empty searches, native
+post normalization/reading, safe host matching, cancellation capacity, retained
+provenance, media-diverse selection, case-scoped persistence and cached reuse.
+The existing 132-test suite passed. No new permanent test suite or service was
+introduced. Native restricted-platform access, the original runtime stall and
+consistent valuable connection discovery remain unfinished.
