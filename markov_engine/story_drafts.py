@@ -5,6 +5,41 @@ import json
 from markov_engine.editorial import _editorial_completion
 
 
+def validate_story_draft(result, packet):
+    """Check retained references and quotations, not semantic factual correctness."""
+    beats = result.get('beats') if isinstance(result, dict) else None
+    if not isinstance(beats, list) or not 3 <= len(beats) <= 8:
+        raise ValueError('The evidence did not yield a usable draft. No output was saved.')
+    findings = {row['evidence_id']: row for row in packet['findings']}
+    sections = []
+    for index, beat in enumerate(beats):
+        if not isinstance(beat, dict) or not all(
+            isinstance(beat.get(key), str) and 1 <= len(beat[key].strip()) <= 3500
+            for key in ('heading', 'text')
+        ):
+            raise ValueError('The draft contained an invalid writing section.')
+        citations = beat.get('citations')
+        if not isinstance(citations, list) or not 1 <= len(citations) <= 4:
+            raise ValueError('Each writing section must retain its source references.')
+        references, quotes = [], []
+        for citation in citations:
+            if not isinstance(citation, dict):
+                raise ValueError('The draft returned an invalid citation.')
+            eid, quote = citation.get('evidence_id'), citation.get('quote')
+            if type(eid) is not int or eid not in findings or not isinstance(quote, str):
+                raise ValueError('The draft cited material outside the selected story.')
+            quote = ' '.join(quote.split())
+            if len(quote) < 24 or quote not in ' '.join(findings[eid]['passage'].split()):
+                raise ValueError('A quoted passage did not match the retained source.')
+            references.append(eid)
+            quotes.append(f'> {quote}\n\n[E{eid}] {findings[eid]["url"]}')
+        sections.append({'id': f'story-beat-{index + 1}', 'title': beat['heading'],
+                         'content': beat['text'], 'statement_type': 'unreviewed_draft',
+                         'evidence_ids': list(dict.fromkeys(references)),
+                         'source_notes': '\n\n'.join(quotes)})
+    return sections
+
+
 async def request_story_draft(store, case_id, story, constraints):
     citation = {'type': 'object', 'properties': {
         'evidence_id': {'type': 'integer'}, 'quote': {'type': 'string'},
