@@ -90,19 +90,26 @@ carefully yesterday and checked everything.
 @pytest.mark.asyncio
 async def test_media_prefers_structured_captions(monkeypatch, tmp_path):
     caption_data = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    info = {
+        "title": "Fixture video",
+        "description": "Description",
+        "duration": 11,
+        "subtitles": {"en": [{"ext": "json3", "data": caption_data}]},
+        "download_proof": {"media_downloaded": True, "media_kind": "video"},
+    }
 
     async def fake_info(url):
-        return {
-            "title": "Fixture video",
-            "description": "Description",
-            "duration": 11,
-            "subtitles": {"en": [{"ext": "json3", "data": caption_data}]},
-        }
+        return info
+
+    def fake_download(url, directory, source_type):
+        return info, str(Path(directory) / "fixture.mp4")
 
     async def fail_transcription(*args, **kwargs):
         raise AssertionError("captions should avoid transcription")
 
     monkeypatch.setattr(extract, "_ytdlp_extract_info", fake_info)
+    monkeypatch.setattr(extract, "_download_media_sync", fake_download)
+    monkeypatch.setattr(extract, "transcribe_segments", fail_transcription)
     monkeypatch.setattr(extract, "_download_and_transcribe_segments", fail_transcription)
 
     result = await extract._extract_media(
