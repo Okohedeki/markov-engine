@@ -1,5 +1,13 @@
 # Markov Agent Instructions
 
+## Core product and engine
+
+Follow `docs/cross-platform-investigation.md`: Markov finds overlooked,
+source-backed connections across media for creators and independent writers.
+Do not reduce discovery to article search or make the creator choose a platform.
+Keep native access, indexed discovery and actually inspected evidence distinct.
+The core deliverable is an investigation lead; the creator owns the voice.
+
 ## UI and frontend work
 
 The current application direction is `docs/guided-source-direction.md`:
