@@ -964,7 +964,9 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 section_content = values[key].strip()
                 existing.update({"title": title, "content": section_content})
                 updated_sections.append(existing)
-                markdown_sections.append(f"## {title}\n\n{section_content}")
+                source_notes = existing.get('source_notes')
+                markdown_sections.append(f"## {title}\n\n{section_content}"
+                    + (f"\n\n### Source notes\n\n{source_notes}" if source_notes else ''))
             structured_content["sections"] = updated_sections
             content = "\n\n".join(markdown_sections).strip()
         elif content:
