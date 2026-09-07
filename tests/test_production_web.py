@@ -50,7 +50,7 @@ async def test_queue_to_series_journey_and_free_gates():
             assert 'Episode 1' in (await client.get(location)).text
             await post(client, location + '/episodes', {'item': keys[0], 'action': 'recorded'})
             detail = await client.get(location)
-            assert '1 / 3 recorded' in detail.text and 'Up next · Episode 2' in detail.text
+            assert '1 / 3 finished' in detail.text and 'Up next · Episode 2' in detail.text
             await post(client, location + '/episodes', {'item': keys[2], 'action': 'up'})
             assert (await store.story_series('plus'))[0]['episodes'][1]['item_key'] == keys[2]
             cross_origin = await client.post('/app/queue/actions', content='action=move', headers={'Origin': 'https://outside.example'})
