@@ -495,7 +495,7 @@ async def test_workspace_job_and_artifact_reader_form_one_flow():
             assert ">Angles<" in artifact.text
             assert ">Draft<" in artifact.text
             assert "Sources and provenance" in artifact.text
-            assert "Evidence margin" in artifact.text
+            assert "Source material" in artifact.text
             assert "Claims to inspect" in artifact.text
             assert "Saving creates a new version" in artifact.text
             assert 'data-output-composer' in artifact.text
