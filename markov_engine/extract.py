@@ -188,84 +188,28 @@ async def _read_downloaded_media(
 
 
 async def _extract_media(
-    url: str, source_type: str, tmp_dir: str, whisper_model: str
+    url: str, source_type: str, tmp_dir: str, whisper_model: str | None
 ) -> ExtractedContent:
-    """Extract content from media URLs using yt-dlp + optional whisper transcription."""
+    """Fail closed: media must download and yield actual captions or speech."""
     try:
-        # Step 1: Get metadata and try to get subtitles
-        info = await _ytdlp_extract_info(url)
-        if info is None:
-            # yt-dlp failed, try article extraction as fallback
-            return await _extract_article(url)
-
-        title = info.get("title", "")
-        description = info.get("description", "")
-
-        # Step 2: Try to get subtitles/captions
-        caption_segments = await _extract_caption_segments(info)
-        subtitle_text = " ".join(segment.text for segment in caption_segments)
-
-        if subtitle_text:
-            content = (
-                f"{description}\n\n--- Transcript ---\n{subtitle_text}"
-                if description
-                else subtitle_text
-            )
-            return ExtractedContent(
-                url=url,
-                source_type=source_type,
-                title=title,
-                content_text=content,
-                metadata=_extract_metadata(info),
-                segments=caption_segments,
-            )
-
-        # Step 3: No subtitles — download audio and transcribe (skip when
-        # transcription is disabled; metadata + description are enough).
-        transcript_segments = (
-            await _download_and_transcribe_segments(url, tmp_dir, whisper_model)
-            if whisper_model
-            else []
+        info, segments = await _read_downloaded_media(
+            url, source_type, tmp_dir, whisper_model,
         )
-        transcript = " ".join(segment.text for segment in transcript_segments)
-
-        if transcript:
-            content = (
-                f"{description}\n\n--- Transcript ---\n{transcript}"
-                if description
-                else transcript
-            )
-        elif description:
-            content = description
-        else:
-            content = title
-
         return ExtractedContent(
             url=url,
             source_type=source_type,
-            title=title,
-            content_text=content,
-            metadata=_extract_metadata(info),
-            segments=(
-                transcript_segments
-                or _plain_segments(description or title, section_title="Description")
-            ),
+            title=info.get("title") or "",
+            content_text=" ".join(segment.text for segment in segments),
+            metadata={**_extract_metadata(info), **info["download_proof"]},
+            segments=segments,
         )
-
-    except Exception as e:
+    except Exception as exc:
         logger.exception("Media extraction failed for %s", url)
-        # Fallback to article extraction
-        try:
-            return await _extract_article(url)
-        except Exception:
-            return ExtractedContent(
-                url=url,
-                source_type=source_type,
-                title="",
-                content_text="",
-                success=False,
-                error=str(e),
-            )
+        return ExtractedContent(
+            url=url, source_type=source_type, title="", content_text="",
+            success=False,
+            error=f"Media processing failed: {exc}. Descriptions are not used as source content.",
+        )
 
 
 async def _ytdlp_extract_info(url: str) -> dict | None:
