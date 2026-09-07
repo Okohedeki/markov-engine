@@ -660,7 +660,7 @@ def _download_media_sync(url: str, work_dir: str, source_type: str) -> tuple[dic
             raise RuntimeError("Media exceeds the 100 MB processing limit")
 
     options = {
-        "quiet": True, "no_warnings": True, "noplaylist": True,
+        "quiet": True, "no_warnings": True, "noprogress": True, "noplaylist": True,
         "format": "bestaudio/best" if source_type == "audio" else "bv[height<=?720]+ba/b[height<=?720]/b",
         "outtmpl": os.path.join(work_dir, "media.%(ext)s"),
         "merge_output_format": "mp4", "max_filesize": limit,
