@@ -3,6 +3,7 @@ import asyncio
 import json
 
 from markov_engine.editorial import _editorial_completion
+from markov_engine.model_errors import ModelResponseError
 
 
 def validate_story_draft(result, packet):
@@ -77,14 +78,23 @@ async def request_story_draft(store, case_id, story, constraints):
                 ),
             )
             findings = {row['evidence_id']: row for row in story['story_packet']['findings']}
-            for beat in result.get('beats', []):
-                for citation in beat.get('citations', []):
+            beats = result.get('beats')
+            if not isinstance(beats, list):
+                raise ValueError('The model did not return usable writing sections.')
+            for beat in beats:
+                if not isinstance(beat, dict) or not isinstance(beat.get('citations'), list):
+                    raise ValueError('The model did not return usable source references.')
+                for citation in beat['citations']:
+                    if not isinstance(citation, dict):
+                        raise ValueError('The model returned an invalid source reference.')
                     eid = citation.get('evidence_id')
                     if type(eid) is int and eid in findings and 'quote' not in citation:
                         citation['quote'] = findings[eid]['passage']
             return result
     except TimeoutError:
         raise ValueError('Drafting timed out. No draft was saved; try this story again.') from None
+    except ModelResponseError:
+        raise ValueError('The writing provider could not return a usable draft. Try this story again.') from None
 
 
 async def render_story_draft(store, case_id, *, constraints):
