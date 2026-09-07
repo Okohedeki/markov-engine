@@ -63,7 +63,7 @@ async def test_queue_to_series_journey_and_free_gates():
             moved = await post(client, '/app/queue/actions', {'item': keys, 'action': 'move', 'status': 'shortlisted'})
             assert moved.status_code == 303
             assert (await client.get('/app?status=shortlisted')).text.count('data-production-row') == 3
-            assert 'No stories match this view' in (await client.get('/app?q=missing')).text
+            assert 'No ideas match this view' in (await client.get('/app?q=missing')).text
             export = await post(client, '/app/queue/actions', {'item': keys, 'action': 'export'})
             assert 'markov-shortlist.md' in export.headers['content-disposition']
             assert 'not generated talking points' in export.text
