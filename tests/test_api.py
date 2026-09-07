@@ -353,7 +353,10 @@ async def test_web_login_and_focused_intake_page():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
-            assert "Your stories" in signed_in.text
+            assert "Your production desk" in signed_in.text
+            for source_type in ('TikTok', 'Instagram', 'YouTube', 'Podcasts', 'Articles', 'PDFs'):
+                assert source_type in signed_in.text
+            assert '<details class="production-source" id="new-topic" open>' in signed_in.text
             assert "Find connected stories" in signed_in.text
             assert 'id="queue-title"' in signed_in.text
             assert 'name="focus"' in signed_in.text
