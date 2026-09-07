@@ -22,6 +22,7 @@ async def test_source_becomes_inspectable_research_without_invented_paths(monkey
     monkeypatch.setattr(evidence._settings, "search_enabled", False)
 
     settings = Settings(
+        _env_file=None, MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus',
         LLM_BACKEND="heuristic",
         EMBED_BACKEND="hash",
         SEARCH_ENABLED=False,
