@@ -183,6 +183,14 @@ async def read_story_source(
             "claim_id": claim.id, "url": source.url, "title": source.title,
             "locator": segment.locator, "passage": evidence.passage_text,
             "question": question["question"], "lens": question.get("lens"),
+            "source_type": source.source_type,
+            "content_basis": (
+                "transcript" if segment.caption_source else
+                "description_only" if segment.section_title == "Description" else
+                "post_text" if source.source_type in {"twitter", "reddit", "bluesky"} else
+                "page_text"
+            ),
+            "source_quality": quality,
         })
     return findings
 
