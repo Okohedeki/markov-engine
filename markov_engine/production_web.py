@@ -91,6 +91,11 @@ def create_production_router(*, settings, owner, render):
             source['safe_url'] = source.get('url') if parsed.scheme in {'http', 'https'} and parsed.hostname else None
             source['host'] = parsed.hostname or 'Original source'
         seed = next((source for source in sources if source.get('case_source_role') == 'seed'), None)
+        if seed is None:
+            seed = next((source for source in sources if source.get('url') == case.original_input), None)
+        claims = [claim for claim in await store.list_claims(case_id)
+                  if seed and claim.seed_source_id == seed['id']]
+        claims.sort(key=lambda claim: claim.importance, reverse=True)
         ideas = [row for row in await store.production_ideas(owner_id) if row['case_id'] == case_id]
         for item in ideas:
             for finding in (item.get('story_packet') or {}).get('findings', []):
@@ -98,7 +103,7 @@ def create_production_router(*, settings, owner, render):
                 finding['safe_url'] = finding.get('url') if parsed.scheme in {'http', 'https'} and parsed.hostname else None
         context = await common(request, owner_id)
         return render(request, 'source_result.html', case=case, seed=seed, ideas=ideas,
-            claims=await store.list_claims(case_id), **{**context, 'active': 'signals'})
+            claims=claims, **{**context, 'active': 'signals'})
 
     @router.get('/app/queue/preview')
     async def story_preview(request: Request):
