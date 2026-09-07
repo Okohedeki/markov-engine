@@ -438,11 +438,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         snapshot = await _workspace_snapshot(store, owner_id=owner_id)
         return _render(
             request,
-            "workspace_page.html",
+            "saved_articles.html",
             active="signals",
             page_kind="signals",
-            page_title="Your topics",
-            page_description="Bring in a conversation. See what else you could say about it.",
+            page_title="Saved articles",
+            page_description="Your sources, their rundowns, and connected script ideas.",
             account=await store.get_credit_account(owner_id),
             entitlements=resolve_entitlements(owner_id, settings=settings),
             **snapshot,
