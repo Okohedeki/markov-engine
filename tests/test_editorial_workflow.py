@@ -70,3 +70,46 @@ def test_draft_requires_retained_citations():
             validate_story_draft(broken, packet)
     with pytest.raises(ValueError):
         validate_story_draft({'beats': []}, packet)
+
+
+@pytest.mark.asyncio
+async def test_paid_drafts_keep_selected_evidence_and_deduplicate_requests(monkeypatch):
+    import asyncio
+    import markov_engine.story_drafts as drafts
+    from markov_engine.config import Settings
+    from markov_engine.research import convert_case_artifact
+
+    calls = []
+    async def writer(store, case_id, story, constraints):
+        calls.append(story['item_key'])
+        await asyncio.sleep(0.01)
+        finding = story['story_packet']['findings'][0]
+        return {'beats': [{'heading': heading, 'text': story['title'], 'citations': [
+            {'evidence_id': finding['evidence_id'], 'quote': finding['passage']}]
+        } for heading in ('Opening', 'Development', 'Close')]}
+
+    monkeypatch.setattr(drafts, 'request_story_draft', writer)
+    settings = Settings(_env_file=None, MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_plus', MARKOV_OPENING_CREDITS=100)
+    store = await SqliteStore.open(':memory:')
+    try:
+        case, event = await seed_angles(store)
+        async def develop(index):
+            return await convert_case_artifact(store, case_id=case.id, owner_id='creator',
+                mode='script', constraints={'selected_story_key': f'angle:{event.id}:{index}'}, settings=settings)
+        first, duplicate = await asyncio.gather(develop(0), develop(0))
+        assert first[1] and not duplicate[1] and first[0].id == duplicate[0].id
+        balance = (await store.get_credit_account('creator')).balance
+        second, created = await develop(1)
+        assert created and second.id != first[0].id and len(calls) == 2
+        assert second.title == 'Distinct story 2' and second.status == 'draft'
+        assert second.branch_key == f'angle:{event.id}:1'
+        assert second.structured_content['story_packet']['findings'][0]['evidence_id'] == 2
+        assert all(s.get('evidence_ids', [2]) == [2] for s in second.structured_content['sections'])
+        assert (await store.get_credit_account('creator')).balance < balance
+        for owner, key in [('other', f'angle:{event.id}:0'), ('creator', 'angle:999:0')]:
+            with pytest.raises(ValueError):
+                await convert_case_artifact(store, case_id=case.id, owner_id=owner, mode='script',
+                    constraints={'selected_story_key': key}, settings=settings)
+        assert len(calls) == 2
+    finally:
+        await store.close()
