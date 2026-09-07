@@ -133,7 +133,7 @@ def classify_source(
         "x", "reddit", "tiktok", "instagram", "bluesky", "threads", "facebook", "linkedin",
     }:
         return "social_lead", "Social content is a lead, not independent verification."
-    if source_type in {"youtube", "audio"}:
+    if source_type in {"youtube", "audio", "media"}:
         publisher = metadata.get("channel") or metadata.get("uploader")
         return (
             "commentary",
