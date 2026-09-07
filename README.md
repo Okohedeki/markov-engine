@@ -24,7 +24,8 @@ automatically merge into Chains.
 
 ## What V2 includes
 
-- YouTube captions first, with timestamped Whisper fallback.
+- Mandatory video/audio downloads, followed by timed captions or Whisper speech
+  transcription. Descriptions never substitute for media content.
 - Structured video/audio, PDF-page, article-section, and social segments.
 - Long-source claim extraction with overlap, deduplication, types, certainty,
   importance, and research gaps.
