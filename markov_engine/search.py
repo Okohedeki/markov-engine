@@ -157,11 +157,16 @@ _PLATFORM_HOSTS = {
     "youtube.com": "youtube", "youtu.be": "youtube",
     "tiktok.com": "tiktok", "instagram.com": "instagram",
     "reddit.com": "reddit", "x.com": "x", "twitter.com": "x",
+    "bsky.app": "bluesky", "threads.net": "threads", "threads.com": "threads",
+    "facebook.com": "facebook", "linkedin.com": "linkedin",
+    "substack.com": "substack", "open.spotify.com": "spotify",
+    "podcasts.apple.com": "apple_podcasts", "soundcloud.com": "soundcloud",
+    "vimeo.com": "vimeo", "rumble.com": "rumble", "twitch.tv": "twitch",
 }
 
 
 def _platform(url: str) -> str:
-    host = re.sub(r"^https?://(www\.)?", "", url.lower()).split("/", 1)[0]
+    host = (urlsplit(url).hostname or "").lower()
     for h, name in _PLATFORM_HOSTS.items():
         if host == h or host.endswith("." + h):
             return name
