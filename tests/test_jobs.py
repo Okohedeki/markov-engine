@@ -11,6 +11,8 @@ from markov_engine.store.sqlite import SqliteStore
 
 def _settings() -> Settings:
     return Settings(
+        _env_file=None,
+        MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_pro',
         MARKOV_OPENING_CREDITS=10,
         MARKOV_PRODUCT_CREDIT_COSTS={
             "brief_instant": 2,
