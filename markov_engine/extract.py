@@ -110,6 +110,25 @@ def classify_url(url: str) -> str:
     return "article"
 
 
+def media_cache_error(source) -> str | None:
+    """Do not treat legacy media descriptions as verified downloaded content."""
+    metadata = source.metadata or {}
+    is_media = source.source_type in _MEDIA_TYPES or classify_url(source.url or "") in _MEDIA_TYPES
+    if not is_media or metadata.get("content_kind") == "text_post":
+        return None
+    if (
+        metadata.get("media_downloaded") is True
+        and metadata.get("media_sha256")
+        and metadata.get("media_bytes", 0) > 0
+        and (source.content_text or "").strip()
+    ):
+        return None
+    return (
+        "This saved media source has no verified download. It cannot be reused for research; "
+        "reprocessing is required. Historical cases have not been changed."
+    )
+
+
 async def extract_content(
     url: str, tmp_dir: str, whisper_model: str | None = "base"
 ) -> ExtractedContent:
