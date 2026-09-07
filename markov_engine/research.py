@@ -333,7 +333,8 @@ async def persist_rendered_artifact(
     parent_artifact_id: int | None = None,
     change_kind: str = "generated",
 ) -> ArtifactRec:
-    status = "awaiting_review" if review_level == "verified" else "completed"
+    story_draft = rendered.structured_content.get('generation_method') == 'selected-story-v1'
+    status = "awaiting_review" if review_level == "verified" else "draft" if story_draft else "completed"
     artifact = await store.add_case_artifact(
         research_case_id=case.id,
         artifact_type=rendered.artifact_type,
@@ -343,7 +344,7 @@ async def persist_rendered_artifact(
         content=rendered.content,
         structured_content=rendered.structured_content,
         word_count=rendered.word_count,
-        model_used="deterministic-v2",
+        model_used="selected-story-v1" if story_draft else "deterministic-v2",
         generation_cost=0,
         source_ids=rendered.source_ids,
         branch_key=branch_key,
@@ -368,7 +369,7 @@ async def persist_rendered_artifact(
     await store.record_cost(
         research_case_id=case.id,
         artifact_id=artifact.id,
-        provider="deterministic",
+        provider="editorial" if story_draft else "deterministic",
         operation=f"render_{rendered.artifact_type}",
         units=rendered.word_count,
         cost=rendered.word_count * 0,
