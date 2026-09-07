@@ -27,6 +27,7 @@ dependencies = [
     "yt-dlp",
     "pymupdf",
     "faster-whisper",
+    "ctranslate2>=4.8.2,<5",  # Avoid the removed pkg_resources runtime dependency.
     "soundfile",
     "ddgs",
     "httpx",
