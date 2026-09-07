@@ -27,7 +27,27 @@
     </section>
     <section id="script-ideas" class="guide-ideas" aria-labelledby="ideas-title">
       <header><p class="guide-eyebrow">02 / Go beyond the source</p><h2 id="ideas-title">Where could you take this?</h2><p>Choose an angle that interests you. Open its evidence to see what supports it—and what still needs checking.</p></header>
-      <a class="guide-text-link" href="/app">Explore your script ideas →</a>
+      {% for item in ideas %}
+      <article class="guide-angle" id="{{ item.item_key | replace(':', '-') }}">
+        <span class="guide-angle-number" aria-hidden="true">{{ '%02d' | format(loop.index) }}</span>
+        <div>
+          <p class="guide-eyebrow">{{ item.source_count }} attached source{{ '' if item.source_count == 1 else 's' }}{% if item.story_packet %} · {{ item.story_packet.evidence_status | humanize }}{% endif %}</p>
+          <h3>{{ item.title }}</h3>
+          <p class="guide-angle-context">{{ item.angle }}</p>
+          {% if item.story_packet %}<p class="guide-question">{{ item.story_packet.question }}</p>{% endif %}
+          <details class="guide-evidence">
+            <summary>Explore this angle <span aria-hidden="true">＋</span></summary>
+            {% if item.story_packet %}
+            <p><strong>Why follow it</strong>{{ item.story_packet.why_it_matters }}</p>
+            <p><strong>Keep in mind</strong>{{ item.story_packet.uncertainty }}</p>
+            {% for finding in item.story_packet.findings %}
+            <details class="guide-passage"><summary>{{ finding.title }}</summary><blockquote>{{ finding.passage }}</blockquote>{% if finding.safe_url %}<a href="{{ finding.safe_url }}" target="_blank" rel="noopener noreferrer">Read the original · {{ finding.locator or 'Retained passage' }} ↗</a>{% endif %}</details>
+            {% endfor %}
+            {% else %}<p>This earlier research has no angle-specific evidence packet. Review its source trail before writing.</p>{% if item.artifact_id %}<a class="guide-text-link" href="/app/artifacts/{{ item.artifact_id }}#sources">Inspect the source trail →</a>{% endif %}{% endif %}
+          </details>
+        </div>
+      </article>
+      {% else %}<div class="guide-no-ideas"><h3>No script angle is ready yet.</h3><p>{{ 'Research is still running. Return to Saved articles to check its progress.' if case.status not in ['completed', 'failed'] else 'This source has not produced a usable angle. Try a more complete source or paste its transcript.' }}</p><a class="guide-text-link" href="/app/links">Bring another source →</a></div>{% endfor %}
     </section>
   </div>
 </div>
