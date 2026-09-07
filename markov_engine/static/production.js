@@ -14,8 +14,8 @@
     all.checked = selected > 0 && selected === boxes.length;
     all.indeterminate = selected > 0 && selected < boxes.length;
     if (paidButton) form.querySelector('[data-batch-cost]').textContent = selected
-      ? `Up to ${selected * Number(paidButton.dataset.unitCost)} credits for ${selected} new talking-point outputs. Previously generated outputs are reused.`
-      : `Select up to 30 ideas. New talking-point outputs use ${paidButton.dataset.unitCost} credits each.`;
+      ? `Up to ${selected * Number(paidButton.dataset.unitCost)} credits for ${selected} new drafts. Existing drafts are reopened at no extra charge.`
+      : `Select stories to write from. New drafts use ${paidButton.dataset.unitCost} credits each.`;
   };
   all.addEventListener('change', () => { boxes.forEach(box => { box.checked = all.checked; }); update(); });
   boxes.forEach(box => box.addEventListener('change', update));
@@ -28,7 +28,7 @@
       (boxes[0] || all).focus();
       return;
     }
-    status.textContent = action === 'talking_points' ? 'Developing your selection. Keep this page open; completed outputs will appear in Talking points.' : '';
+    status.textContent = action === 'talking_points' ? 'Writing from your selected stories. Keep this page open; saved work will appear in Drafts.' : '';
     if (action === 'talking_points') {
       if (form.dataset.submitting) { event.preventDefault(); return; }
       form.dataset.submitting = 'true';
