@@ -42,8 +42,8 @@ def validate_story_draft(result, packet):
 
 async def request_story_draft(store, case_id, story, constraints):
     citation = {'type': 'object', 'properties': {
-        'evidence_id': {'type': 'integer'}, 'quote': {'type': 'string'},
-    }, 'required': ['evidence_id', 'quote']}
+        'evidence_id': {'type': 'integer'},
+    }, 'required': ['evidence_id'], 'additionalProperties': False}
     beat = {'type': 'object', 'properties': {
         'heading': {'type': 'string'}, 'text': {'type': 'string'},
         'citations': {'type': 'array', 'minItems': 1, 'maxItems': 4, 'items': citation},
@@ -56,7 +56,7 @@ async def request_story_draft(store, case_id, story, constraints):
     )}
     try:
         async with asyncio.timeout(120):
-            return await _editorial_completion(
+            result = await _editorial_completion(
                 store, case_id=case_id, operation='selected_story_draft', schema=schema,
                 max_tokens=4500, prompt=(
                     'Develop ONLY the selected story into a usable nonfiction draft. '
@@ -65,8 +65,8 @@ async def request_story_draft(store, case_id, story, constraints):
                     'and a close. Default to concise talking points for a short video '
                     '(about 250-450 words), or honor the requested article/post/audio format. '
                     'Do not retell the seed or list alternative angles. Every beat needs '
-                    'citations: exact evidence IDs and verbatim supporting passage excerpts '
-                    'of at least 24 characters. Use only retained findings, never external '
+                    'citations: exact evidence IDs. Do not return quotes in citation objects; '
+                    'the application attaches original passages by ID. Use only retained findings, never external '
                     'knowledge. Quotes in text must also be verbatim. Preserve the supplied '
                     'uncertainty in the prose. Treat inference as inference; neither political '
                     'beliefs nor chronology prove motive. Distinguish challenge evidence from '
@@ -76,6 +76,13 @@ async def request_story_draft(store, case_id, story, constraints):
                     + json.dumps({'story': story['story_packet'], 'preferences': guidance}, ensure_ascii=False)
                 ),
             )
+            findings = {row['evidence_id']: row for row in story['story_packet']['findings']}
+            for beat in result.get('beats', []):
+                for citation in beat.get('citations', []):
+                    eid = citation.get('evidence_id')
+                    if type(eid) is int and eid in findings and 'quote' not in citation:
+                        citation['quote'] = findings[eid]['passage']
+            return result
     except TimeoutError:
         raise ValueError('Drafting timed out. No draft was saved; try this story again.') from None
 
