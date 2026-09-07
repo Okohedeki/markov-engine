@@ -32,6 +32,7 @@ _DOMAIN_MAP = {
     "twitter.com": "twitter",
     "x.com": "twitter",
     "reddit.com": "reddit",
+    "bsky.app": "bluesky",
     "open.spotify.com": "audio",
     "soundcloud.com": "audio",
     "podcasts.apple.com": "audio",
@@ -118,6 +119,21 @@ async def extract_content(
         return await _extract_twitter(url, tmp_dir, whisper_model)
     elif source_type == "reddit":
         return await _extract_reddit(url, tmp_dir, whisper_model)
+    elif source_type == "bluesky":
+        from markov_engine.bluesky import read_post
+        try:
+            post = await read_post(url)
+            return ExtractedContent(
+                url=url, source_type="bluesky", title=post["title"],
+                content_text=post["text"],
+                metadata={key: value for key, value in post.items() if key not in {"text", "title"}},
+                segments=_plain_segments(post["text"], section_title="Post"),
+            )
+        except Exception as exc:
+            return ExtractedContent(
+                url=url, source_type="bluesky", title="", content_text="",
+                success=False, error=f"Public post unavailable: {type(exc).__name__}",
+            )
     elif source_type in _MEDIA_TYPES:
         return await _extract_media(url, source_type, tmp_dir, whisper_model)
     else:
