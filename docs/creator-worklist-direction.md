@@ -69,7 +69,8 @@ Verified through direct Chromium interactions:
 - Series library/detail desktop, tablet and mobile renders; no reported page errors
   or document overflow. Modified Python modules pass syntax and Ruff checks.
 
-No test suites were added or run. This was not a concurrency/load benchmark.
-Discovery angles still live inside their source-topic research document; this pass
-does not make those angles independently selectable/tracked queue records. Sources
-in the preview belong to the whole topic, not necessarily to each individual claim.
+At the end of this initial UI pass, no test suites were added or run and angles
+were still stored only inside topic documents. Those limitations are superseded
+by [the tested editorial v1 follow-up](editorial-v1-acceptance.md): individual angle
+tracking, selected evidence packets and paid drafts now work together. That record
+distinguishes the live drafting check from functional coverage and remaining limits.
