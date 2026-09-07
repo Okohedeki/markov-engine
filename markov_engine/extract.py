@@ -907,7 +907,7 @@ async def _extract_reddit(
             source_type="reddit",
             title=title,
             content_text=content_text,
-            metadata={"author": author, "subreddit": subreddit, "score": score},
+            metadata={"content_kind": "text_post", "author": author, "subreddit": subreddit, "score": score},
             segments=_plain_segments(content_text, section_title="Post and comments"),
         )
 
