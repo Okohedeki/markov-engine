@@ -11,6 +11,7 @@
 .production-intake input, .series-builder input, .series-builder textarea { width:100%; min-height:47px; background:#f8f9fb; border:1px solid #dce1e7; border-radius:8px; padding:12px 14px; font-size:14px; color:inherit; }
 .production-intake .mk-button { flex-shrink:0; min-height:47px; font-size:13px; border-radius:8px; }
 .production-intake > p { font-size:11px; color:#687480; margin-top:6px; }
+.production-intake > .production-source-types { font-size:13px; line-height:1.65; color:#424e58; margin-top:14px; }
 .production-source { margin-bottom:24px; background:#fff; border:1px solid #dde3e8; border-radius:12px; scroll-margin-top:16px; }
 .production-source > summary { padding:14px 18px; min-height:48px; font-size:14px; font-weight:500; cursor:pointer; }
 .production-source > summary span { float:right; color:#a44923; }
