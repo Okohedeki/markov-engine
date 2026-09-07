@@ -747,6 +747,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             artifact_id=artifact.id,
         )
         structured = artifact.structured_content or {}
+        story_packet = structured.get('story_packet')
+        if story_packet:
+            selected_ids = {finding['source_id'] for finding in story_packet['findings']}
+            source_rows = [source for source in source_rows if source['id'] in selected_ids]
+            core_claim_rows = []
         return _render(
             request,
             "artifact.html",
@@ -755,6 +760,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             case=case,
             entitlements=resolve_entitlements(owner_id, settings=settings),
             sections=structured.get("sections", []),
+            story_packet=story_packet,
             claim_rows=core_claim_rows,
             connection_rows=connection_rows,
             gaps=gaps,
