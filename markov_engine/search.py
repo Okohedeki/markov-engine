@@ -110,23 +110,43 @@ _AVENUE_TRIES = 3
 _AVENUE_BACKOFF = 1.5  # seconds, linear
 
 
-async def _guarded(fn, *args) -> list[dict]:
+async def _guarded(
+    fn, *args, provider: str | None = None, raise_on_failure: bool = False,
+    attempts: int | None = None,
+) -> list[dict]:
     """Run a sync avenue worker in a thread, under the global concurrency cap and
     the per-provider rate limiter, retrying transient failures with backoff."""
-    provider = "yt" if fn is _yt_search else "ddg"
-    async with _semaphore():
-        last: "Exception | None" = None
-        for attempt in range(_AVENUE_TRIES):
-            try:
-                await _active_limiter(provider)  # pace outbound request rate
-                return await asyncio.to_thread(fn, *args)
-            except Exception as e:  # noqa: BLE001 — avenue failures must not propagate
-                last = e
-                if attempt < _AVENUE_TRIES - 1:
-                    await asyncio.sleep(_AVENUE_BACKOFF * (attempt + 1))
-        logger.debug("avenue %s failed after %d tries: %s",
-                     getattr(fn, "__name__", fn), _AVENUE_TRIES, last)
-        return []
+    provider = provider or ("yt" if fn is _yt_search else "ddg")
+    semaphore = _semaphore()
+    tries = max(1, min(attempts or _AVENUE_TRIES, _AVENUE_TRIES))
+    last: Exception | None = None
+
+    def release_worker(task):
+        semaphore.release()
+        if not task.cancelled():
+            task.exception()  # Consume errors if the caller already timed out.
+
+    for attempt in range(tries):
+        await semaphore.acquire()
+        worker = None
+        try:
+            await _active_limiter(provider)
+            worker = asyncio.create_task(asyncio.to_thread(fn, *args))
+            worker.add_done_callback(release_worker)
+            # Cancellation cannot stop a thread: retain its permit until it exits.
+            return await asyncio.shield(worker)
+        except Exception as exc:
+            last = exc
+        finally:
+            if worker is None:
+                semaphore.release()
+        if attempt < tries - 1:
+            await asyncio.sleep(_AVENUE_BACKOFF * (attempt + 1))
+    if raise_on_failure and last is not None:
+        raise last
+    logger.debug("avenue %s failed after %d tries: %s",
+                 getattr(fn, "__name__", fn), tries, last)
+    return []
 
 
 # Social platforms we explicitly hunt for follow-up stories on. Generic web/news
