@@ -135,6 +135,10 @@ class Settings(BaseSettings):
         description="JSON mapping of reviewer API key to reviewer id.",
     )
     web_session_secret: str = Field("change-me", alias="MARKOV_WEB_SESSION_SECRET")
+    local_preview_owner: str = Field(
+        '', alias='MARKOV_LOCAL_PREVIEW_OWNER',
+        description='Optional single-user localhost preview identity. Never enable on a hosted service.',
+    )
     api_rate_limit_per_minute: int = Field(
         60, alias="MARKOV_API_RATE_LIMIT_PER_MINUTE"
     )
