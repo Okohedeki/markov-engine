@@ -1,6 +1,7 @@
 """Public Bluesky discovery through its AppView, not a web-index proxy."""
 
 import httpx
+from urllib.parse import unquote, urlsplit
 
 
 def search_posts(query: str, limit: int = 4) -> list[dict]:
@@ -31,3 +32,34 @@ def search_posts(query: str, limit: int = 4) -> list[dict]:
             "date": record.get("createdAt"),
         })
     return hits
+
+
+async def read_post(url: str) -> dict:
+    """Read the actual public post record, separately from the search preview."""
+    parsed = urlsplit(url)
+    parts = parsed.path.strip("/").split("/")
+    if (parsed.scheme != "https" or parsed.hostname != "bsky.app"
+            or parsed.username or parsed.password or len(parts) != 4
+            or parts[0] != "profile" or parts[2] != "post"):
+        raise ValueError("Expected a public Bluesky post URL")
+    actor, key = unquote(parts[1]), unquote(parts[3])
+    if any(char in actor + key for char in "/?#\\"):
+        raise ValueError("Invalid Bluesky post identity")
+    base = "https://public.api.bsky.app/xrpc/"
+    async with httpx.AsyncClient(timeout=8) as client:
+        if not actor.startswith("did:"):
+            resolved = await client.get(
+                base + "com.atproto.identity.resolveHandle", params={"handle": actor},
+            )
+            resolved.raise_for_status()
+            actor = resolved.json()["did"]
+        uri = f"at://{actor}/app.bsky.feed.post/{key}"
+        response = await client.get(base + "app.bsky.feed.getPosts", params={"uris": uri})
+        response.raise_for_status()
+    post = next((p for p in response.json()["posts"] if p.get("uri") == uri), None)
+    if post is None or not post.get("record", {}).get("text"):
+        raise ValueError("Public post text is unavailable")
+    record, author = post["record"], post.get("author", {})
+    return {"text": record["text"], "title": record["text"][:160],
+            "author": author.get("handle"), "published_at": record.get("createdAt"),
+            "record_uri": uri, "content_basis": "post_text"}
