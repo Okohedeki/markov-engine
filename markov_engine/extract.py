@@ -645,18 +645,6 @@ def _extract_metadata(info: dict) -> dict:
     return {k: info[k] for k in keys if k in info and info[k] is not None}
 
 
-async def _download_and_transcribe(
-    url: str, tmp_dir: str, whisper_model: str
-) -> str | None:
-    """Download audio from URL via yt-dlp and transcribe with whisper.
-
-    A falsy ``whisper_model`` disables transcription entirely (metadata-only
-    ingestion) — much faster for video/social discovery.
-    """
-    segments = await _download_and_transcribe_segments(url, tmp_dir, whisper_model)
-    return " ".join(segment.text for segment in segments)
-
-
 async def _download_and_transcribe_segments(
     url: str, tmp_dir: str, whisper_model: str
 ) -> list[ExtractedSegment]:
