@@ -4,7 +4,7 @@
 <header class="production-head"><div><h1>Scripts</h1><p>Your ideas, selected angles, and work in progress—with their sources attached.</p></div><a class="mk-button mk-button-primary" href="/app/links">Add a link ＋</a></header>
 <nav class="guide-script-views" aria-label="Script workspace"><a href="/app" aria-current="page">Ideas & progress</a><a href="/app/plans">Saved drafts</a><a href="/app/series">Series</a></nav>
 <section class="production-work" aria-labelledby="queue-title" data-production-queue>
-  <header class="production-section-head"><div><h2 id="queue-title">Story queue <span>{{ counts.all }}</span></h2><p>Progress is yours to set. Ready and finished do not mean verified or published.</p></div></header>
+  <header class="production-section-head"><div><h2 id="queue-title">Script ideas <span>{{ counts.all }}</span></h2><p>Review an angle, save the ones you want, then develop a draft. Progress is yours to set—not a verification or publishing status.</p></div></header>
   {% if notice %}<p class="production-notice" role="status">{{ notice }}</p>{% endif %}
   <div class="production-toolbar"><nav aria-label="Filter story queue">{% for filter in filters %}<a href="{{ filter.url }}" {% if state == filter.key %}aria-current="page"{% endif %}>{{ filter.label }} <span>{{ filter.count }}</span></a>{% endfor %}</nav><form role="search" method="get" action="/app"><input type="hidden" name="status" value="{{ state }}"><label class="production-search-label" for="queue-search">Search your stories</label><div><input id="queue-search" name="q" value="{{ query }}" placeholder="Find a story…"><button type="submit" aria-label="Search stories">⌕</button></div></form></div>
   <form method="post" action="/app/queue/actions" data-batch-form>
@@ -19,12 +19,12 @@
         <details class="production-preview" data-story-preview data-item="{{ item.item_key }}">
           <summary>Sources & writing <span class="production-search-label">for {{ item.title }}</span></summary>
           <div data-preview-content><p>Inspect the collected material and saved documents for this topic.</p></div>
-          <a class="production-preview-fallback" href="{{ item.destination }}{% if item.artifact_id %}#sources{% endif %}">Open the full source trail →</a>
+          <a class="production-preview-fallback" href="{{ item.destination }}">Review this angle and its sources →</a>
         </details>
         </div>
-        <div class="production-row-end"><span class="production-status status-{{ item.status }}">{{ statuses[item.status] }}</span><a href="{{ item.destination }}">Open story ↗</a></div>
+        <div class="production-row-end"><span class="production-status status-{{ item.status }}">{{ statuses[item.status] }}</span><a href="{{ item.destination }}">Review angle ↗</a></div>
       </article>
-    {% else %}<div class="production-empty"><span aria-hidden="true">↳</span><h3>{{ 'No stories match this view.' if counts.all else 'One link can start your whole batch.' }}</h3><p>{{ 'Try a different status or a broader search.' if counts.all else 'Add a source above. Related stories will appear here, ready to shortlist and develop.' }}</p><a href="{{ '/app' if counts.all else '/#how-it-works' }}">{{ 'Clear filters' if counts.all else 'See the source-to-story example' }} →</a></div>{% endfor %}</div>
+    {% else %}<div class="production-empty"><span aria-hidden="true">↳</span><h3>{{ 'No ideas match this view.' if counts.all else 'Your next script starts with a source.' }}</h3><p>{{ 'Try a different status or a broader search.' if counts.all else 'Bring an article, video, podcast, or post. Find related angles, then choose what to develop.' }}</p><a href="{{ '/app' if counts.all else '/app/links' }}">{{ 'Clear filters' if counts.all else 'Add a link' }} →</a></div>{% endfor %}</div>
     {% if items %}<div class="production-paid-actions"><div><strong>Make something from your selection.</strong><p data-batch-cost>New drafts use up to {{ talking_point_cost | number }} credits each. Draft writing and series planning are included with Plus/Pro.</p></div><div>{% if entitlements.talking_points %}<button type="submit" name="action" value="talking_points" data-unit-cost="{{ talking_point_cost }}">Write a draft</button><button type="submit" name="action" value="series">Plan a series</button>{% else %}<a href="/app/upgrade">View writing & series plans →</a>{% endif %}</div></div>{% endif %}
     <p class="production-feedback" role="status" data-queue-status></p>
   </form>
