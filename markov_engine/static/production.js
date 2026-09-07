@@ -62,6 +62,31 @@
   });
 })();
 
+// Native form navigation preserves server validation and paid boundaries.
+(() => {
+  document.querySelectorAll('.guide-develop form, .guide-intake').forEach(form => {
+    const feedback = document.createElement('p');
+    feedback.className = 'guide-help';
+    feedback.setAttribute('role', 'status');
+    form.append(feedback);
+    form.addEventListener('submit', event => {
+      if (form.dataset.submitting) { event.preventDefault(); return; }
+      form.dataset.submitting = 'true';
+      event.submitter?.setAttribute('aria-disabled', 'true');
+      feedback.textContent = event.submitter?.value === 'talking_points'
+        ? 'Developing this script. Keep this page open; the saved draft opens next.'
+        : form.classList.contains('guide-intake')
+          ? 'Starting research. Your progress page opens next.'
+          : 'Saving this idea to Scripts…';
+    });
+    window.addEventListener('pageshow', () => {
+      delete form.dataset.submitting;
+      form.querySelectorAll('[aria-disabled]').forEach(button => button.removeAttribute('aria-disabled'));
+      feedback.textContent = '';
+    });
+  });
+})();
+
 // Read stored material only: opening a story never starts research or generation.
 (() => {
   const queueLink = path => {
