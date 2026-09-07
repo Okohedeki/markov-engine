@@ -11,7 +11,9 @@ from markov_engine.store.sqlite import SqliteStore
 
 
 @pytest.mark.asyncio
-async def test_youtube_to_three_connections_insight_outputs_and_revised_script():
+async def test_youtube_to_three_connections_insight_outputs_and_revised_script(monkeypatch):
+    from markov_engine.config import get_settings
+    monkeypatch.setattr(get_settings(), 'default_entitlement_profile', 'cloud_plus')
     store = await SqliteStore.open(":memory:")
     stages = []
 
