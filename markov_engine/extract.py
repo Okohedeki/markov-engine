@@ -2,7 +2,7 @@
 
 Dispatches by URL/domain to the right extractor: PDFs (PyMuPDF), articles
 (trafilatura), Twitter (fxtwitter API), Reddit (JSON API), and media
-(yt-dlp + whisper transcription as a fallback when no captions exist).
+(mandatory yt-dlp media download, then captions or Whisper speech transcription).
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ _DOMAIN_MAP = {
     "doi.org": "article",
 }
 
-# Source types where we should attempt audio download + transcription
+# Media-capable source types; native text posts are handled separately.
 _MEDIA_TYPES = {"youtube", "tiktok", "instagram", "twitter", "reddit", "audio", "media"}
 
 
