@@ -12,6 +12,7 @@
   <link rel="preload" href="{{ site_base }}/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   {% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/studio.css"><link rel="stylesheet" href="{{ site_base }}/static/workspace.css"><link rel="stylesheet" href="{{ site_base }}/static/account.css">{% endblock %}
   <link rel="stylesheet" href="{{ site_base }}/static/public-info.css">
+  {% if active is defined %}<link rel="stylesheet" href="{{ site_base }}/static/guided-source.css">{% endif %}
   <script defer src="{{ site_base }}/static/markov.js"></script>
   {% block scripts %}{% endblock %}
 </head>
