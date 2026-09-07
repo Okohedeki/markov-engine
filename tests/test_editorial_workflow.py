@@ -113,3 +113,60 @@ async def test_paid_drafts_keep_selected_evidence_and_deduplicate_requests(monke
         assert len(calls) == 2
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_selected_story_web_journey_preserves_evidence(monkeypatch):
+    import httpx
+    import markov_engine.story_drafts as drafts
+    from markov_engine.api import create_app
+    from markov_engine.config import Settings
+
+    async def completion(*args, **kwargs):
+        return {'beats': [{'heading': heading, 'text': 'Developed story two.',
+                          'citations': [{'evidence_id': 2}]}
+                         for heading in ('Opening', 'Development', 'Close')]}
+
+    monkeypatch.setattr(drafts, '_editorial_completion', completion)
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'creator', 'free-key': 'free'},
+        MARKOV_WEB_SESSION_SECRET='test-only', MARKOV_DEFAULT_ENTITLEMENT_PROFILE='cloud_free',
+        MARKOV_OWNER_ENTITLEMENT_PROFILES={'creator': 'cloud_plus'}, MARKOV_OPENING_CREDITS=100)
+    store = await SqliteStore.open(':memory:')
+    try:
+        case, event = await seed_angles(store)
+        for i in (1, 2):
+            source = await store.add_source(url=f'https://example.invalid/{i}', title=f'Source {i}',
+                source_type='article', content_text=f'A retained passage for story {i}.', summary='Fixture')
+            await store.add_research_case_source(research_case_id=case.id, source_id=source.id, source_role='evidence')
+        key = f'angle:{event.id}:1'
+        app = create_app(store=store, settings=settings)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            await client.post('/app/login', data={'api_key': 'key'})
+            preview = (await client.get('/app/queue/preview', params={'item': key})).json()
+            assert [s['title'] for s in preview['sources']] == ['Source 2']
+            assert preview['story_packet']['uncertainty'] == 'Needs review.'
+            exported = await client.post('/app/queue/actions', data={'action': 'export', 'item': key})
+            assert 'story 2.' in exported.text and 'story 1.' not in exported.text
+            response = await client.post('/app/queue/actions', data={'action': 'talking_points', 'item': key})
+            assert response.status_code == 303
+            artifact = (await store.list_case_artifacts(case.id))[0]
+            assert artifact.branch_key == key
+            page = await client.get(f'/app/artifacts/{artifact.id}')
+            assert '<h1>Distinct story 2</h1>' in page.text and 'Check this section' in page.text
+            edited = await client.post(f'/app/artifacts/{artifact.id}/edit',
+                data={'section_0': 'My revised opening.', 'section_title_0': 'Opening', 'action': 'save'})
+            assert edited.status_code == 303
+            saved = await store.get_artifact(artifact.id, owner_id='creator')
+            assert 'My revised opening.' in saved.content and '[E2]' in saved.content
+            assert saved.structured_content['story_packet']['uncertainty'] == 'Needs review.'
+            series_id = await store.create_story_series('creator', [f'angle:{event.id}:0', key], 'A sequence', 'Follow the two stories.')
+            series = await client.get(f'/app/series/{series_id}')
+            assert f'name="selected_story_key" value="{key}"' in series.text
+            reuse = await client.post(f'/app/cases/{case.id}/convert', data={'mode': 'script', 'selected_story_key': key})
+            assert reuse.headers['location'] == f'/app/artifacts/{artifact.id}#output'
+            await client.post('/app/login', data={'api_key': 'free-key'})
+            assert (await client.get('/app/queue/preview', params={'item': key})).status_code == 404
+            locked = await client.post('/app/queue/actions', data={'action': 'talking_points', 'item': key})
+            assert locked.headers['location'] == '/app/upgrade'
+    finally:
+        await store.close()
