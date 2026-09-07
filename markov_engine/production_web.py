@@ -78,6 +78,28 @@ def create_production_router(*, settings, owner, render):
         context = await common(request, owner_id)
         return render(request, 'source_entry.html', **{**context, 'active': 'links'})
 
+    @router.get('/app/sources/{case_id}')
+    async def source_result(case_id: int, request: Request):
+        owner_id = owner(request)
+        store = request.app.state.store
+        case = await store.get_research_case(case_id, owner_id=owner_id)
+        if case is None:
+            raise HTTPException(404, 'Source not found.')
+        sources = [dict(source) for source in await store.list_research_case_sources(case_id)]
+        for source in sources:
+            parsed = urlparse(source.get('url') or '')
+            source['safe_url'] = source.get('url') if parsed.scheme in {'http', 'https'} and parsed.hostname else None
+            source['host'] = parsed.hostname or 'Original source'
+        seed = next((source for source in sources if source.get('case_source_role') == 'seed'), None)
+        ideas = [row for row in await store.production_ideas(owner_id) if row['case_id'] == case_id]
+        for item in ideas:
+            for finding in (item.get('story_packet') or {}).get('findings', []):
+                parsed = urlparse(finding.get('url') or '')
+                finding['safe_url'] = finding.get('url') if parsed.scheme in {'http', 'https'} and parsed.hostname else None
+        context = await common(request, owner_id)
+        return render(request, 'source_result.html', case=case, seed=seed, ideas=ideas,
+            claims=await store.list_claims(case_id), **{**context, 'active': 'signals'})
+
     @router.get('/app/queue/preview')
     async def story_preview(request: Request):
         owner_id = owner(request)
