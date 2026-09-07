@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ case.title }} — Markov{% endblock %}
+{% block title %}{{ artifact.title if story_packet else case.title }} — Markov{% endblock %}
 {% block body_class %}mk-app-page mk-case-page{% endblock %}
 {% block body %}
   <div class="mk-app-frame">
@@ -15,7 +15,7 @@
         <header class="mk-case-head">
           <div class="mk-case-breadcrumb"><a href="/app?{{ request.query_params.get('queue', '') }}">← Story queue</a><span aria-hidden="true">/</span><span>Your topic</span></div>
           <div class="mk-case-title-row">
-            <div><h1>{{ case.title }}</h1></div>
+            <div><h1>{{ artifact.title if story_packet else case.title }}</h1></div>
             <div class="mk-case-actions"><span class="mk-state {% if artifact.status == 'completed' %}mk-state-ready{% endif %}"><i aria-hidden="true"></i>{{ 'Ready to explore' if artifact.status == 'completed' else artifact.status | humanize }}</span>{% for format in entitlements.export_formats %}<a href="/app/artifacts/{{ artifact.id }}/export?format={{ format }}" aria-label="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}" title="Export {{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}">{{ {'markdown':'MD','html':'HTML','json':'JSON'}[format] }}</a>{% endfor %}</div>
           </div>
           <nav class="mk-case-tabs" role="tablist" aria-label="Topic views">
@@ -92,7 +92,7 @@
 
             <form class="mk-document" id="mk-document-form" method="post" action="/app/artifacts/{{ artifact.id }}/edit?queue={{ request.query_params.get('queue', '') | urlencode }}">
               <header><span>{{ artifact.artifact_type | humanize }}</span><small>Saving creates a new version</small></header>
-              {% for section in sections %}<section id="output-section-{{ loop.index0 }}"><div><label for="section-{{ loop.index0 }}">{{ section.title }}</label><small>Editable section</small></div><input type="hidden" name="section_title_{{ loop.index0 }}" value="{{ section.title }}"><textarea id="section-{{ loop.index0 }}" name="section_{{ loop.index0 }}" rows="{{ 9 if section.content | length > 500 else 6 }}" required>{{ section.content }}</textarea></section>{% else %}<section id="output-section-0"><div><label for="document-content">Working document</label><small>Editable output</small></div><textarea id="document-content" name="content" rows="20" required>{{ artifact.content }}</textarea></section>{% endfor %}
+              {% for section in sections %}<section id="output-section-{{ loop.index0 }}"><div><label for="section-{{ loop.index0 }}">{{ section.title }}</label><small>Editable section</small></div><input type="hidden" name="section_title_{{ loop.index0 }}" value="{{ section.title }}"><textarea id="section-{{ loop.index0 }}" name="section_{{ loop.index0 }}" rows="{{ 9 if section.content | length > 500 else 6 }}" required>{{ section.content }}</textarea>{% if section.source_notes %}<details class="mk-section-evidence"><summary>Check this section’s source excerpts</summary><blockquote style="white-space:pre-line;overflow-wrap:anywhere">{{ section.source_notes }}</blockquote></details>{% endif %}</section>{% else %}<section id="output-section-0"><div><label for="document-content">Working document</label><small>Editable output</small></div><textarea id="document-content" name="content" rows="20" required>{{ artifact.content }}</textarea></section>{% endfor %}
               <footer><span>Sources and route decisions stay attached.</span><button class="mk-button mk-button-primary" name="action" value="save" type="submit">Save revision</button></footer>
             </form>
 
