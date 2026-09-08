@@ -38,6 +38,7 @@ from markov_engine.branching import (
 )
 from markov_engine.connections import revalidate_connection
 from markov_engine.config import Settings, get_settings
+from markov_engine.customer_auth import install_customer_auth
 from markov_engine.entitlements import require_capability, resolve_entitlements
 from markov_engine.exports import export_artifact
 from markov_engine.jobs import run_job_with_capacity, submit_job
@@ -226,6 +227,7 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.settings = settings
+    install_customer_auth(app, settings)
     app.state.store = store
     app.state.process_case = process_case
     app.state.job_slots = asyncio.Semaphore(settings.job_concurrency)
