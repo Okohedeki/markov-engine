@@ -40,6 +40,14 @@
             {% if item.story_packet %}
             <p><strong>Why follow it</strong>{{ item.story_packet.why_it_matters }}</p>
             <p><strong>Keep in mind</strong>{{ item.story_packet.uncertainty }}</p>
+            {% if item.story_packet.connection_review %}
+            {% set review = item.story_packet.connection_review %}
+            <p><strong>The connection · {{ review.relationship_type | humanize }}</strong>{{ review.connection }}</p>
+            <p><strong>What the evidence supports</strong>{{ review.rationale }}</p>
+            <p><strong>Another explanation</strong>{{ review.competing_explanation }}</p>
+            <p><strong>What to check next</strong>{{ review.next_check }}</p>
+            <p class="guide-help">Source independence: {{ review.source_independence | humanize }}. Model-assessed research lead, not independently verified.</p>
+            {% endif %}
             {% for finding in item.story_packet.findings %}
             <details class="guide-passage"><summary>{{ finding.title }}</summary><blockquote>{{ finding.passage }}</blockquote>{% if finding.safe_url %}<a href="{{ finding.safe_url }}" target="_blank" rel="noopener noreferrer">Read the original · {{ finding.locator or 'Retained passage' }} ↗</a>{% endif %}</details>
             {% endfor %}
