@@ -99,17 +99,23 @@ This starts the landing page, SaaS workspace, and API together at
 `http://127.0.0.1:8000`. When no `.env` exists, the launcher uses safe offline
 development defaults: heuristic generation, hash embeddings, 100 test credits,
 disabled outbound web search, and a separate `data/local-markov.db` database.
-Claims without attached evidence remain visibly unsupported in this mode. Sign
-into the workspace with `local-customer-key`; the reviewer key is
-`local-review-key`.
+Claims without attached evidence remain visibly unsupported in this mode.
+Customer accounts use Clerk: follow [account setup](docs/customer-auth.md) for
+email/password and social sign-in. The sign-in page shows a setup state until
+connected; it no longer asks customers for access keys. The launcher’s
+`local-customer-key` is for developer API use; the reviewer key is `local-review-key`.
 
 Pass `-Port 8010` to choose another port or `-NoReload` to disable automatic
 reloads. If `.env` exists, the launcher leaves it in control so you can test real
 Anthropic, OpenAI-compatible, or in-process local model backends.
 
-Copy [`.env.example`](.env.example) to `.env`. At minimum, configure an API key
-mapping, an opening or purchased credit balance, and one LLM/search setup.
-`MARKOV_API_KEYS` maps secret keys to stable owner IDs; it must be JSON.
+Copy [`.env.example`](.env.example) to `.env`. Configure Clerk for customer
+accounts, a credit balance when needed, and one LLM/search setup. Keep the Clerk
+secret key private. `MARKOV_API_KEYS` is a JSON map of developer API keys to
+stable owner IDs; it does not authenticate customers when Clerk is configured.
+For a single-user, loopback-only preview without Clerk, explicitly set
+`MARKOV_LOCAL_PREVIEW_OWNER` to an owner ID in that map. Never enable preview
+access on a hosted service. Clerk-enabled installations ignore this bypass.
 
 Hybrid local/cloud example (recommended starting point):
 
