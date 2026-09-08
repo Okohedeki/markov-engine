@@ -547,6 +547,68 @@ async def synthesize_story_angles(
     return {"angles": angles, "rejected_count": max(0, count - len(angles))}
 
 
+def build_investigation_trail(
+    *, questions: list[dict], findings: list[dict], angles: list[dict],
+) -> dict:
+    """Build a case-local evidence graph, never inferred entity relationships."""
+    nodes, edges = {}, []
+    for finding in findings:
+        source_key = f"source:{finding['source_id']}"
+        evidence_key = f"evidence:{finding['evidence_id']}"
+        nodes[source_key] = {
+            "id": source_key, "kind": "source", "title": finding["title"],
+            "url": finding["url"], "platform": finding.get("platform"),
+        }
+        nodes[evidence_key] = {
+            "id": evidence_key, "kind": "inspected_passage",
+            "evidence_id": finding["evidence_id"], "passage": finding["passage"],
+            "locator": finding.get("locator"), "content_basis": finding.get("content_basis"),
+            "claim_id": finding["claim_id"], "truth_status": "source_content_not_verified",
+        }
+        edges.append({"from": source_key, "to": evidence_key, "kind": "contains"})
+    for question in questions:
+        key = "question:" + question["question_id"]
+        discovered = [f for f in findings if f.get("question_id") == question["question_id"]]
+        nodes[key] = {
+            "id": key, "kind": "research_question", "question": question["question"],
+            "hypothesis": question.get("hypothesis"), "round": question["round"],
+            "missing_evidence": question.get("missing_evidence"),
+            "disconfirming_evidence": question.get("disconfirming_evidence"),
+            "discovery_mode": question.get("discovery_mode"),
+            "status": "material_found" if discovered else "unresolved",
+        }
+        for eid in question.get("parent_evidence_ids", []):
+            parent = f"evidence:{eid}"
+            if parent in nodes:
+                edges.append({"from": parent, "to": key, "kind": "motivates_question"})
+        for finding in discovered:
+            edges.append({"from": key, "to": f"evidence:{finding['evidence_id']}",
+                          "kind": "found_material", "search_kind": finding.get("search_kind")})
+    for index, angle in enumerate(angles):
+        key = f"lead:{index}"
+        review = angle.get("connection_review", {})
+        nodes[key] = {
+            "id": key, "kind": "story_lead", "title": angle["title"],
+            "connection": review.get("connection"),
+            "relationship_type": review.get("relationship_type", "unassessed"),
+            "source_independence": review.get("source_independence", "unknown"),
+            "next_check": review.get("next_check", angle.get("next_question")),
+            "status": "lead_not_verified",
+        }
+        for eid, relation in (
+            [(c["evidence_id"], "assessed_support") for c in angle["support"]]
+            + [(eid, "assessed_challenge") for eid in angle.get("challenge_evidence_ids", [])]
+        ):
+            evidence = f"evidence:{eid}"
+            if evidence in nodes:
+                edges.append({"from": evidence, "to": key, "kind": relation,
+                              "assessment": review.get("status", "unreviewed")})
+    return {
+        "version": 1, "scope": "single_case", "nodes": list(nodes.values()), "edges": edges,
+        "limits": "Paths organize evidence and questions; they do not establish causation or truth.",
+    }
+
+
 async def discover_story_angles(
     store: SqliteStore, *, case_id: int, searcher=search_web,
     extractor=extract_content, time_budget_s: float = 180,
