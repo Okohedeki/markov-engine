@@ -116,26 +116,40 @@ def _discovery_terms(text: str) -> set[str]:
 def rank_discovery_results(
     query: str, hits: list[dict], *, platform_counts: dict | None = None, limit: int = 4,
 ) -> list[dict]:
-    """Prefer relevant content across media, not profiles or endless article rows."""
-    from markov_engine.evidence import rank_search_results
-
+    """Rank relevance first; platform variety is only a small tie-breaker."""
     content_paths = {
         "tiktok": r"/(?:video|photo)/", "instagram": r"/(?:p|reels?|tv)/",
         "x": r"/status/", "reddit": r"/comments/", "bluesky": r"/post/",
         "threads": r"/post/", "linkedin": r"/(?:posts|pulse|feed/update)/",
         "spotify": r"/episode/", "twitch": r"/(?:videos|clip)/",
     }
-    pool = []
-    for hit in rank_search_results(query, hits):
-        platform = search._platform(hit["url"])
-        path = urlsplit(hit["url"]).path
+    terms, pool = _discovery_terms(query), []
+    for hit in hits:
+        parsed = urlsplit(str(hit.get("url") or ""))
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            continue
+        platform, path = search._platform(hit["url"]), parsed.path
         if platform in content_paths and not re.search(content_paths[platform], path):
             continue
-        pool.append({**hit, "platform": platform})
+        if platform == "soundcloud" and (len(path.strip("/").split("/")) != 2
+                                         or path.endswith(("/sets", "/likes", "/tracks"))):
+            continue
+        if platform == "youtube" and path in {"/playlist", "/results", "/feed"}:
+            continue
+        preview = " ".join(str(hit.get(key) or "") for key in ("title", "snippet")).casefold()
+        preview_terms = _discovery_terms(preview)
+        matches = {term for term in terms if term in preview_terms
+                   or (len(term) >= 4 or not term.isascii()) and term in preview}
+        if not matches:
+            continue
+        score = len(matches) / max(1, len(terms))
+        pool.append({**hit, "platform": platform, "relevance_score": round(score, 4)})
     counts, selected = dict(platform_counts or {}), []
-    while pool and len(selected) < max(0, min(limit, 10)):
-        # Relevance ranks within each exposure count; platforms are not truth scores.
-        index = min(range(len(pool)), key=lambda i: (counts.get(pool[i]["platform"], 0), i))
+    while pool and len(selected) < max(0, min(limit, 24)):
+        index = max(range(len(pool)), key=lambda i: (
+            pool[i]["relevance_score"] - min(counts.get(pool[i]["platform"], 0), 2) * 0.025,
+            -i,
+        ))
         hit = pool.pop(index)
         selected.append(hit)
         counts[hit["platform"]] = counts.get(hit["platform"], 0) + 1
