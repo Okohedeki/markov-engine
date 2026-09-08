@@ -400,6 +400,9 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.post("/app/login")
     async def login(request: Request):
+        if settings.clerk_publishable_key or settings.clerk_secret_key:
+            raise HTTPException(status_code=410, detail="Use email or social sign-in at /app/login.")
+        # Compatibility for existing self-hosted API clients, never Clerk customers.
         values = await _form(request)
         owner_id = settings.api_keys.get(values.get("api_key", ""))
         if not owner_id:
