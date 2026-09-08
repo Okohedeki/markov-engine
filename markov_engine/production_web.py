@@ -102,9 +102,11 @@ def create_production_router(*, settings, owner, render):
             for finding in (item.get('story_packet') or {}).get('findings', []):
                 parsed = urlparse(finding.get('url') or '')
                 finding['safe_url'] = finding.get('url') if parsed.scheme in {'http', 'https'} and parsed.hostname else None
+        discovery = await store.latest_case_event(case_id=case_id, event_type='editorial_discovery')
+        investigation = discovery.metadata if discovery and discovery.metadata.get('version', 0) >= 3 else {}
         context = await common(request, owner_id)
         return render(request, 'source_result.html', case=case, seed=seed, ideas=ideas,
-            claims=claims, **{**context, 'active': 'signals'})
+            claims=claims, investigation=investigation, **{**context, 'active': 'signals'})
 
     @router.get('/app/queue/preview')
     async def story_preview(request: Request):
