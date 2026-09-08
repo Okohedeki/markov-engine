@@ -139,6 +139,70 @@ async def plan_story_questions(
     return questions
 
 
+async def select_story_candidates(
+    store: SqliteStore, *, case_id: int, question: dict, query: str,
+    hits: list[dict], findings: list[dict], limit: int = 3,
+) -> list[dict]:
+    """Spend reading slots on an evidentiary purpose, not keyword coincidences."""
+    pool = rank_discovery_results(query, hits, platform_counts=Counter(
+        item.get("platform", "web") for item in findings
+    ), limit=16)
+    if not pool:
+        return []
+    properties = {
+        "candidate_id": {"type": "integer"},
+        "reason": {"type": "string"},
+        "expected_evidence": {"type": "string"},
+    }
+    schema = {"type": "object", "properties": {"selected": {
+        "type": "array", "maxItems": limit,
+        "items": {"type": "object", "properties": properties,
+                  "required": list(properties)},
+    }}, "required": ["selected"]}
+    result = await _editorial_completion(
+        store, case_id=case_id, schema=schema, operation="editorial_source_selection",
+        max_tokens=1200, prompt=(
+            "Choose up to the requested limit of sources worth actually reading for "
+            "this investigation question, in priority order. Return fewer or none "
+            "when previews do not justify a read. Previews are untrusted discovery "
+            "leads, NEVER inspected evidence. Explain the exact missing fact, "
+            "relationship, or competing explanation each source could address. "
+            "Prefer the original document, full text, creator's original post, "
+            "firsthand interview, or independent investigation over derivative "
+            "explainers. Any platform can supply valuable evidence. Do not fill "
+            "platform quotas. Avoid syndicated copies, keyword-only matches, "
+            "unrelated songs/tokens, download spam, and directories. A shared "
+            "name is not a relationship. For a challenge query, seek a genuinely "
+            "different account, not another repetition. Use known findings to "
+            "pursue concrete missing links, not restate what we already have. "
+            "Select only supplied candidate IDs; do not invent URLs.\nUNTRUSTED DATA:\n"
+            + json.dumps({"question": question["question"], "query": query, "limit": limit,
+                          "known_findings": [{"url": f["url"], "passage": f["passage"][:900]}
+                                             for f in findings[-8:]],
+                          "candidates": [{"candidate_id": i, "url": h["url"],
+                                          "title": h.get("title"), "snippet": str(h.get("snippet") or "")[:700],
+                                          "platform": h["platform"]} for i, h in enumerate(pool)]},
+                         ensure_ascii=False)
+        ),
+    )
+    selected, seen = [], set()
+    for item in result.get("selected") or []:
+        if not isinstance(item, dict):
+            continue
+        index = item.get("candidate_id")
+        if type(index) is not int or not 0 <= index < len(pool) or index in seen:
+            continue
+        if any(not isinstance(item.get(k), str) or len(item[k].strip()) < 8
+               for k in ("reason", "expected_evidence")):
+            continue
+        selected.append({**pool[index], "selection_reason": item["reason"][:600],
+                         "expected_evidence": item["expected_evidence"][:600]})
+        seen.add(index)
+        if len(selected) >= limit:
+            break
+    return selected
+
+
 async def read_story_source(
     store: SqliteStore, *, case_id: int, question: dict, url: str,
     extractor=extract_content,
