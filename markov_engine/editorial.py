@@ -365,6 +365,108 @@ def validate_story_angles(data: dict, findings: list[dict]) -> list[dict]:
     return angles
 
 
+async def review_story_connections(
+    store: SqliteStore, *, case_id: int, angles: list[dict],
+    findings: list[dict], seed: list[str],
+) -> list[dict]:
+    """Challenge proposed bridges separately; model review is not verification."""
+    if not angles:
+        return []
+    properties = {key: {"type": "string"} for key in (
+        "connection", "rationale", "competing_explanation", "next_check",
+    )}
+    properties.update({
+        "angle_id": {"type": "integer"},
+        "decision": {"type": "string", "enum": ["keep", "reject"]},
+        "relationship_type": {"type": "string", "enum": [
+            "attributed_report", "interpretation", "hypothesis",
+        ]},
+        "source_independence": {"type": "string", "enum": [
+            "independent_accounts", "shared_origin", "unknown",
+        ]},
+        "supporting_evidence_ids": {"type": "array", "items": {"type": "integer"}},
+        "contradicting_evidence_ids": {"type": "array", "items": {"type": "integer"}},
+    })
+    schema = {"type": "object", "properties": {"reviews": {
+        "type": "array", "maxItems": 3,
+        "items": {"type": "object", "properties": properties,
+                  "required": list(properties)},
+    }}, "required": ["reviews"]}
+    result = await _editorial_completion(
+        store, case_id=case_id, schema=schema, operation="editorial_connection_review",
+        max_tokens=2600, prompt=(
+            "Review each proposed nonfiction lead independently of its author. "
+            "Return one review per angle_id. This is evidence assessment, not "
+            "proof of truth. Keep only leads whose title and new_information are "
+            "supported AS WORDED by the supplied passages and add something "
+            "specific beyond the seed. Reject a summary, shared-keyword coincidence, "
+            "unsupported motive, guilt by association, causal leap, or a hypothesis "
+            "presented as an established fact. Chronology and entity identity must "
+            "fit. An analogy does not establish historical influence. A hypothesis "
+            "can remain if explicitly tentative and grounded in a meaningful "
+            "relationship, not merely imaginative. Do not repair an overstated "
+            "lead by putting a caveat elsewhere: reject it. State the exact "
+            "connection, what supports it, a plausible competing_explanation, "
+            "and a concrete next_check that could weaken it. Review ALL supplied "
+            "passages for counterevidence; challenge-query results are not "
+            "automatically contradictions. supporting_evidence_ids must come from "
+            "that angle's cited support. contradicting_evidence_ids may come from "
+            "any supplied passage. Posts establish what their author said, not "
+            "the truth of every allegation. Separate publications and platforms "
+            "do not establish source independence. Use independent_accounts only "
+            "when the inspected material demonstrates distinct evidence origins; "
+            "use shared_origin for repetition and unknown otherwise. Never infer "
+            "independence from different hostnames. No new sources or facts.\n"
+            "UNTRUSTED MATERIAL:\n" + json.dumps({
+                "seed": seed, "angles": [{"angle_id": i, **a} for i, a in enumerate(angles)],
+                "inspected_passages": findings,
+            }, ensure_ascii=False)
+        ),
+    )
+    by_id = {f["evidence_id"]: f for f in findings}
+    reviews = result.get("reviews")
+    if not isinstance(reviews, list):
+        raise ValueError("Connection review returned no review list")
+    accepted, seen = [], set()
+    for review in reviews:
+        if not isinstance(review, dict):
+            continue
+        index = review.get("angle_id")
+        if type(index) is not int or not 0 <= index < len(angles) or index in seen:
+            continue
+        seen.add(index)
+        if review.get("decision") != "keep":
+            continue
+        if any(not isinstance(review.get(key), str) or len(review[key].strip()) < 8
+               for key in ("connection", "rationale", "competing_explanation", "next_check")):
+            continue
+        if any(review.get(key) not in properties[key]["enum"]
+               for key in ("relationship_type", "source_independence")):
+            continue
+        support, contrary = review.get("supporting_evidence_ids"), review.get("contradicting_evidence_ids")
+        allowed = {c["evidence_id"] for c in angles[index]["support"]}
+        if not isinstance(support, list) or not support or not isinstance(contrary, list):
+            continue
+        if any(type(eid) is not int or eid not in allowed for eid in support):
+            continue
+        if any(type(eid) is not int or eid not in by_id for eid in contrary) or set(support) & set(contrary):
+            continue
+        sources = {by_id[eid]["source_id"] for eid in support}
+        assessment = {key: review[key][:1200] for key in (
+            "connection", "rationale", "competing_explanation", "next_check",
+            "relationship_type", "source_independence",
+        )}
+        if len(sources) == 1:
+            assessment["source_independence"] = "single_source"
+        accepted.append({
+            **angles[index], "support": [c for c in angles[index]["support"] if c["evidence_id"] in support],
+            "challenge_evidence_ids": list(dict.fromkeys(contrary)), "source_count": len(sources),
+            "evidence_status": "single_source_lead" if len(sources) == 1 else "multiple_source_lead",
+            "connection_review": {**assessment, "status": "model_reviewed_not_verified"},
+        })
+    return accepted
+
+
 async def synthesize_story_angles(
     store: SqliteStore, *, case_id: int, findings: list[dict],
 ) -> dict:
