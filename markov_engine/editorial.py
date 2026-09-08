@@ -801,6 +801,14 @@ async def story_angle_sections(
             )
         ]
         lines.append("**Evidence status:** " + angle["evidence_status"].replace("_", " "))
+        review = angle.get("connection_review")
+        if review:
+            lines.extend(f"**{label}:** {review[key]}" for label, key in (
+                ("The connection", "connection"), ("Evidence assessment", "rationale"),
+                ("Competing explanation", "competing_explanation"), ("Next check", "next_check"),
+                ("Source independence", "source_independence"),
+            ))
+            lines.append("**Review boundary:** Model-assessed lead, not independently verified.")
         lines.extend(
             f"- [E{eid}] {findings[eid]['url']} — {findings[eid]['locator']}"
             for eid in evidence_ids if eid in findings
