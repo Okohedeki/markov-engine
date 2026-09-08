@@ -346,8 +346,8 @@ async def test_web_login_and_focused_intake_page():
             redirected = await client.get("/app")
             assert "Sign-in is being set up." in redirected.text
             assert 'name="api_key"' not in redirected.text
-            assert "This build uses an access key" in redirected.text
-            assert "Email and social sign-in are not enabled" in redirected.text
+            assert "This build uses an access key" not in redirected.text
+            assert "Email and social sign-in will be available here" in redirected.text
             signed_in = await client.post(
                 "/app/login",
                 content="api_key=customer-key",
