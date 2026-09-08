@@ -99,6 +99,20 @@ async def search_across_platforms(
     return {"hits": list(merged.values()), "coverage": coverage, "status": status}
 
 
+def _discovery_terms(text: str) -> set[str]:
+    """Retain native-language names without rewarding generic search phrasing."""
+    stop = {
+        "the", "and", "that", "with", "from", "this", "have", "will", "into",
+        "was", "were", "been", "are", "for", "its", "their", "what", "how",
+        "when", "does", "did", "why", "source", "sources", "original", "text",
+        "official", "evidence", "research", "study", "analysis", "article",
+    }
+    return {
+        word for word in re.findall(r"[^\W_]+", text.casefold())
+        if word not in stop and (len(word) > 2 or (len(word) > 1 and not word.isascii()))
+    }
+
+
 def rank_discovery_results(
     query: str, hits: list[dict], *, platform_counts: dict | None = None, limit: int = 4,
 ) -> list[dict]:
