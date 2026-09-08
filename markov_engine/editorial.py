@@ -463,13 +463,22 @@ async def discover_story_angles(
                             search["status"] = type(exc).__name__
                             errors.append({"stage": "search", "type": type(exc).__name__})
                             continue
-                        candidates = rank_discovery_results(
-                            query, hits, platform_counts=Counter(
-                                p.get("platform", "web") for p in findings
-                            ), limit=4,
-                        )
+                        try:
+                            async with asyncio.timeout(15):
+                                candidates = await select_story_candidates(
+                                    store, case_id=case_id, question=question, query=query,
+                                    hits=[hit for hit in hits if hit.get("url") not in seen_urls],
+                                    findings=findings,
+                                )
+                        except Exception as exc:
+                            search["status"] = "selection_failed"
+                            errors.append({"stage": "selection", "type": type(exc).__name__})
+                            continue
                         search["candidates"] = [
-                            {key: hit.get(key) for key in ("url", "title", "platform", "discovered_via")}
+                            {key: hit.get(key) for key in (
+                                "url", "title", "platform", "discovered_via",
+                                "selection_reason", "expected_evidence", "relevance_score",
+                            )}
                             for hit in candidates
                         ]
                         search["inspections"] = []
