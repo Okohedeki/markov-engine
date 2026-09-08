@@ -6,6 +6,10 @@ explore in their own voice. Accepting links is the entrance, not the whole offer
 Discovery must cross platforms without asking the customer to pick one silo.
 Full writing remains an optional paid continuation; this work changes discovery.
 
+The current question planning, evidence-trail and connection-review contract is
+[Guided investigations — V1](guided-investigation-v1.md). It also records the
+latest verification and the limits of the live discovery results.
+
 ## Implemented retrieval contract
 
 - Editorial discovery no longer restricts searches to web and news.
