@@ -63,6 +63,32 @@
       </article>
       {% else %}<div class="guide-no-ideas"><h3>No script angle is ready yet.</h3><p>{{ 'Research is still running. Return to Saved articles to check its progress.' if case.status not in ['completed', 'failed'] else 'This source has not produced a usable angle. Try a more complete source or paste its transcript.' }}</p><a class="guide-text-link" href="/app/links">Bring another source →</a></div>{% endfor %}
     </section>
+    {% if investigation and investigation.investigation_trail %}
+    <details class="guide-evidence" id="investigation-trail">
+      <summary>How this investigation unfolded <span aria-hidden="true">＋</span></summary>
+      <p class="guide-help">{{ investigation.source_count }} external sources inspected · {{ investigation.read_attempts }} reading attempts · {{ investigation.status | humanize }}. {{ investigation.stop_reason | humanize }}. This is a bounded investigation, not an exhaustive search.</p>
+      {% for node in investigation.investigation_trail.nodes if node.kind == 'research_question' %}
+      <details class="guide-passage">
+        <summary>{{ 'Follow-up' if node.round > 1 else 'Starting question' }} · {{ node.question }}</summary>
+        <p><strong>Possibility to investigate</strong>{{ node.hypothesis }}</p>
+        <p><strong>Evidence sought</strong>{{ node.missing_evidence }}</p>
+        <p><strong>What could weaken it</strong>{{ node.disconfirming_evidence }}</p>
+        <p class="guide-help">{{ node.status | humanize }}. Finding material does not mean the question is settled.</p>
+        {% for edge in investigation.investigation_trail.edges if edge.to == node.id and edge.kind == 'motivates_question' %}
+        <a class="guide-text-link" href="#investigation-{{ edge.from | replace(':', '-') }}">Follow the passage that prompted this question →</a>
+        {% endfor %}
+      </details>
+      {% endfor %}
+      {% for finding in investigation.findings %}
+      <details class="guide-passage" id="investigation-evidence-{{ finding.evidence_id }}">
+        <summary>E{{ finding.evidence_id }} · {{ finding.title }}</summary>
+        <blockquote>{{ finding.passage }}</blockquote>
+        <p class="guide-help">{{ finding.url }} · {{ finding.locator }} · {{ finding.content_basis | humanize }}</p>
+      </details>
+      {% endfor %}
+      <p class="guide-help">Search previews are not evidence. Blocked sources and unsuccessful searches do not prove or disprove a connection.</p>
+    </details>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
