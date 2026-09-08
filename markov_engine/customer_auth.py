@@ -10,7 +10,8 @@ from urllib.parse import urlsplit
 import httpx
 from clerk_backend_api.security.authenticaterequest import authenticate_request_async
 from clerk_backend_api.security.types import AuthenticateRequestOptions
-from fastapi import Request
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from jwt import PyJWTError
 
 from markov_engine.config import Settings
@@ -75,3 +76,32 @@ async def clerk_owner(request: Request, settings: Settings, config: dict) -> str
     if claims.get("sts") not in (None, "active"):
         return None  # Clerk may require an unfinished verification/session task.
     return settings.clerk_owner_ids.get(user_id) or f"clerk:{user_id}"
+
+
+def install_customer_auth(app: FastAPI, settings: Settings) -> None:
+    """Attach request-scoped identity without blocking research or changing API auth."""
+    config = clerk_configuration(settings)
+
+    @app.middleware("http")
+    async def customer_session(request: Request, call_next):
+        path = request.url.path
+        customer_page = (path == "/app" or path.startswith("/app/")) and not (
+            path.startswith("/app/reviewer") or path.startswith("/app/reviews")
+        )
+        request.state.clerk_config = config if customer_page else None
+        request.state.customer_owner = None
+        if config and customer_page:
+            if request.method not in {"GET", "HEAD", "OPTIONS"}:
+                origin = request.headers.get("origin", "")
+                if (origin not in settings.clerk_authorized_parties
+                        or origin != str(request.base_url).rstrip("/")):
+                    return JSONResponse(
+                        {"detail": "Reload Markov and submit from this site."},
+                        status_code=403, headers={"Cache-Control": "no-store"},
+                    )
+            request.state.customer_owner = await clerk_owner(request, settings, config)
+        response = await call_next(request)
+        if customer_page:
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["Referrer-Policy"] = "same-origin"
+        return response
