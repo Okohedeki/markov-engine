@@ -70,9 +70,9 @@
       {% for node in investigation.investigation_trail.nodes if node.kind == 'research_question' %}
       <details class="guide-passage">
         <summary>{{ 'Follow-up' if node.round > 1 else 'Starting question' }} · {{ node.question }}</summary>
-        <p><strong>Possibility to investigate</strong>{{ node.hypothesis }}</p>
-        <p><strong>Evidence sought</strong>{{ node.missing_evidence }}</p>
-        <p><strong>What could weaken it</strong>{{ node.disconfirming_evidence }}</p>
+        <p><strong>Possibility to investigate</strong><br>{{ node.hypothesis }}</p>
+        <p><strong>Evidence sought</strong><br>{{ node.missing_evidence }}</p>
+        <p><strong>What could weaken it</strong><br>{{ node.disconfirming_evidence }}</p>
         <p class="guide-help">{{ node.status | humanize }}. Finding material does not mean the question is settled.</p>
         {% for edge in investigation.investigation_trail.edges if edge.to == node.id and edge.kind == 'motivates_question' %}
         <a class="guide-text-link" href="#investigation-{{ edge.from | replace(':', '-') }}">Follow the passage that prompted this question →</a>
