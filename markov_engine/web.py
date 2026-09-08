@@ -389,13 +389,14 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.get("/app/login")
     async def login_page(request: Request):
-        if settings.local_preview_owner:
+        if settings.local_preview_owner or settings.clerk_publishable_key:
             try:
                 owner(request)
             except HTTPException:
                 pass
             else:
-                return RedirectResponse('/app', status_code=303)
+                destination = '/app/links' if settings.clerk_publishable_key else '/app'
+                return RedirectResponse(destination, status_code=303)
         return _render(request, "login.html", error=None)
 
     @router.post("/app/login")
