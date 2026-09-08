@@ -58,13 +58,12 @@
 .mk-review-login p:not(.mk-kicker), .mk-error-shell p:not(.mk-kicker) { color: var(--muted); }
 .mk-error-shell .mk-button { margin-top: 25px; }
 @media(max-width:900px) {
-  .mk-auth-shell { grid-template-columns: 1fr; }
+  .mk-auth-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .mk-auth-story { padding: 24px 8%; gap: 20px; }
   .mk-auth-story h1 { font-size: 28px; margin-top: 0; }
-  .mk-auth-story h1 br { display: none; }
   .mk-auth-story .mk-kicker, .mk-auth-story div > p:last-child { display: none; }
   .mk-auth-story ol { display: none; }
-  .mk-auth-form { padding: 32px 8%; }
+  .mk-auth-form { padding: 32px 8%; align-self: start; }
   .mk-onboarding-grid { grid-template-columns: 1fr; gap: 40px; margin-top: 60px; }
   .mk-onboarding-grid h1 { font-size: 42px; }
   .mk-review-grid { grid-template-columns: 1fr; }
