@@ -537,6 +537,11 @@ async def synthesize_story_angles(
         ),
     )
     angles = validate_story_angles(result, findings)
+    # A valid citation is necessary, but does not establish the proposed bridge.
+    async with asyncio.timeout(25):
+        angles = await review_story_connections(
+            store, case_id=case_id, angles=angles, findings=findings, seed=seed_text,
+        )
     candidates = result.get("angles")
     count = len(candidates) if isinstance(candidates, list) else 0
     return {"angles": angles, "rejected_count": max(0, count - len(angles))}
