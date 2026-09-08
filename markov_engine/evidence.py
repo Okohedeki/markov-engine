@@ -148,11 +148,17 @@ def _tokens(text: str) -> set[str]:
         "was", "were", "been", "are", "for", "its", "their", "transcript",
         "states", "claims", "claim", "says", "said",
     }
-    return {
+    normalized = (text or "").casefold()
+    tokens = {
         token
-        for token in re.findall(r"[a-z0-9]+", (text or "").lower())
-        if len(token) > 2 and token not in stop
+        for token in re.findall(r"[^\W_]+", normalized)
+        if len(token) > (2 if token.isascii() else 1) and token not in stop
     }
+    # CJK text does not reliably separate words with spaces. Character bigrams
+    # preserve local matches without requiring a language model or tokenizer.
+    for run in re.findall(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]+", normalized):
+        tokens.update(run[index:index + 2] for index in range(len(run) - 1))
+    return tokens
 
 
 def rank_search_results(claim_text: str, results: list[dict]) -> list[dict]:
