@@ -69,11 +69,15 @@ async def plan_story_questions(
         seed.extend(segment.text[:600] for segment in segments[::step][:24])
     properties = {
         name: {"type": "string"}
-        for name in ("question", "why_it_matters", "query", "challenge_query")
+        for name in ("question", "why_it_matters", "query", "challenge_query",
+                     "hypothesis", "missing_evidence", "disconfirming_evidence")
     }
     properties["claim_id"] = {"type": "integer"}
     lenses = {"event_mechanism", "overlooked_context", "downstream_consequence"}
     properties["lens"] = {"type": "string", "enum": sorted(lenses)}
+    properties["parent_evidence_ids"] = {
+        "type": "array", "maxItems": 4, "items": {"type": "integer"},
+    }
     schema = {"type": "object", "properties": {"questions": {
         "type": "array", "maxItems": 3,
         "items": {"type": "object", "properties": properties,
@@ -83,6 +87,7 @@ async def plan_story_questions(
         "title": case.title, "seed_excerpts": seed,
         "claims": [{"id": c.id, "text": c.research_text} for c in claims],
         "inspected_findings": findings or [],
+        "discovery_mode": "test_connection" if findings else "find_leads",
     }
     result = await _editorial_completion(
         store, case_id=case_id, schema=schema, operation="editorial_questions",
@@ -112,11 +117,23 @@ async def plan_story_questions(
             "Search runs across media automatically: do not restrict queries to "
             "a site or presume the answer lives in an article. Leave room for the "
             "creator's own interpretation. Return no questions when further research "
-            "would only repeat known material.\nUNTRUSTED CASE DATA:\n"
+            "would only repeat known material. For each question, state a tentative "
+            "hypothesis, the specific missing_evidence needed to investigate it, "
+            "and disconfirming_evidence that would weaken it. These are research "
+            "targets, not assertions. Rank questions by likely new understanding "
+            "and feasibility, not how sensational they sound. Keep native-language "
+            "names and search terms when they improve access to original accounts. "
+            "In find_leads mode, parent_evidence_ids must be empty. In test_connection "
+            "mode, cite 1-4 supplied evidence IDs whose concrete details motivate "
+            "the next question. Never invent parents or treat a shared keyword as "
+            "proof of a relationship. A historical analogy is not evidence of "
+            "historical influence. Prefer resolving the weakest link over "
+            "collecting more repetitions.\nUNTRUSTED CASE DATA:\n"
             + json.dumps(context, ensure_ascii=False)
         ),
     )
     questions, seen, seen_lenses = [], set(), set()
+    evidence_ids = {f["evidence_id"] for f in findings or []}
     for item in result.get("questions") or []:
         if not isinstance(item, dict) or type(item.get("claim_id")) is not int:
             continue
@@ -124,14 +141,27 @@ async def plan_story_questions(
             continue
         if item.get("lens") not in lenses or item["lens"] in seen_lenses:
             continue
-        clean = {key: " ".join(str(item.get(key) or "").split())[:500]
-                 for key in properties if key != "claim_id"}
+        text_fields = set(properties) - {"claim_id", "parent_evidence_ids"}
+        if any(not isinstance(item.get(key), str) for key in text_fields):
+            continue
+        clean = {key: " ".join(item[key].split())[:500] for key in text_fields}
+        parents = item.get("parent_evidence_ids")
+        if not isinstance(parents, list) or len(parents) > 4 or any(
+            type(eid) is not int or eid not in evidence_ids for eid in parents
+        ):
+            continue
+        if findings and not parents:
+            continue
         key = clean["question"].casefold()
         if any(len(value) < 8 for value in clean.values()) or key in seen:
             continue
         if clean["query"].casefold() == clean["challenge_query"].casefold():
             continue
-        questions.append({**clean, "claim_id": item["claim_id"]})
+        questions.append({
+            **clean, "claim_id": item["claim_id"],
+            "parent_evidence_ids": list(dict.fromkeys(parents)),
+            "discovery_mode": context["discovery_mode"],
+        })
         seen.add(key)
         seen_lenses.add(item["lens"])
         if len(questions) == 3:
