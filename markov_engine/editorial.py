@@ -730,6 +730,7 @@ async def discover_story_angles(
                     break
     except Exception as exc:
         errors.append({"stage": "discovery", "type": type(exc).__name__})
+    research_elapsed = clock.time() - started
     try:
         async with asyncio.timeout(60):
             result = await synthesize_story_angles(store, case_id=case_id, findings=findings)
@@ -740,6 +741,15 @@ async def discover_story_angles(
             row.get("retrieval_status") in {"partial", "failed"} for row in searches
         ) else "complete", "version": 3,
         "findings": findings, "questions": questions, "searches": searches,
+        "investigation_trail": build_investigation_trail(
+            questions=questions, findings=findings, angles=result["angles"],
+        ),
+        "research_elapsed_seconds": round(research_elapsed, 3),
+        "stop_reason": (
+            "research_deadline" if research_elapsed >= budget else
+            "read_limit" if reads >= 12 else "source_limit" if len(source_ids) >= 8 else
+            "bounded_plan_finished"
+        ),
         "source_count": len(source_ids), "read_attempts": reads, "errors": errors,
         "limits": {"rounds": 2, "sources": 8, "read_attempts": 12,
                    "research_seconds": budget, "initial_read_attempts": 6,
