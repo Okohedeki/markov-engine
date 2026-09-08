@@ -344,7 +344,8 @@ async def test_web_login_and_focused_intake_page():
             transport=transport, base_url="http://test", follow_redirects=True
         ) as client:
             redirected = await client.get("/app")
-            assert "Workspace access key" in redirected.text
+            assert "Sign-in is being set up." in redirected.text
+            assert 'name="api_key"' not in redirected.text
             assert "This build uses an access key" in redirected.text
             assert "Email and social sign-in are not enabled" in redirected.text
             signed_in = await client.post(
