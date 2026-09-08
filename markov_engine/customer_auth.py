@@ -1,9 +1,17 @@
 """Managed customer identity, separate from developer and reviewer API keys."""
 
+import asyncio
 import base64
 import binascii
 import re
+from http.cookies import CookieError
 from urllib.parse import urlsplit
+
+import httpx
+from clerk_backend_api.security.authenticaterequest import authenticate_request_async
+from clerk_backend_api.security.types import AuthenticateRequestOptions
+from fastapi import Request
+from jwt import PyJWTError
 
 from markov_engine.config import Settings
 
@@ -38,3 +46,32 @@ def clerk_configuration(settings: Settings) -> dict[str, str] | None:
         ):
             raise ValueError("Clerk origins must be HTTPS, or HTTP on loopback, without paths.")
     return {"publishable_key": key, "frontend_api": f"https://{domain}"}
+
+
+async def clerk_owner(request: Request, settings: Settings, config: dict) -> str | None:
+    """Verify short-lived provider sessions; never trust browser-supplied identity."""
+    try:
+        async with asyncio.timeout(8):
+            state = await authenticate_request_async(
+                request,
+                AuthenticateRequestOptions(
+                    secret_key=settings.clerk_secret_key,
+                    authorized_parties=settings.clerk_authorized_parties,
+                    accepts_token=["session_token"],
+                ),
+            )
+    except (TimeoutError, httpx.HTTPError, ValueError, TypeError, CookieError, PyJWTError):
+        return None
+    claims = state.payload or {}
+    user_id = claims.get("sub")
+    if not state.is_signed_in or claims.get("iss") != config["frontend_api"]:
+        return None
+    if not isinstance(user_id, str) or not re.fullmatch(r"user_[A-Za-z0-9]+", user_id):
+        return None
+    if not claims.get("sid") or not all(
+        isinstance(claims.get(key), (int, float)) for key in ("exp", "iat", "nbf")
+    ):
+        return None
+    if claims.get("sts") not in (None, "active"):
+        return None  # Clerk may require an unfinished verification/session task.
+    return settings.clerk_owner_ids.get(user_id) or f"clerk:{user_id}"
