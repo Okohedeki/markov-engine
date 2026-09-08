@@ -67,3 +67,43 @@ PageRank, or exhaustive path search. Its graph records the bounded investigation
 the planner follows explicit evidence references. Compare against adaptive
 no-graph search on supported novelty, creator usefulness, latency and cost before
 adding graph-based retrieval. These papers do not prove journalistic quality.
+
+## Verification — September 7, 2026
+
+- Existing suite: 132 passed. No new permanent test suite or dependencies.
+- Temporary deterministic checks exercised initial/follow-up parent validation,
+  invalid evidence IDs, conflicting support, conservative independence,
+  reading reservations, typed graph links, review caveats and legacy exports.
+- A controlled full-flow check ran three cases concurrently: accepted lead,
+  rejected lead, and reviewer failure. Rejection/failure did not leak an
+  unreviewed angle. Saved packets preserved the review; owner isolation and
+  cached reuse without new model calls passed.
+- A fresh download of the supplied TikTok exposed English-only passage
+  tokenization: extracted Chinese sources were discarded. Unicode words and
+  CJK character bigrams now participate in passage selection.
+- A separate retry reused the downloaded transcript and retained claims,
+  preserving the original case. It ran both research rounds, inspected three
+  external sources in four reading attempts, and saved 14 nodes / 16 links.
+  Research took 145.75 seconds, excluding synthesis/review. One proposed lead
+  was rejected; no accepted angle was returned. Coverage remained partial.
+- The retry recorded $0.104190 in model costs for research/synthesis/review,
+  excluding the earlier seed extraction and unmetered media/CPU work. This is
+  a diagnostic run, not a cost or discovery-quality benchmark.
+- The source-result disclosure, trail navigation, paid-writing boundary,
+  marketing journey and FAQ were exercised in a labeled local fixture at
+  1440, 760, 390 and 320px as applicable, including keyboard and reduced motion.
+  Fixed joined labels found during mobile review and inspected the correction.
+- Final browser sweep: homepage, intake and source result at 1440×900,
+  1024×768 and 390×844; nine successful responses, no horizontal overflow,
+  console/page errors or failed requests. Preview: http://127.0.0.1:8017/.
+- Static homepage matches the Jinja export exactly. No asset bundles changed.
+  Lighthouse was not run for this copy/disclosure change; no performance score,
+  full accessibility conformance or completed creator-quality benchmark is claimed.
+
+The seven-part conversion review found clear positioning, working walkthrough
+CTA, labeled example proof, readable mobile copy, explicit audience and paid
+boundaries. There are no invented endorsements or guaranteed-discovery claims.
+No overall conversion score is assigned without the missing performance and
+independent comprehension checks. Remaining priorities: creator-rated lead
+quality, licensed/native access where coverage fails, and a measured latency/cost
+comparison against adaptive no-graph search. This remains a pre-release product.
