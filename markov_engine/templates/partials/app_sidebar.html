@@ -17,6 +17,9 @@
     <a href="/app/upgrade">Plan & credits →</a>
   </div>
   <nav class="mk-app-secondary" aria-label="Workspace settings">
+    {% if request.state.clerk_config|default(none) %}
+      <div data-clerk-user aria-label="Your account"><a href="/app/login">Account</a></div>
+    {% endif %}
     <a href="/">Public site <span aria-hidden="true">↗</span></a>
   </nav>
 </aside>
