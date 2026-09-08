@@ -399,6 +399,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
                 return RedirectResponse(destination, status_code=303)
         return _render(request, "login.html", error=None)
 
+    @router.get("/app/auth/session")
+    async def customer_session(request: Request):
+        owner(request)
+        return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
     @router.post("/app/login")
     async def login(request: Request):
         if settings.clerk_publishable_key or settings.clerk_secret_key:
