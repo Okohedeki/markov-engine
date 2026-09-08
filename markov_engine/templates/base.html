@@ -15,6 +15,7 @@
   {% if active is defined %}<link rel="stylesheet" href="{{ site_base }}/static/guided-source.css?v=guided-source-1">{% endif %}
   <script defer src="{{ site_base }}/static/markov.js"></script>
   {% block scripts %}{% endblock %}
+  {% include "partials/customer_auth.html" %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="mk-skip" href="#main-content">Skip to content</a>
