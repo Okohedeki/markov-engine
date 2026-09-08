@@ -135,6 +135,16 @@ class Settings(BaseSettings):
         description="JSON mapping of reviewer API key to reviewer id.",
     )
     web_session_secret: str = Field("change-me", alias="MARKOV_WEB_SESSION_SECRET")
+    clerk_publishable_key: str = Field("", alias="CLERK_PUBLISHABLE_KEY")
+    clerk_secret_key: str = Field("", alias="CLERK_SECRET_KEY")
+    clerk_authorized_parties: list[str] = Field(
+        default_factory=list, alias="CLERK_AUTHORIZED_PARTIES",
+        description="Exact allowed application origins for Clerk sessions; no wildcards.",
+    )
+    clerk_owner_ids: dict[str, str] = Field(
+        default_factory=dict, alias="MARKOV_CLERK_OWNER_IDS",
+        description="Optional administrator mapping of Clerk user IDs to existing owner IDs.",
+    )
     local_preview_owner: str = Field(
         '', alias='MARKOV_LOCAL_PREVIEW_OWNER',
         description='Optional single-user localhost preview identity. Never enable on a hosted service.',
