@@ -460,26 +460,40 @@ async def discover_story_angles(
     seen_queries, seen_urls, source_ids = set(), set(), set()
     reads = 0
     result = {"angles": [], "rejected_count": 0}
+    budget = max(1, min(time_budget_s, 180))
+    clock = asyncio.get_running_loop()
+    started = clock.time()
     try:
-        async with asyncio.timeout(max(1, min(time_budget_s, 180))):
+        async with asyncio.timeout(budget):
             for round_number in range(1, 3):
-                planned = await plan_story_questions(
-                    store, case_id=case_id, findings=findings,
-                )
-                questions.extend({**q, "round": round_number} for q in planned)
-                for question in planned:
-                    for kind in ("query", "challenge_query"):
-                        if len(source_ids) >= 8 or reads >= 12:
+                # Initial exploration cannot consume the follow-up allocation.
+                round_deadline = started + budget * (0.5 if round_number == 1 else 1)
+                read_limit = 6 if round_number == 1 else 12
+                async with asyncio.timeout(min(25, max(0.01, round_deadline - clock.time()))):
+                    planned = await plan_story_questions(
+                        store, case_id=case_id, findings=findings,
+                    )
+                planned = [{**q, "round": round_number,
+                            "question_id": f"q{round_number}-{i}"}
+                           for i, q in enumerate(planned, 1)]
+                questions.extend(planned)
+                kinds = ("query",) if round_number == 1 else ("query", "challenge_query")
+                for kind in kinds:
+                    for question in planned:
+                        if len(source_ids) >= 8 or reads >= read_limit or clock.time() >= round_deadline:
                             break
                         query = question[kind]
                         if query.casefold() in seen_queries:
                             continue
                         seen_queries.add(query.casefold())
                         search = {"query": query, "kind": kind, "round": round_number,
-                                  "question": question["question"], "status": "started"}
+                                  "question": question["question"], "status": "started",
+                                  "question_id": question["question_id"],
+                                  "purpose": question.get("disconfirming_evidence" if kind == "challenge_query"
+                                                          else "missing_evidence", question["question"])}
                         searches.append(search)
                         try:
-                            async with asyncio.timeout(20):
+                            async with asyncio.timeout(min(20, max(0.01, round_deadline - clock.time()))):
                                 if searcher is search_web:
                                     report = await search_across_platforms(query, max_results=4)
                                     hits = report["hits"]
@@ -494,7 +508,7 @@ async def discover_story_angles(
                             errors.append({"stage": "search", "type": type(exc).__name__})
                             continue
                         try:
-                            async with asyncio.timeout(15):
+                            async with asyncio.timeout(min(15, max(0.01, round_deadline - clock.time()))):
                                 candidates = await select_story_candidates(
                                     store, case_id=case_id, question=question, query=query,
                                     hits=[hit for hit in hits if hit.get("url") not in seen_urls],
@@ -512,9 +526,8 @@ async def discover_story_angles(
                             for hit in candidates
                         ]
                         search["inspections"] = []
-                        inspected_count = 0
-                        for hit in candidates:
-                            if reads >= 12 or len(source_ids) >= 8:
+                        for hit in candidates[:2 if round_number == 1 else 1]:
+                            if reads >= read_limit or len(source_ids) >= 8 or clock.time() >= round_deadline:
                                 break
                             url = str(hit.get("url") or "")
                             if not url or url in seen_urls:
@@ -524,9 +537,9 @@ async def discover_story_angles(
                             inspection = {"url": url, "platform": hit["platform"], "status": "started"}
                             search["inspections"].append(inspection)
                             try:
-                                async with asyncio.timeout(20):
+                                async with asyncio.timeout(min(20, max(0.01, round_deadline - clock.time()))):
                                     inspected = await read_story_source(
-                                        store, case_id=case_id, question=question,
+                                        store, case_id=case_id, question={**question, "query": query},
                                         url=url, extractor=extractor,
                                     )
                             except Exception as exc:
@@ -539,17 +552,11 @@ async def discover_story_angles(
                                     passage["search_kind"] = kind
                                     passage["platform"] = hit["platform"]
                                     passage["discovered_via"] = hit.get("discovered_via", [])
+                                    passage["question_id"] = question["question_id"]
                                 findings.extend(inspected)
                                 source_ids.update(p["source_id"] for p in inspected)
                                 search["status"] = "inspected"
-                                inspected_count += 1
-                                # Keep room for evidence-led follow-up when three
-                                # initial questions each have a challenge search.
-                                read_target = 2 if kind == "query" and (
-                                    round_number == 2 or len(planned) < 3
-                                ) else 1
-                                if inspected_count >= read_target:
-                                    break
+                                break
                 if not planned or not findings or len(source_ids) >= 8 or reads >= 12:
                     break
     except Exception as exc:
@@ -562,11 +569,12 @@ async def discover_story_angles(
     result.update({
         "status": "partial" if errors or any(
             row.get("retrieval_status") in {"partial", "failed"} for row in searches
-        ) else "complete", "version": 2,
+        ) else "complete", "version": 3,
         "findings": findings, "questions": questions, "searches": searches,
         "source_count": len(source_ids), "read_attempts": reads, "errors": errors,
         "limits": {"rounds": 2, "sources": 8, "read_attempts": 12,
-                   "research_seconds": max(1, min(time_budget_s, 180)),
+                   "research_seconds": budget, "initial_read_attempts": 6,
+                   "initial_seconds": budget * 0.5,
                    "synthesis_seconds": 60},
     })
     await store.record_cost(
