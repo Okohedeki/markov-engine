@@ -51,6 +51,7 @@ def install_service_auth(app, settings):
                     token, settings.service_owner)
         response = await call_next(request)
         if app_page:
-            response.headers.update({'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
+            # Keep the Origin on same-site form POSTs; no-referrer makes it null.
+            response.headers.update({'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin',
                                      'X-Frame-Options': 'DENY'})
         return response
