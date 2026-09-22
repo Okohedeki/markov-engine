@@ -44,4 +44,19 @@ def create_bookmark_router(*, owner, render):
         response.headers['Cache-Control'] = 'no-store'
         return response
 
+    @router.post('/app/bookmarks')
+    async def capture(request: Request):
+        identity = owner(request)
+        values = await bookmark_form(request)
+        try:
+            item, created = await request.app.state.store.bookmarks.save(identity, values.get('url', ''),
+                title=values.get('title', ''), note=values.get('note', ''), content=values.get('content', ''))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        destination = '/app/bookmarks/' + item['bookmark_id']
+        if 'application/json' in request.headers.get('accept', ''):
+            return JSONResponse({'created': created, 'url': destination, 'bookmark_id': item['bookmark_id']},
+                                status_code=201 if created else 200)
+        return RedirectResponse(destination + '?saved=1', 303)
+
     return router
