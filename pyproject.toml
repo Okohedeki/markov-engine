@@ -52,6 +52,7 @@ Source = "https://github.com/Okohedeki/markov-engine"
 [project.scripts]
 markov = "markov_engine.cli:main"
 markov-api = "markov_engine.api:main"
+markov-service = "markov_engine.service:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["markov_engine"]
