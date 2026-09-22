@@ -296,4 +296,23 @@ def create_bookmark_router(*, owner, render):
                              'params': {'title': 'title', 'text': 'text', 'url': 'url'}}},
             media_type='application/manifest+json')
 
+    @router.get('/app/share')
+    async def receive_share(request: Request):
+        import re
+        params = request.query_params
+        text = params.get('text', '')[:8000]
+        shared_url = params.get('url', '')[:8192]
+        if not shared_url:
+            match = re.search(r'https?://\S+', text)
+            if match:
+                shared_url = match.group(0)
+                text = text.replace(shared_url, '').strip()
+        try:
+            owner(request)
+            signed_in = True
+        except HTTPException:
+            signed_in = False
+        return render(request, 'memory_share.html', signed_in=signed_in,
+            shared_url=shared_url, shared_title=params.get('title', '')[:500], shared_text=text)
+
     return router
