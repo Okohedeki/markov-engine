@@ -86,3 +86,25 @@ class BookmarkStore:
         )
         await self.conn.commit()
         return cursor.rowcount == 1
+
+    async def collections(self, owner_id, *, collection=None):
+        if collection is not None:
+            if collection.get('kind') not in {'thread', 'project'}:
+                raise ValueError('Unknown collection type.')
+            collection = {**collection, 'id': collection.get('id') or uuid.uuid4().hex}
+            cursor = await self.conn.execute(
+                'SELECT owner_id FROM bookmark_collections WHERE id=?', (collection['id'],),
+            )
+            existing = await cursor.fetchone()
+            if existing and existing[0] != owner_id:
+                raise ValueError('Collection not found.')
+            await self.conn.execute(
+                'INSERT INTO bookmark_collections VALUES (?, ?, ?, ?) '
+                'ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',
+                (collection['id'], owner_id, collection['kind'], json.dumps(collection)),
+            )
+            await self.conn.commit()
+        cursor = await self.conn.execute(
+            'SELECT payload FROM bookmark_collections WHERE owner_id=?', (owner_id,),
+        )
+        return [json.loads(row[0]) for row in await cursor.fetchall()]
