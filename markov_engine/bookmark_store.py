@@ -76,6 +76,21 @@ class BookmarkStore:
         cursor = await self.conn.execute(sql + ' ORDER BY saved_at DESC', params)
         return [json.loads(row[0]) for row in await cursor.fetchall()]
 
+    async def claim_pending(self):
+        stamp = now()
+        cursor = await self.conn.execute(
+            "UPDATE bookmarks SET payload=json_set(payload, '$.processing_state', "
+            "'processing', '$.updated_at', ?) WHERE id=(SELECT id FROM bookmarks "
+            "WHERE json_extract(payload, '$.processing_state')='pending' OR "
+            "(json_extract(payload, '$.processing_state')='processing' AND "
+            "datetime(json_extract(payload, '$.updated_at')) < datetime('now', '-5 minutes')) "
+            "ORDER BY saved_at LIMIT 1) RETURNING payload", (stamp,),
+        )
+        row = await cursor.fetchone()
+        await cursor.close()
+        await self.conn.commit()
+        return json.loads(row[0]) if row else None
+
     async def update(self, owner_id, bookmark_id, changes):
         protected = {'bookmark_id', 'user_id', 'canonical_url', 'original_url', 'saved_at'}
         patch = {key: value for key, value in changes.items() if key not in protected}
