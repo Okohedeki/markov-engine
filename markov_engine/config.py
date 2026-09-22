@@ -135,6 +135,14 @@ class Settings(BaseSettings):
         description="JSON mapping of reviewer API key to reviewer id.",
     )
     web_session_secret: str = Field("change-me", alias="MARKOV_WEB_SESSION_SECRET")
+    muse_api_keys: dict[str, str] = Field(
+        default_factory=dict, alias='MARKOV_MUSE_API_KEYS', repr=False,
+        description='Dedicated read-only connector tokens mapped to bookmark owner IDs. Never reuse full API keys.',
+    )
+    muse_allowed_origins: list[str] = Field(
+        default_factory=lambda: ['https://muse.ai'], alias='MARKOV_MUSE_ALLOWED_ORIGINS',
+        description='Exact browser origins allowed to call the read-only Muse MCP adapter.',
+    )
     clerk_publishable_key: str = Field("", alias="CLERK_PUBLISHABLE_KEY")
     clerk_secret_key: str = Field("", alias="CLERK_SECRET_KEY")
     clerk_authorized_parties: list[str] = Field(
