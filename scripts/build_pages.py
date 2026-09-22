@@ -16,7 +16,7 @@ SITE_BASE = "/markov-engine"
 REPOSITORY_URL = "https://github.com/Okohedeki/markov-engine"
 
 PAGES = {
-    "landing.html": OUTPUT / "index.html",
+    "memory_landing.html": OUTPUT / "index.html",
     "pricing.html": OUTPUT / "pricing" / "index.html",
     "developers.html": OUTPUT / "developers" / "index.html",
     "sample.html": OUTPUT / "sample" / "index.html",
