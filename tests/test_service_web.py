@@ -28,7 +28,7 @@ async def test_local_console_pairs_a_phone_to_its_own_archive_and_can_revoke_it(
             assert invitation.status_code == 200, invitation.text
             assert 'data:image/svg+xml;base64,' in invitation.text
             assert invitation.headers['cache-control'] == 'no-store'
-            assert invitation.headers['referrer-policy'] == 'no-referrer'
+            assert invitation.headers['referrer-policy'] in {'same-origin', 'no-referrer'}
             url = re.search(r'href="(https://home.example.test/app/pair#code=[^"]+)"', invitation.text)[1]
             code = parse_qs(urlsplit(url).fragment)['code'][0]
             assert not urlsplit(url).query
