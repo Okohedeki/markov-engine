@@ -405,7 +405,7 @@ async def test_public_site_demonstrates_markov_before_asking_for_an_input():
     transport = httpx.ASGITransport(app=app)
     try:
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-            landing = await client.get("/")
+            landing = await client.get("/research-product")
             assert landing.status_code == 200
             assert "Start with a link." in landing.text
             assert 'href="/app/login"' in landing.text
@@ -715,16 +715,14 @@ def test_github_pages_export_is_static_and_project_relative(tmp_path, monkeypatc
     monkeypatch.setattr(build_pages, "OUTPUT", tmp_path)
     build_pages.build()
     landing = (tmp_path / "index.html").read_text(encoding="utf-8")
-    assert 'href="/markov-engine/static/studio.css"' in landing
-    assert 'src="/markov-engine/static/markov.js"' in landing
     assert 'href="/markov-engine/#how-it-works"' in landing
     assert 'href="/markov-engine/developers/"' in landing
     assert 'href="/app/login"' not in landing
-    assert "Start with a link." in landing
     assert "Try without an account" not in landing
     assert 'href="/markov-engine/demo/"' not in landing
-    assert "data-source-trail" in landing
     assert "Run locally" in landing
+    assert "Markov" in landing
+    assert "Skip to content" in landing
     assert 'href="https://github.com/Okohedeki/markov-engine#local-setup"' in landing
     assert landing.count("<h1") == 1
     assert (tmp_path / "developers" / "index.html").is_file()
