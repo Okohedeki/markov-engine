@@ -134,4 +134,32 @@ def create_bookmark_router(*, owner, render):
             'Cache-Control': 'no-store',
         })
 
+    @router.get('/app/memory/search')
+    async def search(request: Request):
+        from markov_engine.bookmark_intelligence import ask_saved, search_archive
+        identity = owner(request)
+        archive = request.app.state.store.bookmarks
+        items = await archive.items(identity)
+        context = archive_context(items, await archive.collections(identity), 'search')
+        params = request.query_params
+        query = params.get('q', '').strip()[:1000]
+        mode = params.get('mode', 'hybrid')
+        mode = mode if mode in {'exact', 'hybrid', 'semantic'} else 'hybrid'
+        selected = [item for item in items if not item['archive_state']]
+        scoped = {value for value in [params.get('item'), params.get('compare')] if value}
+        if scoped:
+            selected = [item for item in selected if item['bookmark_id'] in scoped]
+        if params.get('type'):
+            selected = [item for item in selected if item['source_type'] == params['type']]
+        results, label = await search_archive(selected, query, mode)
+        answer = None
+        if params.get('ask') and query:
+            answer = await ask_saved(query, selected if scoped else results)
+            if scoped:
+                results = selected
+        context.update(query=query, mode=mode, results=results, search_label=label, answer=answer,
+            scoped_item=params.get('item', ''), compare=params.get('compare', ''),
+            types=sorted({item['source_type'] for item in items}), source_type=params.get('type', ''))
+        return render(request, 'memory_search.html', **context)
+
     return router
