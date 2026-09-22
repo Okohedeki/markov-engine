@@ -109,6 +109,75 @@ small { font-size: 12px; }
 .bottom-note { font-size: 12px; color: var(--muted); text-align: center; padding: 32px 0 4px; }
 .demo-bar { padding: 10px 24px; background: var(--ink); color: var(--paper); font-size: 12px; text-align: center; }
 .demo-bar a { margin-left: 12px; }
+.bookmark-card { border-bottom: 1px solid var(--line); position: relative; }
+.bookmark-body { padding: 24px 0; }
+.bookmark-card h3 { margin: 16px 0 8px; max-width: 30ch; }
+.bookmark-card h3 a { text-decoration: none; }
+.bookmark-card h3 a:hover { text-decoration: underline; }
+.bookmark-byline { font-size: 12px; color: var(--muted); }
+.bookmark-thumbnail { float: right; width: 120px; height: 88px; object-fit: cover; margin: 16px 0 16px 20px; background: var(--wash); }
+.save-reason { margin-top: 23px; max-width: 65ch; }
+.save-reason .eyebrow { color: var(--muted); font-size: 9px; letter-spacing: .09em; }
+.save-reason p { margin-top: 7px; font-size: 14px; line-height: 1.65; }
+.featured { border: 1px solid #d0d5c5; background: var(--surface); }
+.featured .bookmark-body { padding: 28px; }
+.featured h3 { font-size: clamp(30px, 3vw, 42px); letter-spacing: -.03em; line-height: 1.16; }
+.featured .bookmark-thumbnail { width: 150px; height: 115px; }
+.resurface-label { display: flex; align-items: center; gap: 9px; background: var(--sage); padding: 12px 28px; font-size: 12px; font-weight: 600; }
+.resurface-label span { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 11px; }
+.resurface-label svg { width: 16px; height: 16px; }
+.resurface-reason { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 22px; }
+.resurface-reason .eyebrow { color: #48563e; font-size: 9px; }
+.resurface-reason p { margin-top: 7px; color: #4b5646; font-size: 13px; }
+.bookmark-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; clear: both; }
+.bookmark-tools { display: flex; align-items: center; gap: 6px; }
+.bookmark-tools form { margin: 0; }
+.use-menu { position: relative; font-size: 12px; }
+.use-menu summary { list-style: none; padding: 12px 8px; min-height: 44px; }
+.use-menu summary::after { content: '⌄'; margin-left: 8px; }
+.use-options { position: absolute; right: 0; top: 44px; z-index: 2; background: var(--surface); box-shadow: 0 10px 30px #24251f18; border: 1px solid var(--line); width: 215px; padding: 6px; }
+.use-options a { display: block; padding: 10px 12px; text-decoration: none; }
+.use-options a:hover { background: var(--wash); }
+.recent-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 17px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.recent-row strong { display: block; font-size: 14px; font-weight: 500; }
+.recent-row small { color: var(--muted); }
+.recent-row:hover strong { text-decoration: underline; }
+.empty-state { border: 1px solid var(--line); padding: 42px 30px; background: var(--surface); }
+.empty-state .empty-mark { color: var(--accent); margin-bottom: 22px; }
+.empty-state .empty-mark svg { width: 36px; height: 36px; }
+.empty-state h2 { font-size: 34px; max-width: 18ch; }
+.empty-state p { max-width: 48ch; color: var(--muted); margin: 16px 0 24px; }
+.empty-state .button { margin-right: 12px; }
+.archive-list { display: grid; }
+.archive-list.visual { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.archive-list.visual .bookmark-card { border: 1px solid var(--line); background: var(--surface); }
+.archive-list.visual .bookmark-body { padding: 20px; }
+.archive-list.visual .bookmark-thumbnail { float: none; width: 100%; height: 160px; margin: 18px 0; }
+.archive-list.visual h3 { font-size: 25px; }
+.archive-list.compact .save-reason, .archive-list.compact .bookmark-thumbnail { display: none; }
+.archive-list.compact .bookmark-body { padding: 16px 0; }
+.archive-list.compact h3 { margin: 8px 0; font-size: 22px; max-width: none; }
+.archive-list.compact .bookmark-actions { margin-top: 0; }
+.archive-list.compact .source-meta { font-size: 11px; }
+.match-reason { display: flex; align-items: start; gap: 9px; color: var(--accent); font-size: 12px; margin-top: 16px; }
+.processing-state { color: var(--accent); font-size: 12px; margin-top: 12px; }
+.thread-row { display: grid; grid-template-columns: 1fr auto; gap: 18px; padding: 28px 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+.thread-row h2 { margin-bottom: 10px; }
+.thread-row:hover h2 { text-decoration: underline; }
+.thread-row p { color: var(--muted); font-size: 13px; }
+.thread-row .thread-count { font: 36px var(--serif); text-align: right; }
+.thread-row .thread-count small { display: block; font: 11px 'DM Sans', sans-serif; color: var(--muted); }
+@media (max-width: 1100px) { .archive-list.visual { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .featured .bookmark-body { padding: 22px; }
+  .resurface-label { padding: 12px 22px; flex-wrap: wrap; }
+  .resurface-label span { font-size: 10px; }
+  .featured .bookmark-thumbnail { float: none; width: 100%; height: 155px; margin: 20px 0; }
+  .bookmark-card h3 { font-size: 27px; }
+  .featured h3 { font-size: 34px; }
+  .archive-list.visual { grid-template-columns: 1fr; }
+  .empty-state { padding: 30px 24px; }
+}
 @media (max-width: 1180px) {
   .sidebar { width: 186px; padding: 28px 16px; }
   .workspace { margin-left: 186px; }
