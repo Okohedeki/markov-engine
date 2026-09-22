@@ -24,6 +24,7 @@ dependencies = [
     "anthropic",
     "voyageai",
     "trafilatura",
+    "lxml-html-clean>=0.4,<1",  # Required by jusText; recent lxml versions split it out.
     "yt-dlp",
     "pymupdf",
     "faster-whisper",
