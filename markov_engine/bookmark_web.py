@@ -59,4 +59,17 @@ def create_bookmark_router(*, owner, render):
                                 status_code=201 if created else 200)
         return RedirectResponse(destination + '?saved=1', 303)
 
+    @router.get('/app/library')
+    async def library(request: Request):
+        identity = owner(request)
+        from markov_engine.bookmark_views import filter_archive
+        archive = request.app.state.store.bookmarks
+        items = await archive.items(identity)
+        context = archive_context(items, await archive.collections(identity), 'library')
+        context.update(filtered=filter_archive(items, request.query_params, context['threads'] + context['projects']),
+            sources=sorted({item['source_domain'] for item in items}),
+            types=sorted({item['source_type'] for item in items}), params=request.query_params,
+            view=request.query_params.get('layout') if request.query_params.get('layout') in {'cards', 'compact', 'visual'} else 'cards')
+        return render(request, 'memory_library.html', **context)
+
     return router
