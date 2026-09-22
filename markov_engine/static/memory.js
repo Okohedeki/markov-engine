@@ -48,3 +48,61 @@ function initializeSaveDialog() {
   });
 }
 initializeSaveDialog();
+
+function initializeSourceActions() {
+  const toast = document.getElementById('toast');
+  const announce = message => {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 5000);
+  };
+  document.querySelectorAll('[data-copy-context]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const content = document.getElementById('copy-context');
+      if (!content) return;
+      try {
+        await navigator.clipboard.writeText(content.value);
+        announce('Context copied, with source references.');
+      } catch {
+        content.hidden = false;
+        content.focus();
+        content.select();
+        announce('Select and copy the context below.');
+      }
+    });
+  });
+  document.querySelectorAll('[data-share-url]').forEach(button => {
+    button.addEventListener('click', async () => {
+      try {
+        if (navigator.share) await navigator.share({title: document.title, url: button.dataset.shareUrl});
+        else {
+          await navigator.clipboard.writeText(button.dataset.shareUrl);
+          announce('Original source link copied.');
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') announce('Sharing was unavailable. Use Open original to copy the link.');
+      }
+    });
+  });
+  document.querySelectorAll('[data-inline-form]').forEach(form => {
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = form.querySelector('button');
+      button.disabled = true;
+      try {
+        const response = await fetch(form.action, {method: 'POST',
+          body: new URLSearchParams(new FormData(form)), headers: {Accept: 'application/json'}});
+        if (!response.ok) throw new Error('Could not update this save. Please retry.');
+        const active = form.elements.value.value === 'true';
+        button.classList.toggle('accent', active);
+        button.setAttribute('aria-pressed', String(active));
+        button.setAttribute('aria-label', button.getAttribute('aria-label').replace(/^Unfavorite|^Favorite/, active ? 'Unfavorite' : 'Favorite'));
+        form.elements.value.value = String(!active);
+        announce(active ? 'Marked important.' : 'Favorite removed.');
+      } catch (error) { announce(error.message); }
+      finally { button.disabled = false; }
+    });
+  });
+}
+initializeSourceActions();
