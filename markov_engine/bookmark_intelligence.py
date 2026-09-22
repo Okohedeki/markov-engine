@@ -136,3 +136,49 @@ def archive_threads(items, overrides=()):
             'first_saved': min((item['saved_at'] for item in members), default=''),
             'last_saved': max((item['saved_at'] for item in members), default='')})
     return sorted(result, key=lambda thread: (thread.get('pinned', False), thread['last_saved']), reverse=True)
+
+
+def rediscover(items, *, current=None):
+    current = current or dt.datetime.now(dt.timezone.utc)
+    active = [item for item in items if not item['archive_state']]
+    recent = [item for item in active
+              if (current - dt.datetime.fromisoformat(item['saved_at'])).days < 7]
+    suggestions = []
+    for item in active:
+        age = (current - dt.datetime.fromisoformat(item['saved_at'])).days
+        if age < 7:
+            continue
+        visits = item['view_history']
+        if visits and (current - dt.datetime.fromisoformat(visits[-1]['at'])).days < 3:
+            continue
+        concepts = {concept.casefold() for concept in item['concepts']}
+        connected, shared = [], set()
+        for newer in recent:
+            overlap = concepts & {concept.casefold() for concept in newer['concepts']}
+            vector, other = item['embeddings'], newer['embeddings']
+            similarity = 0
+            if (vector and other and len(vector) == len(other)
+                    and item.get('embedding_model') == newer.get('embedding_model')):
+                similarity = cosine_similarity(vector, other)
+            if overlap or similarity >= .65:
+                connected.append(newer['bookmark_id'])
+                shared.update(overlap)
+        reason, label, score = '', '', 0
+        if connected:
+            topic = ', '.join(sorted(shared)[:2]) or 'closely related ideas'
+            count = len(connected)
+            reason = f'You saved {count} {"item" if count == 1 else "items"} about {topic} this week. This older save overlaps.'
+            label, score = 'Relevant again', 10 + count
+        elif item['favorite_state'] and not visits:
+            reason = 'You marked this important but have never reopened it.'
+            label, score = 'You forgot this', 6
+        elif age >= 30 and not visits:
+            related = [other for other in active if other['bookmark_id'] != item['bookmark_id']
+                       and len(concepts & {c.casefold() for c in other['concepts']}) >= 2]
+            if len(related) >= 2:
+                reason = f'This connects to {len(related)} other saves and has never been reopened.'
+                label, score = 'A connection worth keeping', 4 + len(related)
+        if reason:
+            suggestions.append({**item, 'resurface_reason': reason, 'resurface_label': label,
+                                'related_ids': connected, 'relevance_score': score})
+    return sorted(suggestions, key=lambda item: item['relevance_score'], reverse=True)[:5]
