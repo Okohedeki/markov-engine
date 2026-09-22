@@ -21,5 +21,6 @@ analysis = Analysis([str(root / 'markov_engine' / 'windows.py')],
 archive = PYZ(analysis.pure)
 exe = EXE(archive, analysis.scripts, analysis.binaries, analysis.datas, [],
     name='Markov', console=True, debug=False, strip=False, upx=False,
+    icon=str(root / 'build' / 'markov.ico') if (root / 'build' / 'markov.ico').exists() else None,
     version=str(root / 'packaging' / 'windows-version.txt')
         if (root / 'packaging' / 'windows-version.txt').exists() else None)
