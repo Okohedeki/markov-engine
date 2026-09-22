@@ -52,6 +52,7 @@ def main():
     parser.add_argument('--database', help='Use an existing Markov SQLite database')
     parser.add_argument('--port', type=int, default=8000)
     parser.add_argument('--check', action='store_true', help='Validate and save configuration without starting')
+    parser.add_argument('--open-browser', action='store_true', help='Open Markov when the service is ready')
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error('Port must be between 1 and 65535.')
@@ -68,10 +69,8 @@ def main():
     print('The service listens on loopback. Forward your private HTTPS address to this port.')
     if args.check:
         return
-    import uvicorn
-    from markov_engine.api import create_app
-    uvicorn.run(create_app(settings=settings), host='127.0.0.1', port=args.port,
-                proxy_headers=True, forwarded_allow_ips='127.0.0.1,::1')
+    from markov_engine.service_runner import run_local_service
+    run_local_service(settings, args.port, open_browser=args.open_browser)
 
 
 if __name__ == '__main__':
