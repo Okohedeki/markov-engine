@@ -59,7 +59,7 @@ References: [PWA installation requirements](https://developer.mozilla.org/en-US/
 ## Run and pair
 
 Install the project into its Python 3.11+ environment (`python -m pip install -e .`).
-On Windows, run ` .\run-service.cmd --name "My Markov"` from the repository.
+On Windows, run `.\run-service.cmd --name "My Markov"` from the repository.
 On other platforms, use `markov-service --name "My Markov"` in that environment.
 Open `http://127.0.0.1:8000/app` on the service computer to start saving.
 
@@ -95,3 +95,23 @@ For a different HTTPS reverse proxy, preserve the external Host header, set
 `X-Forwarded-Proto: https`, and forward only to the loopback listener. Configure
 `--url` as that exact HTTPS origin, without a path. Never expose the local console
 through a proxy that removes forwarding headers and rewrites Host to localhost.
+
+## Keep an existing archive
+
+The launcher creates a separate personal archive by default. To adopt an existing
+database, stop the previous Markov process, then start with `--database` pointing
+to that file and `--owner` set to its existing archive owner ID. Both choices are
+remembered. Ownership is not migrated or merged automatically. Back up the
+database before adopting it; stop Markov before copying SQLite files, or use
+SQLite's backup API for a live backup. Keep `service.json` with the backup.
+
+The launcher disables inherited developer/reviewer login keys and Clerk login.
+Your configured model providers remain in effect. If the default Anthropic or
+Voyage backend has no key, the launcher falls back to heuristic processing or
+keyword indexing respectively. Configure local models for richer processing
+without cloud model calls; the launcher does not install model runtimes.
+
+The existing [Muse connector](muse-connector.md) remains an optional read-only
+adapter with its own credentials. A hosted Muse client cannot reach a private
+tailnet address unless its deployment has an appropriate private network path.
+QR pairing does not publish that adapter or register it in Muse's directory.
