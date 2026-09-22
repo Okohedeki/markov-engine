@@ -2,9 +2,8 @@
 setlocal
 cd /d "%~dp0"
 if not exist ".venv\Scripts\python.exe" (
-  echo Create the project environment and install dependencies first:
-  echo py -3.11 -m venv .venv
-  echo .venv\Scripts\python.exe -m pip install -e .
+  echo Install 64-bit Python 3.11, then run the checked setup:
+  echo powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup_windows.ps1
   exit /b 1
 )
 ".venv\Scripts\python.exe" -m markov_engine.service --open-browser %*
