@@ -216,9 +216,17 @@ def create_app(
             app.state.store = await SqliteStore.open(str(path))
         else:
             app.state.store = supplied_store
-        yield
-        if supplied_store is None:
-            await app.state.store.close()
+        from contextlib import suppress
+        from markov_engine.bookmark_worker import run_bookmark_worker
+        bookmark_worker = asyncio.create_task(run_bookmark_worker(app.state.store.bookmarks))
+        try:
+            yield
+        finally:
+            bookmark_worker.cancel()
+            with suppress(asyncio.CancelledError):
+                await bookmark_worker
+            if supplied_store is None:
+                await app.state.store.close()
 
     app = FastAPI(
         title="Markov API",
