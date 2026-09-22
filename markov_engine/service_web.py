@@ -73,4 +73,14 @@ def create_service_router(settings, render, owner):
         invitation = await request.app.state.store.devices.invite(identity)
         return await device_page(request, invitation)
 
+    @router.post('/app/devices/revoke')
+    async def revoke_device(request: Request):
+        identity = owner(request)
+        if not local_console(request):
+            raise HTTPException(403, 'Manage other devices on the service computer.')
+        values = await bookmark_form(request)
+        if not await request.app.state.store.devices.revoke(identity, values.get('id', '')):
+            raise HTTPException(404, 'Device not found.')
+        return RedirectResponse('/app/devices', 303)
+
     return router
