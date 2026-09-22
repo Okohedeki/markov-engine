@@ -32,3 +32,24 @@ async def test_pairing_is_single_use_persistent_owner_scoped_and_revocable(tmp_p
         assert await store.devices.devices('alice') == []
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_new_invitations_replace_old_codes_and_expiry_is_enforced(monkeypatch):
+    import time
+    store = await SqliteStore.open(':memory:')
+    try:
+        first = await store.devices.invite('alice')
+        second = await store.devices.invite('alice')
+        assert await store.devices.redeem(first['code'], 'Old QR') is None
+        stamp = int(time.time())
+        monkeypatch.setattr('markov_engine.device_store.time.time', lambda: stamp + 301)
+        assert await store.devices.redeem(second['code'], 'Expired QR') is None
+        third = await store.devices.invite('alice')
+        session = await store.devices.redeem(third['code'], 'Connected')
+        assert session is not None
+        monkeypatch.setattr('markov_engine.device_store.time.time', lambda: stamp + 91 * 86400)
+        assert await store.devices.authenticate(session['token'], 'alice') is None
+        assert await store.devices.devices('alice') == []
+    finally:
+        await store.close()
