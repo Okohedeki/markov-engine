@@ -26,3 +26,23 @@ def launch(argv=None):
     from markov_engine.service import main
     print('Markov for Windows\nKeep this window open while using your archive. Ctrl+C stops the service.\n')
     main()
+
+
+def main():
+    multiprocessing.freeze_support()
+    try:
+        launch()
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        error = traceback.format_exc()
+        print(error, file=sys.stderr)
+        print('Markov could not start. Check the error above; another service may already use this port.',
+              file=sys.stderr)
+        if sys.stdin and sys.stdin.isatty():
+            input('Press Enter to close…')
+        raise SystemExit(1)
+
+
+if __name__ == '__main__':
+    main()
