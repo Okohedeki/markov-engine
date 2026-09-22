@@ -1,28 +1,37 @@
 # Markov
 
-**Start anywhere. Follow the idea. Make something original.**
+**A bookmark app that remembers what you forgot.**
 
-Markov treats a source as the first node, not the answer. It checks the claims,
-discovers and validates typed connections, builds paths through the strongest
-ideas, and turns the shared case into one of three useful outcomes:
+Save anything worth remembering. Markov keeps your note, preserves available
+source text, and brings older saves back with a reason grounded in your archive.
+The mobile-first PWA centers Home, Library, Threads, Search, and You.
 
-- **Catch me up** — bottom line, assumptions, omissions, weak points, exact
-  navigation, and threads worth pulling.
-- **Explore where it leads** — a connection map, hidden story, hypotheses,
-  ranked research paths, counterevidence, and source packet.
-- **Turn it into a script** — candidate angles, an original defensible angle,
-  full narration, production and fact-check notes, and a do-not-repeat list.
+- Save a URL immediately; extract articles and PDFs in a durable background queue.
+- Keep user notes, source passages, and generated interpretations distinct.
+- Find saves through exact, semantic, or hybrid search with explained matches.
+- Follow automatic topic threads, curate them, and optionally organize projects.
+- Rediscover up to five older saves based on recent interests and revisit history.
+- Ask questions of saved sources, compare items, and copy or export their context.
+- Install the PWA and receive shared links in browsers supporting Web Share Target.
+- Expose read-only archive retrieval through the [Muse connector](docs/muse-connector.md).
 
-Every product can be **Instant** (fully agentic) or **Verified** (the same
-structured case followed by audited human review). Brief, Research, and Script
-reuse one isolated research case, so converting a finished project does not
-repeat unchanged extraction or research.
+Open `/app` for your archive or `/demo` for a clearly labeled example archive.
+Configure a semantic embedding provider for meaning-based retrieval; hash mode
+uses an explicitly labeled keyword fallback. Model enrichment and source-grounded
+answers require a configured LLM; capture and lexical search work without one.
 
-The original open-source Chain, growth, ingestion, and article/newsletter APIs
-remain available for compatibility. New customer submissions do not
-automatically merge into Chains.
+Blocked sources and media without supplied transcripts remain saved with a clear
+partial state. Paste text or a timestamped transcript to index their contents.
+Native share extensions, screenshot uploads/OCR, source-change monitoring, and
+automatic contradiction detection are not implemented. Offline capture is not
+queued: the installed app explains when a connection is required. Muse directory
+submission and live integration testing remain pending its account-gated review.
 
-## What V2 includes
+The implementation direction is [documented here](docs/bookmark-direction.md).
+Legacy research work remains at `/app/research`; the research APIs and stored
+cases remain compatible. The following sections describe that retained engine.
+
+## Legacy V2 research capabilities
 
 - Mandatory video/audio downloads, followed by timed captions or Whisper speech
   transcription. Descriptions never substitute for media content.
