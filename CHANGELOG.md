@@ -22,15 +22,18 @@ a newly published stable release. This entry describes the work on `main`.
   QR invitation. Device sessions persist and can be revoked individually.
 - Phone review edits and retries return to the same computer engine. Pages read
   current server state on opening or refreshing; there is no live push sync.
-- Browser-first Windows launcher; standalone executable packaging is optional.
+- One Python local service for Linux, Windows, and macOS, with browser/PWA review.
+- Removed the Windows executable launcher, native build tooling, and Windows-only
+  setup path. Install the service wheel or use the shared source setup instead.
 - Read-only diagnostics for the engine, HTTPS pairing route, and proxy access.
 
 ### Project quality
 
-- Checked Windows x64 / Python 3.11 installation using tested dependency versions.
+- Shared dependency constraints, including a compatible runtime for Intel Macs.
 - Declared the HTML cleaner dependency previously hidden by global packages.
-- Windows CI for clean setup, the regression suite, wheel installation, real
-  service startup, PWA assets, QR generation, processing, and restart persistence.
+- CI on Linux, Windows, and Intel/Apple Silicon macOS for clean setup, regression
+  tests, wheel installation, service startup, PWA assets, QR generation,
+  processing, and restart persistence.
 - Contributor guidance, private vulnerability reporting, and security boundaries.
 
 ### Release limitations
@@ -39,5 +42,5 @@ a newly published stable release. This entry describes the work on `main`.
   still need verification on a real trusted HTTPS deployment.
 - The computer must stay running and reachable. HTTPS networking and automatic
   startup are separate configuration steps. Offline capture is not queued.
-- Mac and Linux ports, live push updates, and native sharing extensions are not
-  part of the current supported setup. No stable release is declared here.
+- Live push updates and native phone sharing extensions are not part of the
+  current setup. No stable release is declared here.
