@@ -54,3 +54,31 @@ async def test_bookmark_journey_and_cross_owner_boundary():
             assert (await client.get('/app/archive/export')).json()['bookmarks'] == []
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_public_example_and_pwa_do_not_modify_private_archives():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'alice'}, MARKOV_WEB_SESSION_SECRET='test')
+    app = create_app(store=store, settings=settings)
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            page = await client.get('/')
+            assert 'Your bookmarks should' in page.text and 'when they matter.' in page.text
+            assert page.text.count('<h1') == 1 and 'Illustrative example' in page.text
+            for suffix in ['', '?view=library', '?view=threads', '?view=projects', '?view=you',
+                           '?view=search&q=tools', '?item=reward-hacking']:
+                page = await client.get('/demo' + suffix)
+                assert page.status_code == 200
+                assert 'notes and activity below are illustrative' in page.text
+                assert not page.headers.get('set-cookie')
+            manifest = (await client.get('/app/manifest.webmanifest')).json()
+            assert manifest['start_url'] == '/app'
+            assert manifest['share_target']['action'] == '/app/share'
+            worker = await client.get('/app/sw.js')
+            assert worker.status_code == 200 and worker.headers['service-worker-allowed'] == '/app'
+            shared = await client.get('/app/share?url=https://example.com')
+            assert 'Sign in to save' in shared.text
+            assert await store.bookmarks.items('alice') == []
+    finally:
+        await store.close()
