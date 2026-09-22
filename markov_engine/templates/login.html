@@ -5,11 +5,11 @@
   <main class="mk-auth-shell" id="main-content">
     <section class="mk-auth-story">
       <a class="mk-wordmark" href="/"><span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span></a>
-      <div><p class="mk-kicker">Your production desk</p><h1>Your next story<br>starts somewhere.</h1><p>A TikTok, an article, a podcast. Follow what catches your eye into overlooked connections—with the sources attached.</p></div>
-      <ol aria-label="From source to story"><li><span></span>Bring a link from any platform</li><li><span></span>Explore the connection and its evidence</li><li><span></span>Make the story yours</li></ol>
+      <div><p class="mk-kicker">Your personal memory</p><h1>Good things deserve<br>to be found again.</h1><p>Save anything worth remembering. Keep the thought that made it matter. Find it again when you need it.</p></div>
+      <ol aria-label="From saving to remembering"><li><span></span>Save a link from anywhere</li><li><span></span>Keep the important parts and your own context</li><li><span></span>Rediscover it for a reason</li></ol>
     </section>
     <section class="mk-auth-form" aria-labelledby="signin-title">
-      <div><p class="mk-kicker">Welcome to Markov</p><h2 id="signin-title">A story worth following.</h2><p>Sign in or create your account to start investigating.</p></div>
+      <div><p class="mk-kicker">Welcome to Markov</p><h2 id="signin-title">Worth remembering.</h2><p>Sign in or create your account to start saving.</p></div>
       {% if error %}<p class="mk-alert is-error" role="alert">{{ error }}</p>{% endif %}
       {% if request.state.clerk_config|default(none) %}
         <p class="mk-auth-help" data-auth-status role="status">Loading secure sign-in…</p>
@@ -17,7 +17,7 @@
         <noscript><p class="mk-alert">Enable JavaScript to use secure sign-in.</p></noscript>
       {% else %}
         <div class="mk-alert" role="status"><strong>Sign-in is being set up.</strong><p>Email and social sign-in will be available here once this installation is connected.</p></div>
-        <p class="mk-auth-help"><a href="/sample">Explore a sample investigation →</a></p>
+        <p class="mk-auth-help"><a href="/demo">Explore an example archive →</a></p>
       {% endif %}
       <p class="mk-auth-help">Need help? <a href="mailto:okohedeki@gmail.com">Contact Markov</a>.</p>
       <p class="mk-auth-help"><a href="/privacy">Privacy policy</a> · <a href="/terms">Terms of use</a> · <a href="/copyright">Copyright</a></p>
