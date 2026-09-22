@@ -171,4 +171,22 @@ def create_bookmark_router(*, owner, render):
         context = archive_context(await archive.items(identity), await archive.collections(identity), screen)
         return render(request, 'memory_threads.html', rows=context[screen], **context)
 
+    @router.get('/app/threads/{collection_id}')
+    async def collection_page(collection_id: str, request: Request):
+        identity = owner(request)
+        archive = request.app.state.store.bookmarks
+        context = archive_context(await archive.items(identity), await archive.collections(identity), 'threads')
+        thread = next((row for row in context['threads'] + context['projects'] if row['id'] == collection_id), None)
+        if thread is None:
+            raise HTTPException(404, 'Collection not found. Hidden collections can be restored from You.')
+        related = []
+        if thread['kind'] == 'project':
+            concepts = {value for item in thread['items'] for value in item['concepts']}
+            members = {item['bookmark_id'] for item in thread['items']}
+            related = [item for item in context['items'] if item['bookmark_id'] not in members
+                       and concepts & set(item['concepts'])][:5]
+        context.update(thread=thread, related=related, page_title=thread['title'],
+                       screen='projects' if thread['kind'] == 'project' else 'threads')
+        return render(request, 'memory_thread.html', **context)
+
     return router
