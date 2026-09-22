@@ -355,6 +355,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return identity
 
     @router.get("/")
+    @router.get("/research-product")
     async def landing(request: Request):
         return _render(request, "landing.html")
 
