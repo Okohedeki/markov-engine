@@ -56,6 +56,34 @@ def validate_arguments(name, arguments):
     return result
 
 
+async def call_archive_tool(archive, owner_id, name, arguments):
+    from markov_engine.bookmark_intelligence import rediscover, search_archive
+    from markov_engine.bookmark_views import archive_context
+    args = validate_arguments(name, arguments)
+    items = [item for item in await archive.items(owner_id) if not item['archive_state']]
+    if name == 'search':
+        matches, mode = await search_archive(items, args['query'], args['mode'])
+        return {'results': [connector_source(item) for item in matches[:args['limit']]], 'search_mode': mode}
+    if name == 'fetch':
+        item = next((item for item in items if item['bookmark_id'] == args['id']), None)
+        if item is None:
+            raise ValueError('Save not found in the connected archive.')
+        return connector_source(item, offset=args['offset'])
+    if name == 'rediscover':
+        return {'results': [connector_source(item) for item in rediscover(items)]}
+    context = archive_context(items, await archive.collections(owner_id))
+    threads = context['threads'] + context['projects']
+    if name == 'list_threads':
+        return {'threads': [{key: row[key] for key in ['id', 'title', 'kind', 'count', 'themes']}
+                            for row in threads[:100]]}
+    thread = next((row for row in threads if row['id'] == args['id']), None)
+    if thread is None:
+        raise ValueError('Thread not found in the connected archive.')
+    return {'id': thread['id'], 'title': thread['title'], 'themes': thread['themes'],
+            'notes': thread.get('notes', ''), 'questions': thread.get('questions', ''),
+            'sources': [connector_source(item) for item in thread['items'][:100]]}
+
+
 def connector_source(item, *, offset=None):
     from markov_engine.bookmark_views import source_context
     source, _ = source_context(item)
