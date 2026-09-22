@@ -396,8 +396,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             except HTTPException:
                 pass
             else:
-                destination = '/app/links' if settings.clerk_publishable_key else '/app'
-                return RedirectResponse(destination, status_code=303)
+                return RedirectResponse('/app', status_code=303)
         return _render(request, "login.html", error=None)
 
     @router.get("/app/auth/session")
