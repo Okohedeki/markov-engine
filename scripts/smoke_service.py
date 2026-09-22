@@ -38,6 +38,10 @@ def running_service(directory, port):
                 else:
                     raise RuntimeError('Service did not become ready.\n' + log_path.read_text(encoding='utf-8'))
                 yield client
+        except Exception:
+            # CI must preserve server-side failures before the temporary archive is removed.
+            print(log_path.read_text(encoding='utf-8'), file=sys.stderr, flush=True)
+            raise
         finally:
             if process.poll() is None:
                 if sys.platform == 'win32':
