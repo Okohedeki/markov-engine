@@ -52,61 +52,8 @@ Markov account is required in this mode. The computer must remain running and
 reachable; HTTPS networking and automatic startup are separate setup steps.
 See [local service setup and pairing](docs/local-service.md).
 
-Legacy research work remains at `/app/research`; the research APIs and stored
-cases remain compatible. The following sections describe that retained engine.
-
-## Legacy V2 research capabilities
-
-- Mandatory video/audio downloads, followed by timed captions or Whisper speech
-  transcription. Descriptions never substitute for media content.
-- Structured video/audio, PDF-page, article-section, and social segments.
-- Long-source claim extraction with overlap, deduplication, types, certainty,
-  importance, and research gaps.
-- Claim-specific authority, data, limitation, history, counterevidence, and
-  alternative-explanation searches.
-- Exact inspected passages; search snippets never become evidence.
-- Ten closed connection types with explicit endpoints, mechanisms, significance,
-  support, weakening conditions, next steps, and evidence levels.
-- Reproducible scoring across relevance, evidence strength, novelty,
-  explanatory value, output usefulness, and risk.
-- Connection paths, insight candidates, persistent branch decisions, and
-  follow-to-independent-Script behavior.
-- Deterministic citations, claim markers, evidence appendices, and source
-  locators.
-- Authenticated asynchronous `/v2` API with idempotency, graph resources,
-  branching, stage events, errors,
-  webhooks, owner isolation, and rate limits.
-- Public product, pricing, finished-case, and developer pages plus a
-  server-rendered SaaS workspace for intake, processing, artifact reading,
-  evidence, conversion, deepening, revision, export, and review.
-- Configurable Community, Cloud Free, Cloud Plus, Cloud Pro, and Verified
-  entitlements. Accuracy, citations, uncertainty, and source packets are never
-  premium features.
-- Usage analytics, variable-cost records, artifact versions, structured review
-  decisions, and review-time accounting.
-- Additive SQLite migrations that preserve legacy data.
-
-## Architecture
-
-```text
-Web / API / CLI
-  -> authenticated owner + configured credit reservation
-  -> durable Job + isolated ResearchCase
-  -> Extract -> SourceSegments with timestamps/pages/sections
-  -> Claim -> atomic Claims + ResearchGaps
-  -> Research -> exact EvidencePassages + ClaimEvidence stance
-  -> Connect -> typed candidates -> deterministic validation and scoring
-  -> Path -> ordered Connections -> InsightCandidates
-  -> Render -> Brief / Research Report / Script
-  -> Branch -> follow / save / dismiss -> independent child artifacts
-  -> Deliver -> exports, usage, costs
-  -> Verified only -> structured ReviewJob -> final delivery
-```
-
-The V2 product contract, repository audit, domain model, trust rules, API,
-entitlements, analytics, and acceptance slice are in
-[`docs/markov-v2-architecture.md`](docs/markov-v2-architecture.md). The original
-V1 audit remains in [`docs/markov-v1-architecture.md`](docs/markov-v1-architecture.md).
+Legacy research remains at `/app/research`; its APIs and stored cases remain
+compatible. See the [research architecture reference](docs/markov-v2-architecture.md).
 
 ## Windows setup
 
