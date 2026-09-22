@@ -63,7 +63,10 @@ async def read_source(item):
                 base['important_passages'].append({'text': passage, 'start_seconds': start,
                     'locator': match.group(0).split()[0], 'source_url': url, 'origin': 'supplied'})
         return {**base, 'content': text}
-    if kind in {'youtube', 'audio', 'media', 'tiktok', 'instagram', 'twitter', 'reddit'}:
+    if kind == 'youtube':
+        from markov_engine.bookmark_youtube import read_youtube
+        return {**base, **await read_youtube(url, fetch_public)}
+    if kind in {'audio', 'media', 'tiktok', 'instagram', 'twitter', 'reddit'}:
         # A landing-page description is not the video, podcast, or conversation.
         return {**base, 'content': '', 'processing_error':
             'The link is saved. Add text or a transcript to make its contents searchable.'}
