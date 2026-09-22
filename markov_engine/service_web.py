@@ -83,4 +83,16 @@ def create_service_router(settings, render, owner):
             raise HTTPException(404, 'Device not found.')
         return RedirectResponse('/app/devices', 303)
 
+    @router.post('/app/devices/disconnect')
+    async def disconnect_device(request: Request):
+        identity = owner(request)
+        await bookmark_form(request)
+        device = getattr(request.state, 'paired_device', None)
+        if not device:
+            raise HTTPException(400, 'This browser is not a paired device.')
+        await request.app.state.store.devices.revoke(identity, device['id'])
+        response = RedirectResponse('/app/pair', 303)
+        response.delete_cookie(DEVICE_COOKIE, path='/', secure=True, httponly=True, samesite='strict')
+        return response
+
     return router
