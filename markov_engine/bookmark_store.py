@@ -120,15 +120,19 @@ class BookmarkStore:
                 raise ValueError('Unknown collection type.')
             collection = {**collection, 'id': collection.get('id') or uuid.uuid4().hex}
             cursor = await self.conn.execute(
-                'SELECT owner_id FROM bookmark_collections WHERE id=?', (collection['id'],),
+                "SELECT id FROM bookmark_collections WHERE owner_id=? "
+                "AND json_extract(payload, '$.id')=?", (owner_id, collection['id']),
             )
             existing = await cursor.fetchone()
-            if existing and existing[0] != owner_id:
-                raise ValueError('Collection not found.')
+            # Automatic topic IDs are shared vocabulary, not globally unique accounts.
+            # Retain existing row IDs while namespacing new storage keys per owner.
+            storage_id = existing[0] if existing else uuid.uuid5(
+                uuid.NAMESPACE_URL, json.dumps([owner_id, collection['id']]),
+            ).hex
             await self.conn.execute(
                 'INSERT INTO bookmark_collections VALUES (?, ?, ?, ?) '
                 'ON CONFLICT(id) DO UPDATE SET payload=excluded.payload',
-                (collection['id'], owner_id, collection['kind'], json.dumps(collection)),
+                (storage_id, owner_id, collection['kind'], json.dumps(collection)),
             )
             await self.conn.commit()
         cursor = await self.conn.execute(
