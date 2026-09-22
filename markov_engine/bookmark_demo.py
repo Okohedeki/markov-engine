@@ -52,11 +52,11 @@ async def example_page(params):
         item = next((item for item in items if item['bookmark_id'] == params['item']), items[0])
         item, text = source_context(item)
         context.update(item=item, export_text=text, memberships=[row for row in context['threads']
-            if item['bookmark_id'] in row['bookmark_ids']], page_title='Example save')
+            if item['bookmark_id'] in row['bookmark_ids']], page_title='Example save', screen='library')
         template = 'memory_detail.html'
     elif params.get('thread'):
         thread = next((row for row in context['threads'] if row['id'] == params['thread']), context['threads'][0])
-        context.update(thread=thread, related=[], page_title=thread['title'])
+        context.update(thread=thread, related=[], page_title=thread['title'], screen='threads')
         template = 'memory_thread.html'
     elif screen == 'library':
         context.update(filtered=filter_archive(items, params, context['threads']), params=params,
