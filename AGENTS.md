@@ -2,18 +2,19 @@
 
 ## Core product and engine
 
-Follow `docs/cross-platform-investigation.md`: Markov finds overlooked,
-source-backed connections across media for creators and independent writers.
-Do not reduce discovery to article search or make the creator choose a platform.
-Keep native access, indexed discovery and actually inspected evidence distinct.
-The core deliverable is an investigation lead; the creator owns the voice.
+Follow `docs/bookmark-direction.md`: Markov is an intelligent bookmark app
+that remembers what the user forgot. Save immediately, preserve the user's
+reason, and resurface older material only with an observable explanation.
+Keep source text, user notes, and Markov interpretations distinct. Never
+silently discard a save when extraction or enrichment fails. Legacy research
+APIs remain supported, but research and chat are not the primary product.
 
 ## UI and frontend work
 
-The current application direction is `docs/guided-source-direction.md`:
-Add a link, Saved articles, Scripts; guided rundown → angles → sourced writing.
-The public-site direction remains `docs/v11-soft-studio.md`.
-Both supersede older positioning that excludes frequent or volume posting.
+The current application and public-site direction is `docs/bookmark-direction.md`:
+Home, Library, Threads, Search, You; mobile-first capture and useful rediscovery.
+It supersedes research positioning in older design documents and skills.
+Use warm neutral surfaces, editorial typography, and selective orange accents.
 
 For any request involving UI, UX, frontend styling, landing pages, product pages, dashboards, application screens, screenshots, responsive behavior, or visual review, read and apply these repository skills before implementation:
 
