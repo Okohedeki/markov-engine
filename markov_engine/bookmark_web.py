@@ -122,4 +122,16 @@ def create_bookmark_router(*, owner, render):
             return {'ok': True, 'action': action}
         return RedirectResponse('/app/bookmarks/' + bookmark_id, 303)
 
+    @router.get('/app/bookmarks/{bookmark_id}/export')
+    async def export_one(bookmark_id: str, request: Request):
+        from markov_engine.bookmark_views import source_context
+        rows = await request.app.state.store.bookmarks.items(owner(request), bookmark_id)
+        if not rows:
+            raise HTTPException(404, 'Save not found.')
+        _, content = source_context(rows[0])
+        return Response(content, media_type='text/markdown', headers={
+            'Content-Disposition': f'attachment; filename="markov-{rows[0]["bookmark_id"]}.md"',
+            'Cache-Control': 'no-store',
+        })
+
     return router
