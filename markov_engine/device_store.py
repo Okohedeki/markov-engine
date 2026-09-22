@@ -55,3 +55,14 @@ class DeviceStore:
         await cursor.close()
         await self.conn.commit()
         return {'id': row[0], 'owner_id': row[1], 'name': row[2], 'token': token} if row else None
+
+    async def authenticate(self, token, owner_id):
+        if not isinstance(token, str) or len(token) != 43:
+            return None
+        cursor = await self.conn.execute(
+            'SELECT id, owner_id, name FROM paired_devices '
+            'WHERE session_hash=? AND owner_id=? AND expires_at>? AND revoked=0',
+            (hashlib.sha256(token.encode()).hexdigest(), owner_id, int(time.time())),
+        )
+        row = await cursor.fetchone()
+        return {'id': row[0], 'owner_id': row[1], 'name': row[2]} if row else None
