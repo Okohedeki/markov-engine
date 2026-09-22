@@ -75,3 +75,14 @@ class BookmarkStore:
             params.append(bookmark_id)
         cursor = await self.conn.execute(sql + ' ORDER BY saved_at DESC', params)
         return [json.loads(row[0]) for row in await cursor.fetchall()]
+
+    async def update(self, owner_id, bookmark_id, changes):
+        protected = {'bookmark_id', 'user_id', 'canonical_url', 'original_url', 'saved_at'}
+        patch = {key: value for key, value in changes.items() if key not in protected}
+        patch['updated_at'] = now()
+        cursor = await self.conn.execute(
+            'UPDATE bookmarks SET payload=json_patch(payload, ?) WHERE owner_id=? AND id=?',
+            (json.dumps(patch), owner_id, bookmark_id),
+        )
+        await self.conn.commit()
+        return cursor.rowcount == 1
