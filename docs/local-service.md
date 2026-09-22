@@ -75,9 +75,18 @@ References: [PWA installation requirements](https://developer.mozilla.org/en-US/
 
 ## Run and pair
 
-Install the project into its Python 3.11+ environment (`python -m pip install -e .`).
-On Windows, run `.\run-service.cmd --name "My Markov"` from the repository.
-On other platforms, use `markov-service --name "My Markov"` in that environment.
+The supported setup is Windows x64 with Python 3.11. From the repository, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_windows.ps1
+.\run-service.cmd --name "My Markov"
+```
+
+The setup validates Python, creates an isolated environment, installs the tested
+dependency versions, and checks for dependency conflicts. It needs network access
+to install packages; initial capture and keyword indexing need no model keys.
+It does not replace an incompatible environment. See
+[development setup](../CONTRIBUTING.md#development-setup) for an alternate path.
 Open `http://127.0.0.1:8000/app` on the service computer to start saving.
 
 For private phone access at home and away:
