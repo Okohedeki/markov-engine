@@ -37,4 +37,25 @@ def create_service_router(settings, render, owner):
                             samesite='strict', path='/', max_age=90 * 86400)
         return response
 
+    async def device_page(request, invitation=None):
+        import qrcode
+        from qrcode.image.svg import SvgPathFillImage
+        identity = owner(request)
+        console = local_console(request)
+        devices = await request.app.state.store.devices.devices(identity) if console else []
+        for device in devices:
+            for field in ('created', 'expires'):
+                device[field + '_label'] = dt.datetime.fromtimestamp(
+                    device[field + '_at'], dt.timezone.utc).date().isoformat()
+        pair_url, qr_data = '', ''
+        if invitation:
+            pair_url = origin + '/app/pair#code=' + invitation['code']
+            svg = qrcode.make(pair_url, image_factory=SvgPathFillImage, border=4).to_string()
+            qr_data = 'data:image/svg+xml;base64,' + base64.b64encode(svg).decode()
+        context = archive_context([], screen='you')
+        context.update(page_title='Your service', service_name=settings.service_name, service_url=origin,
+            is_console=console, devices=devices, invitation=invitation, pair_url=pair_url, qr_data=qr_data,
+            current_device=getattr(request.state, 'paired_device', None))
+        return render(request, 'service_devices.html', **context)
+
     return router
