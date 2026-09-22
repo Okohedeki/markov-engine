@@ -10,6 +10,7 @@
 .pair-shell form { display: grid; gap: 14px; }
 .pair-shell .form-hint { margin-top: 20px; }
 .pair-shell form .form-hint { margin: 0; }
+.pair-shell form .notice { margin: 0; }
 .pair-shell button { justify-self: start; }
 .pair-qr { width: fit-content; max-width: 100%; margin: 24px 0; }
 .pair-qr img { display: block; max-width: 100%; height: auto; background: white; border: 1px solid var(--line); }
@@ -21,6 +22,8 @@
 .device-row .form-hint { margin: 6px 0 0; }
 @media (max-width: 640px) {
   .pair-shell { padding: 26px 22px 48px; }
-  .pair-shell > .brand { margin-bottom: 38px; }
+  .pair-shell > .brand { margin-bottom: 28px; }
+  .pair-shell h1 { margin-bottom: 18px; }
+  .pair-identity { margin: 24px 0; padding: 18px 0; }
   .device-row { align-items: start; flex-direction: column; gap: 12px; }
 }
