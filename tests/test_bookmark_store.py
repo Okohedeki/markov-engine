@@ -59,3 +59,26 @@ def test_private_and_nonweb_urls_are_rejected(url):
 def test_video_identity_and_content_parameters():
     assert canonicalize('https://youtu.be/abc?t=23') == 'https://youtube.com/watch?v=abc'
     assert canonicalize('https://example.com/a?id=3&utm_medium=x') == 'https://example.com/a?id=3'
+
+
+@pytest.mark.asyncio
+async def test_same_automatic_topic_can_be_curated_independently_by_two_owners():
+    import json
+    store = await SqliteStore.open(':memory:')
+    thread = {'id': 'auto-replay', 'kind': 'thread', 'title': 'Replay', 'bookmark_ids': []}
+    try:
+        # Cover an existing unnamespaced row from the first archive schema.
+        await store.bookmarks.conn.execute('INSERT INTO bookmark_collections VALUES (?, ?, ?, ?)',
+            (thread['id'], 'alice', 'thread', json.dumps(thread)))
+        await store.bookmarks.conn.commit()
+        await store.bookmarks.collections('alice', collection={**thread, 'title': 'Alice’s replay notes'})
+        await store.bookmarks.collections('bob', collection={**thread, 'title': 'Bob’s replay notes'})
+        await store.bookmarks.collections('bob', collection={**thread, 'title': 'Bob renamed it', 'pinned': True})
+        alice = await store.bookmarks.collections('alice')
+        bob = await store.bookmarks.collections('bob')
+        assert len(alice) == len(bob) == 1
+        assert alice[0]['title'] == 'Alice’s replay notes'
+        assert bob[0]['title'] == 'Bob renamed it' and bob[0]['pinned']
+        assert alice[0]['id'] == bob[0]['id'] == 'auto-replay'
+    finally:
+        await store.close()
