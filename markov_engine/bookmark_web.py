@@ -72,4 +72,23 @@ def create_bookmark_router(*, owner, render):
             view=request.query_params.get('layout') if request.query_params.get('layout') in {'cards', 'compact', 'visual'} else 'cards')
         return render(request, 'memory_library.html', **context)
 
+    @router.get('/app/bookmarks/{bookmark_id}')
+    async def detail(bookmark_id: str, request: Request):
+        identity = owner(request)
+        from markov_engine.bookmark_views import source_context
+        archive = request.app.state.store.bookmarks
+        items = await archive.items(identity)
+        item = next((row for row in items if row['bookmark_id'] == bookmark_id), None)
+        if item is None:
+            raise HTTPException(404, 'This save was not found in your archive.')
+        await archive.record_event(identity, bookmark_id, 'view_history')
+        context = archive_context(items, await archive.collections(identity), 'library')
+        item, export_text = source_context(item)
+        context.update(item=item, export_text=export_text,
+            memberships=[row for row in context['threads'] + context['projects']
+                         if bookmark_id in {member['bookmark_id'] for member in row['items']}],
+            notice='Saved to Markov. Your link and thought are safe.' if request.query_params.get('saved') else '',
+            page_title='Saved source')
+        return render(request, 'memory_detail.html', **context)
+
     return router
