@@ -6,7 +6,8 @@ Save anything worth remembering. Markov keeps your note, preserves available
 source text, and brings older saves back with a reason grounded in your archive.
 The mobile-first PWA centers Home, Library, Threads, Search, and You.
 
-- Save a URL immediately; extract articles and PDFs in a durable background queue.
+- Save a URL immediately; extract articles, PDFs, and available YouTube captions
+  in a durable background queue.
 - Keep user notes, source passages, and generated interpretations distinct.
 - Find saves through exact, semantic, or hybrid search with explained matches.
 - Follow automatic topic threads, curate them, and optionally organize projects.
@@ -20,7 +21,7 @@ Configure a semantic embedding provider for meaning-based retrieval; hash mode
 uses an explicitly labeled keyword fallback. Model enrichment and source-grounded
 answers require a configured LLM; capture and lexical search work without one.
 
-Blocked sources and media without supplied transcripts remain saved with a clear
+Blocked sources and media without accessible transcripts remain saved with a clear
 partial state. Paste text or a timestamped transcript to index their contents.
 Native share extensions, screenshot uploads/OCR, source-change monitoring, and
 automatic contradiction detection are not implemented. Offline capture is not
