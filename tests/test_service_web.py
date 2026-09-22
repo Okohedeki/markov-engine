@@ -61,3 +61,35 @@ async def test_local_console_pairs_a_phone_to_its_own_archive_and_can_revoke_it(
             assert (await phone.get('/app', headers={'Host': 'evil.example'})).status_code == 400
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_phone_can_disconnect_itself_but_cross_origin_pairing_is_rejected():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_LOCAL_SERVICE=True,
+        MARKOV_SERVICE_URL='https://home.example.test')
+    app = create_app(store=store, settings=settings)
+    transport = httpx.ASGITransport(app=app, client=('100.64.1.2', 12345))
+    try:
+        invite = await store.devices.invite(settings.service_owner)
+        async with httpx.AsyncClient(transport=transport, base_url=settings.service_url) as phone:
+            rejected = await phone.post('/app/pair', data={'code': invite['code']},
+                                        headers={'Origin': 'https://evil.example'})
+            assert rejected.status_code == 403
+            connected = await phone.post('/app/pair', data={'code': invite['code'], 'name': 'Travel phone'})
+            assert connected.status_code == 303
+            token = phone.cookies.get(DEVICE_COOKIE)
+            you = await phone.get('/app/you')
+            assert you.status_code == 200 and 'Your connection' in you.text
+            devices = await phone.get('/app/devices')
+            assert devices.status_code == 200 and 'Travel phone' in devices.text
+            assert 'Create pairing code' not in devices.text
+            assert (await phone.post('/app/login', data={'api_key': 'legacy'})).status_code == 410
+            disconnected = await phone.post('/app/devices/disconnect', data={},
+                headers={'Content-Type': 'application/x-www-form-urlencoded'})
+            assert disconnected.status_code == 303
+            assert not phone.cookies.get(DEVICE_COOKIE)
+            assert not await store.devices.authenticate(token, settings.service_owner)
+            assert (await phone.get('/app/library')).status_code == 401
+    finally:
+        await store.close()
