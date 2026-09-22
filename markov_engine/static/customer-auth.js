@@ -16,8 +16,8 @@
       ui: { ClerkUI: window.__internal_ClerkUICtor },
       signInUrl: '/app/login',
       afterSignOutUrl: '/app/login',
-      signInFallbackRedirectUrl: '/app/links',
-      signUpFallbackRedirectUrl: '/app/links',
+      signInFallbackRedirectUrl: '/app',
+      signUpFallbackRedirectUrl: '/app',
       appearance: {
         variables: {
           colorPrimary: '#c44920',
@@ -32,13 +32,13 @@
         await window.Clerk.session.getToken({ skipCache: true });
         const accepted = await fetch('/app/auth/session', { cache: 'no-store' });
         if (!accepted.ok) throw new Error('Session not accepted');
-        window.location.replace('/app/links');
+        window.location.replace('/app');
         return;
       }
       window.Clerk.mountSignIn(signIn, {
         routing: 'hash',
-        forceRedirectUrl: '/app/links',
-        signUpForceRedirectUrl: '/app/links',
+        forceRedirectUrl: '/app',
+        signUpForceRedirectUrl: '/app',
         withSignUp: true,
       });
     }
