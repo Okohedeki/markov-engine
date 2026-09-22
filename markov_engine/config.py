@@ -135,6 +135,11 @@ class Settings(BaseSettings):
         description="JSON mapping of reviewer API key to reviewer id.",
     )
     web_session_secret: str = Field("change-me", alias="MARKOV_WEB_SESSION_SECRET")
+    local_service: bool = Field(False, alias='MARKOV_LOCAL_SERVICE')
+    service_owner: str = Field('local', alias='MARKOV_SERVICE_OWNER', min_length=1, max_length=200)
+    service_name: str = Field('My Markov', alias='MARKOV_SERVICE_NAME', min_length=1, max_length=100)
+    service_url: str = Field('', alias='MARKOV_SERVICE_URL', max_length=2048,
+        description='Stable trusted HTTPS origin reachable from paired devices; empty disables pairing.')
     muse_api_keys: dict[str, str] = Field(
         default_factory=dict, alias='MARKOV_MUSE_API_KEYS', repr=False,
         description='Dedicated read-only connector tokens mapped to bookmark owner IDs. Never reuse full API keys.',
