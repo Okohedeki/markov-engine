@@ -239,12 +239,14 @@ def create_bookmark_router(*, owner, render):
                 if not target or target['id'] == row['id'] or target['kind'] != row['kind']:
                     raise HTTPException(422, 'Choose a different collection of the same type.')
                 target = {key: value for key, value in target.items() if key in fields}
-                target['bookmark_ids'] = sorted(set(target.get('bookmark_ids', []) + row.get('bookmark_ids', [])))
+                incoming = set(row.get('bookmark_ids', [])) - set(row.get('excluded_ids', []))
+                target['bookmark_ids'] = sorted(set(target.get('bookmark_ids', [])) | incoming)
+                target['excluded_ids'] = sorted(set(target.get('excluded_ids', [])) - incoming)
                 await archive.collections(identity, collection=target)
                 row['hidden'] = True
             elif action == 'split':
                 selected = {key.removeprefix('pick_') for key in values if key.startswith('pick_')}
-                selected &= set(row.get('bookmark_ids', []))
+                selected &= set(row.get('bookmark_ids', [])) - set(row.get('excluded_ids', []))
                 title = values.get('title', '').strip()[:120]
                 if not selected or not title:
                     raise HTTPException(422, 'Select saves and name the new collection.')
