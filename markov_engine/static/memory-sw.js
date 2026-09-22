@@ -1,5 +1,5 @@
 /* Only public shell assets are cached; account pages and mutations stay network-only. */
-const SHELL = 'markov-memory-v1';
+const SHELL = 'markov-memory-v2';
 const ASSETS = ['/static/memory.css', '/static/memory.js', '/static/markov-mark.svg',
   '/static/fonts/dm-sans.woff2', '/static/memory-offline.html'];
 self.addEventListener('install', event => {
@@ -18,6 +18,6 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate' && url.pathname.startsWith('/app')) {
     event.respondWith(fetch(request).catch(() => caches.match('/static/memory-offline.html')));
   } else if (ASSETS.includes(url.pathname)) {
-    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    event.respondWith(fetch(request).catch(() => caches.match(url.pathname)));
   }
 });
