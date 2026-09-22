@@ -50,3 +50,19 @@ def diagnose(data_dir, port=8000, *, require_phone=False, transport=None):
             checks.append(('FAIL', 'HTTPS connection failed. Check DNS, certificate trust, private network, and proxy.'))
     checks.append(('INFO', 'Phone reachability, QR scanning, and home-screen installation still need a real phone.'))
     return checks
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Check Markov without changing your archive or pairing devices.')
+    parser.add_argument('--data-dir', default=str(Path.home() / '.markov'))
+    parser.add_argument('--port', type=int, default=8000)
+    parser.add_argument('--phone', action='store_true', help='Require a configured phone address')
+    args = parser.parse_args()
+    checks = diagnose(args.data_dir, args.port, require_phone=args.phone)
+    for level, message in checks:
+        print(f'[{level}] {message}')
+    raise SystemExit(1 if any(level == 'FAIL' for level, _ in checks) else 0)
+
+
+if __name__ == '__main__':
+    main()
