@@ -315,4 +315,11 @@ def create_bookmark_router(*, owner, render):
         return render(request, 'memory_share.html', signed_in=signed_in,
             shared_url=shared_url, shared_title=params.get('title', '')[:500], shared_text=text)
 
+    @router.get('/app/sw.js')
+    async def service_worker():
+        from pathlib import Path
+        content = (Path(__file__).parent / 'static' / 'memory-sw.js').read_text(encoding='utf-8')
+        return Response(content, media_type='application/javascript', headers={
+            'Cache-Control': 'no-cache', 'Service-Worker-Allowed': '/app'})
+
     return router
