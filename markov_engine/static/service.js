@@ -18,3 +18,19 @@ function initializePairing() {
   });
 }
 initializePairing();
+
+function initializeInvitationExpiry() {
+  const label = document.querySelector('[data-invitation-expiry]');
+  if (!label) return;
+  const update = () => {
+    const remaining = Math.max(0, Number(label.dataset.invitationExpiry) - Math.floor(Date.now() / 1000));
+    label.textContent = remaining
+      ? `Works once. Expires in ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}.`
+      : 'This invitation has expired. Create a fresh code to connect.';
+    label.parentElement.classList.toggle('expired', !remaining);
+    if (!remaining) clearInterval(timer);
+  };
+  const timer = setInterval(update, 1000);
+  update();
+}
+initializeInvitationExpiry();
