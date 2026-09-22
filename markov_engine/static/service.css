@@ -1,0 +1,26 @@
+.pair-shell { max-width: 620px; margin: 0 auto; padding: 48px 32px 64px; }
+.pair-shell > .brand { margin-bottom: 54px; }
+.pair-shell > .eyebrow { margin-bottom: 18px; }
+.pair-shell h1 { font-size: clamp(42px, 6vw, 66px); margin-bottom: 24px; }
+.pair-shell > p { color: var(--muted); max-width: 48ch; }
+.pair-shell .accent { color: var(--accent); }
+.pair-identity { border-block: 1px solid var(--line); margin: 32px 0; padding: 24px 0; }
+.pair-identity h2 { font-size: 28px; margin: 10px 0; }
+.pair-address { overflow-wrap: anywhere; }
+.pair-shell form { display: grid; gap: 14px; }
+.pair-shell .form-hint { margin-top: 20px; }
+.pair-shell form .form-hint { margin: 0; }
+.pair-shell button { justify-self: start; }
+.pair-qr { width: fit-content; max-width: 100%; margin: 24px 0; }
+.pair-qr img { display: block; max-width: 100%; height: auto; background: white; border: 1px solid var(--line); }
+.pair-qr p { font-size: 13px; max-width: 35ch; color: var(--muted); margin-top: 12px; }
+.pair-qr.expired img { opacity: .15; }
+.device-row { display: flex; gap: 20px; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.device-row > div { min-width: 0; overflow-wrap: anywhere; }
+.device-row strong { font-size: 15px; }
+.device-row .form-hint { margin: 6px 0 0; }
+@media (max-width: 640px) {
+  .pair-shell { padding: 26px 22px 48px; }
+  .pair-shell > .brand { margin-bottom: 38px; }
+  .device-row { align-items: start; flex-direction: column; gap: 12px; }
+}
