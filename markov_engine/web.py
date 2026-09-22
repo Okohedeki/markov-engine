@@ -384,6 +384,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.get("/demo")
     @router.get("/demo/")
+    @router.get("/demo/research")
     async def guest_demo(request: Request):
         return _render(request, "demo.html", guest_demo=True)
 
@@ -546,6 +547,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return _render(request, "onboarding.html", active="onboarding")
 
     @router.get("/app/search")
+    @router.get("/app/research/search")
     async def search_page(request: Request):
         try:
             owner_id = owner(request)
