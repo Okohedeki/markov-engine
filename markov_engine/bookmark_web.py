@@ -91,4 +91,35 @@ def create_bookmark_router(*, owner, render):
             page_title='Saved source')
         return render(request, 'memory_detail.html', **context)
 
+    @router.post('/app/bookmarks/{bookmark_id}/edit')
+    async def edit(bookmark_id: str, request: Request):
+        identity = owner(request)
+        values = await bookmark_form(request)
+        archive = request.app.state.store.bookmarks
+        rows = await archive.items(identity, bookmark_id)
+        if not rows:
+            raise HTTPException(404, 'Save not found.')
+        item, action = rows[0], values.get('action')
+        if action in {'favorite', 'archive'}:
+            changes = {action + '_state': values.get('value') == 'true'}
+        elif action == 'note':
+            changes = {'user_note': values.get('note', '')[:8000]}
+        elif action == 'reason':
+            changes = {'inferred_save_reason': values.get('reason', '')[:1000], 'reason_edited': True}
+        elif action == 'content':
+            if not values.get('content', '').strip():
+                raise HTTPException(422, 'Add source text before saving.')
+            changes = {'content': values['content'][:500_000], 'supplied_content': True,
+                       'processing_state': 'pending', 'processing_error': '', 'important_passages': []}
+        elif action == 'retry':
+            changes = {'processing_state': 'pending', 'processing_error': ''}
+        else:
+            raise HTTPException(422, 'Unknown bookmark action.')
+        if item['processing_state'] == 'processing' and action in {'content', 'retry'}:
+            raise HTTPException(409, 'This save is being processed. Try again when it finishes.')
+        await archive.update(identity, bookmark_id, changes)
+        if 'application/json' in request.headers.get('accept', ''):
+            return {'ok': True, 'action': action}
+        return RedirectResponse('/app/bookmarks/' + bookmark_id, 303)
+
     return router
