@@ -54,3 +54,49 @@ async def interpret(item):
             interpretation_method='model')
     except (Exception,):
         return {**fallback, 'interpretation_notice': 'Model interpretation unavailable; source text is preserved.'}
+
+
+async def search_archive(items, query, mode='hybrid'):
+    from markov_engine.embeddings import embed
+    settings = get_settings()
+    query = query.strip()[:1000]
+    if not query:
+        return [], 'Type what you remember.'
+    query_terms = set(terms(query))
+    vector = None
+    fingerprint = f'{settings.embed_backend}:{settings.embed_model}:{settings.openai_embed_model}'
+    label = 'Exact phrase' if mode == 'exact' else 'Keyword search'
+    if mode != 'exact' and settings.embed_backend != 'hash':
+        try:
+            vector = await asyncio.wait_for(embed(query, input_type='query'), timeout=12)
+            label = 'Semantic + keyword search' if mode == 'hybrid' else 'Semantic search'
+        except Exception:
+            label = 'Keyword search · semantic search is temporarily unavailable'
+    matches = []
+    for item in items:
+        if item['archive_state']:
+            continue
+        fields = [item['title'], item['user_note'], item['inferred_save_reason'],
+                  ' '.join(item['concepts'] + item['entities']), item['content']]
+        full = ' '.join(fields).casefold()
+        exact = query.casefold() in full
+        overlap = query_terms & set(terms(full))
+        lexical = len(overlap) / max(len(query_terms), 1)
+        note_hit = len(query_terms & set(terms(' '.join(fields[:3])))) / max(len(query_terms), 1)
+        semantic = 0
+        stored = item.get('embeddings', [])
+        if (vector and stored and len(stored) == len(vector)
+                and item.get('embedding_model') == fingerprint):
+            semantic = cosine_similarity(vector, stored)
+        if mode == 'exact' and not exact:
+            continue
+        if not exact and not overlap and semantic < .45:
+            continue
+        if mode == 'semantic' and vector and semantic < .45:
+            continue
+        score = (1.5 if exact else 0) + lexical + .35 * note_hit + max(0, semantic)
+        reason = ('Contains your exact phrase.' if exact else
+                  'Shares the meaning of your query.' if semantic >= .45 else
+                  'Matches ' + ', '.join(sorted(overlap)[:5]) + ' in your saved material.')
+        matches.append({**item, 'match_reason': reason, 'match_score': round(score, 4)})
+    return sorted(matches, key=lambda item: item['match_score'], reverse=True)[:100], label
