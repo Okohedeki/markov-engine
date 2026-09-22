@@ -30,6 +30,8 @@ a newly published stable release. This entry describes the work on `main`.
 ### Project quality
 
 - Shared dependency constraints, including a compatible runtime for Intel Macs.
+- Fixed a queue-claim/capture race that could reject a save while SQLite still
+  had an active write statement; added a deterministic concurrent-save regression.
 - Declared the HTML cleaner dependency previously hidden by global packages.
 - CI on Linux, Windows, and Intel/Apple Silicon macOS for clean setup, regression
   tests, wheel installation, service startup, PWA assets, QR generation,
