@@ -89,26 +89,11 @@ GitHub Pages publishes the `docs/` directory from `main`. The static build links
 the workspace and API calls to the repository setup instructions because Pages
 does not run the FastAPI service.
 
-## API quick start
+## Legacy research API
 
-```bash
-curl -X POST http://127.0.0.1:8000/v2/jobs \
-  -H "X-Markov-Key: local-customer-key" \
-  -H "Idempotency-Key: demo-brief-1" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "job": "Explore where it leads",
-    "review_level": "instant",
-    "source": {"type":"url","value":"https://www.youtube.com/watch?v=..."},
-    "options": {"focus":"economic claims","max_connections":8}
-  }'
-```
-
-Poll `GET /v2/jobs/{job_id}` or inspect ordered events at
-`GET /v2/jobs/{job_id}/events`. Fetch connections, paths, and insights under
-`/v2/cases/{case_id}`; follow a branch with
-`POST /v2/connections/{connection_id}/follow`. Full requests are in
-[`docs/api-examples.md`](docs/api-examples.md).
+For the retained research API, see [request examples](docs/api-examples.md) and
+[authentication and model setup](docs/legacy-setup.md). Phone pairing grants
+bookmark access; it does not authorize these developer APIs.
 
 ## Entitlements and billing configuration
 
