@@ -46,3 +46,12 @@ def test_connection_diagnostics(tmp_path, url, local, remote, require_phone, fai
     assert list(tmp_path.iterdir()) == [configuration]
     assert all(request.method == 'GET' and not request.headers.get('cookie') for request in requests)
     assert all(request.url.host != 'unexpected.example.test' for request in requests)
+
+
+@pytest.mark.parametrize('content', [None, 'not json', '[]', '{"url": null}'])
+def test_invalid_configuration_never_attempts_network(tmp_path, content):
+    if content is not None:
+        (tmp_path / 'service.json').write_text(content, encoding='utf-8')
+    def unexpected_request(request):
+        pytest.fail('Invalid configuration must fail before a network request')
+    assert diagnose(tmp_path, transport=httpx.MockTransport(unexpected_request))[0][0] == 'FAIL'
