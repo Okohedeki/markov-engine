@@ -38,52 +38,25 @@
   </nav>
 </header>
   <main id="main-content">
-    <section class="story-opening">
-      <div class="story-opening-copy">
-        <p class="eyebrow">An investigative partner for creators.</p>
-        <h1>Start with a link.<br>Find a story<br><em>worth telling.</em></h1>
-        <p>Bring something that caught your attention. Markov follows unanswered questions, looks for overlooked connections, and brings back sourced story leads. You decide what to make of them.</p>
-        <a class="mk-button mk-button-primary" href="#how-it-works">See how it works <span aria-hidden="true">↗</span></a>
-        <span class="source-types">TikTok · Instagram · YouTube · Podcasts · Articles · PDFs<br>Start with a public link. If access is blocked, bring the text or transcript.</span>
+    <section class="memory-hero">
+      <p class="eyebrow">A bookmark app that remembers what you forgot</p>
+      <h1>Your bookmarks should<br>come back <em>when they matter.</em></h1>
+      <div class="hero-bottom"><p>Save articles, videos, repos, threads, papers, and anything else worth remembering. Markov keeps why you saved them—and brings them back when they become useful again.</p><div class="hero-actions"><a class="button primary" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M13 6l6 6-6 6"/></svg></a><a class="text-link" href="#how-it-works">See how it works ↓</a></div></div>
+      <div class="memory-demo" aria-label="Illustrative example of a video saved today and rediscovered months later">
+        <div class="demo-before"><p class="eyebrow">01 / A good find, months ago</p><div class="demo-source"><p class="eyebrow">YouTube · Example save</p><h3>Building agents<br>that remember.</h3><small>Shared to Markov ✓</small></div><p>“Interesting because of the checkpointing architecture.”</p></div>
+        <div class="demo-after"><p class="eyebrow">02 / Exactly what you need, today</p><h3>That idea about memory?<br>You already found it.</h3><p class="source-meta">Relevant again · Saved 8 months ago</p><div class="save-reason"><span class="eyebrow">Your thought</span><p>Interesting because of the checkpointing architecture.</p></div><div class="resurface-reason"><span class="eyebrow">Why you’re seeing this</span><p>You saved three items about persistent agent state this week. This older video connects to the same idea.</p></div></div>
       </div>
-      <div class="opening-trail" aria-label="Example: a space story connects to a beer project, then a new script idea">
-        <svg class="opening-path" viewBox="0 0 620 530" fill="none" aria-hidden="true"><path d="M275 164H429C466 164 480 187 480 223V290C480 352 430 360 355 360" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 5"/><path d="M310 360V420" stroke="currentColor" stroke-width="1.5"/><circle cx="310" cy="360" r="4" fill="currentColor"/></svg>
-        <a class="opening-source" href="#trail-source"><img src="/markov-engine/static/orbit.webp" width="1000" height="561" fetchpriority="high" alt="A spacecraft above the blue curve of Earth, photographed from the space station"><div><span>01 / A link you found <b aria-hidden="true">↗</b></span><strong>A space station.<br>A water loop.</strong><small>NASA · Water recovery</small></div></a>
-        <a class="opening-connection" href="#trail-connections"><span>02 / An unexpected connection <b aria-hidden="true">↗</b></span><strong>What if the next chapter <br>is at a brewery?</strong><p>A real recycled-water beer project.</p><small>Epic Cleantec · Related story</small></a>
-        <a class="opening-script" href="#trail-script"><span aria-hidden="true">↳</span><div><small>03 / A fresh script idea</small><strong>The hardest part might not be the filter.</strong></div><b aria-hidden="true">↗</b></a>
-        <p class="opening-caption">One illustrated example. Explore the sources below.</p>
-      </div>
+      <div class="demo-caption"><span>Illustrative example. Your own saves, notes, and activity shape what returns.</span><span>A useful return. Not an endless feed.</span></div>
+      <div class="supported-sources" aria-label="Save links from these sources"><span>Articles</span><span>YouTube</span><span>GitHub</span><span>Reddit</span><span>X</span><span>PDFs & papers</span><span>Substack</span><span>Podcasts</span></div>
     </section>
-    <div class="creator-stage" id="product">
-
-
-
-
-      <section class="customer-journey" aria-labelledby="journey-title">
-  <p class="eyebrow">A direction for every search</p>
-  <h2 id="journey-title">Follow a lead.<br>Check the connection.</h2>
-  <ol>
-    <li><span>01 / Bring a source</span><h3>Start with what caught your eye.</h3><p>A TikTok, Instagram post, YouTube video, podcast or article starts the investigation. Markov reads the content; for video, it downloads the media and works from its transcript.</p></li>
-    <li><span>02 / Follow a question · Free access</span><h3>Find what the source leaves open.</h3><p>Markov identifies missing context and possible connections, then searches across media for evidence. What it finds guides the next question—not another round of the same keywords.</p></li>
-    <li><span>03 / Check the connection · Free access</span><h3>Know why a lead is worth following.</h3><p>Explore the passages behind each idea, competing explanations and what still needs checking. Save the leads that interest you. A connection is a starting point, not a verdict.</p></li>
-    <li><span>04 / Develop · Paid access</span><h3>Make the story your own.</h3><p>Bring your interpretation and choose what to say. Develop full talking points with Plus or Pro, or arrange selected ideas into a series in Story Mode. Sources stay with the work.</p></li>
-  </ol>
-  <footer><p>Free access covers discovery and organizing ideas within your available credits. Credits alone do not unlock paid creator tools.</p><a href="/markov-engine/pricing/">Compare Free, Plus and Pro →</a></footer>
-</section>
-<section class="customer-faq" aria-labelledby="questions-title">
-  <header><p class="eyebrow">Before your first link</p><h2 id="questions-title">A little context<br>before you create.</h2></header>
-  <div>
-    <details><summary>Is this a summarizer?</summary><p>No. The original link is a starting point for finding connected stories and fresh script directions. Source context helps you judge the connection; it is not the finished product.</p></details>
-    <details><summary>What makes this a guided investigation?</summary><p>Each search has a question to answer and evidence to look for. Inspected passages can prompt a follow-up question. Markov then assesses proposed connections against those passages, considers competing explanations, and keeps the research trail attached. It is not an unlimited search or a guarantee of a new angle from every link.</p></details>
-    <details><summary>Does a connection mean the story is proven?</summary><p>No. A shared name, a sequence of events or several posts repeating one source is not proof. Leads show their limitations and a next check. The assessment uses a model, not an independent human fact-checker; inspect the original sources and decide what you can responsibly say.</p></details>
-    <details><summary>Can I see it without an account?</summary><p>Yes. The <a href="#how-it-works">interactive source-to-story example</a> and captioned walkthrough are open to everyone. They show a curated example, including a preview of paid talking-point depth—not a free live-generation tool.</p></details>
-    <details><summary>Will any link work?</summary><p>Start with a public article, video, podcast or post. Retrieval depends on the source and your workspace’s supported extractors. Private pages, unavailable transcripts and access restrictions can prevent research. Markov does not bypass them.</p></details>
-    <details><summary>What does Story Mode make?</summary><p>A reusable series plan from 2–30 selected story ideas: give it a premise, order its episodes and track recording progress. Generate each episode’s talking points separately. Markov does not film or automatically publish your videos.</p></details>
-    <details><summary>How do I get a workspace?</summary><p>This is a pre-release service. <a href="mailto:okohedeki@gmail.com?subject=Markov%20workspace%20access">Request access from EyeQ enterprises</a>, or <a href="https://github.com/Okohedeki/markov-engine#local-setup">run locally</a> if you already have access. Online subscription checkout is not available yet; no payment is taken by requesting access.</p></details>
-  </div>
-</section>
+    <div class="public-story">
+      <section class="story-split" id="how-it-works"><div><p class="eyebrow accent">Keep the good parts</p><h2>Bookmarks save links.<br>Markov saves why<br>they mattered.</h2><p>For readers, builders, and curious people whose best finds are scattered across the internet. A little context today becomes a much better memory tomorrow.</p></div><ol class="memory-steps"><li><span>01</span><div><h3>Something catches your mind.</h3><p>Paste a link, or share it to Markov on a supported installed browser. Add a thought if you want to. Saving never waits for a model.</p></div></li><li><span>02</span><div><h3>The context stays with it.</h3><p>Markov reads available source text, keeps useful passages, and finds shared concepts. Your note comes first. No folders required.</p></div></li><li><span>03</span><div><h3>It finds a reason to return.</h3><p>An old save connects to this week’s curiosity. Something you marked important is still unread. Every return explains itself.</p></div></li></ol></section>
+      <section class="story-split"><div><p class="eyebrow accent">Remember the idea, not the title</p><h2>You don’t need<br>the exact words.</h2><p>Look inside your saves with a rough description, an exact phrase, or the note you left yourself. With semantic indexing configured, Markov can find related meaning, too.</p><p>Ask a question when you need more. The answer stays with your saved sources, with references attached.</p></div><div class="remember-query"><p class="eyebrow">Search your personal memory</p><blockquote>“That repo about controlling which tools an agent can call.”</blockquote><hr class="rule"><p class="eyebrow accent">A path back</p><p>Matched through the source text, related concepts, and your own saved context.</p></div></section>
+      <section class="story-split"><div><p class="eyebrow accent">A few useful details</p><h2>A home for curiosity.<br>With clear boundaries.</h2></div><div><details><summary>What can I save?</summary><p>Public links from any platform. Articles and PDFs can be extracted automatically. When a site blocks access or a transcript isn’t available, the link and note stay safe. Add source text or a timestamped transcript to make the important parts searchable.</p></details><details><summary>Do I need to organize everything?</summary><p>No. Related concepts form threads automatically. You can rename, merge, split, pin, or hide them. Projects are there when you want a little more focus.</p></details><details><summary>Can I take my archive with me?</summary><p>Yes. Export your archive as JSON or copy a save’s relevant context with source references. Markov’s local application is open source.</p></details><details><summary>Is this a general research assistant?</summary><p>Markov begins with material you chose to keep. It helps you retrieve and use your archive. It does not replace checking the original source.</p></details></div></section>
+      <section class="public-finale"><div><p class="eyebrow accent">Leave something for your future self</p><h2>Save anything<br>worth remembering.</h2></div><a class="button primary" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M13 6l6 6-6 6"/></svg></a></section>
     </div>
-    <section class="creator-finale"><div><p class="eyebrow">For the next thing you can’t stop thinking about.</p><h2>There’s more<br>to the story.</h2></div><div><p>Find a steady supply of ideas with somewhere new to go. Built for creators and teams who publish often—and want their work to feel like their own.</p><a class="mk-button mk-button-dark" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally<span aria-hidden="true">↗</span></a></div></section>
   </main>
   <footer class="mk-public-footer">
   <div>
