@@ -388,7 +388,11 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     @router.get("/demo/")
     @router.get("/demo/research")
     async def guest_demo(request: Request):
-        return _render(request, "demo.html", guest_demo=True)
+        if request.url.path == '/demo/research':
+            return _render(request, 'demo.html', guest_demo=True)
+        from markov_engine.bookmark_demo import example_page
+        template, context = await example_page(request.query_params)
+        return _render(request, template, **context)
 
     @router.get("/app/login")
     async def login_page(request: Request):
