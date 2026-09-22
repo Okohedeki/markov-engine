@@ -66,3 +66,12 @@ class BookmarkStore:
             (owner_id, canonical),
         )
         return json.loads((await cursor.fetchone())[0]), created
+
+    async def items(self, owner_id, bookmark_id=None):
+        sql = 'SELECT payload FROM bookmarks WHERE owner_id=?'
+        params = [owner_id]
+        if bookmark_id is not None:
+            sql += ' AND id=?'
+            params.append(bookmark_id)
+        cursor = await self.conn.execute(sql + ' ORDER BY saved_at DESC', params)
+        return [json.loads(row[0]) for row in await cursor.fetchall()]
