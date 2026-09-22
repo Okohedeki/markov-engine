@@ -78,7 +78,9 @@ class BookmarkStore:
 
     async def claim_pending(self):
         stamp = now()
-        cursor = await self.conn.execute(
+        # Drain RETURNING in one database-thread call. Yielding with a live write
+        # cursor would let another request's commit fail with "SQL statements in progress".
+        rows = await self.conn.execute_fetchall(
             "UPDATE bookmarks SET payload=json_set(payload, '$.processing_state', "
             "'processing', '$.updated_at', ?) WHERE id=(SELECT id FROM bookmarks "
             "WHERE json_extract(payload, '$.processing_state')='pending' OR "
@@ -86,10 +88,8 @@ class BookmarkStore:
             "datetime(json_extract(payload, '$.updated_at')) < datetime('now', '-5 minutes')) "
             "ORDER BY saved_at LIMIT 1) RETURNING payload", (stamp,),
         )
-        row = await cursor.fetchone()
-        await cursor.close()
         await self.conn.commit()
-        return json.loads(row[0]) if row else None
+        return json.loads(rows[0][0]) if rows else None
 
     async def record_event(self, owner_id, bookmark_id, event, reason=''):
         if event not in {'view_history', 'resurface_history', 'relevance_events'}:
