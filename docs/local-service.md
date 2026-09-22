@@ -172,7 +172,7 @@ QR pairing does not publish that adapter or register it in Muse's directory.
 
 ## Verification
 
-The normal `python -m pytest -q` suite passes 166 tests, including concurrent
+The `python -m pytest -q` suite covers concurrent
 single-use redemption, invitation and session expiry, restart persistence,
 owner isolation, phone capture, revocation, self-disconnect, CSRF rejection,
 forwarded-request restrictions, and launcher configuration persistence.
@@ -185,3 +185,31 @@ the Connect button visibly; no browser console warnings or errors were reported.
 The local browser preview used a test HTTPS identity. A physical phone scan,
 trusted HTTPS deployment, home-screen installation, and away-from-home access
 still require verification on the user's configured network and devices.
+
+### Physical-phone acceptance gate
+
+Status: **not yet performed**. Before calling a release ready, record the commit,
+Windows version, phone OS/browser, private-network method, and results below.
+Do not publish pairing codes, cookies, or private archive contents with the report.
+
+1. Start from a clean Windows installation using the documented setup. Save a
+   URL with supplied source text and a note; confirm processing finishes.
+2. Configure a trusted HTTPS address. Run the diagnostic command with `--phone`.
+   Scan a fresh QR on the physical phone, confirm the service identity, and pair.
+3. Install the PWA, close the browser, and open the installed app. If the browser
+   keeps a separate cookie store, pair the installed app with a fresh invitation.
+4. Review the computer's saved item on the phone. Edit its note and interpretation,
+   favorite it, and replace source text. Refresh the computer view and confirm
+   every change arrived and reprocessing preserved the human interpretation.
+5. Save a new item from the phone. Confirm it appears and finishes processing on
+   the computer, then refresh the phone to review the result.
+6. Stop and restart the engine with the same data directory. Confirm the archive
+   and phone session survive. Test computer sleep/wake and private-network
+   disconnect/reconnect; failed saves must not appear successfully saved.
+7. If away-from-home access is intended, repeat review and saving on mobile data
+   with the private network connected. Record Wi-Fi-only testing as such.
+8. Revoke the phone on the computer. Confirm new archive requests fail from that
+   phone; reusing the consumed QR must fail. Pair again with a fresh invitation.
+
+CI verifies software behavior and installed assets. It does not scan a camera QR,
+validate mobile cookie-store behavior, or establish the user's HTTPS network.
