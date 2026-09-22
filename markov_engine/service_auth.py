@@ -19,3 +19,12 @@ def service_origin(settings):
             or parsed.path or parsed.query or parsed.fragment):
         raise ValueError('MARKOV_SERVICE_URL must be a trusted HTTPS origin reachable from your phone, without a path.')
     return value
+
+
+def local_console(request):
+    return bool(request.client and request.client.host in LOOPBACK
+        and request.url.hostname in LOOPBACK
+        and not any(name in request.headers for name in (
+            'forwarded', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto',
+            'tailscale-user-login', 'tailscale-user-name',
+        )))
