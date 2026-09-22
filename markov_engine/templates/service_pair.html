@@ -1,0 +1,27 @@
+{% extends 'memory_base.html' %}
+{% block title %}Connect to your Markov{% endblock %}
+{% block styles %}<link rel="stylesheet" href="/static/service.css"><script defer src="/static/service.js"></script>{% endblock %}
+{% block body %}
+<main class="pair-shell" id="main-content">
+  <a class="brand" href="/"><img src="/static/markov-mark.svg" width="30" height="30" alt="">Markov</a>
+  <p class="eyebrow accent">Your archive, on your own service</p>
+  <h1>Connect to<br>your Markov.</h1>
+  <p>Your computer keeps the archive. This device gives you a way to save and revisit it wherever your service is reachable.</p>
+  <section class="pair-identity" aria-label="Service you are connecting to">
+    <span class="eyebrow">You are connecting to</span><h2>{{ service_name }}</h2>
+    <p class="pair-address">{{ service_url or 'No phone address configured yet' }}</p>
+  </section>
+  {% if error %}<p class="notice" role="alert">{{ error }}</p>{% endif %}
+  {% if service_url %}
+  <form method="post" action="/app/pair" data-pair-form>
+    <input type="hidden" name="code" data-pair-code>
+    <label for="device-name">Name this device</label><input id="device-name" name="name" maxlength="80" value="My phone" autocomplete="off" required>
+    <p class="form-hint">Only connect if this is your service. This device will be able to read and change your saved archive.</p>
+    <p class="notice" data-pair-message role="status">Scan a fresh pairing code from Markov on your computer.</p>
+    <button class="button primary" type="submit" data-pair-submit disabled>Connect this device {{ icon('arrow') }}</button>
+    <noscript><p class="notice">Enable JavaScript to use the pairing invitation.</p></noscript>
+  </form>
+  {% else %}<p class="notice">Open Markov on the service computer, then go to You → Your service to finish connection setup.</p>{% endif %}
+  <p class="form-hint">Your computer must be running. If you use a private network, connect this device to it first. You can disconnect this device at any time from You.</p>
+</main>
+{% endblock %}
