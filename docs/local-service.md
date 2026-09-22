@@ -7,6 +7,23 @@ SQLite archive, extraction queue, model configuration, and device registry.
 The phone installs the PWA from that service's stable HTTPS origin. There is
 no central Markov account or archive relay in this mode.
 
+The primary setup is a local web service, started with `run-service.cmd`, and
+a phone browser/PWA connected to it. Native executable packaging is optional.
+The computer's browser uses localhost; the phone uses a reachable address for
+that computer, because localhost always refers to the device opening the page.
+
+The same authenticated service handles both directions:
+
+- Computer to phone: saved sources, processing state, extracted passages,
+  interpretations, and connections are available for review.
+- Phone to computer: notes, corrected interpretations, favorites, archive
+  changes, replacement source text, and processing retries update the local
+  database or queue. Human corrections survive subsequent processing.
+
+Pages fetch current state when opened or refreshed. The phone does not keep a
+second authoritative database or run extraction. Processing continues on the
+computer when the phone closes the page; later review reads the stored results.
+
 ```text
 Desktop / home server                    Paired phone
 Markov + SQLite + extraction  <-------->  Markov PWA
