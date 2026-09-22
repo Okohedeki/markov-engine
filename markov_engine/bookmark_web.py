@@ -274,4 +274,13 @@ def create_bookmark_router(*, owner, render):
                 if get_settings().embed_backend == 'hash' else
                 'Semantic indexing is configured. Keyword search remains available if the provider is unavailable.')
 
+    @router.get('/app/archive/export')
+    async def export_archive(request: Request):
+        identity = owner(request)
+        archive = request.app.state.store.bookmarks
+        payload = {'format': 'markov-bookmarks-v1', 'exported_at': dt.datetime.now(dt.timezone.utc).isoformat(),
+                   'bookmarks': await archive.items(identity), 'collections': await archive.collections(identity)}
+        return Response(json.dumps(payload, ensure_ascii=False, indent=2), media_type='application/json',
+            headers={'Content-Disposition': 'attachment; filename="markov-archive.json"', 'Cache-Control': 'no-store'})
+
     return router
