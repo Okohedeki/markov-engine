@@ -1,0 +1,67 @@
+name: Local service
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'markov_engine/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'requirements/**'
+      - 'pyproject.toml'
+      - '.github/workflows/service.yml'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: service-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  service:
+    name: Service (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel, macos-latest]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      LLM_BACKEND: heuristic
+      EMBED_BACKEND: hash
+      SEARCH_ENABLED: 'false'
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements/constraints.txt
+      - name: Create an isolated environment
+        run: |
+          python -m venv .venv
+          python -c "import os; from pathlib import Path; p=Path('.venv').resolve()/('Scripts' if os.name=='nt' else 'bin'); print(p)" >> "$GITHUB_PATH"
+      - name: Install the service and test dependencies
+        run: |
+          python -m pip install -c requirements/constraints.txt -e '.[dev]'
+          python -m pip check
+      - name: Run the test suite
+        run: python -m pytest -q
+      - name: Build and install the service wheel
+        run: |
+          python -m pip wheel --no-deps --wheel-dir build/wheels .
+          python -m pip install --force-reinstall --no-deps build/wheels/markov_engine-*.whl
+          python -m pip check
+      - name: Check installed assets, processing, and restart persistence
+        run: python scripts/smoke_service.py
