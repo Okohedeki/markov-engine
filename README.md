@@ -124,7 +124,7 @@ named in `~/.markov/service.json` (normally `~/.markov/markov.db`) and keep that
 configuration file with it. Protect backups: they contain private saved material
 and paired-device records. See [archive handling](docs/local-service.md#keep-an-existing-archive).
 
-Before updating, make a backup, pull the new code, rerun the setup script, and
+Before updating, make a backup, pull the new code, rerun the pip install command, and
 restart Markov. Additive database migrations run automatically. Restore a backup
 with its matching code version when testing a rollback; do not assume an older
 version understands a newer database.
@@ -155,12 +155,13 @@ markov chains
 Use [CONTRIBUTING.md](CONTRIBUTING.md) for the isolated development setup:
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q
-.venv\Scripts\python.exe scripts/smoke_service.py
+python -m pytest -q
+python scripts/smoke_service.py
 ```
 
-[Windows CI](https://github.com/Okohedeki/markov-engine/actions/workflows/windows.yml)
-checks clean installation, regressions, a built wheel, and the real service.
+[Service CI](https://github.com/Okohedeki/markov-engine/actions/workflows/service.yml)
+checks installation, regressions, a built wheel, and the real service on Linux,
+Windows, and macOS (Intel and Apple Silicon).
 See [release notes](CHANGELOG.md) and [private security reporting](SECURITY.md).
 
 ## Samples
