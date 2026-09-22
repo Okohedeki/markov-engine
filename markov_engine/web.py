@@ -424,6 +424,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         return response
 
     @router.get("/app")
+    @router.get("/app/research")
     async def intake(request: Request):
         try:
             owner_id = owner(request)
@@ -1141,5 +1142,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     async def copyright_page(request: Request):
         return _render(request, "copyright.html")
 
+    from markov_engine.bookmark_web import create_bookmark_router
+    router.include_router(create_bookmark_router(owner=owner, render=_render))
     router.include_router(create_production_router(settings=settings, owner=owner, render=_render))
     return router
