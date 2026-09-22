@@ -29,6 +29,7 @@ def create_bookmark_router(*, owner, render):
     router = APIRouter()
 
     @router.get('/app/memory')
+    @router.get('/app')
     async def home(request: Request):
         try:
             identity = owner(request)
@@ -135,6 +136,7 @@ def create_bookmark_router(*, owner, render):
         })
 
     @router.get('/app/memory/search')
+    @router.get('/app/search')
     async def search(request: Request):
         from markov_engine.bookmark_intelligence import ask_saved, search_archive
         identity = owner(request)
