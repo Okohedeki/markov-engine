@@ -1,0 +1,30 @@
+{% extends 'memory_base.html' %}
+{% block styles %}<link rel="stylesheet" href="/static/service.css"><script defer src="/static/service.js"></script>{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">A home for your memory</p><h1>Your service.</h1><p>{{ service_name }}</p></div><a class="text-link" href="/app/you">Back to You →</a></div>
+<div class="detail-layout"><div>
+  <section class="detail-section"><p class="eyebrow accent">{{ 'Running on this computer' if is_console else 'Connected to your service' }}</p><h2>Your archive lives here.</h2><p class="pair-address">{{ service_url or 'This computer · phone connection not configured' }}</p><p>Notes, sources, threads, and extraction run on this service. Keep the computer running and reachable to use Markov on a paired device.</p></section>
+  {% if is_console %}
+  <section class="detail-section"><h2>Bring your phone.</h2>
+    {% if service_url %}
+    <p>Open your phone’s camera and scan the code. Check the service name, connect, then add Markov to your home screen.</p>
+    {% if invitation %}
+    <div class="pair-qr"><img src="{{ qr_data }}" alt="Pairing QR code for {{ service_name }}" width="280" height="280"><p role="status" data-invitation-expiry="{{ invitation.expires_at }}">This code works once and expires in five minutes.</p></div>
+    <details class="save-extra"><summary>Use a link instead</summary><p class="form-hint">Anyone holding this link can connect until it expires. Keep it private.</p><a class="text-link pair-address" href="{{ pair_url }}">Open the same pairing invitation →</a></details>
+    <form method="post" action="/app/devices/revoke"><input type="hidden" name="id" value="{{ invitation.id }}"><button class="text-link">Cancel this code</button></form>
+    {% endif %}
+    <form method="post" action="/app/devices/invite"><button class="button primary">{{ 'Create a fresh code' if invitation else 'Create pairing code' }} {{ icon('arrow') }}</button></form>
+    <p class="form-hint">A fresh code replaces any earlier unused code. Already connected devices stay connected.</p>
+    {% else %}
+    <p>Give this service a stable HTTPS address that your phone can reach. A private connection can work both on your Wi-Fi and when you’re away.</p><a class="text-link" href="{{ repository_url }}/blob/main/docs/local-service.md">Set up your service address →</a>
+    {% endif %}
+  </section>
+  <section class="detail-section"><h2>Connected devices <span class="count">{{ devices|length }}</span></h2>
+    {% for device in devices %}<div class="device-row"><div><strong>{{ device.name }}</strong><p class="form-hint">Paired {{ device.created_label }} · Access expires {{ device.expires_label }}</p></div><form method="post" action="/app/devices/revoke"><input type="hidden" name="id" value="{{ device.id }}"><button class="button">Disconnect</button></form></div>{% else %}<p class="muted">No phones connected yet. Your first scan starts here.</p>{% endfor %}
+  </section>
+  {% else %}<section class="detail-section"><h2>This device</h2><p>{{ current_device.name }}</p><form method="post" action="/app/devices/disconnect"><button class="button">Disconnect this device</button></form><p class="form-hint">Your archive stays on the service. To reconnect, scan a fresh code from your computer.</p></section>{% endif %}
+</div><aside>
+  <section class="aside-section"><p class="eyebrow">One service, your devices</p><h3>Scan once.<br>Come back anytime.</h3><p>The installed app opens this service directly. A connected device stays linked across service restarts, until disconnected or its access expires.</p></section>
+  <section class="aside-section"><p class="eyebrow">Processing choices</p><p>Your archive is stored on this computer. Configured cloud models can still receive source text for processing. Choose local model providers if you want processing to stay here too.</p></section>
+</aside></div>
+{% endblock %}
