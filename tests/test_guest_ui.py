@@ -13,7 +13,7 @@ async def test_guest_dashboard_does_not_bypass_customer_auth():
     app = create_app(store=store, settings=Settings(MARKOV_API_KEYS={'test': 'customer'}, MARKOV_WEB_SESSION_SECRET='guest-test-secret'))
     try:
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
-            for path in ('/demo', '/demo/'):
+            for path in ('/demo/research',):
                 response = await client.get(path)
                 assert response.status_code == 200
                 assert 'data-storage-key="markov-guest-studio-v1"' in response.text
