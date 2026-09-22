@@ -1,0 +1,45 @@
+{% macro icon(name) -%}
+{% set paths = {
+  'home': 'm3 10 9-7 9 7v10H3Z M9 20v-7h6v7',
+  'library': 'M4 4h5v16H4z M12 4h4v16h-4z M19 4l3 15',
+  'threads': 'M7 3v12a5 5 0 0 0 5 5h5 M7 8h6a4 4 0 0 0 4-4 M4 3h6 M14 3h6 M14 20h6',
+  'search': 'M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
+  'you': 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M4 21v-2a8 8 0 0 1 16 0v2',
+  'plus': 'M12 5v14 M5 12h14',
+  'arrow': 'M5 12h14 M13 6l6 6-6 6',
+  'external': 'M14 3h7v7 M21 3 10 14 M10 3H3v18h18v-7',
+  'bookmark': 'M6 3h12v18l-6-4-6 4Z',
+  'close': 'm6 6 12 12 M6 18 18 6',
+  'star': 'm12 3 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z',
+  'folder': 'M3 5h7l2 3h9v12H3Z',
+  'return': 'M8 4 3 9l5 5 M3 9h11a6 6 0 0 1 0 12'
+} %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ paths.get(name, paths.bookmark) }}"/></svg>
+{%- endmacro %}
+
+{% macro bookmark(item, demo=false, featured=false) %}
+{% set destination = '/demo?item=' ~ item.bookmark_id if demo else '/app/bookmarks/' ~ item.bookmark_id %}
+<article class="bookmark-card {{ 'featured' if featured else '' }}" data-bookmark="{{ item.bookmark_id }}">
+  {% if item.resurface_label %}<div class="resurface-label">{{ icon('return') }} {{ item.resurface_label }}<span>Saved {{ item.saved_at[:10] }}</span></div>{% endif %}
+  <div class="bookmark-body">
+    <div class="source-meta"><span class="source-mark" aria-hidden="true">{{ item.source_domain[:1]|upper }}</span><span>{{ item.source_domain }}</span><span>·</span><span>{{ item.source_type|capitalize }}</span></div>
+    {% if item.thumbnail %}<img class="bookmark-thumbnail" src="{{ item.thumbnail }}" alt="" loading="lazy" referrerpolicy="no-referrer" width="480" height="260">{% endif %}
+    <h3><a href="{{ destination }}">{{ item.title }}</a></h3>
+    <p class="bookmark-byline">{{ item.author or item.creator or 'Saved source' }} <span>· {{ item.saved_at[:10] }}</span></p>
+    {% if item.processing_state in ['pending', 'processing'] %}<p class="processing-state" data-processing>{{ 'Waiting to process' if item.processing_state == 'pending' else 'Processing source' }}<span aria-hidden="true"> …</span></p>{% endif %}
+    <div class="save-reason"><span class="eyebrow">{{ 'Your thought' if item.user_note else 'Why you saved this · Markov interpretation' if item.inferred_save_reason else 'Keep the context' }}</span><p>{{ item.user_note or item.inferred_save_reason or 'Add a thought about what caught your attention.' }}</p></div>
+    {% if item.resurface_reason %}<div class="resurface-reason"><span class="eyebrow">Why you’re seeing this</span><p>{{ item.resurface_reason }}</p></div>{% endif %}
+    {% if item.match_reason %}<p class="match-reason">{{ icon('search') }} {{ item.match_reason }}</p>{% endif %}
+    <div class="bookmark-actions"><a class="text-link" href="{{ destination }}">{{ 'Revisit this save' if featured else 'Open save' }} {{ icon('arrow') }}</a>
+      <div class="bookmark-tools">
+        {% if not demo %}<form action="/app/bookmarks/{{ item.bookmark_id }}/edit" method="post" data-inline-form><input type="hidden" name="action" value="favorite"><input type="hidden" name="value" value="{{ 'false' if item.favorite_state else 'true' }}"><button class="icon-button {{ 'accent' if item.favorite_state else '' }}" aria-label="{{ 'Unfavorite' if item.favorite_state else 'Favorite' }} {{ item.title }}" aria-pressed="{{ 'true' if item.favorite_state else 'false' }}">{{ icon('star') }}</button></form>{% endif %}
+        <details class="use-menu"><summary>Use this</summary><div class="use-options">
+          <a href="{{ destination }}#ask">Ask about this</a><a href="{{ destination }}#organize">Add to thread or project</a><a href="{{ destination }}#note">Create note</a>
+          {% if not demo %}<a href="/app/bookmarks/{{ item.bookmark_id }}/export">Export context</a>{% endif %}
+          <a href="{{ item.canonical_url }}" target="_blank" rel="noopener noreferrer">Open original ↗</a>
+        </div></details>
+      </div>
+    </div>
+  </div>
+</article>
+{% endmacro %}
