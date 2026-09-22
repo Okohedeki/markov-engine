@@ -16,7 +16,8 @@ def service_origin(settings):
     parsed = urlsplit(value)
     if (parsed.scheme != 'https' or not parsed.hostname or parsed.hostname in LOOPBACK
             or parsed.username or parsed.password or '*' in value
-            or parsed.path or parsed.query or parsed.fragment):
+            or parsed.path or parsed.query or parsed.fragment or parsed.port == 0
+            or any(character.isspace() for character in value)):
         raise ValueError('MARKOV_SERVICE_URL must be a trusted HTTPS origin reachable from your phone, without a path.')
     return value
 
