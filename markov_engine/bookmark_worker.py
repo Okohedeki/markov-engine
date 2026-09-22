@@ -17,6 +17,9 @@ async def process_bookmark(archive, item):
         await archive.update(owner, identity, extracted)
         enriched = {**item, **extracted}
         interpretation = await interpret(enriched)
+        latest = await archive.items(owner, identity)
+        if latest and latest[0].get('reason_edited'):
+            interpretation.pop('inferred_save_reason', None)
         await archive.update(owner, identity, interpretation)
         enriched.update(interpretation)
         settings = get_settings()
