@@ -54,3 +54,20 @@ def validate_arguments(name, arguments):
             raise ValueError(f'Invalid {key}.')
         result[key] = value
     return result
+
+
+def connector_source(item, *, offset=None):
+    from markov_engine.bookmark_views import source_context
+    source, _ = source_context(item)
+    result = dict(id=item['bookmark_id'], title=item['title'], url=item['canonical_url'],
+        author=item['author'], source_type=item['source_type'], saved_at=item['saved_at'],
+        user_note=item['user_note'], markov_interpretation=item['inferred_save_reason'],
+        summary=item['summary'], concepts=item['concepts'], processing_state=item['processing_state'],
+        match_reason=item.get('match_reason', ''), resurface_reason=item.get('resurface_reason', ''),
+        passages=[{key: passage[key] for key in ['text', 'locator', 'url', 'origin'] if key in passage}
+                  for passage in source['important_passages'][:8]])
+    if offset is not None:
+        result.update(source_text=item['content'][offset:offset + 20000],
+            source_text_origin=item['metadata'].get('content_origin', 'Extracted source text'),
+            next_offset=offset + 20000 if len(item['content']) > offset + 20000 else None)
+    return result
