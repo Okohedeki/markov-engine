@@ -115,3 +115,19 @@ The existing [Muse connector](muse-connector.md) remains an optional read-only
 adapter with its own credentials. A hosted Muse client cannot reach a private
 tailnet address unless its deployment has an appropriate private network path.
 QR pairing does not publish that adapter or register it in Muse's directory.
+
+## Verification
+
+The normal `python -m pytest -q` suite passes 166 tests, including concurrent
+single-use redemption, invitation and session expiry, restart persistence,
+owner isolation, phone capture, revocation, self-disconnect, CSRF rejection,
+forwarded-request restrictions, and launcher configuration persistence.
+
+Browser review covered the real desktop invitation form and generated SVG QR
+at 1440px, and the phone confirmation at 390px. The review caught and corrected
+a referrer policy that suppressed form Origin headers, and spacing that pushed
+the mobile Connect action below the initial viewport. Keyboard focus reaches
+the Connect button visibly; no browser console warnings or errors were reported.
+The local browser preview used a test HTTPS identity. A physical phone scan,
+trusted HTTPS deployment, home-screen installation, and away-from-home access
+still require verification on the user's configured network and devices.
