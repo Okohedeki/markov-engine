@@ -7,8 +7,8 @@ SQLite archive, extraction queue, model configuration, and device registry.
 The phone installs the PWA from that service's stable HTTPS origin. There is
 no central Markov account or archive relay in this mode.
 
-The primary setup is a local web service, started with `run-service.cmd`, and
-a phone browser/PWA connected to it. Native executable packaging is optional.
+The setup is a Python local web service on Linux, Windows, or macOS, started
+with `markov-service`, and a phone browser/PWA connected to it.
 The computer's browser uses localhost; the phone uses a reachable address for
 that computer, because localhost always refers to the device opening the page.
 
@@ -75,18 +75,19 @@ References: [PWA installation requirements](https://developer.mozilla.org/en-US/
 
 ## Run and pair
 
-The supported setup is Windows x64 with Python 3.11. From the repository, run:
+Install Python 3.11 or newer and follow the
+[Linux, Windows, or macOS setup commands](../README.md#local-service-setup) to
+create and activate a virtual environment. From the repository, run:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_windows.ps1
-.\run-service.cmd --name "My Markov"
+```sh
+python -m pip install -c requirements/constraints.txt -e .
+python -m pip check
+markov-service --open-browser --name "My Markov"
 ```
 
-The setup validates Python, creates an isolated environment, installs the tested
-dependency versions, and checks for dependency conflicts. It needs network access
-to install packages; initial capture and keyword indexing need no model keys.
-It does not replace an incompatible environment. See
-[development setup](../CONTRIBUTING.md#development-setup) for an alternate path.
+The same service and commands work on all three operating systems. Installation
+needs network access; initial capture and keyword indexing need no model keys.
+On a headless computer, omit `--open-browser` and open the address manually.
 Open `http://127.0.0.1:8000/app` on the service computer to start saving.
 
 For private phone access at home and away:
@@ -97,7 +98,7 @@ For private phone access at home and away:
    `tailscale serve --bg http://127.0.0.1:8000`. Note the HTTPS address it reports.
    See the [official Serve command reference](https://tailscale.com/docs/reference/tailscale-cli/serve).
 3. Stop Markov with Ctrl+C, then restart with
-   `.\run-service.cmd --url https://YOUR-COMPUTER.YOUR-TAILNET.ts.net`, replacing
+   `markov-service --url https://YOUR-COMPUTER.YOUR-TAILNET.ts.net`, replacing
    the example with the actual address. Use the same data directory each time.
 4. On the computer, open `http://127.0.0.1:8000/app/devices` and choose **Create
    pairing code**. Scan it with your phone camera within five minutes.
@@ -106,8 +107,7 @@ For private phone access at home and away:
 
 The service remembers its name, address, owner, and database in
 `~/.markov/service.json`; the archive and paired-device records live in
-`~/.markov/markov.db`. Subsequent starts only need `.\run-service.cmd` (or
-`markov-service`). `--data-dir` selects a different persistent directory;
+`~/.markov/markov.db`. Subsequent starts only need `markov-service`. `--data-dir` selects a different persistent directory;
 `--port` selects the local port and must match the reverse proxy target.
 `--check` validates and saves configuration without starting a server.
 
@@ -126,8 +126,8 @@ through a proxy that removes forwarding headers and rewrites Host to localhost.
 
 With Markov running, open another terminal in the repository and run:
 
-```powershell
-.venv\Scripts\python.exe -m markov_engine.doctor --phone
+```sh
+python -m markov_engine.doctor --phone
 ```
 
 Pass the same `--data-dir` and `--port` as the service if you changed them.
@@ -138,7 +138,7 @@ pairing invitations, or revoke devices. A failed check returns exit code 1.
 | Result | Next step |
 | --- | --- |
 | Cannot read service.json | Start Markov once; check the data directory. |
-| Cannot reach the local engine | Start `run-service.cmd`; check the port and terminal errors. |
+| Cannot reach the local engine | Start `markov-service`; check the port and terminal errors. |
 | No phone address configured | Configure a trusted private HTTPS origin with `--url`. |
 | HTTPS connection failed | Check private-network connection, DNS, certificate trust, and proxy target. |
 | Pairing page unavailable | Verify the proxy points to Markov's loopback port and preserves Host. |
@@ -189,10 +189,10 @@ still require verification on the user's configured network and devices.
 ### Physical-phone acceptance gate
 
 Status: **not yet performed**. Before calling a release ready, record the commit,
-Windows version, phone OS/browser, private-network method, and results below.
+computer OS/version, phone OS/browser, private-network method, and results below.
 Do not publish pairing codes, cookies, or private archive contents with the report.
 
-1. Start from a clean Windows installation using the documented setup. Save a
+1. Start from a clean installation on Linux, Windows, or macOS using the documented setup. Save a
    URL with supplied source text and a note; confirm processing finishes.
 2. Configure a trusted HTTPS address. Run the diagnostic command with `--phone`.
    Scan a fresh QR on the physical phone, confirm the service identity, and pair.
