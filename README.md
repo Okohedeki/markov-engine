@@ -32,8 +32,10 @@ The implementation direction is [documented here](docs/bookmark-direction.md).
 
 ## Your own service and paired PWA
 
-Run `.\run-service.cmd --name "My Markov"` on Windows, or `markov-service` in
-the installed Python environment. Your computer stores the archive and handles
+On Windows, double-click the standalone **Markov.exe**. It includes Python,
+starts your local service, and opens Markov in your browser. See the
+[Windows app and build instructions](docs/windows-app.md). From source, use
+`.\run-service.cmd --name "My Markov"`. Your computer stores the archive and handles
 extraction. Give it a private HTTPS address, then scan a short-lived QR from
 **You → Your service** to connect your phone's PWA to that archive.
 
