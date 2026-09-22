@@ -58,4 +58,8 @@ def create_service_router(settings, render, owner):
             current_device=getattr(request.state, 'paired_device', None))
         return render(request, 'service_devices.html', **context)
 
+    @router.get('/app/devices')
+    async def devices_page(request: Request):
+        return await device_page(request)
+
     return router
