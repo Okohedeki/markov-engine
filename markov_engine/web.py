@@ -436,6 +436,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.post("/app/login")
     async def login(request: Request):
+        if settings.local_service:
+            raise HTTPException(status_code=410, detail="Connect this device at /app/pair.")
         if settings.clerk_publishable_key or settings.clerk_secret_key:
             raise HTTPException(status_code=410, detail="Use email or social sign-in at /app/login.")
         # Compatibility for existing self-hosted API clients, never Clerk customers.
