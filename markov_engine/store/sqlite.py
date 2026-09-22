@@ -169,7 +169,10 @@ class SqliteStore(ProductionSqliteMixin, ResearchSqliteMixin, Store):
         await conn.executescript(_SCHEMA)
         await apply_migrations(conn)
         await conn.commit()
-        return cls(conn)
+        from markov_engine.bookmark_store import BookmarkStore
+        store = cls(conn)
+        store.bookmarks = await BookmarkStore.open(conn)
+        return store
 
     async def close(self) -> None:
         await self._conn.close()
