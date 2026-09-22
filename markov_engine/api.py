@@ -236,6 +236,8 @@ def create_app(
     )
     app.state.settings = settings
     install_customer_auth(app, settings)
+    from markov_engine.service_auth import install_service_auth
+    install_service_auth(app, settings)
     app.state.store = store
     app.state.process_case = process_case
     app.state.job_slots = asyncio.Semaphore(settings.job_concurrency)
