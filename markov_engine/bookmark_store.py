@@ -91,6 +91,18 @@ class BookmarkStore:
         await self.conn.commit()
         return json.loads(row[0]) if row else None
 
+    async def record_event(self, owner_id, bookmark_id, event, reason=''):
+        if event not in {'view_history', 'resurface_history', 'relevance_events'}:
+            raise ValueError('Unknown bookmark event.')
+        cursor = await self.conn.execute(
+            'UPDATE bookmarks SET payload=json_insert(payload, ?, json(?)) '
+            'WHERE owner_id=? AND id=?',
+            (f'$.{event}[#]', json.dumps({'at': now(), 'reason': reason[:1000]}),
+             owner_id, bookmark_id),
+        )
+        await self.conn.commit()
+        return cursor.rowcount == 1
+
     async def update(self, owner_id, bookmark_id, changes):
         protected = {'bookmark_id', 'user_id', 'canonical_url', 'original_url', 'saved_at'}
         patch = {key: value for key, value in changes.items() if key not in protected}
