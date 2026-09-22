@@ -100,3 +100,39 @@ async def search_archive(items, query, mode='hybrid'):
                   'Matches ' + ', '.join(sorted(overlap)[:5]) + ' in your saved material.')
         matches.append({**item, 'match_reason': reason, 'match_score': round(score, 4)})
     return sorted(matches, key=lambda item: item['match_score'], reverse=True)[:100], label
+
+
+def archive_threads(items, overrides=()):
+    import hashlib
+    buckets = {}
+    visible = {item['bookmark_id']: item for item in items if not item['archive_state']}
+    for item in visible.values():
+        for topic in set(item['concepts'][:5]):
+            key = topic.strip().casefold()
+            if len(key) > 2:
+                buckets.setdefault(key, []).append(item['bookmark_id'])
+    threads = {}
+    for topic, ids in buckets.items():
+        if len(ids) >= 2:
+            identity = 'auto-' + hashlib.sha256(topic.encode()).hexdigest()[:16]
+            threads[identity] = dict(id=identity, title=topic.capitalize(), kind='thread',
+                topic=topic, automatic=True, bookmark_ids=ids, excluded_ids=[], pinned=False, hidden=False)
+    for override in overrides:
+        identity = override['id']
+        inferred = threads.get(identity, {})
+        ids = inferred.get('bookmark_ids', []) if override.get('automatic') else []
+        threads[identity] = {**inferred, **override, 'bookmark_ids':
+            list(dict.fromkeys(ids + override.get('bookmark_ids', [])))}
+    result = []
+    for thread in threads.values():
+        members = [visible[key] for key in thread['bookmark_ids']
+                   if key in visible and key not in thread.get('excluded_ids', [])]
+        if thread.get('hidden'):
+            continue
+        counts = Counter(concept for item in members for concept in item['concepts']
+                         if concept.casefold() != thread.get('topic', ''))
+        result.append({**thread, 'items': sorted(members, key=lambda item: item['saved_at'], reverse=True),
+            'count': len(members), 'themes': [topic for topic, _ in counts.most_common(5)],
+            'first_saved': min((item['saved_at'] for item in members), default=''),
+            'last_saved': max((item['saved_at'] for item in members), default='')})
+    return sorted(result, key=lambda thread: (thread.get('pinned', False), thread['last_saved']), reverse=True)
