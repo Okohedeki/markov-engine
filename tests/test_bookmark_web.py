@@ -82,3 +82,35 @@ async def test_public_example_and_pwa_do_not_modify_private_archives():
             assert await store.bookmarks.items('alice') == []
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_merge_transfers_visible_saves_and_split_preserves_exclusions():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'alice'}, MARKOV_WEB_SESSION_SECRET='test')
+    app = create_app(store=store, settings=settings)
+    try:
+        first, _ = await store.bookmarks.save('alice', 'https://example.com/first')
+        removed, _ = await store.bookmarks.save('alice', 'https://example.com/removed')
+        keep, exclude = first['bookmark_id'], removed['bookmark_id']
+        await store.bookmarks.collections('alice', collection={'id': 'source', 'kind': 'thread',
+            'title': 'Source', 'bookmark_ids': [keep, exclude], 'excluded_ids': [exclude]})
+        await store.bookmarks.collections('alice', collection={'id': 'target', 'kind': 'thread',
+            'title': 'Target', 'bookmark_ids': [], 'excluded_ids': [keep]})
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            await client.post('/app/login', data={'api_key': 'key'})
+            merged = await client.post('/app/collections', data={'action': 'merge', 'id': 'source', 'target': 'target'})
+            assert merged.status_code == 303
+            rows = {row['id']: row for row in await store.bookmarks.collections('alice')}
+            assert rows['source']['hidden']
+            assert rows['target']['bookmark_ids'] == [keep] and rows['target']['excluded_ids'] == []
+            split = await client.post('/app/collections', data={'action': 'split', 'id': 'target',
+                'title': 'Checkpoint notes', 'pick_' + keep: 'on', 'pick_' + exclude: 'on'})
+            assert split.status_code == 303
+            rows = await store.bookmarks.collections('alice')
+            new = next(row for row in rows if row['title'] == 'Checkpoint notes')
+            target = next(row for row in rows if row['id'] == 'target')
+            assert new['bookmark_ids'] == [keep]
+            assert target['bookmark_ids'] == [] and target['excluded_ids'] == [keep]
+    finally:
+        await store.close()
