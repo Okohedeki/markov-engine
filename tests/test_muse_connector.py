@@ -51,3 +51,28 @@ async def test_muse_mcp_authentication_retrieval_and_read_only_scope():
             assert (await client.get('/v1/jobs', headers={'Authorization': 'Bearer connector-alice'})).status_code == 401
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_muse_rejects_malformed_envelopes_and_explains_setup():
+    store = await SqliteStore.open(':memory:')
+    app = create_app(store=store, settings=Settings(_env_file=None,
+        MARKOV_MUSE_API_KEYS={'review-token': 'reviewer'}))
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            setup = await client.get('/connectors/muse')
+            assert setup.status_code == 200 and 'not been submitted' in setup.text
+            headers = {'Authorization': 'Bearer review-token'}
+            for identity in (None, True, [], {}):
+                response = await client.post('/mcp/muse', headers=headers, json={
+                    'jsonrpc': '2.0', 'id': identity, 'method': 'ping'})
+                assert response.status_code == 400
+                assert response.json()['error']['code'] == -32600
+            response = await client.post('/mcp/muse', headers=headers, json={
+                'jsonrpc': '2.0', 'id': 1, 'method': 'initialize', 'params': {'protocolVersion': []}})
+            assert response.json()['result']['protocolVersion'] == '2025-11-25'
+            oversized = await client.post('/mcp/muse', headers=headers, json={
+                'jsonrpc': '2.0', 'id': 1, 'method': 'ping', 'params': {'padding': 'x' * 32000}})
+            assert oversized.status_code == 413
+    finally:
+        await store.close()
