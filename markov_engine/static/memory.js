@@ -106,3 +106,41 @@ function initializeSourceActions() {
   });
 }
 initializeSourceActions();
+
+function initializeInstalledApp() {
+  if (location.pathname.startsWith('/app') && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/app/sw.js', {scope: '/app'}).catch(() => {});
+  }
+  const install = document.querySelector('[data-install]');
+  let installPrompt;
+  window.addEventListener('beforeinstallprompt', event => {
+    if (!install) return;
+    event.preventDefault();
+    installPrompt = event;
+    install.hidden = false;
+  });
+  install?.addEventListener('click', async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    installPrompt = null;
+    install.hidden = true;
+  });
+  const pending = document.querySelector('[data-pending-share]');
+  pending?.addEventListener('click', () => {
+    try {
+      sessionStorage.setItem('markov-pending-share', JSON.stringify({
+        url: pending.dataset.sharedUrl, title: pending.dataset.sharedTitle, text: pending.dataset.sharedText,
+      }));
+    } catch { /* The shared-link page remains a usable manual fallback. */ }
+  });
+  if (document.getElementById('save-dialog')) {
+    try {
+      const shared = sessionStorage.getItem('markov-pending-share');
+      if (shared) {
+        sessionStorage.removeItem('markov-pending-share');
+        location.assign('/app/share?' + new URLSearchParams(JSON.parse(shared)));
+      }
+    } catch { /* Session storage is optional. */ }
+  }
+}
+initializeInstalledApp();
