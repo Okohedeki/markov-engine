@@ -175,7 +175,8 @@ about a real company or event.
 
 ## Current status and limits
 
-Markov is **alpha**, with Windows x64 / Python 3.11 as the validation target.
+Markov is **alpha**, targeting Linux, Windows, and macOS as a Python local service.
+CI validates Python 3.11 on Linux and Windows x64, plus Intel and Apple Silicon Macs.
 It is ready for development and local evaluation; a stable public release still
 needs the physical-phone acceptance checks on a trusted HTTPS deployment.
 
