@@ -122,6 +122,34 @@ For a different HTTPS reverse proxy, preserve the external Host header, set
 `--url` as that exact HTTPS origin, without a path. Never expose the local console
 through a proxy that removes forwarding headers and rewrites Host to localhost.
 
+## Diagnose a connection
+
+With Markov running, open another terminal in the repository and run:
+
+```powershell
+.venv\Scripts\python.exe -m markov_engine.doctor --phone
+```
+
+Pass the same `--data-dir` and `--port` as the service if you changed them.
+Omit `--phone` when evaluating localhost only. The command reads configuration
+and makes unauthenticated GET requests; it does not change the archive, create
+pairing invitations, or revoke devices. A failed check returns exit code 1.
+
+| Result | Next step |
+| --- | --- |
+| Cannot read service.json | Start Markov once; check the data directory. |
+| Cannot reach the local engine | Start `run-service.cmd`; check the port and terminal errors. |
+| No phone address configured | Configure a trusted private HTTPS origin with `--url`. |
+| HTTPS connection failed | Check private-network connection, DNS, certificate trust, and proxy target. |
+| Pairing page unavailable | Verify the proxy points to Markov's loopback port and preserves Host. |
+| Unexpected device-console access | Stop exposing that proxy; correct forwarding headers before pairing. |
+
+A passing check proves reachability from the computer, not from the phone.
+Connect the phone to the same private network and open the configured address.
+If the computer is asleep or offline, the phone cannot review or save material.
+Restarting the engine with the same archive retains device sessions. If a code
+expired or was already used, create a fresh one from the local console.
+
 ## Keep an existing archive
 
 The launcher creates a separate personal archive by default. To adopt an existing
