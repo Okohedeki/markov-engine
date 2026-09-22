@@ -32,12 +32,20 @@ The implementation direction is [documented here](docs/bookmark-direction.md).
 
 ## Your own service and paired PWA
 
-On Windows, double-click the standalone **Markov.exe**. It includes Python,
-starts your local service, and opens Markov in your browser. See the
-[Windows app and build instructions](docs/windows-app.md). From source, use
-`.\run-service.cmd --name "My Markov"`. Your computer stores the archive and handles
-extraction. Give it a private HTTPS address, then scan a short-lived QR from
-**You → Your service** to connect your phone's PWA to that archive.
+Start `.\run-service.cmd` to run the processing engine on your computer and open
+the local web app at `http://127.0.0.1:8000/app`. Your phone uses the same web app
+through a reachable private HTTPS address, paired from **You → Your service**.
+The computer owns the archive and processing queue; the phone is the review
+interface for that same archive.
+
+The connection works both ways: processed sources and interpretations are
+available on the phone, while notes, corrected interpretations, favorites,
+source-text edits, and retry requests go back to the engine. Pages read the
+latest server state when opened or refreshed. `localhost` on a phone refers to
+the phone itself, so use the computer's configured address there.
+
+The [Windows executable](docs/windows-app.md) remains an optional launcher for
+the same service; browser-based review does not depend on native app packaging.
 
 Device access survives restarts and can be revoked individually. No central
 Markov account is required in this mode. The computer must remain running and
