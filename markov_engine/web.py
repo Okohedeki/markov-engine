@@ -329,6 +329,20 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     router = APIRouter()
 
     def owner(request: Request) -> str:
+        if settings.local_service:
+            from markov_engine.service_auth import local_console
+            if local_console(request):
+                return settings.service_owner
+            device = getattr(request.state, 'paired_device', None)
+            path = request.url.path
+            allowed = path in {'/app', '/app/login', '/app/auth/session', '/app/library',
+                '/app/threads', '/app/projects', '/app/search', '/app/you', '/app/bookmarks',
+                '/app/collections', '/app/archive/export', '/app/share', '/app/memory',
+                '/app/memory/search', '/app/devices'} or path.startswith((
+                    '/app/bookmarks/', '/app/threads/', '/app/devices/'))
+            if device and allowed:
+                return device['owner_id']
+            raise HTTPException(status_code=401, detail='Connect this device at /app/pair')
         if settings.clerk_publishable_key or settings.clerk_secret_key:
             identity = getattr(request.state, "customer_owner", None)
             if not identity:
