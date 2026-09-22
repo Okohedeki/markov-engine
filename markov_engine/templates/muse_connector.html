@@ -1,0 +1,26 @@
+{% extends 'memory_base.html' %}
+{% block title %}Connect your Markov archive to Muse{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ site_base }}/static/memory-landing.css">{% endblock %}
+{% block body %}
+<div class="memory-public">
+  <header class="public-nav"><a class="brand" href="/">Markov</a><a class="text-link" href="/app/you">Back to your archive →</a></header>
+  <main id="main-content" class="public-story">
+    <p class="eyebrow accent">Your memory, where you work</p>
+    <h1>Bring your saves<br>into Muse.</h1>
+    <p>Search your Markov archive, retrieve a source, and follow the threads connecting your saved ideas.</p>
+    <section class="story-split">
+      <div><h2>Your context.<br>Your sources.</h2><p>The connector provides read-only access to one connected archive. Your notes, original source text, and Markov’s interpretations remain separate. Results include links back to the original sources.</p><p>It can search saves, fetch a source, list threads, open a thread, and find items worth revisiting. It cannot edit or delete your saves.</p></div>
+      <div><p class="eyebrow">Integration status</p><h3>Ready for local testing.</h3><p>The MCP adapter is implemented. Muse’s submission and technical requirements are behind its work-email sign-in. This connector has not been submitted, approved, or listed by Muse.</p><p>A public deployment and Muse’s supported authentication method must be verified before connecting a real account.</p><a class="text-link" href="https://muse.ai/platform" rel="noopener noreferrer" target="_blank">Open Muse’s connector platform ↗</a></div>
+    </section>
+    <section class="story-split">
+      <div><p class="eyebrow accent">For self-hosted testing</p><h2>One archive.<br>A dedicated key.</h2><p>Ask your Markov administrator to enable the connector for your account. Keep connector keys private; do not paste them into a chat or commit them to Git.</p></div>
+      <ol class="memory-steps">
+        <li><span>01</span><div><h3>Enable the endpoint.</h3><p>Configure a dedicated token mapped to your archive’s existing owner ID through <code>MARKOV_MUSE_API_KEYS</code>. Restart Markov on a trusted HTTPS deployment.</p></div></li>
+        <li><span>02</span><div><h3>Test the connection.</h3><p>Use <code>POST /mcp/muse</code> with bearer authentication and an MCP client supporting Streamable HTTP. The endpoint stays disabled until configured.</p></div></li>
+        <li><span>03</span><div><h3>Complete Muse review.</h3><p>Use the repository’s setup and submission checklist to validate the required authentication, authorized origins, and end-to-end connection with Muse.</p><a class="text-link" href="{{ repository_url }}/blob/main/docs/muse-connector.md">Setup and review package →</a></div></li>
+      </ol>
+    </section>
+  </main>
+  <footer class="public-footer"><span>Markov · Useful context, with references.</span><a href="/privacy">Privacy</a></footer>
+</div>
+{% endblock %}
