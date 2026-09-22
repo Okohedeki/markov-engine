@@ -93,3 +93,54 @@ async def test_phone_can_disconnect_itself_but_cross_origin_pairing_is_rejected(
             assert (await phone.get('/app/library')).status_code == 401
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_phone_reviews_computer_results_and_sends_corrections_back_to_engine():
+    from markov_engine.bookmark_worker import process_bookmark
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_LOCAL_SERVICE=True,
+        MARKOV_SERVICE_URL='https://home.example.test')
+    app = create_app(store=store, settings=settings)
+    desktop_transport = httpx.ASGITransport(app=app, client=('127.0.0.1', 12345))
+    phone_transport = httpx.ASGITransport(app=app, client=('192.168.1.20', 12345))
+    try:
+        async with httpx.AsyncClient(transport=desktop_transport, base_url='http://127.0.0.1:8000') as desktop, \
+                   httpx.AsyncClient(transport=phone_transport, base_url=settings.service_url) as phone:
+            invite = await store.devices.invite(settings.service_owner)
+            assert (await phone.post('/app/pair', data={'code': invite['code']})).status_code == 303
+            created = await desktop.post('/app/bookmarks', data={
+                'url': 'https://example.com/review-cycle', 'title': 'A source to review',
+                'content': 'Initial source material processed by the computer for review on the phone.'},
+                headers={'Accept': 'application/json'})
+            assert created.status_code == 201
+            pending = await store.bookmarks.claim_pending()
+            bookmark_id = pending['bookmark_id']
+            await process_bookmark(store.bookmarks, pending)
+            path = '/app/bookmarks/' + bookmark_id
+            reviewed = await phone.get(path)
+            assert reviewed.status_code == 200 and 'Initial source material' in reviewed.text
+            edits = [('note', {'note': 'Reviewed on my phone; useful for my project.'}),
+                     ('reason', {'reason': 'My corrected interpretation.'}),
+                     ('favorite', {'value': 'true'}),
+                     ('content', {'content': 'Corrected source text sent from the phone for the computer to process again.'})]
+            for action, values in edits:
+                result = await phone.post(path + '/edit', data={'action': action, **values},
+                    headers={'Origin': settings.service_url})
+                assert result.status_code == 303
+            queued = await store.bookmarks.claim_pending()
+            assert queued['bookmark_id'] == bookmark_id
+            assert queued['user_note'].startswith('Reviewed on my phone')
+            assert queued['favorite_state'] is True
+            await process_bookmark(store.bookmarks, queued)
+            ready = (await store.bookmarks.items(settings.service_owner, bookmark_id))[0]
+            assert ready['processing_state'] == 'ready'
+            assert ready['inferred_save_reason'] == 'My corrected interpretation.'
+            for client in (desktop, phone):
+                page = await client.get(path)
+                assert page.status_code == 200
+                assert 'Corrected source text sent from the phone' in page.text
+                assert 'Reviewed on my phone' in page.text
+                assert 'My corrected interpretation.' in page.text
+    finally:
+        await store.close()
