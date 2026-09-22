@@ -51,3 +51,44 @@ def running_service(directory, port):
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=10)
+
+
+def main():
+    with socket.socket() as available:
+        available.bind(('127.0.0.1', 0))
+        port = available.getsockname()[1]
+    with tempfile.TemporaryDirectory(prefix='markov smoke ') as temporary:
+        directory = Path(temporary)
+        with running_service(directory, port) as client:
+            for path in ['/app/devices', '/app/you', '/static/memory.css', '/static/service.js',
+                         '/app/manifest.webmanifest', '/app/sw.js']:
+                response = client.get(path)
+                assert response.status_code == 200, (path, response.status_code)
+            invite = client.post('/app/devices/invite', data={'request': 'pair'},
+                                 headers={'Origin': str(client.base_url).rstrip('/')})
+            assert invite.status_code == 200 and 'data:image/svg+xml;base64,' in invite.text
+            saved = client.post('/app/bookmarks', data={
+                'url': 'https://example.com/smoke-source', 'note': 'Persistent smoke-test bookmark',
+                'content': 'Supplied text must finish processing without a model or network fetch.'},
+                headers={'Accept': 'application/json'})
+            assert saved.status_code == 201, saved.text
+            # Observe the queue through SQLite, independently of the rendered page.
+            from contextlib import closing
+            import sqlite3
+            with closing(sqlite3.connect(directory / 'markov.db')) as database:
+                for _ in range(100):
+                    row = database.execute("SELECT json_extract(payload, '$.processing_state') FROM bookmarks").fetchone()
+                    if row and row[0] == 'ready':
+                        break
+                    time.sleep(.1)
+                else:
+                    raise AssertionError(f'Supplied source did not become ready: {row}')
+            print('Installed pages, PWA assets, QR generation, capture, and processing passed.')
+        with running_service(directory, port) as client:
+            library = client.get('/app/library')
+            assert library.status_code == 200 and 'Persistent smoke-test bookmark' in library.text
+            print('Archive persisted after stopping and restarting the service.')
+
+
+if __name__ == '__main__':
+    main()
