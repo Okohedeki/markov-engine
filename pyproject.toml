@@ -38,6 +38,7 @@ dependencies = [
     "fastapi",
     "jinja2>=3.1",
     "uvicorn",
+    "qrcode>=8,<9",
 ]
 
 [project.optional-dependencies]
