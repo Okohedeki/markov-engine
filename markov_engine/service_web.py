@@ -62,4 +62,15 @@ def create_service_router(settings, render, owner):
     async def devices_page(request: Request):
         return await device_page(request)
 
+    @router.post('/app/devices/invite')
+    async def invite_device(request: Request):
+        identity = owner(request)
+        if not local_console(request):
+            raise HTTPException(403, 'Create pairing codes on the service computer.')
+        await bookmark_form(request)
+        if not origin:
+            raise HTTPException(409, 'Configure the service HTTPS address before pairing a phone.')
+        invitation = await request.app.state.store.devices.invite(identity)
+        return await device_page(request, invitation)
+
     return router
