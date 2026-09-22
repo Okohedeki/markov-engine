@@ -242,6 +242,8 @@ def create_app(
     static_dir = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
     limiter = _RateLimiter(settings.api_rate_limit_per_minute)
+    from markov_engine.muse_connector import create_muse_router
+    app.include_router(create_muse_router(settings, limiter))
 
     async def owner_auth(
         authorization: Annotated[str | None, Header()] = None,
