@@ -1,0 +1,29 @@
+{% extends 'memory_base.html' %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">A few things worth coming back to</p><h1>Good to see you again.</h1><p>Your past curiosity, useful today.</p></div><p class="page-date muted">{{ today }}<br>{{ items|length }} things worth keeping</p></div>
+<div class="home-columns">
+  <div class="home-primary">
+    <div class="section-heading"><h2>For you now <span class="count">{{ resurfaced|length }}</span></h2><span class="eyebrow muted">From your archive</span></div>
+    {% if resurfaced %}
+      {{ bookmark(resurfaced[0], demo, true) }}
+      {% if resurfaced|length > 1 %}<div class="section-heading"><h2>Rediscover</h2><span class="muted"><small>A reason to return</small></span></div>{% for item in resurfaced[1:] %}{{ bookmark(item, demo) }}{% endfor %}{% endif %}
+    {% else %}
+      <div class="empty-state"><div class="empty-mark">{{ icon('bookmark') }}</div><h2>{{ 'Your archive is taking shape.' if items else 'Keep what catches your mind.' }}</h2><p>{{ 'An older save will appear here when it connects to recent interests, or when something important deserves another look. Every return comes with a reason.' if items else 'An article. A video. An idea you don’t want to lose. Save the first one, and give your future self something to find.' }}</p><button class="button primary" data-open-save>{{ icon('plus') }} Save a link</button><a class="text-link" href="/demo">Explore an example {{ icon('arrow') }}</a></div>
+    {% endif %}
+    <div class="section-heading"><h2>Recently saved</h2><a class="text-link" href="{{ nav_urls.library }}">Your library {{ icon('arrow') }}</a></div>
+    {% for item in items[:4] %}<a class="recent-row" href="{{ '/demo?item=' ~ item.bookmark_id if demo else '/app/bookmarks/' ~ item.bookmark_id }}"><span class="source-mark" aria-hidden="true">{{ item.source_domain[:1]|upper }}</span><div><strong>{{ item.title }}</strong><small>{{ item.source_domain }} · {{ item.source_type|capitalize }}{% if item.processing_state in ['pending','processing'] %} · Processing{% endif %}</small></div>{{ icon('arrow') }}</a>{% else %}<p class="muted">Your next good find belongs here.</p>{% endfor %}
+  </div>
+  <aside class="home-aside" aria-label="Patterns in your archive">
+    <section class="aside-section"><p class="eyebrow">Continue this thread</p>
+      {% if threads %}{% set thread = threads[0] %}<span class="source-mark">{{ icon('threads') }}</span><h3>{{ thread.title }}</h3><p>{{ thread.count }} saved items · Last saved {{ thread.last_saved[:10] }}</p><ul class="topic-list">{% for theme in thread.themes[:4] %}<li>{{ theme }}</li>{% endfor %}</ul><a class="text-link" href="{{ '/demo?thread=' ~ thread.id if demo else '/app/threads/' ~ thread.id }}">Open thread {{ icon('arrow') }}</a>
+      {% else %}<h3>A thread starts with curiosity.</h3><p>When your saves share a topic, they’ll find each other here. No folders to set up.</p>{% endif %}
+    </section>
+    <section class="aside-section"><p class="eyebrow">You keep saving this</p>
+      {% if attention %}<span class="attention-number">{{ attention.count }}<span class="accent">↗</span></span><h3>{{ attention.title }}</h3><p>You’ve saved {{ attention.count }} items around this topic, from {{ attention.first_saved[:10] }} to {{ attention.last_saved[:10] }}.</p><a class="text-link" href="{{ '/demo?thread=' ~ attention.id if demo else '/app/threads/' ~ attention.id }}">Follow your curiosity {{ icon('arrow') }}</a>
+      {% else %}<p>Your attention leaves a trail. As you save, Markov will reflect the topics you keep returning to.</p>{% endif %}
+    </section>
+    <section class="aside-section"><p class="eyebrow">A thought for later</p><p class="serif" style="font-size:22px;color:var(--ink)">“Why did I save this?”<br>is worth remembering, too.</p><p>A sentence in your own words can be the best way back.</p></section>
+  </aside>
+</div>
+<p class="bottom-note">{{ 'That’s your selection for now. Nothing to keep scrolling for.' if resurfaced else 'A useful return beats an endless feed.' }}</p>
+{% endblock %}
