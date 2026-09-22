@@ -32,7 +32,7 @@ The implementation direction is [documented here](docs/bookmark-direction.md).
 
 ## Your own service and paired PWA
 
-Start `.\run-service.cmd` to run the processing engine on your computer and open
+Start `markov-service --open-browser` to run the processing engine on your computer and open
 the local web app at `http://127.0.0.1:8000/app`. Your phone uses the same web app
 through a reachable private HTTPS address, paired from **You → Your service**.
 The computer owns the archive and processing queue; the phone is the review
@@ -44,8 +44,8 @@ source-text edits, and retry requests go back to the engine. Pages read the
 latest server state when opened or refreshed. `localhost` on a phone refers to
 the phone itself, so use the computer's configured address there.
 
-The [Windows executable](docs/windows-app.md) remains an optional launcher for
-the same service; browser-based review does not depend on native app packaging.
+Markov is a Python local service for Linux, Windows, and macOS. The browser and
+phone PWA connect to that same service; no native desktop application is required.
 
 Device access survives restarts and can be revoked individually. No central
 Markov account is required in this mode. The computer must remain running and
@@ -55,16 +55,34 @@ See [local service setup and pairing](docs/local-service.md).
 Legacy research remains at `/app/research`; its APIs and stored cases remain
 compatible. See the [research architecture reference](docs/markov-v2-architecture.md).
 
-## Windows setup
+## Local service setup
 
-Install **64-bit Python 3.11**, clone this repository, and run from its folder:
+Install **Python 3.11 or newer**, clone this repository, and open its folder.
+Create and activate a virtual environment for your operating system:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_windows.ps1
-.\run-service.cmd
+Linux / macOS:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-The setup creates an isolated environment and installs tested dependency versions.
+Windows PowerShell:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Then use the same install and start commands on every platform:
+
+```sh
+python -m pip install -c requirements/constraints.txt -e .
+python -m pip check
+markov-service --open-browser
+```
+
+The virtual environment isolates dependencies; shared constraints pin their versions.
 Markov opens at `http://127.0.0.1:8000/app`. No account or model key is needed for
 capture and keyword search. Phone access adds a private HTTPS address and QR
 pairing; follow [the connection guide](docs/local-service.md#run-and-pair).
