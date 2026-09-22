@@ -285,4 +285,15 @@ def create_bookmark_router(*, owner, render):
         return Response(json.dumps(payload, ensure_ascii=False, indent=2), media_type='application/json',
             headers={'Content-Disposition': 'attachment; filename="markov-archive.json"', 'Cache-Control': 'no-store'})
 
+    @router.get('/app/manifest.webmanifest')
+    async def manifest():
+        return JSONResponse({'id': '/app', 'name': 'Markov — Personal memory', 'short_name': 'Markov',
+            'description': 'Save anything worth remembering. Find it when it matters.',
+            'start_url': '/app', 'scope': '/app', 'display': 'standalone',
+            'background_color': '#f7f5ef', 'theme_color': '#f7f5ef',
+            'icons': [{'src': '/static/markov-mark.svg', 'sizes': 'any', 'type': 'image/svg+xml', 'purpose': 'any'}],
+            'share_target': {'action': '/app/share', 'method': 'GET',
+                             'params': {'title': 'title', 'text': 'text', 'url': 'url'}}},
+            media_type='application/manifest+json')
+
     return router
