@@ -66,3 +66,12 @@ class DeviceStore:
         )
         row = await cursor.fetchone()
         return {'id': row[0], 'owner_id': row[1], 'name': row[2]} if row else None
+
+    async def devices(self, owner_id):
+        cursor = await self.conn.execute(
+            'SELECT id, name, created_at, expires_at FROM paired_devices '
+            'WHERE owner_id=? AND session_hash IS NOT NULL AND revoked=0 AND expires_at>? '
+            'ORDER BY created_at DESC', (owner_id, int(time.time())),
+        )
+        return [dict(zip(('id', 'name', 'created_at', 'expires_at'), row))
+                for row in await cursor.fetchall()]
