@@ -95,27 +95,9 @@ For the retained research API, see [request examples](docs/api-examples.md) and
 [authentication and model setup](docs/legacy-setup.md). Phone pairing grants
 bookmark access; it does not authorize these developer APIs.
 
-## Entitlements and billing configuration
-
-Owners resolve to `community`, `cloud_free`, `cloud_plus`, `cloud_pro`, or
-`verified_add_on`. Configure the default with
-`MARKOV_DEFAULT_ENTITLEMENT_PROFILE`, owner mappings with
-`MARKOV_OWNER_ENTITLEMENT_PROFILES`, and deployment-specific limits with
-`MARKOV_ENTITLEMENT_OVERRIDES`. Trust-floor capabilities cannot be switched off.
-
-Cloud credit pricing still has six job variants:
-
-```text
-brief_instant        brief_verified
-research_instant     research_verified
-script_instant       script_verified
-```
-
-Credit costs are configuration, not business-logic constants. Override all six
-with `MARKOV_PRODUCT_CREDIT_COSTS`. To sell credit packs through Stripe,
-configure `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_IDS`, and
-`STRIPE_CREDIT_PACKS`. The webhook grants credits idempotently and records
-`payment_completed` or `payment_failed` usage events.
+Hosted research billing and reviewer operations are described in the
+[operations reference](docs/operations.md). They are not needed for the personal
+bookmark service.
 
 ## Database migrations
 
