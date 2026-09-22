@@ -360,6 +360,10 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         template = 'landing.html' if request.url.path == '/research-product' else 'memory_landing.html'
         return _render(request, template)
 
+    @router.get("/connectors/muse")
+    async def muse_setup(request: Request):
+        return _render(request, "muse_connector.html")
+
     @router.get("/story")
     async def narrative_landing(request: Request):
         return RedirectResponse("/", status_code=307)
