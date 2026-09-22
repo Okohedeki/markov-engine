@@ -75,3 +75,11 @@ class DeviceStore:
         )
         return [dict(zip(('id', 'name', 'created_at', 'expires_at'), row))
                 for row in await cursor.fetchall()]
+
+    async def revoke(self, owner_id, device_id):
+        cursor = await self.conn.execute(
+            'UPDATE paired_devices SET revoked=1, code_hash=NULL, session_hash=NULL '
+            'WHERE owner_id=? AND id=?', (owner_id, device_id),
+        )
+        await self.conn.commit()
+        return cursor.rowcount == 1
