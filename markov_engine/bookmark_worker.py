@@ -41,3 +41,18 @@ async def process_bookmark(archive, item):
         logger.info('Bookmark extraction unavailable for %s', identity)
         await archive.update(owner, identity, {'processing_state': 'partial', 'processing_error':
             "Article text couldn't be extracted. The URL and your note were still saved. You can retry or add text."})
+
+
+async def run_bookmark_worker(archive):
+    while True:
+        try:
+            item = await archive.claim_pending()
+            if item:
+                await process_bookmark(archive, item)
+            else:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception('Bookmark queue will retry after a storage error')
+            await asyncio.sleep(5)
