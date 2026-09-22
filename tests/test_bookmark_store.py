@@ -62,6 +62,37 @@ def test_video_identity_and_content_parameters():
 
 
 @pytest.mark.asyncio
+async def test_capture_can_commit_while_worker_claims_a_bookmark(monkeypatch):
+    store = await SqliteStore.open(':memory:')
+    try:
+        archive = store.bookmarks
+        first, _ = await archive.save('alice', 'https://example.com/queued')
+        execute = archive.conn._execute
+        captured = []
+
+        async def concurrent_request(function, *args, **kwargs):
+            result = await execute(function, *args, **kwargs)
+            # Force a request into the gap after the worker's database call,
+            # before its coroutine resumes. A live RETURNING cursor breaks commit.
+            if args and isinstance(args[0], str) and 'RETURNING payload' in args[0]:
+                item, created = await archive.save('alice', 'https://example.com/concurrent')
+                assert created
+                captured.append(item)
+            return result
+
+        monkeypatch.setattr(archive.conn, '_execute', concurrent_request)
+        claimed = await archive.claim_pending()
+        assert claimed['bookmark_id'] == first['bookmark_id']
+        assert claimed['processing_state'] == 'processing'
+        assert len(captured) == 1
+        items = await archive.items('alice')
+        assert len(items) == 2
+        assert next(item for item in items if item['bookmark_id'] == captured[0]['bookmark_id'])['processing_state'] == 'pending'
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
 async def test_same_automatic_topic_can_be_curated_independently_by_two_owners():
     import json
     store = await SqliteStore.open(':memory:')
