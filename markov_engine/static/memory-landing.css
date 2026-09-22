@@ -4,7 +4,7 @@
 .public-nav nav > a { text-decoration: none; }
 .memory-hero { max-width: 1440px; margin: auto; padding: 72px 54px 42px; }
 .memory-hero > .eyebrow { color: var(--accent); margin-bottom: 24px; }
-.memory-hero h1 { font-size: clamp(48px, 6.5vw, 96px); max-width: 1000px; letter-spacing: -.055em; }
+.memory-hero h1 { font-size: clamp(48px, 6.5vw, 96px); max-width: 1250px; letter-spacing: -.055em; }
 .memory-hero h1 em { font-weight: 400; color: var(--accent); }
 .hero-bottom { display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 48px; margin: 34px 0 44px; }
 .hero-bottom > p { max-width: 48ch; font-size: 17px; color: var(--muted); }
@@ -17,7 +17,7 @@
 .demo-source .eyebrow { color: #d4d1c5; }
 .demo-source h3 { font-size: 32px; margin: 26px 0 32px; }
 .demo-source small { color: #d4d1c5; }
-.demo-before > p { font: italic 19px/1.5 var(--serif); max-width: 28ch; }
+.demo-before > p:not(.eyebrow) { font: italic 19px/1.5 var(--serif); max-width: 28ch; }
 .demo-after { padding: 34px 38px; background: var(--surface); border-left: 1px solid var(--line); }
 .demo-after > .eyebrow { color: var(--accent); }
 .demo-after h3 { font-size: 35px; margin: 22px 0 10px; max-width: 24ch; }
@@ -66,7 +66,7 @@
   .demo-before { padding: 22px; }
   .demo-source { transform: none; padding: 22px; margin: 20px 0; max-width: none; }
   .demo-source h3 { font-size: 27px; margin: 20px 0; }
-  .demo-before > p { font-size: 17px; max-width: none; }
+  .demo-before > p:not(.eyebrow) { font-size: 17px; max-width: none; }
   .demo-after { padding: 24px 22px; border-left: 0; border-top: 1px solid var(--line); }
   .demo-after h3 { font-size: 30px; }
   .demo-caption { flex-direction: column; gap: 4px; }
