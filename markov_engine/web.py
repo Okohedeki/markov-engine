@@ -424,7 +424,6 @@ def create_web_router(*, settings: Settings) -> APIRouter:
         )
         return response
 
-    @router.get("/app")
     @router.get("/app/research")
     async def intake(request: Request):
         try:
@@ -546,7 +545,6 @@ def create_web_router(*, settings: Settings) -> APIRouter:
             return RedirectResponse("/app/login", status_code=303)
         return _render(request, "onboarding.html", active="onboarding")
 
-    @router.get("/app/search")
     @router.get("/app/research/search")
     async def search_page(request: Request):
         try:
