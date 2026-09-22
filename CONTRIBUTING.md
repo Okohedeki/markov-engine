@@ -7,23 +7,28 @@ supported, but they are not the primary product.
 
 ## Development setup
 
-The supported validation target is Windows x64 with Python 3.11. Clone the
-repository, create a branch for your contribution, and run from its root:
+Markov runs as a Python local service on Linux, Windows, and macOS. CI validates
+Python 3.11 on Linux and Windows x64 and both Intel and Apple Silicon Macs.
+Clone the repository, create a branch, and create and activate an isolated
+environment using the [platform-specific setup commands](README.md#local-service-setup).
+Then run from the repository root on every platform:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_windows.ps1 -Development
-.venv\Scripts\python.exe -m pytest -q
-.venv\Scripts\python.exe scripts/smoke_service.py
+```sh
+python -m pip install -c requirements/constraints.txt -e '.[dev]'
+python -m pip check
+python -m pytest -q
+python scripts/smoke_service.py
 ```
 
-The setup uses `packaging/windows-constraints.txt` for the tested runtime versions.
+The setup uses `requirements/constraints.txt` for shared runtime versions.
 It needs internet access for installation. Tests use heuristic processing and
 hash indexing; they do not need paid model keys. Do not copy a personal `.env`
 or archive into a bug report. Use a temporary `--data-dir` for manual testing.
 
-If an existing `.venv` inherits global packages or uses a different Python,
-choose `-EnvironmentPath build/dev-env` and use that environment's Python in
-the commands above. The setup does not delete or replace existing environments.
+If an existing `.venv` inherits global packages or uses an unsuitable Python,
+create a fresh environment at `build/dev-env` and activate it instead. Avoid
+`--system-site-packages`: globally installed dependencies can hide missing ones.
+On Linux, install your distribution's Python venv package if venv is unavailable.
 
 ## Changes and review
 
@@ -38,10 +43,11 @@ the commands above. The setup does not delete or replace existing environments.
 - Never commit `.env`, databases, pairing links, cookies, tokens, build output,
   or personal saved material. Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
-The Windows CI workflow tests a clean setup, runs the suite, builds and installs
+The service CI matrix tests a clean setup, runs the suite, builds and installs
 the wheel, then checks real service startup, capture, processing, bundled PWA
-assets, QR generation, and persistence after restart. Mac and Linux validation
-and native packaging are future work, not supported release targets yet.
+assets, QR generation, and persistence after restart on each supported platform.
+Keep runtime paths and process handling portable; distribution is a Python
+service wheel with bundled web assets.
 
 Dependency updates must pass these same checks. Update version constraints
 deliberately; do not replace them with an unreviewed freeze of a global environment.
