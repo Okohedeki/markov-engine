@@ -28,3 +28,28 @@ def local_console(request):
             'forwarded', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto',
             'tailscale-user-login', 'tailscale-user-name',
         )))
+
+
+def install_service_auth(app, settings):
+    if not settings.local_service:
+        return
+    origin = service_origin(settings)
+    allowed = LOOPBACK | ({urlsplit(origin).hostname} if origin else set())
+
+    @app.middleware('http')
+    async def device_session(request, call_next):
+        if request.url.hostname not in allowed:
+            return JSONResponse({'detail': 'This hostname is not configured for your Markov service.'}, 400)
+        request.state.local_console = local_console(request)
+        request.state.paired_device = None
+        app_page = request.url.path == '/app' or request.url.path.startswith('/app/')
+        if app_page and not request.state.local_console and str(request.base_url).rstrip('/') == origin:
+            token = request.cookies.get(DEVICE_COOKIE)
+            if token:
+                request.state.paired_device = await request.app.state.store.devices.authenticate(
+                    token, settings.service_owner)
+        response = await call_next(request)
+        if app_page:
+            response.headers.update({'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
+                                     'X-Frame-Options': 'DENY'})
+        return response
