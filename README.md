@@ -99,18 +99,17 @@ Hosted research billing and reviewer operations are described in the
 [operations reference](docs/operations.md). They are not needed for the personal
 bookmark service.
 
-## Database migrations
+## Updates and backups
 
-`SqliteStore.open()` applies numbered, additive migrations automatically. The
-sequence adds the evidence-oriented case model, connection graph, focused
-research plans, entity aliases, and independently addressable artifact branches.
-No migration deletes or rewrites Chain-era records.
+Stop Markov with Ctrl+C before copying the personal archive. Back up the database
+named in `~/.markov/service.json` (normally `~/.markov/markov.db`) and keep that
+configuration file with it. Protect backups: they contain private saved material
+and paired-device records. See [archive handling](docs/local-service.md#keep-an-existing-archive).
 
-Back up the SQLite file before deploying a new release:
-
-```bash
-python -c "import sqlite3; src=sqlite3.connect('data/markov.db'); dst=sqlite3.connect('data/markov.backup.db'); src.backup(dst); dst.close(); src.close()"
-```
+Before updating, make a backup, pull the new code, rerun the setup script, and
+restart Markov. Additive database migrations run automatically. Restore a backup
+with its matching code version when testing a rollback; do not assume an older
+version understands a newer database.
 
 ## CLI
 
