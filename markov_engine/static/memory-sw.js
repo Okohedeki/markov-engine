@@ -1,5 +1,5 @@
 /* Only public shell assets are cached; account pages and mutations stay network-only. */
-const SHELL = 'markov-memory-v2';
+const SHELL = 'markov-memory-v3';
 const ASSETS = ['/static/memory.css', '/static/memory.js', '/static/markov-mark.svg',
   '/static/fonts/dm-sans.woff2', '/static/memory-offline.html'];
 self.addEventListener('install', event => {
