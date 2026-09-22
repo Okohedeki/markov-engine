@@ -162,4 +162,13 @@ def create_bookmark_router(*, owner, render):
             types=sorted({item['source_type'] for item in items}), source_type=params.get('type', ''))
         return render(request, 'memory_search.html', **context)
 
+    @router.get('/app/threads')
+    @router.get('/app/projects')
+    async def collections_page(request: Request):
+        identity = owner(request)
+        archive = request.app.state.store.bookmarks
+        screen = 'projects' if request.url.path.endswith('/projects') else 'threads'
+        context = archive_context(await archive.items(identity), await archive.collections(identity), screen)
+        return render(request, 'memory_threads.html', rows=context[screen], **context)
+
     return router
