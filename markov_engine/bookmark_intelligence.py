@@ -7,7 +7,8 @@ from collections import Counter
 from markov_engine.config import get_settings
 from markov_engine.vectors import cosine_similarity
 
-STOP = set('about after again also been being could every from have into just like more most '
+STOP = set('the and for are was but not you can has had its our out all any how who why '
+           'about after again also been being could every from have into just like more most '
            'other saved some than that their them then there these they this those through '
            'until very want were what when where which while will with would your article '
            'video stuff someone something talked remember'.split())
