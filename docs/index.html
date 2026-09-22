@@ -1,42 +1,26 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#171b24">
-  <meta name="description" content="An investigative partner for creators and independent writers. Bring a video, post, podcast or article. Follow unanswered questions into source-backed story leads you can make your own.">
-
-  <title>Markov — Start with a link. Leave with a story.</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f5ef"><meta name="color-scheme" content="light">
+  <meta name="description" content="Save anything worth remembering. Markov brings it back when it matters.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Markov — A bookmark app that remembers what you forgot</title>
   <link rel="icon" href="/markov-engine/static/markov-mark.svg" type="image/svg+xml">
+
   <link rel="preload" href="/markov-engine/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/markov-engine/static/studio.css"><link rel="stylesheet" href="/markov-engine/static/source-trail.css">
-  <link rel="stylesheet" href="/markov-engine/static/public-info.css">
   <link rel="stylesheet" href="/markov-engine/static/memory.css">
   <link rel="stylesheet" href="/markov-engine/static/memory-landing.css">
+  <script defer src="/markov-engine/static/memory.js"></script>
 
-  <script defer src="/markov-engine/static/markov.js"></script>
-  <script defer src="/markov-engine/static/source-trail.js"></script>
 </head>
-<body class="creator-public source-home">
-  <a class="mk-skip" href="#main-content">Skip to content</a>
+<body class="memory-app">
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
-  <header class="mk-public-header" data-site-header>
-  <a class="mk-wordmark" href="/markov-engine/" aria-label="Markov home">
-    <span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span>Markov</span>
-  </a>
-  <button class="mk-nav-toggle" type="button" aria-expanded="false" aria-controls="mk-public-nav" data-nav-toggle>
-    <span>Menu</span><i aria-hidden="true"></i>
-  </button>
-  <nav class="mk-public-nav" id="mk-public-nav" aria-label="Primary navigation" data-site-nav>
-    <a href="/markov-engine/#how-it-works">How it works</a>
-    <a href="/markov-engine/#source-notes">The sources</a>
-    <a href="/markov-engine/pricing/">Pricing</a>
-    <a href="/markov-engine/developers/">API</a>
-    <a class="mk-nav-action" href="/markov-engine/#how-it-works">See an example <span aria-hidden="true">↗</span></a>
-  </nav>
-</header>
+<div class="memory-public">
+  <header class="public-nav"><a class="brand" href="/markov-engine/"><img src="/markov-engine/static/markov-mark.svg" alt="">Markov</a><nav aria-label="Main navigation"><a class="nav-secondary" href="/markov-engine/#how-it-works">How it works</a><a class="nav-secondary" href="/markov-engine/developers/">For builders</a><a class="button dark" href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M13 6l6 6-6 6"/></svg></a></nav></header>
   <main id="main-content">
     <section class="memory-hero">
       <p class="eyebrow">A bookmark app that remembers what you forgot</p>
@@ -58,29 +42,8 @@
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14 M13 6l6 6-6 6"/></svg></a></section>
     </div>
   </main>
-  <footer class="mk-public-footer">
-  <div>
-    <a class="mk-wordmark" href="/markov-engine/" aria-label="Markov home">
-      <span class="mk-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>Markov</span>
-    </a>
-    <p>Start anywhere. Follow the idea. Make something original.</p>
-  </div>
-  <nav aria-label="Footer navigation">
-    <a href="/markov-engine/#how-it-works">How it works</a>
-    <a href="/markov-engine/#source-notes">Source notes</a>
-    <a href="/markov-engine/pricing/">Pricing</a>
-    <a href="/markov-engine/developers/">API</a>
-    <a href="https://github.com/Okohedeki/markov-engine#local-setup">Run locally</a>
-  </nav>
-  <p class="mk-footer-note">Links lead to related stories. Stories lead to original script ideas. The public example is curated; it does not run live research.</p>
-  <div class="public-legal-links">
-    <span>© 2026 EyeQ enterprises · Phoenix, Arizona</span>
-    <a href="/markov-engine/privacy/">Privacy policy</a>
-    <a href="/markov-engine/terms/">Terms of use</a>
-    <a href="/markov-engine/copyright/">Copyright & sources</a>
-    <a href="mailto:okohedeki@gmail.com">Contact</a>
-  </div>
-</footer>
+  <footer class="public-footer"><span>Markov · Your past curiosity, useful today.</span><nav aria-label="Footer navigation"><a href="/markov-engine/privacy/">Privacy</a><a href="/markov-engine/terms/">Terms</a><a href="https://github.com/Okohedeki/markov-engine">GitHub</a></nav></footer>
+</div>
 
 </body>
 </html>
