@@ -13,3 +13,23 @@ def test_service_pairing_requires_a_valid_reachable_https_origin(url):
     settings = Settings(_env_file=None, MARKOV_LOCAL_SERVICE=True, MARKOV_SERVICE_URL=url)
     with pytest.raises(ValueError):
         service_origin(settings)
+
+
+def test_launcher_remembers_service_identity_and_archive_without_developer_keys(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('LLM_BACKEND', 'heuristic')
+    monkeypatch.setenv('EMBED_BACKEND', 'hash')
+    monkeypatch.setenv('MARKOV_API_KEYS', '{"old-developer-key":"other-owner"}')
+    directory = tmp_path / 'my-service'
+    try:
+        first = prepare_service(directory, name='Home workstation', url='https://home.example', owner='my-owner')
+        second = prepare_service(directory)
+        assert second.service_name == first.service_name == 'Home workstation'
+        assert second.service_owner == first.service_owner == 'my-owner'
+        assert second.service_url == 'https://home.example'
+        assert second.database_path == str(directory / 'markov.db')
+        assert second.local_service and not second.api_keys and not second.internal_api_keys
+        assert not second.clerk_publishable_key and not second.local_preview_owner
+        assert 'old-developer-key' not in (directory / 'service.json').read_text()
+    finally:
+        get_settings.cache_clear()
