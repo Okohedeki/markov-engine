@@ -133,18 +133,18 @@ markov generate 1 --type article
 markov chains
 ```
 
-## Tests
+## Contributing and checks
 
-```bash
-python -m pytest -q
-python -m ruff check markov_engine tests
+Use [CONTRIBUTING.md](CONTRIBUTING.md) for the isolated development setup:
+
+```powershell
+.venv\Scripts\python.exe -m pytest -q
+.venv\Scripts\python.exe scripts/smoke_service.py
 ```
 
-The suite includes a full network-free V2 vertical slice covering timestamped
-YouTube extraction, claims and gaps, evidence research, three typed validated
-connections, an explicitly rejected candidate, one path and insight, all three
-outputs, and a followed branch preserved as a separate Script. Store, API,
-entitlement, export, review, cost, and analytics contracts are also tested.
+[Windows CI](https://github.com/Okohedeki/markov-engine/actions/workflows/windows.yml)
+checks clean installation, regressions, a built wheel, and the real service.
+See [release notes](CHANGELOG.md) and [private security reporting](SECURITY.md).
 
 ## Samples
 
