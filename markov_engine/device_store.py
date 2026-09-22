@@ -39,3 +39,19 @@ class DeviceStore:
         )
         await self.conn.commit()
         return {'id': identity, 'code': code, 'expires_at': created + 300}
+
+    async def redeem(self, code, name):
+        if not isinstance(code, str) or len(code) != 43:
+            return None
+        token, stamp = secrets.token_urlsafe(32), int(time.time())
+        cursor = await self.conn.execute(
+            'UPDATE paired_devices SET code_hash=NULL, session_hash=?, name=?, expires_at=? '
+            'WHERE code_hash=? AND session_hash IS NULL AND expires_at>? AND revoked=0 '
+            'RETURNING id, owner_id, name',
+            (hashlib.sha256(token.encode()).hexdigest(), name.strip()[:80] or 'My phone',
+             stamp + 90 * 86400, hashlib.sha256(code.encode()).hexdigest(), stamp),
+        )
+        row = await cursor.fetchone()
+        await cursor.close()
+        await self.conn.commit()
+        return {'id': row[0], 'owner_id': row[1], 'name': row[2], 'token': token} if row else None
