@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "markov-engine"
 version = "1.0.0"
-description = "An evidence-first engine and delivery app for finished briefs, research reports, and factual scripts."
+description = "An intelligent bookmark app with a personal processing engine and paired phone interface."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
 authors = [{ name = "markov-engine contributors" }]
-keywords = ["knowledge-graph", "embeddings", "clustering", "anthropic", "agents", "rag"]
+keywords = ["bookmarks", "local-first", "pwa", "knowledge", "search"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
