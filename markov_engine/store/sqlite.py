@@ -172,6 +172,8 @@ class SqliteStore(ProductionSqliteMixin, ResearchSqliteMixin, Store):
         from markov_engine.bookmark_store import BookmarkStore
         store = cls(conn)
         store.bookmarks = await BookmarkStore.open(conn)
+        from markov_engine.device_store import DeviceStore
+        store.devices = await DeviceStore.open(conn)
         return store
 
     async def close(self) -> None:
