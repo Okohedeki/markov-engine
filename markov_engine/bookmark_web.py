@@ -189,4 +189,74 @@ def create_bookmark_router(*, owner, render):
                        screen='projects' if thread['kind'] == 'project' else 'threads')
         return render(request, 'memory_thread.html', **context)
 
+    @router.post('/app/collections')
+    async def change_collection(request: Request):
+        import uuid
+        identity = owner(request)
+        values = await bookmark_form(request)
+        archive = request.app.state.store.bookmarks
+        items, stored = await archive.items(identity), await archive.collections(identity)
+        context = archive_context(items, stored)
+        all_rows = {row['id']: row for row in stored + context['threads'] + context['projects']}
+        action, row_id = values.get('action'), values.get('id')
+        fields = {'id', 'title', 'kind', 'automatic', 'topic', 'bookmark_ids', 'excluded_ids',
+                  'pinned', 'hidden', 'notes', 'questions'}
+        if action == 'create':
+            row = {'id': uuid.uuid4().hex, 'kind': values.get('kind', 'thread'),
+                   'title': values.get('title', '').strip()[:120], 'automatic': False,
+                   'bookmark_ids': [], 'excluded_ids': [], 'pinned': False, 'hidden': False}
+            if not row['title'] or row['kind'] not in {'thread', 'project'}:
+                raise HTTPException(422, 'Choose a collection name and type.')
+        else:
+            if row_id not in all_rows:
+                raise HTTPException(404, 'Collection not found.')
+            row = {key: value for key, value in all_rows[row_id].items() if key in fields}
+            if action == 'rename':
+                row['title'] = values.get('title', '').strip()[:120]
+                if not row['title']:
+                    raise HTTPException(422, 'A collection needs a name.')
+            elif action in {'pin', 'hide', 'restore'}:
+                field = 'pinned' if action == 'pin' else 'hidden'
+                row[field] = not row.get(field, False) if action == 'pin' else action == 'hide'
+            elif action == 'notes':
+                row.update(notes=values.get('notes', '')[:8000], questions=values.get('questions', '')[:4000])
+            elif action in {'add', 'remove'}:
+                bookmark_id = values.get('bookmark_id')
+                if bookmark_id not in {item['bookmark_id'] for item in items}:
+                    raise HTTPException(404, 'Save not found.')
+                ids, excluded = set(row.get('bookmark_ids', [])), set(row.get('excluded_ids', []))
+                if action == 'add':
+                    ids.add(bookmark_id)
+                    excluded.discard(bookmark_id)
+                else:
+                    ids.discard(bookmark_id)
+                    excluded.add(bookmark_id)
+                row.update(bookmark_ids=sorted(ids), excluded_ids=sorted(excluded))
+            elif action == 'merge':
+                target = all_rows.get(values.get('target'))
+                if not target or target['id'] == row['id'] or target['kind'] != row['kind']:
+                    raise HTTPException(422, 'Choose a different collection of the same type.')
+                target = {key: value for key, value in target.items() if key in fields}
+                target['bookmark_ids'] = sorted(set(target.get('bookmark_ids', []) + row.get('bookmark_ids', [])))
+                await archive.collections(identity, collection=target)
+                row['hidden'] = True
+            elif action == 'split':
+                selected = {key.removeprefix('pick_') for key in values if key.startswith('pick_')}
+                selected &= set(row.get('bookmark_ids', []))
+                title = values.get('title', '').strip()[:120]
+                if not selected or not title:
+                    raise HTTPException(422, 'Select saves and name the new collection.')
+                new_row = {**row, 'id': uuid.uuid4().hex, 'title': title, 'automatic': False,
+                           'bookmark_ids': sorted(selected), 'excluded_ids': []}
+                await archive.collections(identity, collection=new_row)
+                row['bookmark_ids'] = sorted(set(row.get('bookmark_ids', [])) - selected)
+                row['excluded_ids'] = sorted(set(row.get('excluded_ids', [])) | selected)
+            else:
+                raise HTTPException(422, 'Unknown collection action.')
+        await archive.collections(identity, collection=row)
+        destination = '/app/threads/' + row['id']
+        if row.get('hidden'):
+            destination = '/app/projects' if row['kind'] == 'project' else '/app/threads'
+        return RedirectResponse(destination, 303)
+
     return router
