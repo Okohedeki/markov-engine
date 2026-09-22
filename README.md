@@ -155,19 +155,22 @@ See [release notes](CHANGELOG.md) and [private security reporting](SECURITY.md).
 These are compact fixtures demonstrating structure and provenance, not claims
 about a real company or event.
 
-## Known V1 limits
+## Current status and limits
 
-- Background execution is single-process; there is no distributed queue or
-  automatic restart recovery yet.
-- SQLite is intended for one API instance, not horizontally scaled writes.
-- URL intake is public-source only. Upload transport and signed object storage
-  are not included in this repository.
-- Authentication is configured API-key ownership, not a full identity provider.
-- Stripe supports configurable one-time credit packs; subscriptions, invoicing,
-  tax, refunds, and enterprise contracts are intentionally deferred.
-- Human review is a queue and audit workflow, not workforce scheduling.
-- Evidence quality is conservative metadata plus inspectable rationale; reviewers
-  remain responsible for final editorial and legal judgment.
+Markov is **alpha**, with Windows x64 / Python 3.11 as the validation target.
+It is ready for development and local evaluation; a stable public release still
+needs the physical-phone acceptance checks on a trusted HTTPS deployment.
+
+- The computer must stay running and reachable. Private networking and automatic
+  startup are separate setup steps.
+- Pages update on opening or refresh. Live push updates and offline capture
+  queues are not implemented.
+- SQLite and the background queue serve one engine instance. Multi-user hosted
+  deployment is outside the personal-service contract.
+- QR pairing and revocation have automated coverage; physical phone scanning,
+  home-screen installation, and reconnect still need device verification.
+- Local storage does not prevent configured cloud model providers from receiving
+  source text. Choose local providers when that is a requirement.
 
 ## License
 
