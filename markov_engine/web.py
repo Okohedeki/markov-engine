@@ -357,7 +357,8 @@ def create_web_router(*, settings: Settings) -> APIRouter:
     @router.get("/")
     @router.get("/research-product")
     async def landing(request: Request):
-        return _render(request, "landing.html")
+        template = 'landing.html' if request.url.path == '/research-product' else 'memory_landing.html'
+        return _render(request, template)
 
     @router.get("/story")
     async def narrative_landing(request: Request):
