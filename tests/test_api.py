@@ -354,6 +354,7 @@ async def test_web_login_and_focused_intake_page():
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
             assert signed_in.status_code == 200
+            signed_in = await client.get('/app/research')
             assert "Your production desk" in signed_in.text
             assert '<h1>Scripts</h1>' in signed_in.text
             intake = await client.get('/app/links')
@@ -379,7 +380,7 @@ async def test_web_login_and_focused_intake_page():
                 ("/app/ideas", "Explore different angles"),
                 ("/app/plans", "Drafts"),
                 ("/app/published", "Take a finished draft to your channel"),
-                ("/app/search?q=Japanese", "Find the topic or idea"),
+                ("/app/research/search?q=Japanese", "Find the topic or idea"),
             ):
                 page = await client.get(path)
                 assert page.status_code == 200
