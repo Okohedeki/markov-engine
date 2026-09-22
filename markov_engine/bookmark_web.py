@@ -259,4 +259,19 @@ def create_bookmark_router(*, owner, render):
             destination = '/app/projects' if row['kind'] == 'project' else '/app/threads'
         return RedirectResponse(destination, 303)
 
+    @router.get('/app/you')
+    async def you(request: Request):
+        from markov_engine.config import get_settings
+        identity = owner(request)
+        archive = request.app.state.store.bookmarks
+        items, collections = await archive.items(identity), await archive.collections(identity)
+        context = archive_context(items, collections, 'you')
+        return render(request, 'memory_you.html', **context,
+            favorites=sum(item['favorite_state'] for item in items),
+            revisited=sum(bool(item['view_history']) for item in items),
+            hidden_collections=[row for row in collections if row.get('hidden')],
+            search_status='Keyword search is available. Configure an embedding provider for semantic retrieval.'
+                if get_settings().embed_backend == 'hash' else
+                'Semantic indexing is configured. Keyword search remains available if the provider is unavailable.')
+
     return router
