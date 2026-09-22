@@ -1167,5 +1167,7 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     from markov_engine.bookmark_web import create_bookmark_router
     router.include_router(create_bookmark_router(owner=owner, render=_render))
+    from markov_engine.service_web import create_service_router
+    router.include_router(create_service_router(settings, _render, owner))
     router.include_router(create_production_router(settings=settings, owner=owner, render=_render))
     return router
