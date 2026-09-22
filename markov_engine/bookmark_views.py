@@ -69,3 +69,25 @@ def filter_archive(items, params, collections=()):
                        if other['bookmark_id'] != item['bookmark_id']), item['saved_at']
         return item['saved_at']
     return sorted(selected, key=sort_key, reverse=sort not in {'oldest', 'forgotten'})
+
+
+def source_context(item):
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+    passages = []
+    for passage in item['important_passages']:
+        url = item['canonical_url']
+        if passage.get('start_seconds') is not None and item['source_domain'] == 'youtube.com':
+            parts = urlsplit(url)
+            query = dict(parse_qsl(parts.query))
+            query['t'] = str(max(0, int(passage['start_seconds'])))
+            url = urlunsplit(parts._replace(query=urlencode(query)))
+        elif passage.get('page_number'):
+            url += '#page=' + str(passage['page_number'])
+        passages.append({**passage, 'url': url})
+    lines = [f'# {item["title"]}', '', f'Source: {item["canonical_url"]}',
+             f'Saved: {item["saved_at"]}', '', '## User note', item['user_note'] or '(none)',
+             '', '## Markov interpretation', item['inferred_save_reason'] or '(none)', item['summary']]
+    for passage in passages:
+        lines.extend(['', f'## {passage["locator"]} ({passage.get("origin", "source")})',
+                      passage['text'], passage['url']])
+    return {**item, 'important_passages': passages}, '\n'.join(lines)
