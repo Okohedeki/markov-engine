@@ -414,6 +414,12 @@ def create_web_router(*, settings: Settings) -> APIRouter:
 
     @router.get("/app/login")
     async def login_page(request: Request):
+        if settings.local_service:
+            try:
+                owner(request)
+            except HTTPException:
+                return RedirectResponse('/app/pair', status_code=303)
+            return RedirectResponse('/app', status_code=303)
         if settings.local_preview_owner or settings.clerk_publishable_key:
             try:
                 owner(request)
