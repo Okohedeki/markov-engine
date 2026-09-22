@@ -56,14 +56,14 @@ async def test_queue_to_series_journey_and_free_gates():
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
             assert (await client.get('/app')).status_code == 303
             await post(client, '/app/login', {'api_key': 'plus-key'})
-            page = await client.get('/app')
+            page = await client.get('/app/research')
             assert page.status_code == 200 and page.text.count('data-production-row') == 30
-            assert (await client.get('/app?page=2')).text.count('data-production-row') == 2
+            assert (await client.get('/app/research?page=2')).text.count('data-production-row') == 2
             keys = [r['item_key'] for r in (await store.production_ideas('plus'))[:3]]
             moved = await post(client, '/app/queue/actions', {'item': keys, 'action': 'move', 'status': 'shortlisted'})
             assert moved.status_code == 303
-            assert (await client.get('/app?status=shortlisted')).text.count('data-production-row') == 3
-            assert 'No ideas match this view' in (await client.get('/app?q=missing')).text
+            assert (await client.get('/app/research?status=shortlisted')).text.count('data-production-row') == 3
+            assert 'No ideas match this view' in (await client.get('/app/research?q=missing')).text
             export = await post(client, '/app/queue/actions', {'item': keys, 'action': 'export'})
             assert 'markov-shortlist.md' in export.headers['content-disposition']
             assert 'not generated talking points' in export.text
