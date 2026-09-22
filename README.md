@@ -74,6 +74,11 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
+On **Intel Macs**, install Xcode command-line tools, Rust, and OpenSSL before
+installing dependencies; the current cryptography dependency builds from source.
+Follow its [macOS build prerequisites](https://cryptography.io/en/latest/installation/#building-cryptography-on-macos).
+The first install can take several minutes. Apple Silicon uses a prebuilt wheel.
+
 Then use the same install and start commands on every platform:
 
 ```sh
