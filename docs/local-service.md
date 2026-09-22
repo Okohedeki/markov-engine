@@ -55,3 +55,43 @@ when source processing must stay on the service computer.
 
 References: [PWA installation requirements](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable),
 [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve).
+
+## Run and pair
+
+Install the project into its Python 3.11+ environment (`python -m pip install -e .`).
+On Windows, run ` .\run-service.cmd --name "My Markov"` from the repository.
+On other platforms, use `markov-service --name "My Markov"` in that environment.
+Open `http://127.0.0.1:8000/app` on the service computer to start saving.
+
+For private phone access at home and away:
+
+1. Install Tailscale on the service computer and phone, and connect both to your
+   private network. Complete Tailscale's HTTPS setup when prompted.
+2. In another terminal on the service computer, run
+   `tailscale serve --bg http://127.0.0.1:8000`. Note the HTTPS address it reports.
+   See the [official Serve command reference](https://tailscale.com/docs/reference/tailscale-cli/serve).
+3. Stop Markov with Ctrl+C, then restart with
+   `.\run-service.cmd --url https://YOUR-COMPUTER.YOUR-TAILNET.ts.net`, replacing
+   the example with the actual address. Use the same data directory each time.
+4. On the computer, open `http://127.0.0.1:8000/app/devices` and choose **Create
+   pairing code**. Scan it with your phone camera within five minutes.
+5. On the phone, confirm the service name/address, name the device, and tap
+   **Connect this device**. Install Markov using the browser's home-screen option.
+
+The service remembers its name, address, owner, and database in
+`~/.markov/service.json`; the archive and paired-device records live in
+`~/.markov/markov.db`. Subsequent starts only need `.\run-service.cmd` (or
+`markov-service`). `--data-dir` selects a different persistent directory;
+`--port` selects the local port and must match the reverse proxy target.
+`--check` validates and saves configuration without starting a server.
+
+Markov must keep running; the launcher does not install an automatic startup
+service. A new code replaces previous unused codes. Each device stays connected
+for up to 90 days unless revoked on the computer or disconnected on that device.
+Browser and installed-app cookie sharing depends on the browser; if the installed
+app asks to connect again, pair that app with a fresh invitation link.
+
+For a different HTTPS reverse proxy, preserve the external Host header, set
+`X-Forwarded-Proto: https`, and forward only to the loopback listener. Configure
+`--url` as that exact HTTPS origin, without a path. Never expose the local console
+through a proxy that removes forwarding headers and rewrites Host to localhost.
