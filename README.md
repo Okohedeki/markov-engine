@@ -29,6 +29,19 @@ queued: the installed app explains when a connection is required. Muse directory
 submission and live integration testing remain pending its account-gated review.
 
 The implementation direction is [documented here](docs/bookmark-direction.md).
+
+## Your own service and paired PWA
+
+Run `.\run-service.cmd --name "My Markov"` on Windows, or `markov-service` in
+the installed Python environment. Your computer stores the archive and handles
+extraction. Give it a private HTTPS address, then scan a short-lived QR from
+**You → Your service** to connect your phone's PWA to that archive.
+
+Device access survives restarts and can be revoked individually. No central
+Markov account is required in this mode. The computer must remain running and
+reachable; HTTPS networking and automatic startup are separate setup steps.
+See [local service setup and pairing](docs/local-service.md).
+
 Legacy research work remains at `/app/research`; the research APIs and stored
 cases remain compatible. The following sections describe that retained engine.
 
