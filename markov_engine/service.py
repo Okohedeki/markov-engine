@@ -28,6 +28,10 @@ def prepare_service(data_dir, *, name=None, url=None, owner=None, database=None)
             saved.get('database', str(directory / 'markov.db')),
         MARKOV_API_KEYS={}, MARKOV_INTERNAL_API_KEYS={}, MARKOV_LOCAL_PREVIEW_OWNER='',
         CLERK_PUBLISHABLE_KEY='', CLERK_SECRET_KEY='')
+    # Settings deep-merges dictionary inputs with environment values.
+    # A personal service must never inherit developer authentication keys.
+    settings.api_keys = {}
+    settings.internal_api_keys = {}
     origin = service_origin(settings)
     directory.mkdir(parents=True, exist_ok=True)
     config = {'name': settings.service_name, 'url': origin, 'owner': settings.service_owner,
