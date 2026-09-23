@@ -19,6 +19,7 @@ env/
 ENV/
 
 # Test / coverage
+/.tmp/
 .pytest_cache/
 .coverage
 .coverage.*
