@@ -301,7 +301,11 @@ def create_bookmark_router(*, owner, render):
             'description': 'Save anything worth remembering. Find it when it matters.',
             'start_url': '/app', 'scope': '/app', 'display': 'standalone',
             'background_color': '#f7f5ef', 'theme_color': '#f7f5ef',
-            'icons': [{'src': '/static/markov-mark.svg', 'sizes': 'any', 'type': 'image/svg+xml', 'purpose': 'any'}],
+            'icons': [{'src': '/static/icons/icon-192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+                      {'src': '/static/icons/icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+                      {'src': '/static/icons/icon-maskable-512.png', 'sizes': '512x512', 'type': 'image/png',
+                       'purpose': 'maskable'},
+                      {'src': '/static/markov-mark.svg', 'sizes': 'any', 'type': 'image/svg+xml', 'purpose': 'any'}],
             'share_target': {'action': '/app/share', 'method': 'GET',
                              'params': {'title': 'title', 'text': 'text', 'url': 'url'}}},
             media_type='application/manifest+json')
