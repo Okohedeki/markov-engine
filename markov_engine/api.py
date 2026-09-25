@@ -233,6 +233,8 @@ def create_app(
         version="1.0.0",
         description="Brief, Research, and Script from one inspectable research case.",
         lifespan=lifespan,
+        # A personal service can be reachable through a public tunnel; don't publish its API map.
+        **({"docs_url": None, "redoc_url": None, "openapi_url": None} if settings.local_service else {}),
     )
     app.state.settings = settings
     install_customer_auth(app, settings)
