@@ -5,9 +5,10 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f5ef"><meta name="color-scheme" content="light">
   <meta name="description" content="Save anything worth remembering. Markov brings it back when it matters.">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Markov">
   <title>{% block title %}{{ page_title|default('Your personal memory') }} — Markov{% endblock %}</title>
   <link rel="icon" href="{{ site_base }}/static/markov-mark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ site_base }}/static/icons/apple-touch-icon.png">
   {% if not static_preview %}<link rel="manifest" href="/app/manifest.webmanifest">{% endif %}
   <link rel="preload" href="{{ site_base }}/static/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ site_base }}/static/memory.css?v=2">
