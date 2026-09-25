@@ -6,19 +6,24 @@ from urllib.parse import urljoin, urlsplit
 
 import httpx
 
-from markov_engine.bookmark_urls import canonicalize
+from markov_engine.bookmark_urls import public_url
 
 
-async def fetch_public(url, *, limit=8_000_000):
-    async with httpx.AsyncClient(timeout=20, trust_env=False, follow_redirects=False) as client:
+async def resolve(host, port):
+    addresses = await asyncio.get_running_loop().getaddrinfo(host, port, type=socket.SOCK_STREAM)
+    return list(dict.fromkeys(address[4][0] for address in addresses))
+
+
+async def fetch_public(url, *, limit=8_000_000, transport=None):
+    async with httpx.AsyncClient(timeout=20, trust_env=False, follow_redirects=False,
+                                 transport=transport) as client:
         for _ in range(6):
-            url = canonicalize(url)
+            # Validate each hop without canonical identity rewrites: a site that
+            # redirects youtube.com to www.youtube.com must not loop.
+            url = public_url(url)
             parsed = urlsplit(url)
             port = parsed.port or (443 if parsed.scheme == 'https' else 80)
-            addresses = await asyncio.get_running_loop().getaddrinfo(
-                parsed.hostname, port, type=socket.SOCK_STREAM,
-            )
-            ips = list(dict.fromkeys(address[4][0] for address in addresses))
+            ips = await resolve(parsed.hostname, port)
             if not ips or any(not ipaddress.ip_address(ip).is_global for ip in ips):
                 raise ValueError('This source resolves to a private network address.')
             # Connect to the validated IP, retaining TLS verification for the source host.
@@ -93,7 +98,7 @@ async def read_source(item):
     image = document.get('image') or ''
     if image:
         try:
-            image = canonicalize(urljoin(final_url, image))
+            image = public_url(urljoin(final_url, image))
         except ValueError:
             image = ''
     return {**base, 'content': document['text'][:500_000],
