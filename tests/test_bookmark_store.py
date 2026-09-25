@@ -17,7 +17,7 @@ async def test_capture_deduplicates_without_losing_notes_or_owner_isolation():
         other, _ = await archive.save('bob', 'https://example.com/a')
         assert created and not repeated
         assert duplicate['bookmark_id'] == item['bookmark_id']
-        assert duplicate['user_note'] == 'My thought'
+        assert duplicate['user_note'] == 'My thought\n\nreplacement'
         assert other['bookmark_id'] != item['bookmark_id']
         assert await archive.items('bob', item['bookmark_id']) == []
         assert not await archive.update('bob', item['bookmark_id'], {'title': 'stolen'})
@@ -27,6 +27,33 @@ async def test_capture_deduplicates_without_losing_notes_or_owner_isolation():
         )
         updated = (await archive.items('alice', item['bookmark_id']))[0]
         assert updated['user_note'] == 'Edited' and updated['summary'] == 'Interpretation'
+    finally:
+        await store.close()
+
+
+@pytest.mark.asyncio
+async def test_saving_again_adds_a_new_thought_and_fills_missing_text_only():
+    store = await SqliteStore.open(':memory:')
+    try:
+        archive = store.bookmarks
+        item, _ = await archive.save('alice', 'https://www.tiktok.com/@a/video/1')
+        await archive.update('alice', item['bookmark_id'], {'processing_state': 'partial'})
+        # First thought on an empty note, then a repeated tap and an empty re-save change nothing.
+        for note in ['Watch the ending', 'Watch the ending', '']:
+            again, created = await archive.save('alice', 'https://www.tiktok.com/@a/video/1', note=note)
+            assert not created and again['user_note'] == 'Watch the ending'
+        again, _ = await archive.save('alice', 'https://www.tiktok.com/@a/video/1', note='Relevant to onboarding',
+                                      content='0:03 The pitch starts here')
+        assert again['user_note'] == 'Watch the ending\n\nRelevant to onboarding'
+        assert again['content'] == '0:03 The pitch starts here' and again['supplied_content']
+        assert again['processing_state'] == 'pending'
+        # Existing source text is never replaced by a later paste.
+        await archive.update('alice', item['bookmark_id'], {'processing_state': 'ready'})
+        again, _ = await archive.save('alice', 'https://www.tiktok.com/@a/video/1', content='Different text')
+        assert again['content'] == '0:03 The pitch starts here' and again['processing_state'] == 'ready'
+        # Another owner's re-save never touches this archive.
+        await archive.save('bob', 'https://www.tiktok.com/@a/video/1', note='Bob only')
+        assert 'Bob' not in (await archive.items('alice'))[0]['user_note']
     finally:
         await store.close()
 
@@ -113,3 +140,4 @@ async def test_same_automatic_topic_can_be_curated_independently_by_two_owners()
         assert alice[0]['id'] == bob[0]['id'] == 'auto-replay'
     finally:
         await store.close()
+
