@@ -55,10 +55,14 @@ def create_bookmark_router(*, owner, render):
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         destination = '/app/bookmarks/' + item['bookmark_id']
+        note = values.get('note', '').strip()[:8000]
+        note_added = not created and bool(note) and note in item['user_note']
+        after = destination + ('?saved=1' if created else '?saved=again' + ('&note=1' if note_added else ''))
         if 'application/json' in request.headers.get('accept', ''):
-            return JSONResponse({'created': created, 'url': destination, 'bookmark_id': item['bookmark_id']},
+            return JSONResponse({'created': created, 'note_added': note_added, 'url': destination,
+                                 'next': after, 'bookmark_id': item['bookmark_id']},
                                 status_code=201 if created else 200)
-        return RedirectResponse(destination + '?saved=1', 303)
+        return RedirectResponse(after, 303)
 
     @router.get('/app/library')
     async def library(request: Request):
@@ -85,11 +89,15 @@ def create_bookmark_router(*, owner, render):
         await archive.record_event(identity, bookmark_id, 'view_history')
         context = archive_context(items, await archive.collections(identity), 'library')
         item, export_text = source_context(item)
+        saved = request.query_params.get('saved')
+        notice = ('Saved to Markov. Your link and thought are safe.' if saved == '1' else
+                  'Already in your library. Your new thought was added to your note.'
+                  if saved == 'again' and request.query_params.get('note') else
+                  'Already in your library.' if saved == 'again' else '')
         context.update(item=item, export_text=export_text,
             memberships=[row for row in context['threads'] + context['projects']
                          if bookmark_id in {member['bookmark_id'] for member in row['items']}],
-            notice='Saved to Markov. Your link and thought are safe.' if request.query_params.get('saved') else '',
-            page_title='Saved source')
+            notice=notice, page_title='Saved source')
         return render(request, 'memory_detail.html', **context)
 
     @router.post('/app/bookmarks/{bookmark_id}/edit')
