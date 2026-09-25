@@ -26,8 +26,8 @@ def local_console(request):
     return bool(request.client and request.client.host in LOOPBACK
         and request.url.hostname in LOOPBACK
         and not any(name in request.headers for name in (
-            'forwarded', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto',
-            'tailscale-user-login', 'tailscale-user-name',
+            'forwarded', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip',
+            'tailscale-user-login', 'tailscale-user-name', 'cf-connecting-ip', 'cf-ray',
         )))
 
 
