@@ -144,3 +144,24 @@ async def test_phone_reviews_computer_results_and_sends_corrections_back_to_engi
                 assert 'My corrected interpretation.' in page.text
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_tunnelled_requests_never_act_as_the_console_or_see_the_api_map():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_LOCAL_SERVICE=True, MARKOV_SERVICE_OWNER='my-archive',
+        MARKOV_SERVICE_URL='https://markov.example.test')
+    app = create_app(store=store, settings=settings)
+    # cloudflared connects from loopback; a tunnel that rewrites Host to localhost
+    # still adds its own client headers.
+    tunnel = httpx.ASGITransport(app=app, client=('127.0.0.1', 12345))
+    try:
+        async with httpx.AsyncClient(transport=tunnel, base_url='http://127.0.0.1:8000') as client:
+            assert (await client.get('/app')).status_code == 200
+            for header in ['CF-Connecting-IP', 'CF-Ray', 'X-Real-IP']:
+                response = await client.get('/app/library', headers={header: '203.0.113.9'})
+                assert response.status_code == 401, header
+            for path in ['/docs', '/redoc', '/openapi.json']:
+                assert (await client.get(path)).status_code == 404, path
+    finally:
+        await store.close()
