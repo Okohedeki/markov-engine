@@ -29,9 +29,10 @@ function initializeSaveDialog() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || 'Could not save. Please try again.');
-      message.textContent = result.created ? 'Saved to Markov. You can close this now.' : 'Already in your library. Your existing thought is preserved.';
+      message.textContent = result.created ? 'Saved to Markov. You can close this now.'
+        : result.note_added ? 'Already in your library. Your new thought was added.' : 'Already in your library.';
       button.textContent = 'Saved ✓';
-      setTimeout(() => { window.location.assign(result.url + '?saved=1'); }, 900);
+      setTimeout(() => { window.location.assign(result.next || result.url + '?saved=1'); }, 900);
     } catch (error) {
       message.textContent = navigator.onLine ? error.message : 'You’re offline. Keep this window open and retry when connected.';
       button.disabled = false;
