@@ -114,3 +114,29 @@ async def test_merge_transfers_visible_saves_and_split_preserves_exclusions():
             assert target['bookmark_ids'] == [] and target['excluded_ids'] == [keep]
     finally:
         await store.close()
+
+
+@pytest.mark.asyncio
+async def test_saving_a_link_again_reports_whether_the_new_thought_was_added():
+    store = await SqliteStore.open(':memory:')
+    settings = Settings(_env_file=None, MARKOV_API_KEYS={'key': 'alice'}, MARKOV_WEB_SESSION_SECRET='test')
+    app = create_app(store=store, settings=settings)
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test') as client:
+            await client.post('/app/login', data={'api_key': 'key'})
+            json_accept = {'Accept': 'application/json'}
+            first = await client.post('/app/bookmarks', data={'url': 'https://example.com/a', 'note': 'First'},
+                                      headers=json_accept)
+            assert first.status_code == 201 and first.json()['next'].endswith('?saved=1')
+            again = await client.post('/app/bookmarks', data={'url': 'https://example.com/a?utm_source=x',
+                                      'note': 'Second'}, headers=json_accept)
+            assert again.status_code == 200 and again.json()['note_added']
+            page = await client.get(again.json()['next'])
+            assert 'Your new thought was added' in page.text
+            plain = await client.post('/app/bookmarks', data={'url': 'https://example.com/a', 'note': ''})
+            assert plain.status_code == 303 and plain.headers['location'].endswith('?saved=again')
+            page = await client.get(plain.headers['location'])
+            assert 'Already in your library.' in page.text and 'link and thought are safe' not in page.text
+            assert (await store.bookmarks.items('alice'))[0]['user_note'] == 'First\n\nSecond'
+    finally:
+        await store.close()
