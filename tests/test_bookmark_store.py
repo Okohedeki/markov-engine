@@ -3,6 +3,7 @@ import asyncio
 
 import pytest
 
+from markov_engine.bookmark_store import CLAIM_SQL
 from markov_engine.bookmark_urls import canonicalize
 from markov_engine.store.sqlite import SqliteStore
 
@@ -141,3 +142,14 @@ async def test_same_automatic_topic_can_be_curated_independently_by_two_owners()
     finally:
         await store.close()
 
+
+@pytest.mark.asyncio
+async def test_idle_queue_poll_reads_the_state_index_not_every_payload():
+    store = await SqliteStore.open(':memory:')
+    try:
+        plan = ' '.join(row[-1] for row in await store.bookmarks.conn.execute_fetchall(
+            'EXPLAIN QUERY PLAN ' + CLAIM_SQL, ('now',)))
+        assert 'bookmarks_processing_state' in plan
+        assert 'SCAN bookmarks' not in plan
+    finally:
+        await store.close()
