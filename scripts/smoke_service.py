@@ -65,7 +65,8 @@ def main():
         directory = Path(temporary)
         with running_service(directory, port) as client:
             for path in ['/app/devices', '/app/you', '/static/memory.css', '/static/service.js',
-                         '/app/manifest.webmanifest', '/app/sw.js']:
+                         '/app/manifest.webmanifest', '/app/sw.js', '/static/icons/icon-512.png',
+                         '/static/icons/apple-touch-icon.png']:
                 response = client.get(path)
                 assert response.status_code == 200, (path, response.status_code)
             invite = client.post('/app/devices/invite', data={'request': 'pair'},
