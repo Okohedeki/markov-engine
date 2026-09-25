@@ -3,7 +3,7 @@ import ipaddress
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
-def canonicalize(raw):
+def _checked(raw):
     if not isinstance(raw, str) or len(raw) > 8192:
         raise ValueError('Please enter a valid public URL.')
     raw = raw.strip()
@@ -26,6 +26,24 @@ def canonicalize(raw):
     except ValueError as exc:
         if 'Private' in str(exc):
             raise
+    return parts, host, port
+
+
+def _join(scheme, host, port, path, query):
+    netloc = f'[{host}]' if ':' in host else host
+    if port and port != (443 if scheme == 'https' else 80):
+        netloc += f':{port}'
+    return urlunsplit((scheme, netloc, path, query, ''))
+
+
+def public_url(raw):
+    """Validate a fetch destination without rewriting which host or page it names."""
+    parts, host, port = _checked(raw)
+    return _join(parts.scheme, host, port, parts.path or '/', parts.query)
+
+
+def canonicalize(raw):
+    parts, host, port = _checked(raw)
     if host in {'www.youtube.com', 'www.youtu.be', 'www.twitter.com', 'www.x.com'}:
         host = host.removeprefix('www.')
     query = [(key, value) for key, value in parse_qsl(parts.query, keep_blank_values=True)
@@ -40,7 +58,4 @@ def canonicalize(raw):
             host, path, query = 'youtube.com', '/watch', [('v', video)]
     if host == 'twitter.com':
         host = 'x.com'
-    netloc = f'[{host}]' if ':' in host else host
-    if port and port != (443 if parts.scheme == 'https' else 80):
-        netloc += f':{port}'
-    return urlunsplit((parts.scheme, netloc, path, urlencode(query), ''))
+    return _join(parts.scheme, host, port, path, urlencode(query))
