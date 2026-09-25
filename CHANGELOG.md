@@ -14,6 +14,10 @@ a newly published stable release. This entry describes the work on `main`.
   corrections are preserved when the engine processes an item again.
 - Read-only Muse connector adapter. Directory submission and live Muse validation
   remain pending.
+- Saving a link again adds the new thought to its note and fills source text only
+  when the save has none; it previously discarded the new thought.
+- YouTube saves extract captions again. Fetch redirects no longer loop on the
+  www host, and empty page caption links fall back to yt-dlp caption links.
 
 ### Personal computer and phone
 
@@ -26,6 +30,9 @@ a newly published stable release. This entry describes the work on `main`.
 - Removed the Windows executable launcher, native build tooling, and Windows-only
   setup path. Install the service wheel or use the shared source setup instead.
 - Read-only diagnostics for the engine, HTTPS pairing route, and proxy access.
+- PNG, maskable, and apple-touch icons for home-screen installation.
+- Cloudflare Tunnel setup. Tunneled requests never act as the local console, and
+  personal service mode no longer publishes its OpenAPI documents.
 
 ### Project quality
 
@@ -33,6 +40,8 @@ a newly published stable release. This entry describes the work on `main`.
 - Fixed a queue-claim/capture race that could reject a save while SQLite still
   had an active write statement; added a deterministic concurrent-save regression.
 - Declared the HTML cleaner dependency previously hidden by global packages.
+- Indexed queue state so the idle worker poll no longer parses every saved payload.
+- Regression tests for the pinned fetcher's redirects and private-network refusal.
 - CI on Linux, Windows, and Intel/Apple Silicon macOS for clean setup, regression
   tests, wheel installation, service startup, PWA assets, QR generation,
   processing, and restart persistence.
