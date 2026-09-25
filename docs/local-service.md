@@ -122,6 +122,45 @@ For a different HTTPS reverse proxy, preserve the external Host header, set
 `--url` as that exact HTTPS origin, without a path. Never expose the local console
 through a proxy that removes forwarding headers and rewrites Host to localhost.
 
+### Cloudflare Tunnel
+
+A Cloudflare Tunnel gives the phone a stable HTTPS address without installing
+anything on the phone or opening a firewall port. It needs a domain on your
+Cloudflare account; a temporary `trycloudflare.com` address changes on every
+restart, which breaks the installed app and its pairing. With `cloudflared`
+installed on the service computer, sign in and create a named tunnel once:
+
+```sh
+cloudflared tunnel login
+cloudflared tunnel create markov
+cloudflared tunnel route dns markov markov.example.com
+```
+
+Save `~/.cloudflared/config.yml`, using the tunnel ID that `create` printed:
+
+```yaml
+tunnel: TUNNEL-ID
+credentials-file: /home/you/.cloudflared/TUNNEL-ID.json
+ingress:
+  - hostname: markov.example.com
+    service: http://127.0.0.1:8000
+  - service: http_status:404
+```
+
+Then run the tunnel and the service, each in its own terminal:
+
+```sh
+cloudflared tunnel run markov
+markov-service --url https://markov.example.com
+```
+
+Leave `httpHostHeader` unset so the service receives the public hostname;
+Cloudflare sets `X-Forwarded-Proto: https`. Unlike a private network, this
+address is public: single-use pairing codes and device cookies are the only
+gate, and requests through the tunnel never count as the local console. If you
+add Cloudflare Access, bypass `/app/manifest.webmanifest`, `/app/sw.js`, and
+`/static/`, because browsers fetch the app manifest without cookies.
+
 ## Diagnose a connection
 
 With Markov running, open another terminal in the repository and run:
