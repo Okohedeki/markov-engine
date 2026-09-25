@@ -75,6 +75,11 @@ async def test_public_example_and_pwa_do_not_modify_private_archives():
             manifest = (await client.get('/app/manifest.webmanifest')).json()
             assert manifest['start_url'] == '/app'
             assert manifest['share_target']['action'] == '/app/share'
+            png_sizes = {icon['sizes'] for icon in manifest['icons'] if icon['type'] == 'image/png'}
+            assert {'192x192', '512x512'} <= png_sizes
+            assert any(icon['purpose'] == 'maskable' for icon in manifest['icons'])
+            for icon in manifest['icons']:
+                assert (await client.get(icon['src'])).status_code == 200, icon['src']
             worker = await client.get('/app/sw.js')
             assert worker.status_code == 200 and worker.headers['service-worker-allowed'] == '/app'
             shared = await client.get('/app/share?url=https://example.com')
