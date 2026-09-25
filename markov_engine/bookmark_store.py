@@ -8,6 +8,7 @@ def now():
     return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
+
 class BookmarkStore:
     def __init__(self, conn):
         self.conn = conn
@@ -61,11 +62,37 @@ class BookmarkStore:
         )
         await self.conn.commit()
         created = cursor.rowcount == 1
+        if not created:
+            await self._save_again(owner_id, canonical, payload['user_note'], payload['content'], stamp)
         cursor = await self.conn.execute(
             'SELECT payload FROM bookmarks WHERE owner_id=? AND canonical_url=?',
             (owner_id, canonical),
         )
         return json.loads((await cursor.fetchone())[0]), created
+
+    async def _save_again(self, owner_id, canonical, note, content, stamp):
+        # Saving a link again is renewed interest: add the new thought beside the
+        # earlier one. Each statement is conditional, so a repeated tap is a no-op.
+        if note:
+            await self.conn.execute(
+                "UPDATE bookmarks SET payload=json_set(payload, '$.user_note', substr(CASE "
+                "WHEN json_extract(payload, '$.user_note')='' THEN ? "
+                "ELSE json_extract(payload, '$.user_note') || char(10, 10) || ? END, 1, 8000), "
+                "'$.updated_at', ?) WHERE owner_id=? AND canonical_url=? "
+                "AND instr(json_extract(payload, '$.user_note'), ?)=0",
+                (note, note, stamp, owner_id, canonical, note),
+            )
+        if content.strip():
+            # Pasted text fills a save that has none; existing source text is never replaced.
+            await self.conn.execute(
+                "UPDATE bookmarks SET payload=json_set(payload, '$.content', ?, "
+                "'$.supplied_content', json('true'), '$.processing_state', 'pending', "
+                "'$.processing_error', '', '$.important_passages', json('[]'), '$.updated_at', ?) "
+                "WHERE owner_id=? AND canonical_url=? AND json_extract(payload, '$.content')='' "
+                "AND json_extract(payload, '$.processing_state')!='processing'",
+                (content, stamp, owner_id, canonical),
+            )
+        await self.conn.commit()
 
     async def items(self, owner_id, bookmark_id=None):
         sql = 'SELECT payload FROM bookmarks WHERE owner_id=?'
