@@ -8,6 +8,16 @@ def now():
     return dt.datetime.now(dt.timezone.utc).isoformat()
 
 
+# Filters on the indexed processing_state expression; keep the two in step.
+CLAIM_SQL = (
+    "UPDATE bookmarks SET payload=json_set(payload, '$.processing_state', "
+    "'processing', '$.updated_at', ?) WHERE id=(SELECT id FROM bookmarks "
+    "WHERE json_extract(payload, '$.processing_state')='pending' OR "
+    "(json_extract(payload, '$.processing_state')='processing' AND "
+    "datetime(json_extract(payload, '$.updated_at')) < datetime('now', '-5 minutes')) "
+    "ORDER BY saved_at LIMIT 1) RETURNING payload"
+)
+
 
 class BookmarkStore:
     def __init__(self, conn):
@@ -26,6 +36,9 @@ class BookmarkStore:
             );
             CREATE INDEX IF NOT EXISTS bookmarks_owner_date
                 ON bookmarks(owner_id, saved_at DESC);
+            -- The worker polls every second; without this it parses every payload.
+            CREATE INDEX IF NOT EXISTS bookmarks_processing_state
+                ON bookmarks(json_extract(payload, '$.processing_state'));
             CREATE TABLE IF NOT EXISTS bookmark_collections (
                 id TEXT PRIMARY KEY,
                 owner_id TEXT NOT NULL,
@@ -107,14 +120,7 @@ class BookmarkStore:
         stamp = now()
         # Drain RETURNING in one database-thread call. Yielding with a live write
         # cursor would let another request's commit fail with "SQL statements in progress".
-        rows = await self.conn.execute_fetchall(
-            "UPDATE bookmarks SET payload=json_set(payload, '$.processing_state', "
-            "'processing', '$.updated_at', ?) WHERE id=(SELECT id FROM bookmarks "
-            "WHERE json_extract(payload, '$.processing_state')='pending' OR "
-            "(json_extract(payload, '$.processing_state')='processing' AND "
-            "datetime(json_extract(payload, '$.updated_at')) < datetime('now', '-5 minutes')) "
-            "ORDER BY saved_at LIMIT 1) RETURNING payload", (stamp,),
-        )
+        rows = await self.conn.execute_fetchall(CLAIM_SQL, (stamp,))
         await self.conn.commit()
         return json.loads(rows[0][0]) if rows else None
 
